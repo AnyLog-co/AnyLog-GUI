@@ -74,6 +74,7 @@ optional arguments:
   -p, --process [PROCESS]          Get process info
   -s, --status [STATUS]            Get status of specific node
   -t, --table [TABLE]              Get info about tables
+  -u, --utils      [UTILS]        Get utilty information (cpu, memory, disk) 
 
 # Example 
 anylog@anylog-develop:~/AnyLog-GUI/rest$ python3 ~/AnyLog-GUI/rest/general_info.py 23.239.12.151:2049 -a
@@ -209,5 +210,12 @@ CREATE TABLE IF NOT EXISTS systemuptime_sensor(
 CREATE INDEX systemuptime_sensor_parentelement_index ON systemuptime_sensor(parentelement);
 CREATE INDEX systemuptime_sensor_timestamp_index ON systemuptime_sensor(timestamp);
 CREATE INDEX systemuptime_sensor_insert_timestamp_index ON systemuptime_sensor(insert_timestamp);
+
+CPU:
+        CPU Physical cores: 1 | CPU Logical cores: 1
+Disk:
+        Disk Total: 15,783.11MB | Disk Used: 6,101.17MB | Disk Free: 8,860.02MB
+Memory:
+        Memory Total: 2,040,972MB | Memory Available: 1,573,060MB | Memory Used: 296,720MB | Memory Free: 264,964MB
 ```
 
