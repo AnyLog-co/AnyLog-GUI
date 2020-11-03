@@ -68,13 +68,13 @@ positional arguments:
   conn                  REST connection IP:Port
 optional arguments:
   -h, --help                       show this help message and exit
-  -a, --all [ALL]                  Get all possible info from node
+  -a, --all         [ALL]          Get all possible info from node
   -b, --blockchain [BLOCKCHAIN]    Get general info about all nodes
-  -o, --operator [OPERATOR]        Get info about operators
-  -p, --process [PROCESS]          Get process info
-  -s, --status [STATUS]            Get status of specific node
-  -t, --table [TABLE]              Get info about tables
-  -u, --utils      [UTILS]        Get utilty information (cpu, memory, disk) 
+  -o, --operator   [OPERATOR]      Get info about operators
+  -p, --process    [PROCESS]       Get process info
+  -s, --status     [STATUS]        Get status of specific node
+  -t, --table      [TABLE]         Get info about tables
+  -u, --utils      [UTILS]         Get utilty information (cpu, memory, disk) 
 
 # Example 
 anylog@anylog-develop:~/AnyLog-GUI/rest$ python3 ~/AnyLog-GUI/rest/general_info.py 23.239.12.151:2049 -a
