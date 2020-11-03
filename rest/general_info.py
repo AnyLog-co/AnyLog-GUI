@@ -88,6 +88,25 @@ def format_status(query_cls:Query):
    status = query_cls.get_status() 
    print('Status: %s' % status) 
 
+def format_utils(query_cls:Query): 
+   utils = query_cls.get_machine_data() 
+   cpu='CPU:\n\t'
+   disk='Disk:\n\t'
+   memory='Memory:\n\t'
+
+   for node in utils: 
+      value = '%s: %s | ' % (node, utils[node]) 
+      if 'cpu' in node.lower(): 
+         cpu += value 
+      elif 'disk' in node.lower(): 
+         disk += value 
+      elif 'memory' in node.lower(): 
+         memory += value 
+
+   print(cpu.rsplit(' | ', 1)[0]) 
+   print(disk.rsplit(' | ', 1)[0]) 
+   print(memory.rsplit(' | ', 1)[0]) 
+
 def main(): 
    """
    Based on arguments, print relevent info
@@ -101,6 +120,7 @@ def main():
       -p, --process    [PROCESS]      Get process info
       -s, --status     [STATUS]       Get status of specific node
       -t, --table      [TABLE]        Get info about tables
+      -u, --utils      [UTILS]        Get utilty information (cpu, memory, disk) 
    """
    parser = argparse.ArgumentParser() 
    parser.add_argument('conn',               type=str,  default='127.0.0.1:2049',     help='REST connection IP:Port') 
@@ -110,6 +130,8 @@ def main():
    parser.add_argument('-p', '--process',    type=bool, nargs='?', const=True, default=False, help='Get process info')  
    parser.add_argument('-s', '--status',     type=bool, nargs='?', const=True, default=False, help='Get status of specific node') 
    parser.add_argument('-t', '--table',      type=bool, nargs='?', const=True, default=False, help='Get info about tables') 
+   parser.add_argument('-u', '--utils',      type=bool, nargs='?', const=True, default=False, help='Get utility information (cpu, memory, disk)') 
+
    args = parser.parse_args () 
 
    if args.all: 
@@ -118,6 +140,7 @@ def main():
       args.process = True
       args.status = True
       args.table = True
+      args.utils = True 
 
    query_cls = Query(args.conn) 
    if args.blockchain: 
@@ -134,6 +157,8 @@ def main():
       print('\n')
    if args.table: 
       format_tables(query_cls) 
+   if args.utils: 
+      format_utils(query_cls) 
 
 if __name__ == '__main__': 
    main()

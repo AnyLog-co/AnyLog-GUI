@@ -116,6 +116,62 @@ class Query:
          results = []
       return results
 
+   def get_machine_data(self)->dict: 
+      """
+      Get information correlated specifically to node 
+      :queries: 
+        get cpu info 
+        get disk usage / <-- convert from Bytes to MB
+        get memory info 
+      :param: 
+         header:dict - query 
+         info:dict - data from queries
+      :return; 
+         info 
+      """
+      info = {} 
+      header = {'type': 'info', 'details': 'get cpu info'}
+      r = self.__get_obj(header)
+      try:
+         data = r.text
+      except: 
+         data = None 
+
+      if data is not None: 
+         for dta in data.split('\n'): 
+            info['CPU %s' % dta.split(':')[0].lstrip().rstrip().capitalize()] = dta.split(':')[1].lstrip().rstrip()
+
+      header = {'type': 'info', 'details': 'get disk usage /'}
+      r = self.__get_obj(header)
+      try:
+         data = r.text
+      except: 
+         data = None 
+
+      try: 
+         data = ast.literal_eval(data.replace('[', '').replace(']', ''))
+      except: 
+         data = None 
+
+      if data is not None:
+         for dta in data: 
+            if dta.lower() != 'node': 
+               info['Disk %s' % dta.lstrip().rstrip().capitalize()] = '%sMB' % "{:,.2f}".format(round(int(data[dta].replace(',','')) / 1000000, 3))
+
+      header = {'type': 'info', 'details': 'get memory info'}
+      r = self.__get_obj(header)
+      try:
+         data = r.text
+      except: 
+         data = None 
+
+      if data is not None: 
+         for dta in data.split('\n'): 
+             if dta != '': 
+                info['Memory %s' % dta.split(':')[0].lstrip().rstrip().capitalize()] = dta.split(':')[1].lstrip().rstrip()
+      
+      return info 
+
    def get_operators(self)->dict:
       """
       Get list of operators and databases from blockchain
@@ -226,3 +282,4 @@ class Query:
             blockchain[name] = table['table']['create'].replace('  ','\n\t').replace('; ',';\n') 
 
       return blockchain 
+
