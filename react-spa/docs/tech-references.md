@@ -15,5 +15,6 @@
 - https://dev.to/rossanodan/building-a-navigation-drawer-with-material-ui-and-react-router-dom-1j6l
 
 ## Localization
+- https://react.i18next.com/guides/quick-start
 - https://medium.com/@tariqul.islam.rony/internationalization-localization-with-react-js-65d6f6badd56
 

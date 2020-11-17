@@ -1,5 +1,7 @@
+/* eslint-disable react/prop-types */
 import React, { useReducer, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { useTranslation, Trans } from 'react-i18next';
 
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
@@ -98,6 +100,8 @@ const reducer = (state: State, action: Action): State => {
 };
 
 const Login = () => {
+  const { t } = useTranslation();
+
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -146,10 +150,11 @@ const Login = () => {
       payload: event.target.value,
     });
   };
+
   return (
     <form className={classes.container} noValidate autoComplete="off">
       <Card className={classes.card}>
-        <CardHeader className={classes.header} title="Welcome to AnyLog!" />
+        <CardHeader className={classes.header} title={t('Login.title')} />
         <CardContent>
           <div>
             <TextField
@@ -186,7 +191,7 @@ const Login = () => {
             onClick={handleLogin}
             disabled={state.isButtonDisabled}
           >
-            Login
+            <Trans>Login.button-login</Trans>
           </Button>
         </CardActions>
       </Card>

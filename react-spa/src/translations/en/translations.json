@@ -1,0 +1,9 @@
+{
+  "App": {
+    "select-language": "Select a language"
+  },
+  "Login": {
+    "title": "Welcome to AnyLog!",
+    "button-login": "Log In"
+  }
+}
