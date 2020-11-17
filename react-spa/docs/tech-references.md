@@ -1,5 +1,13 @@
+## ESLint
 - https://www.npmjs.com/package/eslint-config-airbnb-typescript
+
+## Material UI
 - https://github.com/mui-org/material-ui/issues/6256
-- https://www.freecodecamp.org/news/a-complete-beginners-guide-to-react-router-include-router-hooks/
 - https://surajsharma.net/blog/react-login-form-typescript
+
+## React Router
 - https://reactrouter.com/core/guides/quick-start
+- https://www.freecodecamp.org/news/a-complete-beginners-guide-to-react-router-include-router-hooks/
+- https://css-tricks.com/the-hooks-of-react-router/
+- https://dev.to/rossanodan/building-a-navigation-drawer-with-material-ui-and-react-router-dom-1j6l
+
