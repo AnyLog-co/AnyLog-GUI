@@ -1,0 +1,5 @@
+- https://www.npmjs.com/package/eslint-config-airbnb-typescript
+- https://github.com/mui-org/material-ui/issues/6256
+- https://www.freecodecamp.org/news/a-complete-beginners-guide-to-react-router-include-router-hooks/
+- https://surajsharma.net/blog/react-login-form-typescript
+- https://reactrouter.com/core/guides/quick-start
