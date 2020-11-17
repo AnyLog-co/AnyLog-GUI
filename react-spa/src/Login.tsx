@@ -88,6 +88,12 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         isError: action.payload,
       };
+    default: {
+      return {
+        ...state,
+        isError: true,
+      };
+    }
   }
 };
 
@@ -123,9 +129,12 @@ const Login = () => {
     }
   };
 
+  /**
+   * Handles the enter key. Apparently there is a better way to do this.
+   */
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.keyCode === 13 || event.which === 13) {
-      state.isButtonDisabled || handleLogin();
+      if (!state.isButtonDisabled) handleLogin();
     }
   };
 

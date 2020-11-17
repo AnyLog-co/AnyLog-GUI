@@ -44,3 +44,17 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## VSCode Configuration
+
+Add the following to your settings.json:
+
+```js
+    "typescript.tsdk": "./node_modules/typescript/lib",
+```
+
+If VSCode does not recognize .tsx files for syntax highlighting, etc.
+
+1. Commmand palette -> etensions
+2. Search for "@builtin typescript"
+3. Make sure all extensions listed are enabled
