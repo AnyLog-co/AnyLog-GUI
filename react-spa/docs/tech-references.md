@@ -1,3 +1,6 @@
+## Typescript
+- https://www.typescriptlang.org/docs/
+
 ## ESLint
 - https://www.npmjs.com/package/eslint-config-airbnb-typescript
 
@@ -10,4 +13,7 @@
 - https://www.freecodecamp.org/news/a-complete-beginners-guide-to-react-router-include-router-hooks/
 - https://css-tricks.com/the-hooks-of-react-router/
 - https://dev.to/rossanodan/building-a-navigation-drawer-with-material-ui-and-react-router-dom-1j6l
+
+## Localization
+- https://medium.com/@tariqul.islam.rony/internationalization-localization-with-react-js-65d6f6badd56
 

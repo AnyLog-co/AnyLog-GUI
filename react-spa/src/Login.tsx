@@ -129,13 +129,8 @@ const Login = () => {
     }
   };
 
-  /**
-   * Handles the enter key. Apparently there is a better way to do this.
-   */
   const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.keyCode === 13 || event.which === 13) {
-      if (!state.isButtonDisabled) handleLogin();
-    }
+    if (event.key === 'Enter' && !state.isButtonDisabled) handleLogin();
   };
 
   const handleUsernameChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
@@ -154,7 +149,7 @@ const Login = () => {
   return (
     <form className={classes.container} noValidate autoComplete="off">
       <Card className={classes.card}>
-        <CardHeader className={classes.header} title="Login App" />
+        <CardHeader className={classes.header} title="Welcome to AnyLog!" />
         <CardContent>
           <div>
             <TextField
