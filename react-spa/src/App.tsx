@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Login from './Login';
+import Spinner from './Spinner';
 import './App.css';
 
 function App() {
@@ -29,7 +30,7 @@ function App() {
 
 // i18n translations might still be loaded by the http backend
 const suspense = () => (
-  <Suspense fallback="loading">
+  <Suspense fallback={<Spinner />}>
     <App />
   </Suspense>
 );
