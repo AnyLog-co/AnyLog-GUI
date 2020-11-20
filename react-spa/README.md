@@ -58,3 +58,8 @@ If VSCode does not recognize .tsx files for syntax highlighting, etc.
 1. Commmand palette -> etensions
 2. Search for "@builtin typescript"
 3. Make sure all extensions listed are enabled
+
+## Chrome Extensions
+
+- [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
+
