@@ -1,0 +1,7 @@
+#!/bin/sh
+
+git config --global user.email terris@anylog.com
+git config --global user.name "terris-anylog"
+export GIT_SSH_COMMAND="ssh -i ~/.ssh/anylog-git"
+code
+

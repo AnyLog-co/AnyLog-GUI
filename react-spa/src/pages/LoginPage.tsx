@@ -99,7 +99,7 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-const Login = () => {
+const LoginPage = () => {
   const { t } = useTranslation();
 
   const classes = useStyles();
@@ -199,4 +199,6 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;
+
+
