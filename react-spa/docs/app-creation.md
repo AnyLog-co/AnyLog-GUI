@@ -38,6 +38,7 @@ npm i --save \
     react-loader-spinner \
     react-promise-tracker \
     react-router \
+    @types/react-router \
     react-router-dom
 ```
 
@@ -63,6 +64,8 @@ node_modules/
 14. Create .eslintignore
 
 ```js
+# node_modules is ignored by default
+.eslintrc.js
 docs/
 build/
 ```
@@ -81,6 +84,9 @@ build/
 ```js
 module.exports = {
   extends: ['airbnb-typescript', 'react-app/jest'],
+  parserOptions: {
+    project: './tsconfig.eslint.json',
+  }
   rules: {
     'max-len': [
       'error',

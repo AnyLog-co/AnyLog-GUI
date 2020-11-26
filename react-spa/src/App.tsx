@@ -1,7 +1,7 @@
 /* eslint-disable react/button-has-type */
 /* eslint-disable react/jsx-no-comment-textnodes */
-import React, {Suspense} from 'react';
-import {useTranslation} from 'react-i18next';
+import React, { Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Login from './Login';
 import Spinner from './Spinner';
@@ -9,7 +9,7 @@ import HomePage from './pages/HomePage';
 import './App.css';
 
 function App() {
-  const {t, i18n} = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
@@ -38,20 +38,20 @@ const suspense = () => (
 
 export default suspense;
 
-<Provider store={store}>
-  <Router>
-    <NavBar />
-    <div className="container">
-      <Switch>
-        <AuthRoute path="/home" render={HomePage} type="private" />
-        <AuthRoute path="/login" type="guest">
-          <LoginPage />
-        </AuthRoute>
-        <AuthRoute path="/my-account" type="private">
-          <MyAccount />
-        </AuthRoute>
-        <Route path="/" render={IndexPage} />
-      </Switch>
-    </div>
-  </Router>
-</Provider>;
+  <Provider store={store}>
+    <Router>
+      <NavBar />
+      <div className="container">
+        <Switch>
+          <AuthRoute path="/home" render={HomePage} type="private" />
+          <AuthRoute path="/login" type="guest">
+            <LoginPage />
+          </AuthRoute>
+          <AuthRoute path="/my-account" type="private">
+            <MyAccount />
+          </AuthRoute>
+          <Route path="/" render={IndexPage} />
+        </Switch>
+      </div>
+    </Router>
+  </Provider>;

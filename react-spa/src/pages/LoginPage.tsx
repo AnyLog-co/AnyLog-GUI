@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
-import React, {useReducer, useEffect} from 'react';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import {useTranslation, Trans} from 'react-i18next';
+import React, { useReducer, useEffect } from 'react';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { useTranslation, Trans } from 'react-i18next';
 
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
@@ -10,28 +10,26 @@ import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    container: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      width: 400,
-      margin: `${theme.spacing(0)} auto`,
-    },
-    loginBtn: {
-      marginTop: theme.spacing(2),
-      flexGrow: 1,
-    },
-    header: {
-      textAlign: 'center',
-      background: '#212121',
-      color: '#fff',
-    },
-    card: {
-      marginTop: theme.spacing(10),
-    },
-  })
-);
+const useStyles = makeStyles((theme: Theme) => createStyles({
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    width: 400,
+    margin: `${theme.spacing(0)} auto`,
+  },
+  loginBtn: {
+    marginTop: theme.spacing(2),
+    flexGrow: 1,
+  },
+  header: {
+    textAlign: 'center',
+    background: '#212121',
+    color: '#fff',
+  },
+  card: {
+    marginTop: theme.spacing(10),
+  },
+}));
 
 // state type
 
@@ -103,7 +101,7 @@ const reducer = (state: State, action: Action): State => {
 };
 
 const LoginPage = () => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -140,14 +138,14 @@ const LoginPage = () => {
     if (event.key === 'Enter' && !state.isButtonDisabled) handleLogin();
   };
 
-  const handleUsernameChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+  const handleUsernameChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     dispatch({
       type: 'setUsername',
       payload: event.target.value,
     });
   };
 
-  const handlePasswordChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+  const handlePasswordChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     dispatch({
       type: 'setPassword',
       payload: event.target.value,
