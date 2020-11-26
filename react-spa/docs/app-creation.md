@@ -108,3 +108,7 @@ module.exports = {
 ```
 
 18. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)
+
+19. Edit tsconfig.json
+
+- set compilerOptions.target to es6
