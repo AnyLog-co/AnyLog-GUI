@@ -25,3 +25,6 @@
 ## State
 - https://www.robinwieruch.de/javascript-reducer
 - https://github.com/SirwanAfifi/mobxwithts
+
+## Spinners
+- https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls
