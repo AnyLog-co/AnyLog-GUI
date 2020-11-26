@@ -4,4 +4,13 @@ module.exports = {
   parserOptions: {
     project: './tsconfig.eslint.json',
   },
+  rules: {
+    'max-len': [
+      'error',
+      {
+        code: 120,
+        ignoreUrls: true,
+      },
+    ],
+  },
 };

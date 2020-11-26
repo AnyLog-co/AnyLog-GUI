@@ -1,10 +1,16 @@
-# Getting Started with Create React App
+# AnyLog Web Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+##  See Also
 
-## Available Scripts
+- [How this app was created](docs/app-creation.md)
+
+## npm scripts
 
 In the project directory, you can run:
+
+### `npm prettier`
+
+### `npm lint`
 
 ### `npm start`
 
@@ -29,25 +35,24 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+## Visual Studio Code
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Recommended Extensions
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. ESLint
+2. GitLens
+3. Git Graph
+4. GitHub PUll Requests and Issues
+5. vscode-journal
+6. vscode-journal-view
+7. Bracket Pair Colorizer 2
+8. Guides
+9. Todo Tree
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Configuring and Troubleshooting Typescript Syntax Highlighting
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-## VSCode Configuration
-
-Add the following to your settings.json:
+Add the following to your settings.json. Open the file by clicking on the gear icon in the lower left, selecting Command
+Palette, and entering "Preferences: Open Settings (JSON)"
 
 ```js
     "typescript.tsdk": "./node_modules/typescript/lib",
@@ -55,11 +60,10 @@ Add the following to your settings.json:
 
 If VSCode does not recognize .tsx files for syntax highlighting, etc.
 
-1. Commmand palette -> etensions
+1. Click Extensions in the left navigation bar
 2. Search for "@builtin typescript"
 3. Make sure all extensions listed are enabled
 
-## Chrome Extensions
+## Recommended Chrome Extensions
 
 - [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
-
