@@ -1,7 +1,9 @@
 # How this app was created
 
 ## Introduction
+
 This is a React single page application (SPA) for web browsers. It uses:
+
 - MaterialUI for components
 - React Router for view transitions
 - Axios for REST API access
@@ -10,6 +12,7 @@ This is a React single page application (SPA) for web browsers. It uses:
 - Promise tracker for progress feedback
 
 ## Steps
+
 1. Install nvm
 2. mkdir react-spa
 3. cd react-spa
@@ -34,39 +37,50 @@ npm i --save \
     mobx-react-lite \
     react-loader-spinner \
     react-promise-tracker \
+    react-router \
     react-router-dom
 ```
 
-10. Create .prettierignore
+11. Follow the instructions for installing
+    [airbnb eslint modules](https://www.npmjs.com/package/eslint-config-airbnb-typescript)
+
+12. Create .prettierrc.js
 
 ```js
+module.exports = {
+  ...require('prettier-airbnb-config'),
+  printWidth: 120,
+};
+```
+
+13. Create .prettierignore
+
+```js
+build/
 node_modules/
 ```
 
-11. Create .eslintignore
+14. Create .eslintignore
 
 ```js
 docs/
 build/
 ```
 
-12. Create tsconfig.eslint.json
+15. Create tsconfig.eslint.json
 
 ```js
 {
   "extends": "./tsconfig.json",
-  "include": ["**/*.ts", "**/*.js", "**/*.jsx", "**/*.tsx", "**/*.js", ".eslintrc.js"]
+  "include": ["**/*.ts", "**/*.js", "**/*.jsx", "**/*.tsx", "**/*.js"]
 }
 ```
 
-13. Create .eslintrc.js
+16. Create .eslintrc.js
 
 ```js
 module.exports = {
   extends: ['airbnb-typescript', 'react-app/jest'],
-  parserOptions: {
-    project: './tsconfig.eslint.json',
-  },
   rules: {
     'max-len': [
       'error',
@@ -79,16 +93,7 @@ module.exports = {
 };
 ```
 
-14. Create .prettierrc.js
-
-```js
-module.exports = {
-  ...require('prettier-airbnb-config'),
-  printWidth: 120
-};
-```
-
-15. Modify package.json
+17. Modify package.json
 
 ```js
   "scripts": {
@@ -96,4 +101,4 @@ module.exports = {
     "lint": "npx eslint . --fix --ext .js,.jsx,.ts,.tsx",
 ```
 
-16. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)
+18. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)

@@ -1,17 +1,22 @@
 ## Starters with login acreen
+
 - https://www.pluralsight.com/guides/how-to-router-redirect-after-login
 - https://surajsharma.net/blog/react-login-form-typescript
 
 ## Typescript
+
 - https://www.typescriptlang.org/docs/
 
 ## ESLint
+
 - https://www.npmjs.com/package/eslint-config-airbnb-typescript
 
 ## Material UI
+
 - https://github.com/mui-org/material-ui/issues/6256
 
 ## React Router
+
 - https://reactrouter.com/core/guides/quick-start
 - https://www.freecodecamp.org/news/a-complete-beginners-guide-to-react-router-include-router-hooks/
 - https://css-tricks.com/the-hooks-of-react-router/
@@ -19,12 +24,15 @@
 - https://www.nicknish.co/blog/react-router-authenticated-routes
 
 ## Localization
+
 - https://react.i18next.com/guides/quick-start
 - https://medium.com/@tariqul.islam.rony/internationalization-localization-with-react-js-65d6f6badd56
 
 ## State
+
 - https://www.robinwieruch.de/javascript-reducer
 - https://github.com/SirwanAfifi/mobxwithts
 
 ## Spinners
+
 - https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls

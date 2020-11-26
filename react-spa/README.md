@@ -1,6 +1,6 @@
 # AnyLog Web Application
 
-##  See Also
+## See Also
 
 - [How this app was created](docs/app-creation.md)
 
@@ -49,16 +49,9 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 8. Guides
 9. Todo Tree
 
-### Configuring and Troubleshooting Typescript Syntax Highlighting
+### Typescript Syntax Highlighting
 
-Add the following to your settings.json. Open the file by clicking on the gear icon in the lower left, selecting Command
-Palette, and entering "Preferences: Open Settings (JSON)"
-
-```js
-    "typescript.tsdk": "./node_modules/typescript/lib",
-```
-
-If VSCode does not recognize .tsx files for syntax highlighting, etc.
+If VSCode does not recognize .tsx files for syntax highlighting, etc.:
 
 1. Click Extensions in the left navigation bar
 2. Search for "@builtin typescript"

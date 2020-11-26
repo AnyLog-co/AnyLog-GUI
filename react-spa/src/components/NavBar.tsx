@@ -1,16 +1,16 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-import { AppBar, Toolbar, Button, Typography } from "@material-ui/core";
+import React, {Component} from 'react';
+import {Link} from 'react-router-dom';
+import {AppBar, Toolbar, Button, Typography} from '@material-ui/core';
 
-import { logout } from "../actions/auth";
+import {logout} from '../actions/auth';
 
 class NavBar extends Component {
   render() {
     return (
-      <AppBar position="static" style={{ display: "flex" }}>
+      <AppBar position="static" style={{display: 'flex'}}>
         <Toolbar>
           <Typography variant="h6">My App</Typography>
-          <div style={{ marginLeft: "auto" }}>
+          <div style={{marginLeft: 'auto'}}>
             {this.props.isAuthUser ? (
               <>
                 <Link to="/home">
