@@ -1,5 +1,15 @@
 # How this app was created
 
+## Introduction
+This is a React single page application (SPA) for web browsers. It uses:
+- MaterialUI for components
+- React Router for view transitions
+- Axios for REST API access
+- MobX for state management
+- i18next for language translations
+- Promise tracker for progress feedback
+
+## Steps
 1. Install nvm
 2. mkdir react-spa
 3. cd react-spa
