@@ -36,16 +36,18 @@ npm i --save \
     mobx \
     mobx-react-lite \
     react-loader-spinner \
+    @types/react-loader-spinner \
     react-promise-tracker \
     react-router \
     @types/react-router \
-    react-router-dom
+    react-router-dom \
+    @types/react-router-dom
 ```
 
-11. Follow the instructions for installing
+10. Follow the instructions for installing
     [airbnb eslint modules](https://www.npmjs.com/package/eslint-config-airbnb-typescript)
 
-12. Create .prettierrc.js
+11. Create .prettierrc.js
 
 ```js
 module.exports = {
@@ -54,14 +56,14 @@ module.exports = {
 };
 ```
 
-13. Create .prettierignore
+12. Create .prettierignore
 
 ```js
 build/
 node_modules/
 ```
 
-14. Create .eslintignore
+13. Create .eslintignore
 
 ```js
 # node_modules is ignored by default
@@ -70,7 +72,7 @@ docs/
 build/
 ```
 
-15. Create tsconfig.eslint.json
+14. Create tsconfig.eslint.json
 
 ```js
 {
@@ -79,7 +81,7 @@ build/
 }
 ```
 
-16. Create .eslintrc.js
+15. Create .eslintrc.js
 
 ```js
 module.exports = {
@@ -99,7 +101,7 @@ module.exports = {
 };
 ```
 
-17. Modify package.json
+16. Modify package.json
 
 ```js
   "scripts": {
@@ -107,8 +109,8 @@ module.exports = {
     "lint": "npx eslint . --fix --ext .js,.jsx,.ts,.tsx",
 ```
 
-18. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)
+17. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)
 
-19. Edit tsconfig.json
+18. Edit tsconfig.json
 
 - set compilerOptions.target to es6

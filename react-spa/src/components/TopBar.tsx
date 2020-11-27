@@ -6,7 +6,9 @@ import Language from './Language';
 
 const TopBar = () => (
   <Grid justify="space-between" container spacing={3}>
-    <Grid item />
+    <Grid item>
+      <img src="logo.png" alt="AnyLog" />
+    </Grid>
     <Grid item>
       <Language />
     </Grid>
