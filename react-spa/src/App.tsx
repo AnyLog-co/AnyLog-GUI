@@ -2,14 +2,14 @@ import React, { Suspense } from 'react';
 
 import LoginPage from './pages/LoginPage';
 import Spinner from './components/Spinner';
-import Language from './components/Language';
+import TopBar from './components/TopBar';
 // import HomePage from './pages/HomePage';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <Language />
+      <TopBar />
       <LoginPage />
     </div>
   );

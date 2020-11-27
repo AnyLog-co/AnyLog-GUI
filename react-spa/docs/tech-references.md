@@ -36,3 +36,7 @@
 ## Spinners
 
 - https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls
+
+## Functional Components
+
+- https://dev.to/chico1992/comment/10iim

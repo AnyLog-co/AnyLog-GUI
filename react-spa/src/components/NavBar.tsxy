@@ -6,8 +6,7 @@ import {
 
 import { logout } from '../actions/auth';
 
-class NavBar extends Component {
-  render() {
+static NavBar = () => {
     return (
       <AppBar position="static" style={{ display: 'flex' }}>
         <Toolbar>

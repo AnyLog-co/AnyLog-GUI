@@ -2,7 +2,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-function Language() {
+const Language = () => {
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng: string) => {
@@ -16,6 +16,6 @@ function Language() {
       <button onClick={() => changeLanguage('de')}>de</button>
     </div>
   );
-}
+};
 
 export default Language;
