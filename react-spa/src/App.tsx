@@ -1,10 +1,10 @@
-import React, { Suspense } from 'react';
+import React, { Suspense } from "react";
 
-import LoginPage from './pages/LoginPage';
-import Spinner from './components/Spinner';
-import TopBar from './components/TopBar';
+import LoginPage from "./pages/LoginPage";
+import Spinner from "./components/Spinner";
+import TopBar from "./components/TopBar";
 // import HomePage from './pages/HomePage';
-import './App.css';
+import "./App.css";
 
 function App() {
   return (

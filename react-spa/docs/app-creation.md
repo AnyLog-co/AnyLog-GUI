@@ -24,7 +24,6 @@ This is a React single page application (SPA) for web browsers. It uses:
 9.
 
 ```shell
-npm i prettier prettier-airbnb-config --save-dev
 npm i --save \
     axios \
     @material-ui/core \
@@ -47,20 +46,42 @@ npm i --save \
 10. Follow the instructions for installing
     [airbnb eslint modules](https://www.npmjs.com/package/eslint-config-airbnb-typescript)
 
-11. Create .prettierrc.js
+11. Create .eslintrc.js
 
 ```js
 module.exports = {
-  ...require('prettier-airbnb-config'),
-  printWidth: 120,
+  extends: [
+    "airbnb-typescript",
+    "airbnb/hooks",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:jest/recommended",
+    "prettier",
+    "prettier/react",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended",
+    "react-app/jest",
+  ],
+  parserOptions: {
+    project: "./tsconfig.eslint.json",
+  },
+  rules: {
+    "max-len": [
+      "error",
+      {
+        code: 120,
+        ignoreUrls: true,
+      },
+    ],
+  },
 };
 ```
 
-12. Create .prettierignore
+12. Create .prettierrc.js
 
 ```js
-build/
-node_modules/
+module.exports = {
+  printWidth: 120,
+};
 ```
 
 13. Create .eslintignore
@@ -72,7 +93,14 @@ docs/
 build/
 ```
 
-14. Create tsconfig.eslint.json
+14. Create .prettierignore
+
+```js
+build/
+node_modules/
+```
+
+15. Create tsconfig.eslint.json
 
 ```js
 {
@@ -85,13 +113,13 @@ build/
 
 ```js
 module.exports = {
-  extends: ['airbnb-typescript', 'react-app/jest'],
+  extends: ["airbnb-typescript-prettier", "react-app/jest"],
   parserOptions: {
-    project: './tsconfig.eslint.json',
+    project: "./tsconfig.eslint.json",
   }
   rules: {
-    'max-len': [
-      'error',
+    "max-len": [
+      "error",
       {
         code: 120,
         ignoreUrls: true,
@@ -101,12 +129,12 @@ module.exports = {
 };
 ```
 
-16. Modify package.json
+16. Modify package.json and add prettier and lint scripts
 
 ```js
   "scripts": {
     "prettier": "prettier . --write",
-    "lint": "npx eslint . --fix --ext .js,.jsx,.ts,.tsx",
+    "lint": "tsc --noEmit && npx eslint . --fix --ext .js,.jsx,.ts,.tsx",
 ```
 
 17. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)

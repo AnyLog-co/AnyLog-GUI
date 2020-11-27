@@ -1,7 +1,8 @@
-## Starters with login acreen
+## Starters
 
 - https://www.pluralsight.com/guides/how-to-router-redirect-after-login
 - https://surajsharma.net/blog/react-login-form-typescript
+- https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97
 
 ## Typescript
 
@@ -40,3 +41,8 @@
 ## Functional Components
 
 - https://dev.to/chico1992/comment/10iim
+
+## CORS
+
+- https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app
+- https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express

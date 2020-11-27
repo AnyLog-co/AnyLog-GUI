@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
-import Grid from '@material-ui/core/Grid';
-import AvatarMenu from './AvatarMenu';
-import Language from './Language';
+import Grid from "@material-ui/core/Grid";
+import AvatarMenu from "./AvatarMenu";
+import Language from "./Language";
 
 const TopBar = () => (
   <Grid justify="space-between" container spacing={3}>
