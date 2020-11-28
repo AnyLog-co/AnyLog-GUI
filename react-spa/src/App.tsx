@@ -3,20 +3,37 @@ import React, { Suspense } from "react";
 import LoginPage from "./pages/LoginPage";
 import Spinner from "./components/Spinner";
 import TopBar from "./components/TopBar";
+import {Router, Switch} from 'react-router';
 // import HomePage from './pages/HomePage';
 import "./App.css";
 
-function App() {
-  return (
+const App = (): React.FC => {
+  <Fade>
+    <Switch>
+      <Route exact path="/">
+        <Home />
+      </Route>
+      <Route path="/about">
+        <About />
+      </Route>
+      <Route path="/:user">
+        <User />
+      </Route>
+      <Route>
+        <NoMatch />
+      </Route>
+    </Switch>
+  </Fade>
+
     <div className="App">
       <TopBar />
       <LoginPage />
     </div>
   );
-}
+};
 
-// i18n translations might still be loaded by the http backend
-const suspense = () => (
+// i18n translations might be loaded by the http backend
+const suspense: React.FC = () => (
   <Suspense fallback={<Spinner />}>
     <App />
   </Suspense>
@@ -24,11 +41,6 @@ const suspense = () => (
 
 export default suspense;
 
-/*
-  <Provider store={store}>
-    <Router>
-      <NavBar />
-      <div className="container">
         <Switch>
           <AuthRoute path="/home" render={HomePage} type="private" />
           <AuthRoute path="/login" type="guest">

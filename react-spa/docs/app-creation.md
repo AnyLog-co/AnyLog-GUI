@@ -24,23 +24,26 @@ This is a React single page application (SPA) for web browsers. It uses:
 9.
 
 ```shell
+npm i --save-dev prettier eslint-plugin-prettier \
+  enzyme enzyme-adapter-react-16 react-test-renderer
+
 npm i --save \
-    axios \
-    @material-ui/core \
-    typeface-roboto \
-    i18next \
-    i18next-browser-languagedetector \
-    i18next-http-backend \
-    react-i18next \
-    mobx \
-    mobx-react-lite \
-    react-loader-spinner \
-    @types/react-loader-spinner \
-    react-promise-tracker \
-    react-router \
-    @types/react-router \
-    react-router-dom \
-    @types/react-router-dom
+  axios \
+  @material-ui/core \
+  typeface-roboto \
+  i18next \
+  i18next-browser-languagedetector \
+  i18next-http-backend \
+  react-i18next \
+  mobx \
+  mobx-react-lite \
+  react-loader-spinner \
+  @types/react-loader-spinner \
+  react-promise-tracker \
+  react-router \
+  @types/react-router \
+  react-router-dom \
+  @types/react-router-dom
 ```
 
 10. Follow the instructions for installing
@@ -129,7 +132,7 @@ module.exports = {
 };
 ```
 
-16. Modify package.json and add prettier and lint scripts
+16. Modify package.json to add prettier and lint scripts
 
 ```js
   "scripts": {

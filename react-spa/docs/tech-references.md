@@ -23,6 +23,7 @@
 - https://css-tricks.com/the-hooks-of-react-router/
 - https://dev.to/rossanodan/building-a-navigation-drawer-with-material-ui-and-react-router-dom-1j6l
 - https://www.nicknish.co/blog/react-router-authenticated-routes
+- [animations](http://maisano.github.io/react-router-transition/)
 
 ## Localization
 
@@ -33,16 +34,26 @@
 
 - https://www.robinwieruch.de/javascript-reducer
 - https://github.com/SirwanAfifi/mobxwithts
+- https://dev.to/sirwanafifi/mobx-with-react-and-typescript-58bf
+- https://www.carlrippon.com/typed-usestate-with-typescript/
 
 ## Spinners
 
 - https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls
 
-## Functional Components
+## Functional Components and Hooks
 
 - https://dev.to/chico1992/comment/10iim
+- https://www.valentinog.com/blog/hooks/
+
 
 ## CORS
 
 - https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app
 - https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express
+
+## Networking
+- https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
+
+## Testing
+- https://www.smashingmagazine.com/2020/06/practical-guide-testing-react-applications-jest/
