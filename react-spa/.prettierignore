@@ -1,5 +1,2 @@
-coverage/
-docs/
-logs/
+build/
 node_modules/
-

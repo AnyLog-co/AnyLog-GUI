@@ -1,14 +1,23 @@
+## Starters
+
+- https://www.pluralsight.com/guides/how-to-router-redirect-after-login
+- https://surajsharma.net/blog/react-login-form-typescript
+- https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97
+
 ## Typescript
+
 - https://www.typescriptlang.org/docs/
 
 ## ESLint
+
 - https://www.npmjs.com/package/eslint-config-airbnb-typescript
 
 ## Material UI
+
 - https://github.com/mui-org/material-ui/issues/6256
-- https://surajsharma.net/blog/react-login-form-typescript
 
 ## React Router
+
 - https://reactrouter.com/core/guides/quick-start
 - https://www.freecodecamp.org/news/a-complete-beginners-guide-to-react-router-include-router-hooks/
 - https://css-tricks.com/the-hooks-of-react-router/
@@ -16,8 +25,24 @@
 - https://www.nicknish.co/blog/react-router-authenticated-routes
 
 ## Localization
+
 - https://react.i18next.com/guides/quick-start
 - https://medium.com/@tariqul.islam.rony/internationalization-localization-with-react-js-65d6f6badd56
 
 ## State
+
 - https://www.robinwieruch.de/javascript-reducer
+- https://github.com/SirwanAfifi/mobxwithts
+
+## Spinners
+
+- https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls
+
+## Functional Components
+
+- https://dev.to/chico1992/comment/10iim
+
+## CORS
+
+- https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app
+- https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express
