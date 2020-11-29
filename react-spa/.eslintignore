@@ -1,5 +1,6 @@
 # node_modules is ignored by default
 .eslintrc.js
-docs/
 build/
+dist/
+docs/
 

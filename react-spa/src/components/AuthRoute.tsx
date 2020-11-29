@@ -1,10 +1,10 @@
-import React, { useContext } from "react";
-import { Redirect, Route } from "react-router";
+import React, { useContext } from 'react';
+import { Redirect, Route } from 'react-router';
 
-import Store from "../lib/Store";
+import Store from '../lib/Store';
 
 interface Props {
-  access: "guest" | "private";
+  access: 'guest' | 'private';
 }
 
 // This will be changed to use state
@@ -12,8 +12,8 @@ interface Props {
 const AuthRoute: React.FC<Props> = ({ access, children, ...props }) => {
   const store = useContext(Store);
   const isAuthUser = store.authenticated;
-  if (access === "guest" && isAuthUser) return <Redirect to="/home" />;
-  if (access === "private" && !isAuthUser) return <Redirect to="/" />;
+  if (access === 'guest' && isAuthUser) return <Redirect to="/home" />;
+  if (access === 'private' && !isAuthUser) return <Redirect to="/" />;
 
   // eslint-disable-next-line react/jsx-props-no-spreading
   return <Route {...props}>{children}</Route>;

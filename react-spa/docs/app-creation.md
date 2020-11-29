@@ -24,7 +24,7 @@ This is a React single page application (SPA) for web browsers. It uses:
 9.
 
 ```shell
-npm i --save-dev prettier eslint-plugin-prettier \
+npm i --save-dev typescript eslint prettier eslint-config-airbnb-typescript-prettier \
   enzyme enzyme-adapter-react-16 react-test-renderer
 
 npm i --save \
@@ -46,22 +46,23 @@ npm i --save \
   @types/react-router-dom
 ```
 
-10. Follow the instructions for installing
-    [airbnb eslint modules](https://www.npmjs.com/package/eslint-config-airbnb-typescript)
+10. Create tsconfig.eslint.json
+
+```js
+{
+  "extends": "./tsconfig.json",
+  "include": ["**/*.ts", "**/*.js", "**/*.jsx", "**/*.tsx", "**/*.js"]
+}
+```
 
 11. Create .eslintrc.js
 
 ```js
 module.exports = {
   extends: [
-    "airbnb-typescript",
+    "airbnb-typescript-prettier",
     "airbnb/hooks",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:jest/recommended",
-    "prettier",
     "prettier/react",
-    "prettier/@typescript-eslint",
-    "plugin:prettier/recommended",
     "react-app/jest",
   ],
   parserOptions: {
@@ -79,21 +80,23 @@ module.exports = {
 };
 ```
 
-12. Create .prettierrc.js
-
-```js
-module.exports = {
-  printWidth: 120,
-};
-```
-
-13. Create .eslintignore
+12. Create .eslintignore
 
 ```js
 # node_modules is ignored by default
 .eslintrc.js
 docs/
 build/
+```
+
+13. Create .prettierrc.js
+
+```js
+module.exports = {
+  printWidth: 120,
+  singleQuote: true,
+  trailingComma: "all",
+};
 ```
 
 14. Create .prettierignore
@@ -103,45 +106,16 @@ build/
 node_modules/
 ```
 
-15. Create tsconfig.eslint.json
-
-```js
-{
-  "extends": "./tsconfig.json",
-  "include": ["**/*.ts", "**/*.js", "**/*.jsx", "**/*.tsx", "**/*.js"]
-}
-```
-
-15. Create .eslintrc.js
-
-```js
-module.exports = {
-  extends: ["airbnb-typescript-prettier", "react-app/jest"],
-  parserOptions: {
-    project: "./tsconfig.eslint.json",
-  }
-  rules: {
-    "max-len": [
-      "error",
-      {
-        code: 120,
-        ignoreUrls: true,
-      },
-    ],
-  },
-};
-```
-
-16. Modify package.json to add prettier and lint scripts
+15. Modify package.json and add format and lint:fix scripts
 
 ```js
   "scripts": {
-    "prettier": "prettier . --write",
-    "lint": "tsc --noEmit && npx eslint . --fix --ext .js,.jsx,.ts,.tsx",
+    "lint": "tsc --project tsconfig.eslint.json --noEmit && eslint --fix './src/**/*.{ts,tsx}'",
+    "format": "prettier . --write",
 ```
 
-17. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)
+16. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)
 
-18. Edit tsconfig.json
+17. Edit tsconfig.json
 
 - set compilerOptions.target to es6

@@ -1,36 +1,29 @@
 import React, { Suspense } from "react";
 
 import LoginPage from "./pages/LoginPage";
+import HomePage from "./pages/HomePage";
+import NoMatch from "./pages/NoMatch";
 import Spinner from "./components/Spinner";
 import TopBar from "./components/TopBar";
-import {Router, Switch} from 'react-router';
-// import HomePage from './pages/HomePage';
+import {Route, BrowserRouter as Router, Switch} from 'react-router-dom';
 import "./App.css";
 
-const App = (): React.FC => {
-  <Fade>
+const App: React.FC = (
+  <Router>
+    <TopBar />
     <Switch>
+      <Route exact path="/login">
+        <LoginPage />
+      </Route>
       <Route exact path="/">
-        <Home />
-      </Route>
-      <Route path="/about">
-        <About />
-      </Route>
-      <Route path="/:user">
-        <User />
+        <HomePage />
       </Route>
       <Route>
         <NoMatch />
       </Route>
     </Switch>
-  </Fade>
-
-    <div className="App">
-      <TopBar />
-      <LoginPage />
-    </div>
-  );
-};
+  </Router>
+);
 
 // i18n translations might be loaded by the http backend
 const suspense: React.FC = () => (
@@ -41,7 +34,7 @@ const suspense: React.FC = () => (
 
 export default suspense;
 
-        <Switch>
+/*
           <AuthRoute path="/home" render={HomePage} type="private" />
           <AuthRoute path="/login" type="guest">
             <LoginPage />
@@ -50,9 +43,5 @@ export default suspense;
             <MyAccount />
           </AuthRoute>
           <Route path="/" render={IndexPage} />
-        </Switch>
-      </div>
-    </Router>
-  </Provider>;
 
   */

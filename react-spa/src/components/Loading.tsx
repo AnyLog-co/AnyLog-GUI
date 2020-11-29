@@ -1,14 +1,14 @@
-import React from "react";
-import { usePromiseTracker } from "react-promise-tracker";
-import Grid from "@material-ui/core/Grid";
-import Loader from "react-loader-spinner";
+import React from 'react';
+import { usePromiseTracker } from 'react-promise-tracker';
+import Grid from '@material-ui/core/Grid';
+import Loader from 'react-loader-spinner';
 
 interface Props {
   area?: string;
   delay?: number;
 }
 
-const Loading: React.FC<Props> = ({ area = "", delay = 1000 }) => {
+const Loading: React.FC<Props> = ({ area = '', delay = 1000 }) => {
   const { promiseInProgress } = usePromiseTracker({ area, delay });
 
   if (!promiseInProgress) return null;

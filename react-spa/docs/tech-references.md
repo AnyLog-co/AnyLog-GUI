@@ -3,6 +3,8 @@
 - https://www.pluralsight.com/guides/how-to-router-redirect-after-login
 - https://surajsharma.net/blog/react-login-form-typescript
 - https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97
+- https://www.robinwieruch.de/prettier-eslint
+- https://dev.to/benweiser/how-to-set-up-eslint-typescript-prettier-with-create-react-app-3675
 
 ## Typescript
 
@@ -18,6 +20,7 @@
 
 ## React Router
 
+- https://medium.com/react-courses/how-to-integrate-routing-in-typescript-project-with-react-router-v5-2-0-a6b0ab160a1b
 - https://reactrouter.com/core/guides/quick-start
 - https://www.freecodecamp.org/news/a-complete-beginners-guide-to-react-router-include-router-hooks/
 - https://css-tricks.com/the-hooks-of-react-router/
