@@ -1,29 +1,31 @@
-import React, { Suspense } from "react";
+import React, { Suspense } from 'react';
 
-import LoginPage from "./pages/LoginPage";
-import HomePage from "./pages/HomePage";
-import NoMatch from "./pages/NoMatch";
-import Spinner from "./components/Spinner";
-import TopBar from "./components/TopBar";
-import {Route, BrowserRouter as Router, Switch} from 'react-router-dom';
-import "./App.css";
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import HomePage from './pages/HomePage';
+import NoMatch from './pages/NoMatch';
+import Spinner from './components/Spinner';
+import TopBar from './components/TopBar';
+import './App.css';
 
-const App: React.FC = (
-  <Router>
-    <TopBar />
-    <Switch>
-      <Route exact path="/login">
-        <LoginPage />
-      </Route>
-      <Route exact path="/">
-        <HomePage />
-      </Route>
-      <Route>
-        <NoMatch />
-      </Route>
-    </Switch>
-  </Router>
-);
+const App: React.FC = () => {
+  return (
+    <Router>
+      <TopBar />
+      <Switch>
+        <Route exact path="/login">
+          <LoginPage />
+        </Route>
+        <Route exact path="/">
+          <HomePage />
+        </Route>
+        <Route>
+          <NoMatch />
+        </Route>
+      </Switch>
+    </Router>
+  );
+};
 
 // i18n translations might be loaded by the http backend
 const suspense: React.FC = () => (

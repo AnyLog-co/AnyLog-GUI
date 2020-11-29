@@ -1,15 +1,26 @@
 // See https://create-react-app.dev/docs/proxying-api-requests-in-development/
-import { createProxyMiddleware } from "http-proxy-middleware";
 
-// https://expressjs.com/en/5x/api.html#req
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+/**
+ * @param {Object} req See https://expressjs.com/en/5x/api.html#req
+ */
 const router = (req) => {
   return req.protocol + req.host;
 };
 
-export default (app) => app.use(
-  "/",
-  createProxyMiddleware({
-    router,
-    // changeOrigin: true,
-  }));
-};
+/**
+ * @param {Object} app See https://expressjs.com/en/5x/api.html#req
+ */
+const handler = (app) =>
+  app.use(
+    '/api',
+    createProxyMiddleware({
+      target: '',
+      router,
+      changeOrigin: true,
+    }),
+  );
+
+module.exports = handler;

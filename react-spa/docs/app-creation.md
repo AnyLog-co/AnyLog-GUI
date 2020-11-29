@@ -25,7 +25,8 @@ This is a React single page application (SPA) for web browsers. It uses:
 
 ```shell
 npm i --save-dev typescript eslint prettier eslint-config-airbnb-typescript-prettier \
-  enzyme enzyme-adapter-react-16 react-test-renderer
+  enzyme enzyme-adapter-react-16 react-test-renderer \
+  @babel/preset-react
 
 npm i --save \
   axios \
@@ -59,18 +60,13 @@ npm i --save \
 
 ```js
 module.exports = {
-  extends: [
-    "airbnb-typescript-prettier",
-    "airbnb/hooks",
-    "prettier/react",
-    "react-app/jest",
-  ],
+  extends: ['airbnb-typescript-prettier', 'airbnb/hooks', 'prettier/react', 'react-app/jest'],
   parserOptions: {
-    project: "./tsconfig.eslint.json",
+    project: './tsconfig.eslint.json',
   },
   rules: {
-    "max-len": [
-      "error",
+    'max-len': [
+      'error',
       {
         code: 120,
         ignoreUrls: true,
@@ -95,7 +91,7 @@ build/
 module.exports = {
   printWidth: 120,
   singleQuote: true,
-  trailingComma: "all",
+  trailingComma: 'all',
 };
 ```
 
@@ -118,4 +114,27 @@ node_modules/
 
 17. Edit tsconfig.json
 
-- set compilerOptions.target to es6
+- set compilerOptions.target to es2020
+
+18. To support Typescript 4.1, Edit package.json and set the babel section:
+
+```js
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-react",
+        {
+          "runtime": "automatic"
+        }
+      ]
+    ]
+  }
+```
+
+19. To support Typescript 4.1, react-app-env.d.ts and add:
+
+```js
+declare module 'react/jsx-runtime' {
+  export default any;
+}
+```

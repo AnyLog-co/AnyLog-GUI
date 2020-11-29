@@ -2,17 +2,18 @@
 
 - https://www.pluralsight.com/guides/how-to-router-redirect-after-login
 - https://surajsharma.net/blog/react-login-form-typescript
-- https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97
-- https://www.robinwieruch.de/prettier-eslint
-- https://dev.to/benweiser/how-to-set-up-eslint-typescript-prettier-with-create-react-app-3675
 
 ## Typescript
 
 - https://www.typescriptlang.org/docs/
 
-## ESLint
+## ESLint and Prettier
 
 - https://www.npmjs.com/package/eslint-config-airbnb-typescript
+- https://github.com/typescript-eslint/typescript-eslint/issues/352
+- https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97
+- https://www.robinwieruch.de/prettier-eslint
+- https://dev.to/benweiser/how-to-set-up-eslint-typescript-prettier-with-create-react-app-3675
 
 ## Material UI
 
@@ -49,14 +50,15 @@
 - https://dev.to/chico1992/comment/10iim
 - https://www.valentinog.com/blog/hooks/
 
-
 ## CORS
 
 - https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app
 - https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express
 
 ## Networking
+
 - https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 
 ## Testing
+
 - https://www.smashingmagazine.com/2020/06/practical-guide-testing-react-applications-jest/
