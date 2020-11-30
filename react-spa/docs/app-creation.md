@@ -16,19 +16,19 @@ This is a React single page application (SPA) for web browsers. It uses:
 ## Steps
 
 1. Install nvm
-2. mkdir react-spa
-3. cd react-spa
-4. echo lts/fermium > .nvmrc
-5. nvm i
-6. cd ..
-7. npx create-react-app react-spa --typescript
-8. cd react-spa
+2. `mkdir react-spa`
+3. `cd react-spa`
+4. `echo lts/fermium > .nvmrc`
+5. `nvm i`
+6. `cd ..`
+7. `npx create-react-app react-spa --typescript`
+8. `cd react-spa`
 9.
 
 ```shell
 npm i --save-dev typescript eslint prettier eslint-config-airbnb-typescript-prettier \
   enzyme enzyme-adapter-react-16 react-test-renderer \
-  @babel/preset-react
+  @babel/preset-react @babel/plugin-proposal-decorators
 
 npm i --save \
   axios \
@@ -49,23 +49,11 @@ npm i --save \
   @types/react-router-dom
 ```
 
-10. Create tsconfig.eslint.json
-
-```js
-{
-  "extends": "./tsconfig.json",
-  "include": ["**/*.ts", "**/*.js", "**/*.jsx", "**/*.tsx", "**/*.js"]
-}
-```
-
-11. Create .eslintrc.js
+10. Create .eslintrc.js
 
 ```js
 module.exports = {
   extends: ['airbnb-typescript-prettier', 'airbnb/hooks', 'prettier/react', 'react-app/jest'],
-  parserOptions: {
-    project: './tsconfig.eslint.json',
-  },
   rules: {
     'max-len': [
       'error',
@@ -78,16 +66,16 @@ module.exports = {
 };
 ```
 
-12. Create .eslintignore
+11. Create .eslintignore
 
 ```js
 # node_modules is ignored by default
-.eslintrc.js
-docs/
 build/
+dist/
+docs/
 ```
 
-13. Create .prettierrc.js
+12. Create .prettierrc.js
 
 ```js
 module.exports = {
@@ -97,28 +85,52 @@ module.exports = {
 };
 ```
 
-14. Create .prettierignore
+13. Create .prettierignore
 
 ```js
 build/
+dist/
 node_modules/
 ```
 
-15. Modify package.json and add format and lint:fix scripts
+14. Modify package.json and add format and lint scripts
 
 ```js
   "scripts": {
-    "lint": "tsc --project tsconfig.eslint.json --noEmit && eslint --fix './src/**/*.{ts,tsx}'",
+    "lint": "tsc --noEmit && eslint --fix 'src/*.{js,jsx,ts,tsx}'"
     "format": "prettier . --write",
 ```
 
-16. Follow the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators)
+15. Per the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators) for MobX:
 
-17. Edit tsconfig.json
+15.1 `npm run eject`
+
+15.2 Edit package.json and add an entry for babel:
+
+```js
+  "babel": {
+    "plugins": [
+      "@babel/plugin-proposal-decorators"
+    ]
+  },
+```
+
+15.3 Edit tsconfig.json and add experimentalDecorators:
+
+```js
+  "compilerOptions": {
+    ...
+    "experimentalDecorators": true
+  },
+```
+
+16. Edit tsconfig.json
 
 - set compilerOptions.target to es2020
 
-18. To support Typescript 4.1, Edit package.json and set the babel section:
+17. To support Typescript 4.1
+
+17.1 Edit package.json and modify the babel section:
 
 ```js
   "babel": {
@@ -133,7 +145,7 @@ node_modules/
   }
 ```
 
-19. To support Typescript 4.1, react-app-env.d.ts and add:
+17.2 Edit react-app-env.d.ts and add:
 
 ```js
 declare module 'react/jsx-runtime' {
