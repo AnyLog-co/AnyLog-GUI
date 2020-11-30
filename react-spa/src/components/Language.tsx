@@ -2,7 +2,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-const Language = () => {
+const Language: React.FC = () => {
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng: string) => {
