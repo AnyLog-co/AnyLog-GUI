@@ -8,9 +8,13 @@
 
 In the project directory, you can run:
 
-### `npm prettier`
+### `npm format`
+
+Reformat all files using prettier
 
 ### `npm lint`
+
+Check code with typescript, prettier, and lint
 
 ### `npm start`
 
@@ -48,6 +52,10 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 7. Bracket Pair Colorizer 2
 8. Guides
 9. Todo Tree
+
+### Typescript Version
+
+- [Use the type typescript that is associated with this project (as defined in package.json)](https://gist.github.com/tonysneed/bb6d442103a057578a9498f106e45ac5)
 
 ### Typescript Syntax Highlighting
 

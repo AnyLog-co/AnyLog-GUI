@@ -10,11 +10,11 @@ const Language = () => {
   };
 
   return (
-    <div>
+    <>
       {t('App.select-language')}
       <button onClick={() => changeLanguage('en')}>en</button>
       <button onClick={() => changeLanguage('de')}>de</button>
-    </div>
+    </>
   );
 };
 
