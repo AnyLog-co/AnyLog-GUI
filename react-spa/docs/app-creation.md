@@ -15,7 +15,7 @@ This is a React single page application (SPA) for web browsers. It uses:
 
 ## Steps
 
-1. Install nvm
+1. [Install nvm](https://heynode.com/tutorial/install-nodejs-locally-nvm)
 2. `mkdir react-spa`
 3. `cd react-spa`
 4. `echo lts/fermium > .nvmrc`

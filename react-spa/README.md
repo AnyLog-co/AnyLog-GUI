@@ -4,6 +4,14 @@
 
 - [How this app was created](docs/app-creation.md)
 
+## Requirements
+
+- [Install nvm](https://heynode.com/tutorial/install-nodejs-locally-nvm)
+
+## Running (dev mode)
+
+`nvm i && npm start`
+
 ## npm scripts
 
 In the project directory, you can run:
