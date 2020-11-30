@@ -4,12 +4,14 @@
 
 This is a React single page application (SPA) for web browsers. It uses:
 
-- MaterialUI for components
-- React Router for view transitions
-- Axios for REST API access
+- React Hooks with React 17
+- Typescript 4.1
+- Material-UI Components
+- React Router
 - MobX for state management
-- i18next for language translations
-- Promise tracker for progress feedback
+- Axios for REST API access
+- i18next for translations
+- Promise tracker for 'loading' feedback (three dots, animated)
 
 ## Steps
 
