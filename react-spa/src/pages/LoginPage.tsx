@@ -1,20 +1,20 @@
 /* eslint-disable react/prop-types */
-import React, { useReducer, useEffect } from "react";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import { useTranslation, Trans } from "react-i18next";
+import React, { useReducer, useEffect } from 'react';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { useTranslation, Trans } from 'react-i18next';
 
-import TextField from "@material-ui/core/TextField";
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
-import CardActions from "@material-ui/core/CardActions";
-import CardHeader from "@material-ui/core/CardHeader";
-import Button from "@material-ui/core/Button";
+import TextField from '@material-ui/core/TextField';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardActions from '@material-ui/core/CardActions';
+import CardHeader from '@material-ui/core/CardHeader';
+import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
-      display: "flex",
-      flexWrap: "wrap",
+      display: 'flex',
+      flexWrap: 'wrap',
       width: 400,
       margin: `${theme.spacing(0)} auto`,
     },
@@ -23,14 +23,14 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     header: {
-      textAlign: "center",
-      background: "#212121",
-      color: "#fff",
+      textAlign: 'center',
+      background: '#212121',
+      color: '#fff',
     },
     card: {
       marginTop: theme.spacing(10),
     },
-  })
+  }),
 );
 
 // state type
@@ -44,20 +44,20 @@ type State = {
 };
 
 const initialState: State = {
-  username: "",
-  password: "",
+  username: '',
+  password: '',
   isButtonDisabled: true,
   helperText: "",
   isError: false,
 };
 
 type Action =
-  | { type: "setUsername"; payload: string }
-  | { type: "setPassword"; payload: string }
-  | { type: "setIsButtonDisabled"; payload: boolean }
-  | { type: "loginSuccess"; payload: string }
-  | { type: "loginFailed"; payload: string }
-  | { type: "setIsError"; payload: boolean };
+  | { type: 'setUsername'; payload: string }
+  | { type: 'setPassword'; payload: string }
+  | { type: 'setIsButtonDisabled'; payload: boolean }
+  | { type: 'loginSuccess'; payload: string }
+  | { type: 'loginFailed'; payload: string }
+  | { type: 'setIsError'; payload: boolean };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -102,7 +102,7 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-const LoginPage = () => {
+const LoginPage: React.FC = () => {
   const { t } = useTranslation();
 
   const classes = useStyles();

@@ -1,5 +1,5 @@
 {
-  "name": "anylog-spa",
+  "name": "react-spa",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -15,6 +15,7 @@
     "@types/react-router": "^5.1.8",
     "@types/react-router-dom": "^5.1.6",
     "axios": "^0.21.0",
+    "http-proxy-middleware": "^1.0.6",
     "i18next": "^19.8.3",
     "i18next-browser-languagedetector": "^6.0.1",
     "i18next-http-backend": "^1.0.21",
@@ -27,28 +28,33 @@
     "react-promise-tracker": "^2.1.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.0",
+    "react-scripts": "4.0.1",
     "typeface-roboto": "^1.1.13",
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.12.1",
+    "@babel/preset-react": "^7.12.7",
     "@typescript-eslint/eslint-plugin": "^4.8.0",
+    "@typescript-eslint/parser": "^4.8.2",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.5",
     "eslint": "^7.13.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-airbnb-typescript": "^12.0.0",
     "eslint-config-airbnb-typescript-prettier": "^4.1.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.21.5",
     "eslint-plugin-react-hooks": "^4.2.0",
     "prettier": "^2.2.0",
-    "prettier-airbnb-config": "^1.0.0",
+    "react-test-renderer": "^17.0.1",
     "typescript": "^4.1.2"
   },
   "scripts": {
-    "lint": "tsc --noEmit && npx eslint . --fix --ext .js,.jsx,.ts,.tsx",
-    "prettier": "prettier . --write",
+    "lint": "tsc --noEmit && eslint --fix 'src/*.{js,jsx,ts,tsx}'",
+    "format": "prettier . --write",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -67,11 +73,16 @@
     ]
   },
   "babel": {
+    "presets": [
+      [
+        "@babel/preset-react",
+        {
+          "runtime": "automatic"
+        }
+      ]
+    ],
     "plugins": [
       "@babel/plugin-proposal-decorators"
-    ],
-    "presets": [
-      "react-app"
     ]
   }
 }

@@ -1,8 +1,8 @@
 /* eslint-disable react/button-has-type */
-import React from "react";
-import { useTranslation } from "react-i18next";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
-const Language = () => {
+const Language: React.FC = () => {
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng: string) => {
@@ -10,11 +10,11 @@ const Language = () => {
   };
 
   return (
-    <div>
-      {t("App.select-language")}
-      <button onClick={() => changeLanguage("en")}>en</button>
-      <button onClick={() => changeLanguage("de")}>de</button>
-    </div>
+    <>
+      {t('App.select-language')}
+      <button onClick={() => changeLanguage('en')}>en</button>
+      <button onClick={() => changeLanguage('de')}>de</button>
+    </>
   );
 };
 
