@@ -17,7 +17,7 @@ const handler = (app) =>
   app.use(
     '/api',
     createProxyMiddleware({
-      target: '',
+      target: 'http://localhost', // It has to be nonblank
       router,
       changeOrigin: true,
     }),
