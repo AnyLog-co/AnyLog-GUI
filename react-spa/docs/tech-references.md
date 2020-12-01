@@ -21,6 +21,7 @@
 
 ## React Router
 
+- https://dev.to/ibrahimawadhamid/how-to-create-a-private-route-in-react-route-guard-example-for-authenticated-users-only-kin
 - https://medium.com/react-courses/how-to-integrate-routing-in-typescript-project-with-react-router-v5-2-0-a6b0ab160a1b
 - https://reactrouter.com/core/guides/quick-start
 - https://www.freecodecamp.org/news/a-complete-beginners-guide-to-react-router-include-router-hooks/
@@ -49,6 +50,7 @@
 
 - https://dev.to/chico1992/comment/10iim
 - https://www.valentinog.com/blog/hooks/
+- https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all
 
 ## CORS
 

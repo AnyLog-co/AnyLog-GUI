@@ -102,7 +102,7 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-const LoginPage: React.FC = () => {
+const Login: React.FC = () => {
   const { t } = useTranslation();
 
   const classes = useStyles();
@@ -202,4 +202,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default Login;
