@@ -1,36 +1,35 @@
-import React, { Suspense } from 'react';
+import React from 'react';
+import { Route, Redirect, Switch, BrowserRouter } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 
-import { Route, BrowserRouter as Router, Redirect, Switch } from 'react-router-dom';
-
+import './App.css';
 import AuthRoute from './components/AuthRoute';
 import Login from './views/Login';
 import Home from './views/Home';
 import NoMatch from './views/NoMatch';
-import Spinner from './components/Spinner';
 import TopBar from './components/TopBar';
-import './App.css';
+import Store from './lib/Store';
 
-const App: React.FC = () => (
-  <Router>
+interface Props {
+  store: Store;
+}
+
+const App: React.FC<Props> = observer(({ store }: Props) => (
+  <>
     <TopBar />
-    <Switch>
-      <Redirect from="/" to="/home" exact />
-      <AuthRoute exact path="/home" component={Home} />
-      <Route exact path="/login">
-        <Login />
-      </Route>
-      <Route>
-        <NoMatch />
-      </Route>
-    </Switch>
-  </Router>
-);
+    <BrowserRouter>
+      <Switch>
+        <Redirect from="/" to="/home" exact />
+        <AuthRoute exact path="/home" component={Home} store={store} />
+        <Route exact path="/login">
+          <Login store={store} />
+        </Route>
+        <Route>
+          <NoMatch />
+        </Route>
+      </Switch>
+    </BrowserRouter>
+  </>
+));
 
-// i18n translations might be loaded by the http backend
-const suspense: React.FC = () => (
-  <Suspense fallback={<Spinner />}>
-    <App />
-  </Suspense>
-);
-
-export default suspense;
+export default App;

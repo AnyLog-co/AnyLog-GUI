@@ -15,6 +15,31 @@
 - https://www.robinwieruch.de/prettier-eslint
 - https://dev.to/benweiser/how-to-set-up-eslint-typescript-prettier-with-create-react-app-3675
 
+## CORS
+
+- https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app
+- https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express
+
+## Networking
+
+- https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
+
+## State
+
+- https://www.robinwieruch.de/javascript-reducer
+- https://github.com/SirwanAfifi/mobxwithts
+- https://dev.to/sirwanafifi/mobx-with-react-and-typescript-58bf
+- https://www.carlrippon.com/typed-usestate-with-typescript/
+- https://auth0.com/blog/building-and-securing-mobx-apps-with-auth0/
+- https://dev.to/shevchenkonik/react-typescript-mobx-4mei
+
+## Functional Components and Hooks
+
+- https://www.carlrippon.com/Different-ways-to-strongly-type-function-component-props-with-typescript/
+- https://dev.to/chico1992/comment/10iim
+- https://www.valentinog.com/blog/hooks/
+- https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all
+
 ## Material UI
 
 - https://github.com/mui-org/material-ui/issues/6256
@@ -35,31 +60,9 @@
 - https://react.i18next.com/guides/quick-start
 - https://medium.com/@tariqul.islam.rony/internationalization-localization-with-react-js-65d6f6badd56
 
-## State
-
-- https://www.robinwieruch.de/javascript-reducer
-- https://github.com/SirwanAfifi/mobxwithts
-- https://dev.to/sirwanafifi/mobx-with-react-and-typescript-58bf
-- https://www.carlrippon.com/typed-usestate-with-typescript/
-
 ## Spinners
 
 - https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls
-
-## Functional Components and Hooks
-
-- https://dev.to/chico1992/comment/10iim
-- https://www.valentinog.com/blog/hooks/
-- https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all
-
-## CORS
-
-- https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app
-- https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express
-
-## Networking
-
-- https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 
 ## Testing
 

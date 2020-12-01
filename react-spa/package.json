@@ -33,7 +33,6 @@
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-decorators": "^7.12.1",
     "@babel/preset-react": "^7.12.7",
     "@typescript-eslint/eslint-plugin": "^4.8.0",
     "@typescript-eslint/parser": "^4.8.2",
@@ -53,6 +52,7 @@
     "typescript": "^4.1.2"
   },
   "scripts": {
+    "clean": "npm run format && npm run lint",
     "lint": "tsc --noEmit && eslint --fix 'src/*.{js,jsx,ts,tsx}'",
     "format": "prettier . --write",
     "start": "react-scripts start",
@@ -80,9 +80,6 @@
           "runtime": "automatic"
         }
       ]
-    ],
-    "plugins": [
-      "@babel/plugin-proposal-decorators"
     ]
   }
 }
