@@ -4,19 +4,14 @@ import { Redirect, Route } from 'react-router';
 import Store from '../lib/Store';
 
 interface Props {
-  access: 'guest' | 'private';
+  component: React.FC;
+  path: string;
+  exact: boolean;
 }
 
-// This will be changed to use state
-// eslint-disable-next-line react/prop-types
-const AuthRoute: React.FC<Props> = ({ access, children, ...props }) => {
+const AuthRoute: React.FC<Props> = ({ component, path, exact }) => {
   const store = useContext(Store);
-  const isAuthUser = store.authenticated;
-  if (access === 'guest' && isAuthUser) return <Redirect to="/home" />;
-  if (access === 'private' && !isAuthUser) return <Redirect to="/" />;
-
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  return <Route {...props}>{children}</Route>;
+  return store.authenticated ? <Route path={path} exact={exact} component={component} /> : <Redirect to="/login" />;
 };
 
 export default AuthRoute;
