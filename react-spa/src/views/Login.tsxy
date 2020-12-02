@@ -10,7 +10,7 @@ import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
 import ProxyCommunicator from '../lib/ProxyCommunicator';
-import { UserStoreConsumer, UserStore } from '../components/UserStore';
+import { UserStoreConsumer, UserStore } from '../components/UserContext';
 
 // @todo Convert layout to Grid
 const useStyles = makeStyles((theme: Theme) =>

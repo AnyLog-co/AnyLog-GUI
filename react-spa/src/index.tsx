@@ -11,7 +11,7 @@ import Spinner from './components/Spinner';
 ReactDOM.render(
   <React.StrictMode>
     {
-      // i18n translations might be loaded by the http backend
+      // i18n translations might be loaded by the http backend, so Suspense is used
     }
     <Suspense fallback={<Spinner />}>
       <App />

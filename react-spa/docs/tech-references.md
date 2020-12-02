@@ -26,9 +26,11 @@
 
 ## State
 
+- https://dmitripavlutin.com/react-usestate-hook-guide/
 - https://reactjs.org/docs/context.html
 - https://www.robinwieruch.de/javascript-reducer
 - https://www.carlrippon.com/typed-usestate-with-typescript/
+- https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/
 
 ## Functional Components and Hooks
 
@@ -43,6 +45,7 @@
 
 ## React Router
 
+- https://stackoverflow.com/questions/29244731/react-router-how-to-manually-invoke-link
 - https://dev.to/ibrahimawadhamid/how-to-create-a-private-route-in-react-route-guard-example-for-authenticated-users-only-kin
 - https://medium.com/react-courses/how-to-integrate-routing-in-typescript-project-with-react-router-v5-2-0-a6b0ab160a1b
 - https://reactrouter.com/core/guides/quick-start
