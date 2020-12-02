@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
+import 'typeface-roboto';
 
 import './index.css';
+import './i18n';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import 'typeface-roboto';
-import './i18n';
+import Spinner from './components/Spinner';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    {
+      // i18n translations might be loaded by the http backend, so Suspense is used
+    }
+    <Suspense fallback={<Spinner />}>
+      <App />
+    </Suspense>
   </React.StrictMode>,
   document.getElementById('root'),
 );

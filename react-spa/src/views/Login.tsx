@@ -2,6 +2,7 @@
 import React, { useReducer, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { useTranslation, Trans } from 'react-i18next';
+import { useHistory } from 'react-router-dom';
 
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
@@ -9,7 +10,10 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
+import ProxyCommunicator from '../lib/ProxyCommunicator';
+import { useUserContext } from '../components/UserContext';
 
+// @todo Convert layout to Grid
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
@@ -23,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     header: {
+      // Black on white
       textAlign: 'center',
       background: '#212121',
       color: '#fff',
@@ -104,6 +109,8 @@ const reducer = (state: State, action: Action): State => {
 
 const Login: React.FC = () => {
   const { t } = useTranslation();
+  const store = useUserContext();
+  const history = useHistory();
 
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -123,11 +130,14 @@ const Login: React.FC = () => {
   }, [state.username, state.password]);
 
   const handleLogin = () => {
-    if (state.username === 'abc@email.com' && state.password === 'password') {
+    if (state.username === 'a' && state.password === 'a') {
       dispatch({
         type: 'loginSuccess',
         payload: 'Login Successfully',
       });
+      // eslint-disable-next-line no-param-reassign
+      store.communicator = new ProxyCommunicator(state.username, '');
+      history.push('/');
     } else {
       dispatch({
         type: 'loginFailed',

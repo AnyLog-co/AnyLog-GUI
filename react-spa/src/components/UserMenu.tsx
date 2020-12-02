@@ -1,28 +1,31 @@
-import React, { MouseEvent } from 'react';
-
-import Button from '@material-ui/core/Button';
-import Avatar from '@material-ui/core/Avatar';
+import React from 'react';
+import { useHistory } from 'react-router-dom';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
-const UserMenu: React.FC = () => {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | undefined>();
+import { useUserContext } from './UserContext';
 
-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+interface Props {
+  anchorEl: Element | undefined;
+  onClose: () => void;
+}
+
+const UserMenu: React.FC<Props> = ({ anchorEl, onClose }) => {
+  const userStore = useUserContext();
+  const history = useHistory();
+
+  const logout = () => {
+    userStore.logout();
+    // eslint-disable-next-line no-console
+    console.log('logout');
+    history.push('/');
+    onClose();
   };
 
-  const handleClose = () => setAnchorEl(undefined);
-
   return (
-    <>
-      <Button onClick={handleClick}>
-        <Avatar />
-      </Button>
-      <Menu anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem>Logout</MenuItem>
-      </Menu>
-    </>
+    <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={onClose}>
+      <MenuItem onClick={logout}>Logout</MenuItem>
+    </Menu>
   );
 };
 

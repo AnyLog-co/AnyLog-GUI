@@ -3,7 +3,7 @@
     "select-language": "Select a language"
   },
   "Login": {
-    "title": "Welcome to AnyLog!",
+    "title": "Welcome to AnyLog! Enter a/a for testing",
     "button-login": "Log In"
   }
 }

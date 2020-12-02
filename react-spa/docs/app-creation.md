@@ -8,7 +8,6 @@ This is a React single page application (SPA) for web browsers. It uses:
 - Typescript 4.1
 - Material-UI Components
 - React Router
-- MobX for state management
 - Axios for REST API access
 - i18next for translations
 - Promise tracker for 'loading' feedback (three dots, animated)
@@ -22,13 +21,14 @@ This is a React single page application (SPA) for web browsers. It uses:
 5. `nvm i`
 6. `cd ..`
 7. `npx create-react-app react-spa --typescript`
+
 8. `cd react-spa`
+
 9.
 
 ```shell
 npm i --save-dev typescript eslint prettier eslint-config-airbnb-typescript-prettier \
-  enzyme enzyme-adapter-react-16 react-test-renderer \
-  @babel/preset-react @babel/plugin-proposal-decorators
+  enzyme enzyme-adapter-react-16 react-test-renderer
 
 npm i --save \
   axios \
@@ -38,8 +38,6 @@ npm i --save \
   i18next-browser-languagedetector \
   i18next-http-backend \
   react-i18next \
-  mobx \
-  mobx-react-lite \
   react-loader-spinner \
   @types/react-loader-spinner \
   react-promise-tracker \
@@ -101,36 +99,13 @@ node_modules/
     "format": "prettier . --write",
 ```
 
-15. Per the instructions to [add decorator support](https://www.robinwieruch.de/create-react-app-mobx-decorators) for MobX:
-
-15.1 `npm run eject`
-
-15.2 Edit package.json and add an entry for babel:
-
-```js
-  "babel": {
-    "plugins": [
-      "@babel/plugin-proposal-decorators"
-    ]
-  },
-```
-
-15.3 Edit tsconfig.json and add experimentalDecorators:
-
-```js
-  "compilerOptions": {
-    ...
-    "experimentalDecorators": true
-  },
-```
-
-16. Edit tsconfig.json
+15. Edit tsconfig.json
 
 - set compilerOptions.target to es2020
 
-17. To support Typescript 4.1
+16. To support Typescript 4.1
 
-17.1 Edit package.json and modify the babel section:
+16.1 Edit package.json and modify the babel section:
 
 ```js
   "babel": {
@@ -145,7 +120,7 @@ node_modules/
   }
 ```
 
-17.2 Edit react-app-env.d.ts and add:
+16.2 Edit react-app-env.d.ts and add:
 
 ```js
 declare module 'react/jsx-runtime' {

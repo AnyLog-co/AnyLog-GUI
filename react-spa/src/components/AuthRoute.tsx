@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Redirect, Route } from 'react-router';
 
-import Store from '../lib/Store';
+import { useUserContext } from './UserContext';
 
 interface Props {
   component: React.FC;
@@ -10,7 +10,7 @@ interface Props {
 }
 
 const AuthRoute: React.FC<Props> = ({ component, path, exact }) => {
-  const store = useContext(Store);
+  const store = useUserContext();
   return store.authenticated ? <Route path={path} exact={exact} component={component} /> : <Redirect to="/login" />;
 };
 
