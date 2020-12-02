@@ -1,8 +1,7 @@
 import React from 'react';
 import { Redirect, Route } from 'react-router';
-import { observer } from 'mobx-react-lite';
 
-import Store from '../lib/Store';
+import { UserStoreConsumer, UserStore } from './UserStore';
 
 interface Props {
   store: Store;
@@ -11,8 +10,11 @@ interface Props {
   exact: boolean;
 }
 
-const AuthRoute: React.FC<Props> = observer(({ store, component, path, exact }: Props) => {
-  return store.authenticated ? <Route path={path} exact={exact} component={component} /> : <Redirect to="/login" />;
-});
+// @todo store probably doesn't need to be observed
+const AuthRoute: React.FC<Props> = ({ component, path, exact }: Props) => {
+  return 
+  
+  store.authenticated ? <Route path={path} exact={exact} component={component} /> : <Redirect to="/login" />;
+};
 
 export default AuthRoute;

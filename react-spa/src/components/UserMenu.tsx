@@ -5,6 +5,8 @@ import Avatar from '@material-ui/core/Avatar';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
+import { UserStoreConsumer, UserStore } from './UserStore';
+
 const UserMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | undefined>();
 
@@ -15,14 +17,21 @@ const UserMenu: React.FC = () => {
   const handleClose = () => setAnchorEl(undefined);
 
   return (
-    <>
-      <Button onClick={handleClick}>
-        <Avatar />
-      </Button>
-      <Menu anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem>Logout</MenuItem>
-      </Menu>
-    </>
+    <UserStoreConsumer>
+      {(userStore: UserStore) => {
+        const logout = () => {
+          userStore.logout();
+        };
+        return (
+          <Button onClick={handleClick}>
+            <Avatar />
+            <Menu anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
+              <MenuItem onClick={logout}>Logout</MenuItem>
+            </Menu>
+          </Button>
+        );
+      }}
+    </UserStoreConsumer>
   );
 };
 

@@ -2,7 +2,6 @@
 import React, { useReducer, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { useTranslation, Trans } from 'react-i18next';
-import { observer } from 'mobx-react-lite';
 
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
@@ -10,12 +9,8 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
-import Store from '../lib/Store';
 import ProxyCommunicator from '../lib/ProxyCommunicator';
-
-interface Props {
-  store: Store;
-}
+import { UserStoreConsumer, UserStore } from '../components/UserStore';
 
 // @todo Convert layout to Grid
 const useStyles = makeStyles((theme: Theme) =>
@@ -111,7 +106,7 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-const Login: React.FC<Props> = observer(({ store }: Props) => {
+const Login: React.FC(({ store }: Props) => {
   const { t } = useTranslation();
 
   const classes = useStyles();

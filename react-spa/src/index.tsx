@@ -6,7 +6,6 @@ import './index.css';
 import './i18n';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Store from './lib/Store';
 import Spinner from './components/Spinner';
 
 ReactDOM.render(
@@ -15,7 +14,7 @@ ReactDOM.render(
       // i18n translations might be loaded by the http backend
     }
     <Suspense fallback={<Spinner />}>
-      <App store={new Store()} />
+      <App />
     </Suspense>
   </React.StrictMode>,
   document.getElementById('root'),

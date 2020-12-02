@@ -26,12 +26,9 @@
 
 ## State
 
+- https://reactjs.org/docs/context.html
 - https://www.robinwieruch.de/javascript-reducer
-- https://github.com/SirwanAfifi/mobxwithts
-- https://dev.to/sirwanafifi/mobx-with-react-and-typescript-58bf
 - https://www.carlrippon.com/typed-usestate-with-typescript/
-- https://auth0.com/blog/building-and-securing-mobx-apps-with-auth0/
-- https://dev.to/shevchenkonik/react-typescript-mobx-4mei
 
 ## Functional Components and Hooks
 

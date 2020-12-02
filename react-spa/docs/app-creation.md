@@ -8,7 +8,6 @@ This is a React single page application (SPA) for web browsers. It uses:
 - Typescript 4.1
 - Material-UI Components
 - React Router
-- MobX for state management
 - Axios for REST API access
 - i18next for translations
 - Promise tracker for 'loading' feedback (three dots, animated)
@@ -39,8 +38,6 @@ npm i --save \
   i18next-browser-languagedetector \
   i18next-http-backend \
   react-i18next \
-  mobx \
-  mobx-react \
   react-loader-spinner \
   @types/react-loader-spinner \
   react-promise-tracker \

@@ -1,35 +1,31 @@
 import React from 'react';
-import { Route, Redirect, Switch, BrowserRouter } from 'react-router-dom';
+import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 
 import './App.css';
-import AuthRoute from './components/AuthRoute';
 import Login from './views/Login';
 import Home from './views/Home';
-import NoMatch from './views/NoMatch';
+import NotFound from './views/NotFound';
+
+import AuthRoute from './components/AuthRoute';
 import TopBar from './components/TopBar';
-import Store from './lib/Store';
+import { UserStoreProvider } from './components/UserStore';
 
-interface Props {
-  store: Store;
-}
-
-const App: React.FC<Props> = observer(({ store }: Props) => (
-  <>
+const App: React.FC = observer(() => (
+  <UserStoreProvider>
     <TopBar />
     <BrowserRouter>
       <Switch>
-        <Redirect from="/" to="/home" exact />
-        <AuthRoute exact path="/home" component={Home} store={store} />
+        <AuthRoute exact path="/" component={Home} />
         <Route exact path="/login">
-          <Login store={store} />
+          <Login />
         </Route>
         <Route>
-          <NoMatch />
+          <NotFound />
         </Route>
       </Switch>
     </BrowserRouter>
-  </>
+  </UserStoreProvider>
 ));
 
 export default App;
