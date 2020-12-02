@@ -2,11 +2,11 @@ import React from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 
 import './App.css';
-// import Login from './views/Login';
+import Login from './views/Login';
 import Home from './views/Home';
 import NotFound from './views/NotFound';
 import { UserContextProvider } from './components/UserContext';
-// import AuthRoute from './components/AuthRoute';
+import AuthRoute from './components/AuthRoute';
 import TopBar from './views/TopBar';
 
 const App: React.FC = () => (
@@ -14,8 +14,9 @@ const App: React.FC = () => (
     <BrowserRouter>
       <TopBar />
       <Switch>
-        <Route exact path="/a">
-          <Home />
+        <AuthRoute exact path="/" component={Home} />
+        <Route exact path="/login">
+          <Login />
         </Route>
         <Route exact path="/">
           <NotFound />
