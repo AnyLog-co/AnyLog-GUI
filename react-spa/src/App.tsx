@@ -18,7 +18,7 @@ const App: React.FC = () => (
         <Route exact path="/login">
           <Login />
         </Route>
-        <Route exact path="/">
+        <Route>
           <NotFound />
         </Route>
       </Switch>
