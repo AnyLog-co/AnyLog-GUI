@@ -26,7 +26,6 @@ Before starting vscode, configure environment variables for:
 ```bash
 #!/bin/sh
 
-nvm i
 git config --global user.name "your-github-username"
 git config --global user.email "your-github-email-address"
 export GIT_SSH_COMMAND="ssh -i ~/.ssh/your-github-private-ssh-key"
@@ -36,6 +35,8 @@ export GIT_SSH_COMMAND="ssh -i ~/.ssh/your-github-private-ssh-key"
 
 Add this to the above script
 ```bash
+. $(brew --prefix nvm)/nvm.sh
+nvm i
 code .
 ```
 

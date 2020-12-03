@@ -7,7 +7,13 @@
 
 ## Requirements
 
-- [Install nvm](https://heynode.com/tutorial/install-nodejs-locally-nvm)
+- OSX
+
+  - [Install nvm via homebrew](https://jamesauble.medium.com/install-nvm-on-mac-with-brew-adb921fb92cc)
+
+- Other
+
+  - [Install nvm](https://heynode.com/tutorial/install-nodejs-locally-nvm)
 
 ## Running (dev mode)
 
