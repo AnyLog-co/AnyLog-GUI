@@ -7,6 +7,10 @@
 
 - https://www.typescriptlang.org/docs/
 
+## ES2020
+
+- [modules](https://javascript.info/import-export)
+
 ## ESLint and Prettier
 
 - https://www.npmjs.com/package/eslint-config-airbnb-typescript

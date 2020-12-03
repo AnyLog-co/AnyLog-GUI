@@ -2,14 +2,17 @@
 
 ## Introduction
 
-This is a React single page application (SPA) for web browsers. It uses:
+This is a React 17 single page application (SPA) for web browsers. It features:
 
-- React Hooks with React 17
-- Typescript 4.1
-- Material-UI Components
+- Typescript 4.1 (in strict mode)
+- Prettier and ESLint
+- React Hooks
+- Global state managed via React Context
+- Material-UI
 - React Router
-- Axios for REST API access
 - i18next for translations
+- Axios
+- Proxy for CORS during development
 - Promise tracker for 'loading' feedback (three dots, animated)
 
 ## Steps
