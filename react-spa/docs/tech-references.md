@@ -26,6 +26,8 @@
 
 ## State
 
+- https://dev.to/stephencweiss/usereducer-with-typescript-2kf
+- https://blog.logrocket.com/use-hooks-and-context-not-react-and-redux/
 - https://reactjs.org/docs/context.html
 - https://dmitripavlutin.com/react-usestate-hook-guide/
 - https://reactjs.org/docs/context.html
@@ -35,10 +37,11 @@
 
 ## Functional Components and Hooks
 
+- https://www.sumologic.com/blog/react-hook-typescript/
 - https://www.carlrippon.com/Different-ways-to-strongly-type-function-component-props-with-typescript/
+- https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all
 - https://dev.to/chico1992/comment/10iim
 - https://www.valentinog.com/blog/hooks/
-- https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all
 
 ## Material UI
 

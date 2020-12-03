@@ -1,24 +1,58 @@
-import React, { ReactNode, createContext, useContext } from 'react';
-import UserStore from '../lib/UserStore';
+import React, { FC, Dispatch, ReactNode, createContext, useReducer } from 'react';
+import { useHistory } from 'react-router-dom';
 
-const userStore = new UserStore();
-const UserContext = createContext(userStore);
+import UserState from '../lib/UserState';
+import Communicator from '../lib/Communicator';
+
+export type Action = { type: 'logout' } | { type: 'authenticated'; payload: Communicator };
+
+export interface UserStore {
+  state: UserState;
+  dispatch: Dispatch<Action>;
+}
+
+const defaultState = new UserState();
+
+const defaultStore: UserStore = {
+  state: defaultState,
+  dispatch: () => defaultState,
+};
+
+const context = createContext(defaultStore);
 
 interface Props {
-  value?: UserStore;
   children?: ReactNode;
 }
 
-export const UserContextProvider: React.FC<Props> = ({ value = userStore, children }) => (
-  <UserContext.Provider value={value}>{children}</UserContext.Provider>
-);
+export const Provider: FC<Props> = ({ children }) => {
+  const history = useHistory();
 
-export const UserContextConsumer = UserContext.Consumer;
+  const reducer = (state: UserState, action: Action): UserState => {
+    switch (action.type) {
+      case 'logout': {
+        state.logout();
+        if (history) setTimeout(() => history.push('/'), 500);
+        return new UserState();
+      }
+      case 'authenticated': {
+        const newState = new UserState();
+        newState.communicator = action.payload;
+        if (history) setTimeout(() => history.push('/'), 500);
+        return newState;
+      }
+      default:
+        throw new Error(`Invalid type: ${action}`);
+    }
+  };
+
+  const [state, dispatch] = useReducer(reducer, defaultState);
+  return <context.Provider value={{ state, dispatch }}>{children}</context.Provider>;
+};
 
 /**
  * @return The active UserStore based on the calling Element location
  */
 // eslint-disable-next-line react-hooks/rules-of-hooks
-export const useUserContext = (): UserStore => useContext(UserContext);
+const use = (): UserStore => React.useContext<UserStore>(context);
 
-export default { UserContextProvider, UserContextConsumer, useUserContext };
+export default { Provider, use };

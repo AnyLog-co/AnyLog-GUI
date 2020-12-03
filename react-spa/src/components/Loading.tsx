@@ -14,7 +14,7 @@ const Loading: React.FC<Props> = ({ area = '', delay = 1000 }) => {
   if (!promiseInProgress) return null;
 
   return (
-    <Grid container justify="center">
+    <Grid container justifyContent="center">
       <Grid item>
         <Loader type="ThreeDots" color="#2BAD60" height={100} width={100} />
       </Grid>
