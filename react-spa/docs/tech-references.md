@@ -41,6 +41,7 @@
 
 ## Functional Components and Hooks
 
+- https://www.youtube.com/watch?v=cF2lQ_gZeA8
 - https://www.sumologic.com/blog/react-hook-typescript/
 - https://www.carlrippon.com/Different-ways-to-strongly-type-function-component-props-with-typescript/
 - https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all

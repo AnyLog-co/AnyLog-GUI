@@ -35,8 +35,6 @@ npm i --save-dev typescript eslint prettier eslint-config-airbnb-typescript-pret
 
 npm i --save \
   axios \
-  @material-ui/core \
-  typeface-roboto \
   i18next \
   i18next-browser-languagedetector \
   i18next-http-backend \
@@ -47,7 +45,12 @@ npm i --save \
   react-router \
   @types/react-router \
   react-router-dom \
-  @types/react-router-dom
+  @types/react-router-dom \
+  # Material-UI 5: \
+  @emotion/react \
+  @emotion/styled \
+  @material-ui/core@next \
+  typeface-roboto
 ```
 
 10. Create .eslintrc.js
