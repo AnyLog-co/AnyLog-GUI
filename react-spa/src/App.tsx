@@ -5,14 +5,14 @@ import './App.css';
 import Login from './views/Login';
 import Home from './views/Home';
 import NotFound from './views/NotFound';
-import { UserContextProvider } from './components/UserContext';
+import UserContext from './components/UserContext';
 import AuthRoute from './components/AuthRoute';
-import TopBar from './views/TopBar';
+import Header from './views/Header';
 
 const App: React.FC = () => (
-  <UserContextProvider>
-    <BrowserRouter>
-      <TopBar />
+  <BrowserRouter>
+    <UserContext.Provider>
+      <Header />
       <Switch>
         <AuthRoute exact path="/" component={Home} />
         <Route exact path="/login">
@@ -22,8 +22,8 @@ const App: React.FC = () => (
           <NotFound />
         </Route>
       </Switch>
-    </BrowserRouter>
-  </UserContextProvider>
+    </UserContext.Provider>
+  </BrowserRouter>
 );
 
 export default App;
