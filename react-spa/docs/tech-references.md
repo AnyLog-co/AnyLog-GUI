@@ -3,13 +3,15 @@
 - https://www.pluralsight.com/guides/how-to-router-redirect-after-login
 - https://surajsharma.net/blog/react-login-form-typescript
 
+## JavaScript
+
+- [Import and export](https://javascript.info/import-export)
+- [Why are @testing-library and jest not devDependencies?]https://spectrum.chat/create-react-app/general/why-cra-has-testing-library-as-dependency-why-not-its-in-devdependency~e3c795e6-ae39-459a-95f9-2bb15fde7c0f
+
 ## Typescript
 
 - https://www.typescriptlang.org/docs/
-
-## ES2020
-
-- [modules](https://javascript.info/import-export)
+- https://stackoverflow.com/questions/45176661/how-do-i-decide-whether-types-goes-into-dependencies-or-devdependencies
 
 ## ESLint and Prettier
 
@@ -31,27 +33,31 @@
 
 ## State
 
-- https://dev.to/stephencweiss/usereducer-with-typescript-2kf
-- https://blog.logrocket.com/use-hooks-and-context-not-react-and-redux/
-- https://reactjs.org/docs/context.html
-- https://dmitripavlutin.com/react-usestate-hook-guide/
 - https://reactjs.org/docs/context.html
 - https://www.robinwieruch.de/javascript-reducer
+- https://dev.to/stephencweiss/usereducer-with-typescript-2kf
+- https://blog.logrocket.com/use-hooks-and-context-not-react-and-redux/
+- https://dmitripavlutin.com/react-usestate-hook-guide/
 - https://www.carlrippon.com/typed-usestate-with-typescript/
 - https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/
 
 ## Functional Components and Hooks
 
 - https://www.youtube.com/watch?v=cF2lQ_gZeA8
+- https://www.valentinog.com/blog/hooks/
 - https://www.sumologic.com/blog/react-hook-typescript/
 - https://www.carlrippon.com/Different-ways-to-strongly-type-function-component-props-with-typescript/
 - https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all
-- https://dev.to/chico1992/comment/10iim
-- https://www.valentinog.com/blog/hooks/
+- [Default prop values with typescript](https://dev.to/chico1992/comment/10iim)
 
 ## Material UI
 
-- https://github.com/mui-org/material-ui/issues/6256
+- [import roboto typeface?](https://github.com/mui-org/material-ui/issues/6256)
+- https://material-ui.com/components/data-grid/ 
+
+## Other Component Libraries
+
+- [React Table](https://react-table.tanstack.com/)
 
 ## React Router
 

@@ -12,6 +12,15 @@ interface Props {
 }
 ```
 
+## async
+
+If a function returns a Promise, it should be tagged as async. Technically, async isn’t needed if the function doesn’t
+throw exceptions or use await. This
+[article](https://makandracards.com/makandra/43653-javascript-don-t-throw-exceptions-from-async-functions) does a pretty
+good job of explaining why: `then()` and `catch()` don’t handle synchronous exceptions. The author however fails to
+mention that all you need to do is mark the function ‘async,’ which causes exceptions to automatically be converted to
+Promises, avoiding the need to call `Promise.reject()`.
+
 ## Visual Studio Code
 
 ### Starting Visual Studio Code
@@ -46,7 +55,7 @@ code .
 1. ESLint
 2. GitLens
 3. Git Graph
-4. GitHub PUll Requests and Issues
+4. GitHub Pull Requests and Issues
 5. vscode-journal
 6. vscode-journal-view
 7. Bracket Pair Colorizer 2

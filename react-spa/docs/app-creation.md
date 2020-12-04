@@ -11,9 +11,9 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 - Material-UI
 - React Router
 - i18next for translations
-- Axios
+- React Query using Axios
+- Promise tracker for 'loading' feedback (three dots, animated) (might be replaced by Suspense)
 - Proxy for CORS during development
-- Promise tracker for 'loading' feedback (three dots, animated)
 
 ## Steps
 
