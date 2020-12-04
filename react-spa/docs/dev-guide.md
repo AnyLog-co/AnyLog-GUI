@@ -34,6 +34,7 @@ export GIT_SSH_COMMAND="ssh -i ~/.ssh/your-github-private-ssh-key"
 ##### OSX
 
 Add this to the above script
+
 ```bash
 . $(brew --prefix nvm)/nvm.sh
 nvm i

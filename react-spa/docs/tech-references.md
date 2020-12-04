@@ -24,9 +24,10 @@
 - https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app
 - https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express
 
-## Networking
+## REST
 
 - https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
+- https://blog.bitsrc.io/how-to-start-using-react-query-4869e3d5680d
 
 ## State
 

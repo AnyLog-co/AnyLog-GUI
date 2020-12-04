@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
+import { ReactQueryDevtools } from 'react-query-devtools';
 import 'typeface-roboto';
 
 import './index.css';
@@ -16,6 +17,7 @@ ReactDOM.render(
     <Suspense fallback={<Spinner />}>
       <App />
     </Suspense>
+    <ReactQueryDevtools initialIsOpen />
   </React.StrictMode>,
   document.getElementById('root'),
 );
