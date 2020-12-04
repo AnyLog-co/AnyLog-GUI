@@ -30,6 +30,7 @@
 
 - https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 - https://blog.bitsrc.io/how-to-start-using-react-query-4869e3d5680d
+- [Axios use proxy](https://masteringjs.io/tutorials/axios/proxy#:~:text=Axios%20supports%20a%20proxy%20option,request%20is%20actually%20meant%20for.)
 
 ## State
 
