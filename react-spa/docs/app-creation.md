@@ -35,22 +35,14 @@ npm i --save-dev typescript eslint prettier eslint-config-airbnb-typescript-pret
 
 npm i --save \
   axios \
-  i18next \
-  i18next-browser-languagedetector \
-  i18next-http-backend \
-  react-i18next \
-  react-loader-spinner \
-  @types/react-loader-spinner \
+  i18next i18next-browser-languagedetector i18next-http-backend react-i18next \
+  react-loader-spinner @types/react-loader-spinner \
   react-promise-tracker \
-  react-router \
-  @types/react-router \
-  react-router-dom \
-  @types/react-router-dom \
+  react-router @types/react-router \
+  react-router-dom @types/react-router-dom \
   # Material-UI 5: \
-  @emotion/react \
-  @emotion/styled \
-  @material-ui/core@next \
-  typeface-roboto
+  @emotion/react @emotion/styled @material-ui/core@next typeface-roboto \
+  react-query react-query-devtools
 ```
 
 10. Create .eslintrc.js
