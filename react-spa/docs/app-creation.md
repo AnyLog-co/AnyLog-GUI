@@ -4,7 +4,7 @@
 
 This is a React 17 single page application (SPA) for web browsers. It features:
 
-- Typescript 4.1 (in strict mode)
+- Typescript
 - Prettier and ESLint
 - React Hooks
 - Global state managed via React Context
@@ -24,14 +24,12 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 5. `nvm i`
 6. `cd ..`
 7. `npx create-react-app react-spa --typescript`
-
 8. `cd react-spa`
-
-9.
+9. You will be overriding the eslint configuration, so run: `npm run eject`
+10.
 
 ```shell
 npm i --save-dev eslint prettier eslint-config-airbnb-typescript-prettier \
-  typescript @babel/preset-react \
   enzyme enzyme-adapter-react-16 react-test-renderer
 
 npm i --save \
@@ -46,7 +44,7 @@ npm i --save \
   react-query react-query-devtools
 ```
 
-10. Create .eslintrc.js
+11. Create .eslintrc.js
 
 ```js
 // For jest and gatsby config, see https://github.com/d4rekanguok/gatsby-typescript/blob/master/.eslintrc.js
@@ -80,7 +78,7 @@ module.exports = {
 };
 ```
 
-11. Create .eslintignore
+12. Create .eslintignore
 
 ```js
 # node_modules is ignored by default
@@ -89,7 +87,7 @@ dist/
 docs/
 ```
 
-12. Create .prettierrc.js
+13. Create .prettierrc.js
 
 ```js
 module.exports = {
@@ -99,7 +97,7 @@ module.exports = {
 };
 ```
 
-13. Create .prettierignore
+14. Create .prettierignore
 
 ```js
 build/
@@ -107,7 +105,7 @@ dist/
 node_modules/
 ```
 
-14. Modify package.json and add format and lint scripts
+15. Modify package.json and add format and lint scripts
 
 ```js
   "scripts": {
@@ -115,31 +113,6 @@ node_modules/
     "format": "prettier . --write",
 ```
 
-15. Edit tsconfig.json
+16. Edit tsconfig.json
 
 - set compilerOptions.target to es2020
-
-16. To support Typescript 4.1
-
-16.1 Edit package.json and modify the babel section:
-
-```js
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-react",
-        {
-          "runtime": "automatic"
-        }
-      ]
-    ]
-  }
-```
-
-16.2 Edit react-app-env.d.ts and add:
-
-```js
-declare module 'react/jsx-runtime' {
-  export default any;
-}
-```
