@@ -30,7 +30,8 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 9.
 
 ```shell
-npm i --save-dev typescript eslint prettier eslint-config-airbnb-typescript-prettier \
+npm i --save-dev eslint prettier eslint-config-airbnb-typescript-prettier \
+  typescript @babel/preset-react \
   enzyme enzyme-adapter-react-16 react-test-renderer
 
 npm i --save \

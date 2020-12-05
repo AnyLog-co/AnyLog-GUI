@@ -1,3 +1,4 @@
+// Not needed
 // See https://create-react-app.dev/docs/proxying-api-requests-in-development/
 
 import { createProxyMiddleware } from 'http-proxy-middleware';

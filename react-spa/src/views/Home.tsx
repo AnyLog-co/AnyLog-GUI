@@ -1,6 +1,6 @@
 import React from 'react';
 
-import QueryExample from './QueryExample';
+import QueryExample from '../components/QueryExample';
 
 const Home: React.FC = () => (
   <>
