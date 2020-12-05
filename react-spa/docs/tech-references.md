@@ -20,6 +20,7 @@
 - https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97
 - https://www.robinwieruch.de/prettier-eslint
 - https://dev.to/benweiser/how-to-set-up-eslint-typescript-prettier-with-create-react-app-3675
+- https://stackoverflow.com/questions/57107800/eslint-disable-extends-in-override
 
 ## CORS
 
@@ -54,7 +55,7 @@
 ## Material UI
 
 - [import roboto typeface?](https://github.com/mui-org/material-ui/issues/6256)
-- https://material-ui.com/components/data-grid/ 
+- https://material-ui.com/components/data-grid/
 
 ## Other Component Libraries
 

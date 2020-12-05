@@ -1,15 +1,14 @@
 // See https://create-react-app.dev/docs/proxying-api-requests-in-development/
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { createProxyMiddleware } = require('http-proxy-middleware');
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 /**
  * @param {Object} req See https://expressjs.com/en/5x/api.html#req
  */
-const router = (req) => {
-  return req.protocol + req.host;
-};
-
+const router = () =>
+  // const x = `${req.protocol}://${req.host}:5000${req.url}`;
+  // console.log(x);
+  'https://api.github.com/repos/tannerlinsley/react-query';
 /**
  * @param {Object} app See https://expressjs.com/en/5x/api.html#req
  */
@@ -17,10 +16,11 @@ const handler = (app) =>
   app.use(
     '/api',
     createProxyMiddleware({
+      // I don't know why this is used but it seems to override what router returns
       target: 'http://localhost', // It has to be nonblank
       router,
-      changeOrigin: true,
+      changeOrigin: true, // What does this do?
     }),
   );
 
-module.exports = handler;
+export default handler;

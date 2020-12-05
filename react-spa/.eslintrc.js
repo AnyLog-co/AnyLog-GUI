@@ -1,5 +1,22 @@
+// For jest and gatsby config, see https://github.com/d4rekanguok/gatsby-typescript/blob/master/.eslintrc.js
 module.exports = {
-  extends: ['airbnb-typescript-prettier', 'airbnb/hooks', 'prettier/react', 'react-app/jest'],
+  overrides: [
+    {
+      // Plain JavaScript
+      files: ['*.js'],
+      parserOptions: {
+        sourceType: 'module',
+      },
+      extends: ['airbnb', 'prettier'],
+      plugins: ['prettier'],
+    },
+    {
+      // Typescript
+      // See https://github.com/toshi-toma/eslint-config-airbnb-typescript-prettier/blob/master/index.js
+      files: ['*.{jsx,ts,tsx}'],
+      extends: ['airbnb-typescript-prettier'],
+    },
+  ],
   rules: {
     'max-len': [
       'error',

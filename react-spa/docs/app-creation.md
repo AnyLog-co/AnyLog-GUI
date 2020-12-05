@@ -10,10 +10,10 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 - Global state managed via React Context
 - Material-UI
 - React Router
+- Testing with Enzyme and Jest
 - i18next for translations
 - React Query using Axios
 - Promise tracker for 'loading' feedback (three dots, animated) (might be replaced by Suspense)
-- Proxy for CORS during development
 
 ## Steps
 
@@ -40,7 +40,7 @@ npm i --save \
   react-promise-tracker \
   react-router @types/react-router \
   react-router-dom @types/react-router-dom \
-  # Material-UI 5: \
+  # Material-UI 5
   @emotion/react @emotion/styled @material-ui/core@next typeface-roboto \
   react-query react-query-devtools
 ```
@@ -48,8 +48,25 @@ npm i --save \
 10. Create .eslintrc.js
 
 ```js
+// For jest and gatsby config, see https://github.com/d4rekanguok/gatsby-typescript/blob/master/.eslintrc.js
 module.exports = {
-  extends: ['airbnb-typescript-prettier', 'airbnb/hooks', 'prettier/react', 'react-app/jest'],
+  overrides: [
+    {
+      // Plain JavaScript
+      files: ['*.js'],
+      parserOptions: {
+        sourceType: 'module',
+      },
+      extends: ['airbnb', 'prettier'],
+      plugins: ['prettier'],
+    },
+    {
+      // Typescript
+      // See https://github.com/toshi-toma/eslint-config-airbnb-typescript-prettier/blob/master/index.js
+      files: ['*.{jsx,ts,tsx}'],
+      extends: ['airbnb-typescript-prettier'],
+    },
+  ],
   rules: {
     'max-len': [
       'error',
@@ -93,7 +110,7 @@ node_modules/
 
 ```js
   "scripts": {
-    "lint": "tsc --noEmit && eslint --fix 'src/*.{js,jsx,ts,tsx}'"
+    "lint": "tsc --noEmit && eslint --fix '*.{js,jsx,ts,tsx}'"
     "format": "prettier . --write",
 ```
 

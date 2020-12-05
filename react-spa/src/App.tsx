@@ -10,8 +10,8 @@ import AuthRoute from './components/AuthRoute';
 import Header from './views/Header';
 
 const App: React.FC = () => (
-  <BrowserRouter>
-    <UserContext.Provider>
+  <UserContext.Provider>
+    <BrowserRouter>
       <Header />
       <Switch>
         <AuthRoute exact path="/" component={Home} />
@@ -22,8 +22,8 @@ const App: React.FC = () => (
           <NotFound />
         </Route>
       </Switch>
-    </UserContext.Provider>
-  </BrowserRouter>
+    </BrowserRouter>
+  </UserContext.Provider>
 );
 
 export default App;

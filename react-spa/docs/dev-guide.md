@@ -21,6 +21,10 @@ good job of explaining why: `then()` and `catch()` don’t handle synchronous ex
 mention that all you need to do is mark the function ‘async,’ which causes exceptions to automatically be converted to
 Promises, avoiding the need to call `Promise.reject()`.
 
+## Is React running in dev mode?
+
+`'_self' in React.createElement('div')`
+
 ## Visual Studio Code
 
 ### Starting Visual Studio Code

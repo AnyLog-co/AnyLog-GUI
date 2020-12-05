@@ -5,6 +5,8 @@ import { useQuery, QueryCache, ReactQueryCacheProvider } from 'react-query';
 const queryCache = new QueryCache();
 
 const Example: FC = () => {
+  fetch('api/foobar');
+
   const { isLoading, error, data } = useQuery('repoData', () =>
     fetch('https://api.github.com/repos/tannerlinsley/react-query').then((res) => res.json()),
   );
