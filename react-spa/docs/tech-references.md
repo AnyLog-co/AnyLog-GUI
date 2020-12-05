@@ -56,8 +56,19 @@
 
 ## Material UI
 
+### Fonts
+
 - [import roboto typeface?](https://github.com/mui-org/material-ui/issues/6256)
-- https://material-ui.com/components/data-grid/
+
+### Themes
+
+- https://medium.com/@kitson.broadhurst/quickly-set-up-a-theme-in-material-ui-and-access-it-in-your-components-ba0565304887
+
+### Components
+
+- [All](https://material-ui.com/getting-started/supported-components/)
+- [Grid](https://material-ui.com/components/data-grid/)
+- [Drawer](https://material-ui.com/api/swipeable-drawer/)
 
 ## Other Component Libraries
 
@@ -78,8 +89,12 @@
 
 ## Localization
 
+- https://spectrum.chat/react/help/react-i18next-react-router-and-material-ui-not-playing-well-together~a724f32a-5cc8-4676-9c15-2a19641dacae
 - https://react.i18next.com/guides/quick-start
 - https://medium.com/@tariqul.islam.rony/internationalization-localization-with-react-js-65d6f6badd56
+- [localizing Material-UI](https://material-ui.com/guides/localization/)
+- [localizing Material-UI date picker](https://stackoverflow.com/questions/58677350/how-to-change-the-language-for-keyboarddatepicker-material-ui)
+- https://ourcodeworld.com/articles/read/395/getting-started-with-internationalization-i18n-in-react
 
 ## Spinners
 
