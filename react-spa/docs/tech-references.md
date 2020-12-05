@@ -20,12 +20,13 @@
 - https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97
 - https://www.robinwieruch.de/prettier-eslint
 - https://dev.to/benweiser/how-to-set-up-eslint-typescript-prettier-with-create-react-app-3675
-- https://stackoverflow.com/questions/57107800/eslint-disable-extends-in-override
+- [choose configuration based on file extension](https://stackoverflow.com/questions/57107800/eslint-disable-extends-in-override)
 
-## CORS
+## Cross Origin Requests (CORS)
 
 - https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app
 - https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express
+- https://create-react-app.dev/docs/proxying-api-requests-in-development/
 
 ## REST
 
@@ -42,6 +43,7 @@
 - https://dmitripavlutin.com/react-usestate-hook-guide/
 - https://www.carlrippon.com/typed-usestate-with-typescript/
 - https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/
+- https://stackoverflow.com/questions/62487168/loosing-component-data-on-page-refresh-in-react
 
 ## Functional Components and Hooks
 
@@ -72,6 +74,7 @@
 - https://dev.to/rossanodan/building-a-navigation-drawer-with-material-ui-and-react-router-dom-1j6l
 - https://www.nicknish.co/blog/react-router-authenticated-routes
 - [animations](http://maisano.github.io/react-router-transition/)
+- [server implications caused by client-side routing](https://stackoverflow.com/questions/27928372/react-router-urls-dont-work-when-refreshing-or-writing-manually)
 
 ## Localization
 
