@@ -29,29 +29,26 @@ Promises, avoiding the need to call `Promise.reject()`.
 
 ### Starting Visual Studio Code
 
-Before starting vscode, configure environment variables for:
-
-- NodeJS engine
-- Github identity
-
 #### OSX and Linux
 
 ```bash
 #!/bin/sh
 
-git config --global user.name "your-github-username"
-git config --global user.email "your-github-email-address"
-export GIT_SSH_COMMAND="ssh -i ~/.ssh/your-github-private-ssh-key"
+git config --local user.name "github-username-or-full-name"
+git config --local user.email "primary-github-email-address"
+GIT_SSH_COMMAND="ssh -i ~/.ssh/your-github-private-ssh-key"
+code .
 ```
+
+It is recommended that you run this script using 'source' in order to use these settings from the command line.
 
 ##### OSX
 
-Add this to the above script
+Add this to the beginning of the above script to use the project's Node settings:
 
 ```bash
 . $(brew --prefix nvm)/nvm.sh
 nvm i
-code .
 ```
 
 ### Recommended Extensions

@@ -4,7 +4,7 @@ import { ReactQueryDevtools } from 'react-query-devtools';
 import 'typeface-roboto';
 
 import './index.css';
-import './i18n';
+import './lib/i18n';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Spinner from './components/Spinner';

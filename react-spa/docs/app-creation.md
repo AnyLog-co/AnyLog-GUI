@@ -51,18 +51,15 @@ npm i --save \
 module.exports = {
   overrides: [
     {
-      // Plain JavaScript
-      files: ['*.js'],
-      parserOptions: {
-        sourceType: 'module',
-      },
-      extends: ['airbnb', 'prettier'],
+      // JavaScript and JSX
+      files: ['*.{js,jsx}'],
+      extends: ['airbnb', 'airbnb/hooks', 'prettier', 'prettier/react'],
       plugins: ['prettier'],
     },
     {
-      // Typescript
+      // Typescript and TSX
       // See https://github.com/toshi-toma/eslint-config-airbnb-typescript-prettier/blob/master/index.js
-      files: ['*.{jsx,ts,tsx}'],
+      files: ['*.{ts,tsx}'],
       extends: ['airbnb-typescript-prettier'],
     },
   ],
@@ -115,4 +112,4 @@ node_modules/
 
 16. Edit tsconfig.json
 
-- set compilerOptions.target to es2020
+- set compilerOptions.target to esnext

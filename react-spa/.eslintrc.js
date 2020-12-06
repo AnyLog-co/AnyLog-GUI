@@ -3,17 +3,14 @@ module.exports = {
   overrides: [
     {
       // Plain JavaScript
-      files: ['*.js'],
-      parserOptions: {
-        sourceType: 'module',
-      },
-      extends: ['airbnb', 'prettier'],
+      files: ['*.{js,jsx}'],
+      extends: ['airbnb', 'airbnb/hooks', 'prettier', 'prettier/react'],
       plugins: ['prettier'],
     },
     {
       // Typescript
       // See https://github.com/toshi-toma/eslint-config-airbnb-typescript-prettier/blob/master/index.js
-      files: ['*.{jsx,ts,tsx}'],
+      files: ['*.{ts,tsx}'],
       extends: ['airbnb-typescript-prettier'],
     },
   ],
