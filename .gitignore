@@ -14,7 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ conflicts with react-spa
+/lib
 lib64/
 parts/
 sdist/
