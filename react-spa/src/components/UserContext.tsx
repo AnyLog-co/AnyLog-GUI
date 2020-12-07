@@ -31,16 +31,18 @@ export const Provider: FC<Props> = ({ children }) => {
   const reducer = (state: UserState, action: Action): UserState => {
     switch (action.type) {
       case 'logout': {
+        const { communicator } = state;
+        if (!communicator) return state;
         localStorage.removeItem('state');
-        state.logout();
-        if (history) setTimeout(() => history.push('/'), 500);
+        communicator.logout();
+        if (history) setImmediate(() => history.push('/'));
         return new UserState();
       }
       case 'authenticated': {
         const newState = new UserState();
         newState.communicator = action.payload;
         localStorage.setItem('state', JSON.stringify(newState.communicator.username));
-        if (history) setTimeout(() => history.push('/'), 500);
+        if (history) setImmediate(() => history.push('/'));
         return newState;
       }
       default:

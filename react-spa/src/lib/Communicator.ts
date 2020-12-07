@@ -9,6 +9,8 @@ abstract class Communicator {
     return this.#username;
   }
 
+  abstract logout(): void;
+
   abstract login(password: string): boolean;
 }
 

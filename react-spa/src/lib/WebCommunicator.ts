@@ -13,6 +13,11 @@ class WebCommunicator extends Communicator {
     return true;
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  logout(): void {
+    //
+  }
+
   // login(username: string, password: string) {
   //   fetch('http://localhost:8088/api/login', {
   //      username: authData.username,

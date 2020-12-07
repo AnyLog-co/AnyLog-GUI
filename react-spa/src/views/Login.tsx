@@ -133,6 +133,8 @@ const Login: FC = () => {
   }, [state.username, state.password, state.successful, userDispatch]);
 
   const handleLogin = () => {
+    // @todo Disable the button, run async call to check username and password
+    // If unsuccessful, enable the button.
     if (state.username === 'a' && state.password === 'a') {
       dispatch({
         type: 'loginSuccess',
@@ -203,6 +205,7 @@ const Login: FC = () => {
             className={classes.loginBtn}
             disabled={state.isButtonDisabled}
             onClick={(event: MouseEvent<HTMLButtonElement>) => {
+              // @todo This eliminates a warning that is sent to the console
               event.preventDefault();
               handleLogin();
             }}

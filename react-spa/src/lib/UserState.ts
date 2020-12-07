@@ -7,9 +7,8 @@ class UserState {
     return !!this.communicator;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  logout(): void {
-    //
+  get username(): string {
+    return this.communicator ? this.communicator.username : '';
   }
 }
 

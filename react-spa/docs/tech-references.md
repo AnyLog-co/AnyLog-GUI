@@ -38,6 +38,7 @@
 
 - https://reactjs.org/docs/context.html
 - https://www.robinwieruch.de/javascript-reducer
+- [React context API with asynchronous reducer](https://medium.com/@patrick.gross1987/how-to-use-the-react-context-api-with-an-asynchronous-reducer-5651c2dc26aa)
 - https://dev.to/stephencweiss/usereducer-with-typescript-2kf
 - https://blog.logrocket.com/use-hooks-and-context-not-react-and-redux/
 - https://dmitripavlutin.com/react-usestate-hook-guide/

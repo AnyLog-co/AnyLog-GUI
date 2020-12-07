@@ -1,8 +1,9 @@
 import React, { MouseEvent, useState } from 'react';
-
-import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
+import Button from '@material-ui/core/Button';
+import Tooltip from '@material-ui/core/Tooltip';
 
+import UserContext from './UserContext';
 import UserMenu from './UserMenu';
 
 /**
@@ -20,11 +21,15 @@ const UserButton: React.FC = () => {
     setAnchorEl(undefined);
   };
 
+  const { state } = UserContext.use();
+
   return (
     <>
-      <Button onClick={handleClick}>
-        <Avatar />
-      </Button>
+      <Tooltip title={state.username}>
+        <Button onClick={handleClick}>
+          <Avatar />
+        </Button>
+      </Tooltip>
       <UserMenu anchorEl={anchorEl} onClose={handleClose} />
     </>
   );
