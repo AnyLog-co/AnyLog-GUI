@@ -68,10 +68,14 @@
 
 - https://medium.com/@kitson.broadhurst/quickly-set-up-a-theme-in-material-ui-and-access-it-in-your-components-ba0565304887
 
-### Components
+### Grid
+
+- https://material-ui.com/components/data-grid/
+- https://blog.logrocket.com/the-material-ui-grid-system/
+
+### Other Components
 
 - [All](https://material-ui.com/getting-started/supported-components/)
-- [Grid](https://material-ui.com/components/data-grid/)
 - [Drawer](https://material-ui.com/api/swipeable-drawer/)
 
 ## Other Component Libraries
