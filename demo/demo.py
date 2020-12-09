@@ -69,24 +69,20 @@ def print_status(nodes:dict):
 def get_metadata(conn:str)->dict: 
    """
    :Step 4: 
-   Get cluster 
+   Get cluster metadata for each node 
    :issue: 
       207 - https://www.google.com/url?q=https://github.com/AnyLog-co/AnyLog-Network/issues/207&sa=D&ust=1607459543967000&usg=AOvVaw30fwbNEMUiRA6QKMvULH2r
-   :args: 
-      conns:str - connection IP + Port
-   :param; 
-      metadata:list - list of metadat 
-      results:str - raw metadata 
+   :process: 
+      # The following is to be exeucted on each node 
+      operator1 AL > blockchain load metadata
+      operator1 AL > blockchain query metadata
    """
-   #results = query_data.get_metadata() 
-   #metadata = results.split('\n') 
-
-   """
-   basic code executed in query_data.get_metadata 
-   operator1 AL > blockchain load metadata
-   operator1 AL > blockchain query metadata
-   """
-   metadata = ['anylog ==> sample_data ==> ping_sensor ==> 9c1c0aac23fe4b48a8e51acbc1d98ac2 ==> 10.0.0.8:2058'] 
+   metadata = [
+      'anylog ==> sample_data ==> ping_sensor ==> 672199a54945331c2c9877741235498e ==> 172.105.117.98:2058', 
+      'anylog ==> sample_data ==> machine_data ==> 5828981d622c82ddc7d5e3e84faf3b1a ==> 172.105.117.98:2068', 
+      'anylog ==> sample_data ==> ping_sensor ==> f8f0a13bbdd7ea1127855c6120470b84 ==> 172.105.117.98:2078\n\
+              \t       ==> machine_data ==> f8f0a13bbdd7ea1127855c6120470b84 ==> 172.105.117.98:2078'
+   ]
    return metadata 
 
 def print_metadata(metadata:dict, company:str): 
