@@ -159,6 +159,26 @@ def print_tables(tables:dict):
    for table in tables: 
        print(stmt % (table, tables[table]))
 
+def row_count(conn, metadatas:str): 
+   """
+   For each table execute query 
+   :args: 
+      conn:str - IP + port 
+      metadatas:list - list of metadata 
+   :param: 
+      query:str - SELECT 
+      rc:dict - row count per table 
+   """
+   query = 'SELECT COUNT(*) AS count FROM %s'
+   rc = {} 
+   for metadata in metadatas: 
+      for db in metadata['data']: 
+         for table in metadata['data'][db]:
+            if '%s.%s' % (db, table) not in rc: 
+               rc['%s.%s' % (db, table)] = query_data.query_data(conn, db, query % table)['Query'][0]['count']
+
+   print(rc) 
+
 def main(): 
    """
    Print information regarding network based on company 
@@ -202,6 +222,10 @@ def main():
    print('------') 
    tables = get_tables(args.conn, metadata)
    print_tables(tables) 
+
+   print('count') 
+   print('-----') 
+   row_count(args.conn, metadata)
 
 if __name__ == '__main__': 
    main() 
