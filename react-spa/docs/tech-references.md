@@ -33,6 +33,7 @@
 - https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 - https://blog.bitsrc.io/how-to-start-using-react-query-4869e3d5680d
 - [Axios use proxy](https://masteringjs.io/tutorials/axios/proxy#:~:text=Axios%20supports%20a%20proxy%20option,request%20is%20actually%20meant%20for.)
+- [Data fetching in Redux is painful, get rid of it now](https://link.medium.com/kbT4qvO51bb)
 
 ## State
 
@@ -45,6 +46,7 @@
 - https://www.carlrippon.com/typed-usestate-with-typescript/
 - https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/
 - https://stackoverflow.com/questions/62487168/loosing-component-data-on-page-refresh-in-react
+- [Why I Stopped Using Redux](https://dev.to/g_abud/why-i-quit-redux-1knl)
 
 ## Functional Components and Hooks
 
@@ -54,6 +56,7 @@
 - https://www.carlrippon.com/Different-ways-to-strongly-type-function-component-props-with-typescript/
 - https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all
 - [Default prop values with typescript](https://dev.to/chico1992/comment/10iim)
+- [A deep dive into Pure Component and React.memo(), and why we need them](https://link.medium.com/yXI54Isz2bb)
 
 ## Material UI
 
@@ -73,7 +76,7 @@
 
 ## Other Component Libraries
 
-- [React Table](https://react-table.tanstack.com/)
+- [Building and styling tables with react-table](https://blog.logrocket.com/building-styling-tables-react-table-v7/)
 
 ## React Router
 
