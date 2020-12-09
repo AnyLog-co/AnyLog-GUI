@@ -66,26 +66,48 @@ def print_status(nodes:dict):
             status = 'not running'  
          print(print_output %  (name, ip, status)) 
 
-def get_metadata(conn:str)->dict: 
+def get_metadata(nodes:dict, company:str)->str: 
    """
    :Step 4: 
    Get cluster metadata for each node 
    :issue: 
       207 - https://www.google.com/url?q=https://github.com/AnyLog-co/AnyLog-Network/issues/207&sa=D&ust=1607459543967000&usg=AOvVaw30fwbNEMUiRA6QKMvULH2r
-   :process: 
-      # The following is to be exeucted on each node 
-      operator1 AL > blockchain load metadata
-      operator1 AL > blockchain query metadata
+   :args: 
+      nodes:dict - nodes 
+      company:str - company 
+   :param; 
+      metadatas:list - list of metadata 
+      metadata:dict - info from nodes (organized
+   :return: 
+      metadatas 
    """
-   metadata = [
-      'anylog ==> sample_data ==> ping_sensor ==> 672199a54945331c2c9877741235498e ==> 172.105.117.98:2058', 
-      'anylog ==> sample_data ==> machine_data ==> 5828981d622c82ddc7d5e3e84faf3b1a ==> 172.105.117.98:2068', 
-      'anylog ==> sample_data ==> ping_sensor ==> f8f0a13bbdd7ea1127855c6120470b84 ==> 172.105.117.98:2078\n\
-              \t       ==> machine_data ==> f8f0a13bbdd7ea1127855c6120470b84 ==> 172.105.117.98:2078'
-   ]
-   return metadata 
+   metadatas = [] 
+   for cluster in nodes['cluster']: 
+      metadata = {'name': '', 'data': {}, 'operator': []} 
+      if company in cluster['cluster']['company']:
+         clstr = cluster['cluster'] 
+         tables = clstr['table'] 
+         cid = clstr['id'] 
+         
+         # cluster name 
+         metadata['name'] = clstr['name']
+         
+         # cluster dbms.tables 
+         for table in tables: 
+            if table['dbms'] not in metadata['data']: 
+               metadata['data'][table['dbms']] = [] 
+            if table['name'] not in metadata['data'][table['dbms']]: 
+               metadata['data'][table['dbms']].append(table['name']) 
 
-def print_metadata(metadata:dict, company:str): 
+         for operator in nodes['operator']: 
+            if cid == operator['operator']['cluster']: 
+             name = operator['operator']['name']
+             if name not in metadata['operator']: 
+                 metadata['operator'].append(name)
+      metadatas.append(metadata) 
+   return metadatas
+
+def print_metadata(metadatas:dict): 
    """
    :Step 4: 
    Print metadata that's part of the company's network 
@@ -95,11 +117,11 @@ def print_metadata(metadata:dict, company:str):
    :print:
       company ==> dbms ==> table ==> cluster_id ==> operator IP/Port 
    """
-   for mtadata in metadata: 
-      if company in mtadata: 
-         print(mtadata) 
 
-def get_tables(conn:str, metadata:list, company:str)->dict: 
+   for metadata in metadatas: 
+      print(metadata) 
+
+def get_tables(conn:str, metadatas:list)->dict: 
    """
    :Step 5: 
    Get tables based on database 
@@ -113,13 +135,13 @@ def get_tables(conn:str, metadata:list, company:str)->dict:
       tables 
    """
    tables = {} 
-   for mtadata in metadata: 
-       if company in mtadata: 
-           lmetadata = mtadata.split(' ==> ')
-           dbms = lmetadata[1]
-           name = lmetadata[2] 
-           table = query_data.get_tables(conn, dbms, name) 
-           tables['%s.%s' % (dbms, name)] = table['table']['create'].replace('  ', '\n\t\t').replace(');', '\n\t);', 1).replace(';', ';\n\t').replace(' CREATE', 'CREATE') 
+   for metadata in metadatas: 
+       for db in metadata['data']: 
+          for table in metadata['data'][db]:
+             tbl = query_data.get_tables(conn, db, table)
+             name = '%s.%s' % (db, table) 
+             if name not in tables: 
+                tables[name] = tbl['table']['create'].replace('  ', '\n\t\t').replace(');', '\n\t);', 1).replace(';', ';\n\t').replace(' CREATE', 'CREATE') 
 
    return tables 
    
@@ -171,16 +193,15 @@ def main():
    # Cluster metadata 
    print('Info for each cluster') 
    print('---------------------')
-   metadata = get_metadata(args.conn) 
-   print_metadata(metadata, args.company)
-
+   metadata = get_metadata(nodes, args.company) 
+   print_metadata(metadata)
+   
    print('\n') 
 
    print('tables')
    print('------') 
-   tables = get_tables(args.conn, metadata, args.company)
+   tables = get_tables(args.conn, metadata)
    print_tables(tables) 
-
 
 if __name__ == '__main__': 
    main() 
