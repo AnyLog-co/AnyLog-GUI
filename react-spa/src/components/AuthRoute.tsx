@@ -12,19 +12,18 @@ interface Props {
 }
 
 const AuthRoute: React.FC<Props> = ({ component, path, exact }) => {
-  console.log('klasjfklsjdaklfjksadlf');
   // eslint-disable-next-line prettier/prettier, prefer-const
   let [communicator, setCommunicator] = useRecoilState<OptionalCommunicator>(communicatorState);
 
   if (!communicator) {
-    console.log('klasjfklsjdaklfjksadlf');
     // Load from local state
     const data = localStorage.getItem('communicator');
     if (data) {
       try {
         communicator = CommunicatorSerDe.deserialize(data);
-        setCommunicator(communicator);
+        setImmediate(() => setCommunicator(communicator));
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.log(error);
         localStorage.removeItem('communicator');
       }

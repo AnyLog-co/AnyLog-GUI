@@ -66,30 +66,48 @@ def print_status(nodes:dict):
             status = 'not running'  
          print(print_output %  (name, ip, status)) 
 
-def get_metadata(conn:str)->dict: 
+def get_metadata(nodes:dict, company:str)->str: 
    """
    :Step 4: 
-   Get cluster 
+   Get cluster metadata for each node 
    :issue: 
       207 - https://www.google.com/url?q=https://github.com/AnyLog-co/AnyLog-Network/issues/207&sa=D&ust=1607459543967000&usg=AOvVaw30fwbNEMUiRA6QKMvULH2r
    :args: 
-      conns:str - connection IP + Port
+      nodes:dict - nodes 
+      company:str - company 
    :param; 
-      metadata:list - list of metadat 
-      results:str - raw metadata 
+      metadatas:list - list of metadata 
+      metadata:dict - info from nodes (organized
+   :return: 
+      metadatas 
    """
-   #results = query_data.get_metadata() 
-   #metadata = results.split('\n') 
+   metadatas = [] 
+   for cluster in nodes['cluster']: 
+      metadata = {'name': '', 'data': {}, 'operator': []} 
+      if company in cluster['cluster']['company']:
+         clstr = cluster['cluster'] 
+         tables = clstr['table'] 
+         cid = clstr['id'] 
+         
+         # cluster name 
+         metadata['name'] = clstr['name']
+         
+         # cluster dbms.tables 
+         for table in tables: 
+            if table['dbms'] not in metadata['data']: 
+               metadata['data'][table['dbms']] = [] 
+            if table['name'] not in metadata['data'][table['dbms']]: 
+               metadata['data'][table['dbms']].append(table['name']) 
 
-   """
-   basic code executed in query_data.get_metadata 
-   operator1 AL > blockchain load metadata
-   operator1 AL > blockchain query metadata
-   """
-   metadata = ['anylog ==> sample_data ==> ping_sensor ==> 9c1c0aac23fe4b48a8e51acbc1d98ac2 ==> 10.0.0.8:2058'] 
-   return metadata 
+         for operator in nodes['operator']: 
+            if cid == operator['operator']['cluster']: 
+             name = operator['operator']['name']
+             if name not in metadata['operator']: 
+                 metadata['operator'].append(name)
+      metadatas.append(metadata) 
+   return metadatas
 
-def print_metadata(metadata:dict, company:str): 
+def print_metadata(metadatas:dict): 
    """
    :Step 4: 
    Print metadata that's part of the company's network 
@@ -99,11 +117,11 @@ def print_metadata(metadata:dict, company:str):
    :print:
       company ==> dbms ==> table ==> cluster_id ==> operator IP/Port 
    """
-   for mtadata in metadata: 
-      if company in mtadata: 
-         print(mtadata) 
 
-def get_tables(conn:str, metadata:list, company:str)->dict: 
+   for metadata in metadatas: 
+      print(metadata) 
+
+def get_tables(conn:str, metadatas:list)->dict: 
    """
    :Step 5: 
    Get tables based on database 
@@ -117,13 +135,13 @@ def get_tables(conn:str, metadata:list, company:str)->dict:
       tables 
    """
    tables = {} 
-   for mtadata in metadata: 
-       if company in mtadata: 
-           lmetadata = mtadata.split(' ==> ')
-           dbms = lmetadata[1]
-           name = lmetadata[2] 
-           table = query_data.get_tables(conn, dbms, name) 
-           tables['%s.%s' % (dbms, name)] = table['table']['create'].replace('  ', '\n\t\t').replace(');', '\n\t);', 1).replace(';', ';\n\t').replace(' CREATE', 'CREATE') 
+   for metadata in metadatas: 
+       for db in metadata['data']: 
+          for table in metadata['data'][db]:
+             tbl = query_data.get_tables(conn, db, table)
+             name = '%s.%s' % (db, table) 
+             if name not in tables: 
+                tables[name] = tbl['table']['create'].replace('  ', '\n\t\t').replace(');', '\n\t);', 1).replace(';', ';\n\t').replace(' CREATE', 'CREATE') 
 
    return tables 
    
@@ -140,6 +158,26 @@ def print_tables(tables:dict):
    stmt = '%s\n\t%s' 
    for table in tables: 
        print(stmt % (table, tables[table]))
+
+def row_count(conn, metadatas:str): 
+   """
+   For each table execute query 
+   :args: 
+      conn:str - IP + port 
+      metadatas:list - list of metadata 
+   :param: 
+      query:str - SELECT 
+      rc:dict - row count per table 
+   """
+   query = 'SELECT COUNT(*) AS count FROM %s'
+   rc = {} 
+   for metadata in metadatas: 
+      for db in metadata['data']: 
+         for table in metadata['data'][db]:
+            if '%s.%s' % (db, table) not in rc: 
+               rc['%s.%s' % (db, table)] = query_data.query_data(conn, db, query % table)['Query'][0]['count']
+
+   print(rc) 
 
 def main(): 
    """
@@ -175,16 +213,19 @@ def main():
    # Cluster metadata 
    print('Info for each cluster') 
    print('---------------------')
-   metadata = get_metadata(args.conn) 
-   print_metadata(metadata, args.company)
-
+   metadata = get_metadata(nodes, args.company) 
+   print_metadata(metadata)
+   
    print('\n') 
 
    print('tables')
    print('------') 
-   tables = get_tables(args.conn, metadata, args.company)
+   tables = get_tables(args.conn, metadata)
    print_tables(tables) 
 
+   print('count') 
+   print('-----') 
+   row_count(args.conn, metadata)
 
 if __name__ == '__main__': 
    main() 

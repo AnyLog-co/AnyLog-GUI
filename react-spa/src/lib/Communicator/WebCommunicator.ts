@@ -12,7 +12,7 @@ class WebCommunicator extends Communicator {
     this.#url = url;
   }
 
-  dehyrdrate(data: Record<string, unknown>): void {
+  dehydrate(data: Record<string, unknown>): void {
     if (!data.type) data.type = 'WebCommunicator';
     data.password = this.#password;
     data.url = this.#url;
