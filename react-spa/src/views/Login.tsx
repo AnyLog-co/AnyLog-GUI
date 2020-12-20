@@ -1,17 +1,20 @@
 /* eslint-disable react/prop-types */
 import React, { FC, useReducer, useEffect, KeyboardEvent, MouseEvent, ChangeEventHandler } from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { useTranslation, Trans } from 'react-i18next';
+import { useRecoilState } from 'recoil';
+import { useHistory } from 'react-router-dom';
 
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
+
 import ProxyCommunicator from '../lib/ProxyCommunicator';
-import UserContext from '../components/UserContext';
-import { useHistory } from 'react-router-dom';
+import Communicator from '../lib/Communicator';
+import communicatorState from '../lib/communicatorState';
 
 // @todo Convert layout to Grid
 const useStyles = makeStyles((theme: Theme) =>
@@ -111,15 +114,17 @@ const reducer = (state: State, action: Action): State => {
 
 const Login: FC = () => {
   const { t } = useTranslation();
-  const { dispatch: userDispatch } = UserContext.use();
+
+  // TODO if already logged in, ?
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setCommunicator] = useRecoilState<Communicator | undefined>(communicatorState);
 
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    // @todo if login successful, change global state
     if (state.successful) {
-      userDispatch({ type: 'authenticated', payload: new ProxyCommunicator(state.username, '') });
+      setCommunicator(new ProxyCommunicator(state.username, ''));
     } else if (state.username.trim() && state.password.trim()) {
       dispatch({
         type: 'setIsButtonDisabled',
@@ -131,7 +136,7 @@ const Login: FC = () => {
         payload: true,
       });
     }
-  }, [state.username, state.password, state.successful, userDispatch]);
+  }, [state.username, state.password, state.successful, setCommunicator]);
 
   const handleLogin = () => {
     // @todo Disable the button, run async call to check username and password
