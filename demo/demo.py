@@ -171,12 +171,15 @@ def row_count(conn, metadatas:str):
    """
    query = 'SELECT COUNT(*) AS count FROM %s'
    rc = {} 
-   for metadata in metadatas: 
-      for db in metadata['data']: 
-         for table in metadata['data'][db]:
-            if '%s.%s' % (db, table) not in rc: 
-               rc['%s.%s' % (db, table)] = query_data.query_data(conn, db, query % table)['Query'][0]['count']
 
+   for metadata in metadatas: 
+      for key in metadata['data']:
+         if key != 'operator': 
+            for table in metadata['data'][key]:
+               tbl = '%s.%s' % (key, table) 
+               if tbl not in rc: 
+                  rc[tbl] = query_data.query_data(conn, key, query % table)['Query'][0]['count']
+                  
    print(rc) 
 
 def main(): 
