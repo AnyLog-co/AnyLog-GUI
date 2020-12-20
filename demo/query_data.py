@@ -97,4 +97,31 @@ def get_tables(conn:str, database:str, name:str)->dict:
         results = {} 
 
     return results[0]
-    
+
+def query_data(conn:str, dbms:str, query:str)->dict: 
+    """
+    Query data (standard SELECTs) 
+    :Args: 
+       conn:str - IP & Port 
+       dbms:str - database 
+       query:str - query 
+    :param: 
+       header:Dict - header to execute 
+       raw_results:str - raw query reults 
+       results:dict - results 
+    :return: 
+        return results
+    """
+    header = {'type': 'sql', 'dbms': dbms,  'details': query}
+    raw_results = execute_query(conn, header)
+
+    # convert results to list/dict 
+    try: 
+        results = ast.literal_eval(raw_results.text)
+    except Exception as e: 
+        print(e) 
+        results = {} 
+
+    return results
+
+

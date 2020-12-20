@@ -2,7 +2,7 @@ import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-const Spinner: React.FC = () => {
+const LoadingCircles: React.FC = () => {
   return (
     <Grid
       container
@@ -19,4 +19,4 @@ const Spinner: React.FC = () => {
   );
 };
 
-export default Spinner;
+export default LoadingCircles;

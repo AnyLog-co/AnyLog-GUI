@@ -1,12 +1,13 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
+import { useRecoilState } from 'recoil';
 
 import UserButton from '../components/UserButton';
 import Language from '../components/Language';
-import UserContext from '../components/UserContext';
+import communicatorState from '../lib/communicatorState';
 
 const Header: React.FC = () => {
-  const { state } = UserContext.use();
+  const [communicator] = useRecoilState(communicatorState);
 
   return (
     <Grid justifyContent="space-between" container spacing={3}>
@@ -16,7 +17,7 @@ const Header: React.FC = () => {
       <Grid item>
         <Language />
       </Grid>
-      <Grid item>{state.authenticated ? <UserButton /> : <></>}</Grid>
+      <Grid item>{communicator ? <UserButton /> : <></>}</Grid>
     </Grid>
   );
 };

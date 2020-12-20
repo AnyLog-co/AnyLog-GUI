@@ -12,6 +12,12 @@
 
 - https://www.typescriptlang.org/docs/
 - https://stackoverflow.com/questions/45176661/how-do-i-decide-whether-types-goes-into-dependencies-or-devdependencies
+- https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#optional-chaining/State
+
+## Production vs. Development
+
+- https://www.reddit.com/r/reactjs/comments/ahlll3/detecting_if_react_is_in_development_or/
+- [Detection example](https://github.com/facebook/react-devtools/blob/faa4b630a8c055d5ab4ff51536f1e92604d5c09c/backend/installGlobalHook.js#L23)
 
 ## ESLint and Prettier
 
@@ -48,6 +54,9 @@
 - https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/
 - https://stackoverflow.com/questions/62487168/loosing-component-data-on-page-refresh-in-react
 - [Why I Stopped Using Redux](https://dev.to/g_abud/why-i-quit-redux-1knl)
+- https://medium.com/react-courses/integrate-recoil-with-typescript-to-share-your-state-across-react-components-8cf1a3910fae
+- [Recoil.js - State management for React](https://react.christmas/2020/10)
+- [Recoil and Typescript](https://www.saltycrane.com/cheat-sheets/typescript/recoil/latest/)
 
 ## Functional Components and Hooks
 

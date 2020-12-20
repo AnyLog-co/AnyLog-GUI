@@ -7,7 +7,7 @@ import './index.css';
 import './lib/i18n';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Spinner from './components/Spinner';
+import Spinner from './components/LoadingCircles';
 
 ReactDOM.render(
   <React.StrictMode>
