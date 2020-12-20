@@ -13,7 +13,6 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 - Testing with Enzyme and Jest
 - i18next for translations
 - React Query using Axios
-- Promise tracker for 'loading' feedback (three dots, animated) (might be replaced by Suspense)
 
 ## Steps
 
@@ -35,8 +34,7 @@ npm i --save-dev eslint prettier eslint-config-airbnb-typescript-prettier \
 npm i --save \
   axios \
   i18next i18next-browser-languagedetector i18next-http-backend react-i18next \
-  react-loader-spinner @types/react-loader-spinner \
-  react-promise-tracker \
+  react-loader-spinner @types/react-loader-spinner recoil \
   react-router @types/react-router \
   react-router-dom @types/react-router-dom \
   # Material-UI 5
