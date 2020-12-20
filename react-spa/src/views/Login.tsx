@@ -11,6 +11,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
 import ProxyCommunicator from '../lib/ProxyCommunicator';
 import UserContext from '../components/UserContext';
+import { useHistory } from 'react-router-dom';
 
 // @todo Convert layout to Grid
 const useStyles = makeStyles((theme: Theme) =>

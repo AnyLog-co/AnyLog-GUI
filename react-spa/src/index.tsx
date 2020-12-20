@@ -1,22 +1,25 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import { ReactQueryDevtools } from 'react-query-devtools';
+import { RecoilRoot } from 'recoil';
 import 'typeface-roboto';
 
 import './index.css';
 import './lib/i18n';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Spinner from './components/Spinner';
+import Spinner from './components/LoadingCircles';
 
 ReactDOM.render(
   <React.StrictMode>
     {
       // i18n translations might be loaded by the http backend, so Suspense is used
     }
-    <Suspense fallback={<Spinner />}>
-      <App />
-    </Suspense>
+    <RecoilRoot>
+      <Suspense fallback={<Spinner />}>
+        <App />
+      </Suspense>
+    </RecoilRoot>
     <ReactQueryDevtools initialIsOpen />
   </React.StrictMode>,
   document.getElementById('root'),

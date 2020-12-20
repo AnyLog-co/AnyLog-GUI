@@ -1,7 +1,8 @@
 import React from 'react';
 import { Redirect, Route } from 'react-router';
+import { useRecoilState } from 'recoil';
 
-import UserContext from './UserContext';
+import communicatorState from '../lib/communicatorState';
 
 interface Props {
   component: React.FC;
@@ -10,8 +11,8 @@ interface Props {
 }
 
 const AuthRoute: React.FC<Props> = ({ component, path, exact }) => {
-  const { state } = UserContext.use();
-  return state.authenticated ? <Route path={path} exact={exact} component={component} /> : <Redirect to="/login" />;
+  const [state] = useRecoilState(communicatorState);
+  return state ? <Route path={path} exact={exact} component={component} /> : <Redirect to="/login" />;
 };
 
 export default AuthRoute;

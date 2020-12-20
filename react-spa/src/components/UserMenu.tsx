@@ -1,8 +1,11 @@
 import React from 'react';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import { useRecoilState } from 'recoil';
+import { useHistory } from 'react-router-dom';
 
-import UserContext from './UserContext';
+import Communicator from '../lib/Communicator';
+import communicatorState from '../lib/communicatorState';
 
 interface Props {
   anchorEl: Element | undefined;
@@ -10,10 +13,15 @@ interface Props {
 }
 
 const UserMenu: React.FC<Props> = ({ anchorEl, onClose }) => {
-  const { dispatch } = UserContext.use();
+  const [communicator, setCommunicator] = useRecoilState<Communicator | undefined>(communicatorState);
+  const history = useHistory();
 
   const logout = () => {
-    dispatch({ type: 'logout' });
+    if (communicator) {
+      // communicator.logout();
+      history.push('/');
+      setCommunicator(undefined);
+    }
     onClose();
   };
 
