@@ -54,6 +54,7 @@
 - https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/
 - https://stackoverflow.com/questions/62487168/loosing-component-data-on-page-refresh-in-react
 - [Why I Stopped Using Redux](https://dev.to/g_abud/why-i-quit-redux-1knl)
+- https://medium.com/react-courses/integrate-recoil-with-typescript-to-share-your-state-across-react-components-8cf1a3910fae
 - [Recoil.js - State management for React](https://react.christmas/2020/10)
 - [Recoil and Typescript](https://www.saltycrane.com/cheat-sheets/typescript/recoil/latest/)
 

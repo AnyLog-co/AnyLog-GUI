@@ -11,6 +11,8 @@ interface Props {
 }
 
 const AuthRoute: React.FC<Props> = ({ component, path, exact }) => {
+  console.log('render authroute');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [state] = useRecoilState(communicatorState);
   return state ? <Route path={path} exact={exact} component={component} /> : <Redirect to="/login" />;
 };

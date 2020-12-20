@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import { ReactQueryDevtools } from 'react-query-devtools';
-import { RecoilRoot } from 'recoil';
 import 'typeface-roboto';
 
 import './index.css';
@@ -15,11 +14,9 @@ ReactDOM.render(
     {
       // i18n translations might be loaded by the http backend, so Suspense is used
     }
-    <RecoilRoot>
-      <Suspense fallback={<Spinner />}>
-        <App />
-      </Suspense>
-    </RecoilRoot>
+    <Suspense fallback={<Spinner />}>
+      <App />
+    </Suspense>
     <ReactQueryDevtools initialIsOpen />
   </React.StrictMode>,
   document.getElementById('root'),

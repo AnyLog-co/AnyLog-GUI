@@ -2,7 +2,7 @@
 import React, { FC, useReducer, useEffect, KeyboardEvent, MouseEvent, ChangeEventHandler } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { useRecoilState } from 'recoil';
-import { useHistory } from 'react-router-dom';
+import { Redirect } from 'react-router';
 
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
@@ -123,9 +123,7 @@ const Login: FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    if (state.successful) {
-      setCommunicator(new ProxyCommunicator(state.username, ''));
-    } else if (state.username.trim() && state.password.trim()) {
+    if (state.username.trim() && state.password.trim()) {
       dispatch({
         type: 'setIsButtonDisabled',
         payload: false,
@@ -136,12 +134,13 @@ const Login: FC = () => {
         payload: true,
       });
     }
-  }, [state.username, state.password, state.successful, setCommunicator]);
+  }, [state.username, state.password]);
 
   const handleLogin = () => {
     // @todo Disable the button, run async call to check username and password
     // If unsuccessful, enable the button.
     if (state.username === 'a' && state.password === 'a') {
+      setCommunicator(new ProxyCommunicator(state.username, state.password));
       dispatch({
         type: 'loginSuccess',
         payload: 'Login Successfully',
@@ -171,6 +170,8 @@ const Login: FC = () => {
       payload: event.target.value,
     });
   };
+
+  if (state.successful) return <Redirect to="/" />;
 
   return (
     <form className={classes.container} noValidate autoComplete="off">
