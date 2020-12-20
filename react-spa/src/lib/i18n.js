@@ -18,7 +18,7 @@ i18n
     lng: 'en',
     // When react i18next not finding any language to as default in borwser
     fallbackLng: 'en',
-    debug: true, // @todo
+    debug: true, // TODO:
     // keySeparator: '.',
     interpolation: {
       escapeValue: false,

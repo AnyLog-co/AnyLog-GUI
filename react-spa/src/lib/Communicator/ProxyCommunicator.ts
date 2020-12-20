@@ -7,12 +7,13 @@ import WebCommunicator from './WebCommunicator';
 class ProxyCommunicator extends WebCommunicator {
   // eslint-disable-next-line class-methods-use-this
   alterRequest(/* request: any */): void {
-    // @todo change to Axios type
+    // TODO: change to Axios type
   }
 
-  // eslint-disable-next-line no-useless-constructor
-  constructor(username: string, url: string) {
-    super(username, url);
+  dehydrate(data: Record<string, unknown>): void {
+    // eslint-disable-next-line no-param-reassign
+    if (!data.type) data.type = 'ProxyCommunicator';
+    super.dehydrate(data);
   }
 }
 

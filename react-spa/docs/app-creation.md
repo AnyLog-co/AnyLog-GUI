@@ -4,15 +4,16 @@
 
 This is a React 17 single page application (SPA) for web browsers. It features:
 
+- Modern React development with hooks
 - Typescript
 - Prettier and ESLint
-- React Hooks
-- Global state managed via React Context
-- Material-UI
-- React Router
-- Testing with Enzyme and Jest
+- Material-UI look and feel (version 5, alpha)
+- Data access via React Query 3 and Axios
+- Global state management via Recoil
+- "Loading" feedback via React Suspense
+- Page transitions via React Router
 - i18next for translations
-- React Query using Axios
+- Testing with Enzyme and Jest
 
 ## Steps
 
@@ -24,8 +25,7 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 6. `cd ..`
 7. `npx create-react-app react-spa --typescript`
 8. `cd react-spa`
-9. You will be overriding the eslint configuration, so run: `npm run eject`
-10.
+9.
 
 ```shell
 npm i --save-dev eslint prettier eslint-config-airbnb-typescript-prettier \
@@ -39,10 +39,10 @@ npm i --save \
   react-router-dom @types/react-router-dom \
   # Material-UI 5
   @emotion/react @emotion/styled @material-ui/core@next typeface-roboto \
-  react-query react-query-devtools
+  react-query @types/react-query
 ```
 
-11. Create .eslintrc.js
+10. Create .eslintrc.js
 
 ```js
 // For jest and gatsby config, see https://github.com/d4rekanguok/gatsby-typescript/blob/master/.eslintrc.js
@@ -73,7 +73,7 @@ module.exports = {
 };
 ```
 
-12. Create .eslintignore
+11. Create .eslintignore
 
 ```js
 # node_modules is ignored by default
@@ -82,7 +82,7 @@ dist/
 docs/
 ```
 
-13. Create .prettierrc.js
+12. Create .prettierrc.js
 
 ```js
 module.exports = {
@@ -92,7 +92,7 @@ module.exports = {
 };
 ```
 
-14. Create .prettierignore
+13. Create .prettierignore
 
 ```js
 build/
@@ -100,7 +100,7 @@ dist/
 node_modules/
 ```
 
-15. Modify package.json and add format and lint scripts
+14. Modify package.json and add format and lint scripts
 
 ```js
   "scripts": {
@@ -108,6 +108,6 @@ node_modules/
     "format": "prettier . --write",
 ```
 
-16. Edit tsconfig.json
+15. Edit tsconfig.json
 
 - set compilerOptions.target to esnext

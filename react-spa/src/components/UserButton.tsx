@@ -4,9 +4,7 @@ import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useRecoilState } from 'recoil';
 
-import Communicator from '../lib/Communicator';
-import communicatorState from '../lib/communicatorState';
-
+import communicatorState, { OptionalCommunicator } from '../lib/communicatorState';
 import UserMenu from './UserMenu';
 
 /**
@@ -14,7 +12,7 @@ import UserMenu from './UserMenu';
  */
 const UserButton: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | undefined>();
-  const [communicator] = useRecoilState<Communicator | undefined>(communicatorState);
+  const [communicator] = useRecoilState<OptionalCommunicator>(communicatorState);
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);

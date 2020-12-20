@@ -1,8 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { FC } from 'react';
-import { useQuery, QueryCache, ReactQueryCacheProvider } from 'react-query';
-
-const queryCache = new QueryCache();
+import { useQuery } from 'react-query';
 
 const Example: FC = () => {
   fetch('api/foobar');
@@ -25,10 +23,4 @@ const Example: FC = () => {
   );
 };
 
-const QueryExample: FC = () => (
-  <ReactQueryCacheProvider queryCache={queryCache}>
-    <Example />
-  </ReactQueryCacheProvider>
-);
-
-export default QueryExample;
+export default Example;
