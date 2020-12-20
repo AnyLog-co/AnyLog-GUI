@@ -2,12 +2,11 @@ import React from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 
-import './App.css';
-import Login from './views/Login';
-import Home from './views/Home';
-import NotFound from './views/NotFound';
-import AuthRoute from './components/AuthRoute';
-import Header from './views/Header';
+import Login from '../views/Login';
+import Home from '../views/Home';
+import NotFound from '../views/NotFound';
+import AuthRoute from './AuthRoute';
+import Header from '../views/Header';
 
 const App: React.FC = () => (
   <RecoilRoot>

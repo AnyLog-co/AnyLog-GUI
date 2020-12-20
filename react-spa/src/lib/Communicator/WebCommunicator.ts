@@ -1,15 +1,32 @@
-import Communicator from './Communicator';
+/* eslint-disable no-param-reassign */
+import Communicator from '.';
 
 class WebCommunicator extends Communicator {
   #url: string;
 
-  constructor(username: string, url: string) {
+  #password: string;
+
+  constructor(username: string, password: string, url: string) {
     super(username);
+    this.#password = password;
     this.#url = url;
   }
 
+  dehyrdrate(data: Record<string, unknown>): void {
+    if (!data.type) data.type = 'WebCommunicator';
+    data.password = this.#password;
+    data.url = this.#url;
+    super.dehydrate(data);
+  }
+
+  // TODO change to Axios type
+  // eslint-disable-next-line class-methods-use-this
+  alterRequest(/* request: any */): void {
+    //
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
-  login(password: string): boolean {
+  login(): boolean {
     return true;
   }
 

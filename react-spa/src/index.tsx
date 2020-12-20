@@ -5,7 +5,7 @@ import 'typeface-roboto';
 
 import './index.css';
 import './lib/i18n';
-import App from './App';
+import App from './components/App';
 import reportWebVitals from './reportWebVitals';
 import Spinner from './components/LoadingCircles';
 

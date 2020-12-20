@@ -12,11 +12,11 @@ import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
 
-import ProxyCommunicator from '../lib/ProxyCommunicator';
-import Communicator from '../lib/Communicator';
-import communicatorState from '../lib/communicatorState';
+import ProxyCommunicator from '../lib/Communicator/ProxyCommunicator';
+import CommunicatorSerDe from '../lib/Communicator/CommunicatorSerDe';
+import communicatorState, { OptionalCommunicator } from '../lib/communicatorState';
 
-// @todo Convert layout to Grid
+// TODO: Convert layout to Grid
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
@@ -45,24 +45,25 @@ const useStyles = makeStyles((theme: Theme) =>
 interface State {
   username: string;
   password: string;
+  url: string;
   isButtonDisabled: boolean;
   helperText: string;
   isError: boolean;
-  successful: boolean;
 }
 
 const initialState: State = {
   username: '',
   password: '',
+  url: '',
   isButtonDisabled: true,
   helperText: '',
   isError: false,
-  successful: false,
 };
 
 type Action =
   | { type: 'setUsername'; payload: string }
   | { type: 'setPassword'; payload: string }
+  | { type: 'setUrl'; payload: string }
   | { type: 'setIsButtonDisabled'; payload: boolean }
   | { type: 'loginSuccess'; payload: string }
   | { type: 'loginFailed'; payload: string }
@@ -80,6 +81,11 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         password: action.payload,
       };
+    case 'setUrl':
+      return {
+        ...state,
+        url: action.payload,
+      };
     case 'setIsButtonDisabled':
       return {
         ...state,
@@ -90,7 +96,6 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         helperText: action.payload,
         isError: false,
-        successful: true,
       };
     case 'loginFailed':
       return {
@@ -115,15 +120,14 @@ const reducer = (state: State, action: Action): State => {
 const Login: FC = () => {
   const { t } = useTranslation();
 
-  // TODO if already logged in, ?
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setCommunicator] = useRecoilState<Communicator | undefined>(communicatorState);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, prefer-const
+  let [communicator, setCommunicator] = useRecoilState<OptionalCommunicator>(communicatorState);
 
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    if (state.username.trim() && state.password.trim()) {
+    if (state.username.trim() && state.password.trim() && state.url.trim()) {
       dispatch({
         type: 'setIsButtonDisabled',
         payload: false,
@@ -134,13 +138,16 @@ const Login: FC = () => {
         payload: true,
       });
     }
-  }, [state.username, state.password]);
+  }, [state.username, state.password, state.url]);
 
   const handleLogin = () => {
-    // @todo Disable the button, run async call to check username and password
+    // TODO: Disable the button, run async call to check username and password.
     // If unsuccessful, enable the button.
     if (state.username === 'a' && state.password === 'a') {
-      setCommunicator(new ProxyCommunicator(state.username, state.password));
+      communicator = new ProxyCommunicator(state.username, '', state.password);
+      setCommunicator(communicator);
+      localStorage.setItem('communicator', CommunicatorSerDe.serialize(communicator));
+
       dispatch({
         type: 'loginSuccess',
         payload: 'Login Successfully',
@@ -171,7 +178,16 @@ const Login: FC = () => {
     });
   };
 
-  if (state.successful) return <Redirect to="/" />;
+  const handleUrlChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    dispatch({
+      type: 'setUrl',
+      payload: event.target.value,
+    });
+  };
+
+  // Output JSX here
+
+  if (communicator) return <Redirect to="/" />;
 
   return (
     <form className={classes.container} noValidate autoComplete="off">
@@ -202,6 +218,16 @@ const Login: FC = () => {
               onChange={handlePasswordChange}
               onKeyPress={handleKeyPress}
             />
+            <TextField
+              error={state.isError}
+              fullWidth
+              id="url"
+              label="URL"
+              placeholder="URL"
+              margin="normal"
+              onChange={handleUrlChange}
+              onKeyPress={handleKeyPress}
+            />
           </div>
         </CardContent>
         <CardActions>
@@ -212,7 +238,7 @@ const Login: FC = () => {
             className={classes.loginBtn}
             disabled={state.isButtonDisabled}
             onClick={(event: MouseEvent<HTMLButtonElement>) => {
-              // @todo This eliminates a warning that is sent to the console
+              // TODO: This eliminates a warning that is sent to the console
               event.preventDefault();
               handleLogin();
             }}
