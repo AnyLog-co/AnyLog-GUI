@@ -121,7 +121,7 @@ const Login: FC = () => {
   const { t } = useTranslation();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, prefer-const
-  let [communicator, setCommunicator] = useRecoilState<OptionalCommunicator>(communicatorState);
+  const [communicator, setCommunicator] = useRecoilState<OptionalCommunicator>(communicatorState);
 
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -144,9 +144,9 @@ const Login: FC = () => {
     // TODO: Disable the button, run async call to check username and password.
     // If unsuccessful, enable the button.
     if (state.username === 'a' && state.password === 'a') {
-      communicator = new ProxyCommunicator(state.username, '', state.password);
-      setCommunicator(communicator);
-      localStorage.setItem('communicator', CommunicatorSerDe.serialize(communicator));
+      const newCommunicator = new ProxyCommunicator(state.username, state.password, state.url);
+      setCommunicator(newCommunicator);
+      localStorage.setItem('communicator', CommunicatorSerDe.serialize(newCommunicator));
 
       dispatch({
         type: 'loginSuccess',
