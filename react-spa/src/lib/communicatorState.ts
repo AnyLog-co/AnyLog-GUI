@@ -1,11 +1,12 @@
 import { atom } from 'recoil';
 
-import Communicator from './Communicator';
+import Communicator from './Communicator/Communicator';
 import CommunicatorSerDe from './Communicator/CommunicatorSerDe';
 
 export type OptionalCommunicator = Communicator | undefined;
 
 const fromLocalStorage = () => {
+  console.log('** from local storage');
   const data = localStorage.getItem('communicator');
   if (data) {
     try {

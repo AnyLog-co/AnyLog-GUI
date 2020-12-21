@@ -8,11 +8,15 @@
 - [Import and export](https://javascript.info/import-export)
 - [Why are @testing-library and jest not devDependencies?]https://spectrum.chat/create-react-app/general/why-cra-has-testing-library-as-dependency-why-not-its-in-devdependency~e3c795e6-ae39-459a-95f9-2bb15fde7c0f
 
+## HTML
+
+- [How to correctly use preventDefault(), stopPropagation(), or return false; on events](https://medium.com/@jacobwarduk/how-to-correctly-use-preventdefault-stoppropagation-or-return-false-on-events-6c4e3f31aedb)
+
 ## Typescript
 
 - https://www.typescriptlang.org/docs/
 - https://stackoverflow.com/questions/45176661/how-do-i-decide-whether-types-goes-into-dependencies-or-devdependencies
-- https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#optional-chaining/State
+- [Optional chaining](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#optional-chaining/State)
 
 ## Production vs. Development
 
@@ -44,9 +48,7 @@
 
 ## State
 
-- https://reactjs.org/docs/context.html
 - https://www.robinwieruch.de/javascript-reducer
-- [React context API with asynchronous reducer](https://medium.com/@patrick.gross1987/how-to-use-the-react-context-api-with-an-asynchronous-reducer-5651c2dc26aa)
 - https://dev.to/stephencweiss/usereducer-with-typescript-2kf
 - https://blog.logrocket.com/use-hooks-and-context-not-react-and-redux/
 - https://dmitripavlutin.com/react-usestate-hook-guide/
@@ -54,7 +56,12 @@
 - https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/
 - https://stackoverflow.com/questions/62487168/loosing-component-data-on-page-refresh-in-react
 - [Why I Stopped Using Redux](https://dev.to/g_abud/why-i-quit-redux-1knl)
+- [React context API with asynchronous reducer](https://medium.com/@patrick.gross1987/how-to-use-the-react-context-api-with-an-asynchronous-reducer-5651c2dc26aa)
+
+### Recoil
+
 - https://medium.com/react-courses/integrate-recoil-with-typescript-to-share-your-state-across-react-components-8cf1a3910fae
+- https://dev.to/malloc007/migrate-context-to-recoil-40mc
 - [Recoil.js - State management for React](https://react.christmas/2020/10)
 - [Recoil and Typescript](https://www.saltycrane.com/cheat-sheets/typescript/recoil/latest/)
 

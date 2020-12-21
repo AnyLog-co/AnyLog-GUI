@@ -4,6 +4,11 @@
   },
   "Login": {
     "title": "Welcome to AnyLog! Enter a/a for testing",
-    "button-login": "Log In"
+    "button": {
+      "login": "Log In"
+    },
+    "edit": {
+      "url": "Network URL"
+    }
   }
 }

@@ -11,6 +11,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 import ProxyCommunicator from '../lib/Communicator/ProxyCommunicator';
 import CommunicatorSerDe from '../lib/Communicator/CommunicatorSerDe';
@@ -51,6 +52,36 @@ interface State {
   isError: boolean;
 }
 
+let urls: string[] = [];
+
+function readUrls() {
+  const data = localStorage.getItem('urls');
+  if (data) {
+    try {
+      urls = JSON.parse(data);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      localStorage.removeItem('urls');
+    }
+  }
+  if (!urls.length) {
+    urls.push('http://172.105.117.98:2249');
+  }
+}
+
+function addUrl(url: string): void {
+  if (urls.includes(url)) return;
+  urls.push(url);
+  // Sort it
+  urls.sort();
+  urls = Array.from(new Set(urls));
+  localStorage.setItem('urls', JSON.stringify(urls));
+}
+
+readUrls();
+
+// TODO The URL component will become a drop down whose values are stored in localStorage
 const initialState: State = {
   username: '',
   password: '',
@@ -124,6 +155,8 @@ const Login: FC = () => {
   const [communicator, setCommunicator] = useRecoilState<OptionalCommunicator>(communicatorState);
 
   const classes = useStyles();
+
+  if (urls.length) [initialState.url] = urls;
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
@@ -147,6 +180,7 @@ const Login: FC = () => {
       const newCommunicator = new ProxyCommunicator(state.username, state.password, state.url);
       setCommunicator(newCommunicator);
       localStorage.setItem('communicator', CommunicatorSerDe.serialize(newCommunicator));
+      addUrl(state.url);
 
       dispatch({
         type: 'loginSuccess',
@@ -218,15 +252,26 @@ const Login: FC = () => {
               onChange={handlePasswordChange}
               onKeyPress={handleKeyPress}
             />
-            <TextField
-              error={state.isError}
-              fullWidth
-              id="url"
-              label="URL"
-              placeholder="URL"
-              margin="normal"
-              onChange={handleUrlChange}
-              onKeyPress={handleKeyPress}
+            <Autocomplete
+              id="combo-box-url"
+              value={state.url}
+              options={urls}
+              freeSolo
+              renderInput={(params) => (
+                <TextField
+                  // eslint-disable-next-line react/jsx-props-no-spreading
+                  {...params}
+                  error={state.isError}
+                  fullWidth
+                  id="url"
+                  label={t('Login.edit.url')}
+                  placeholder="URL"
+                  margin="normal"
+                  variant="outlined"
+                  onChange={handleUrlChange}
+                  onKeyPress={handleKeyPress}
+                />
+              )}
             />
           </div>
         </CardContent>
@@ -238,12 +283,13 @@ const Login: FC = () => {
             className={classes.loginBtn}
             disabled={state.isButtonDisabled}
             onClick={(event: MouseEvent<HTMLButtonElement>) => {
-              // TODO: This eliminates a warning that is sent to the console
+              // TODO: This eliminates a warning that is sent to the console. It looks like crap but if you don't
+              // do this, the SPA will reset itself when handleLogin fails.
               event.preventDefault();
               handleLogin();
             }}
           >
-            <Trans>Login.button-login</Trans>
+            <Trans>Login.button.login</Trans>
           </Button>
         </CardActions>
       </Card>

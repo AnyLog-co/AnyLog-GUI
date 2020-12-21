@@ -1,5 +1,6 @@
 /**
- * @description Abstract class that interacts with backend API
+ * @description Abstract class that interacts with backend API and keeps track of the logged-in
+ * user
  */
 abstract class Communicator {
   #username: string;
@@ -20,6 +21,8 @@ abstract class Communicator {
   abstract logout(): void;
 
   abstract login(): boolean;
+
+  abstract status(entity: string): Record<string, unknown>;
 }
 
 export default Communicator;
