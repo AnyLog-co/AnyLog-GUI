@@ -17,7 +17,9 @@ const App: React.FC = () => (
       <BrowserRouter>
         <Header />
         <Switch>
-          <AuthRoute exact path="/" component={Home} />
+          <AuthRoute exact path="/">
+            <Home />
+          </AuthRoute>
           <Route exact path="/login">
             <Login />
           </Route>

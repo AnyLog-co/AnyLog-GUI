@@ -5,14 +5,32 @@ import { useRecoilState } from 'recoil';
 import communicatorState from '../lib/communicatorState';
 
 interface Props {
-  component: React.FC;
+  children: React.ReactNode;
   path: string;
   exact: boolean;
 }
 
-const AuthRoute: React.FC<Props> = ({ component, path, exact }) => {
+const AuthRoute: React.FC<Props> = ({ path, exact, children }: Props) => {
   const [communicator] = useRecoilState(communicatorState);
-  return communicator ? <Route path={path} exact={exact} component={component} /> : <Redirect to="/login" />;
+
+  return (
+    <Route
+      path={path}
+      exact={exact}
+      render={({ location }) =>
+        communicator ? (
+          children
+        ) : (
+          <Redirect
+            to={{
+              pathname: '/login',
+              state: { from: location },
+            }}
+          />
+        )
+      }
+    />
+  );
 };
 
 export default AuthRoute;
