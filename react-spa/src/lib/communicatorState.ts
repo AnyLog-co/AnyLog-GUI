@@ -6,9 +6,10 @@ import CommunicatorSerDe from './Communicator/CommunicatorSerDe';
 export type OptionalCommunicator = Communicator | undefined;
 
 const fromLocalStorage = () => {
-  console.log('** from local storage');
   const data = localStorage.getItem('communicator');
   if (data) {
+    // eslint-disable-next-line no-console
+    console.log('Deserializing communicator state');
     try {
       return CommunicatorSerDe.deserialize(data);
     } catch (error) {

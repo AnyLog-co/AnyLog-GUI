@@ -22,7 +22,7 @@ abstract class Communicator {
 
   abstract login(): boolean;
 
-  abstract status(entity: string): Record<string, unknown>;
+  abstract nodeStatus(): Promise<Record<string, unknown>>;
 }
 
 export default Communicator;

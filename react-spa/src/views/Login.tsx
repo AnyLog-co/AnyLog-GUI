@@ -17,7 +17,6 @@ import ProxyCommunicator from '../lib/Communicator/ProxyCommunicator';
 import CommunicatorSerDe from '../lib/Communicator/CommunicatorSerDe';
 import communicatorState, { OptionalCommunicator } from '../lib/communicatorState';
 
-// TODO: Convert layout to Grid
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
@@ -71,11 +70,12 @@ function readUrls() {
 }
 
 function addUrl(url: string): void {
-  if (urls.includes(url)) return;
-  urls.push(url);
-  // Sort it
-  urls.sort();
-  urls = Array.from(new Set(urls));
+  if (urls.length) {
+    const index = urls.indexOf(url);
+    if (index > -1) urls.splice(index, 1);
+    urls.sort();
+  }
+  urls.unshift(url);
   localStorage.setItem('urls', JSON.stringify(urls));
 }
 
@@ -212,10 +212,10 @@ const Login: FC = () => {
     });
   };
 
-  const handleUrlChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+  const handleUrlChange = (newValue: string): void => {
     dispatch({
       type: 'setUrl',
-      payload: event.target.value,
+      payload: newValue,
     });
   };
 
@@ -257,19 +257,17 @@ const Login: FC = () => {
               value={state.url}
               options={urls}
               freeSolo
+              onChange={(_, newValue) => handleUrlChange(newValue === null ? '' : newValue)}
               renderInput={(params) => (
                 <TextField
                   // eslint-disable-next-line react/jsx-props-no-spreading
                   {...params}
-                  error={state.isError}
                   fullWidth
                   id="url"
                   label={t('Login.edit.url')}
                   placeholder="URL"
                   margin="normal"
-                  variant="outlined"
-                  onChange={handleUrlChange}
-                  onKeyPress={handleKeyPress}
+                  onBlur={(event) => handleUrlChange(event.target.value)}
                 />
               )}
             />

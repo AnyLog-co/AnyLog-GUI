@@ -98,6 +98,7 @@
 ## Other Component Libraries
 
 - [Building and styling tables with react-table](https://blog.logrocket.com/building-styling-tables-react-table-v7/)
+- [Server side sorting, filtering and pagination with React Table](https://www.aidanranney.com/2019-07-15-server-side-react-table/)
 
 ## React Router
 
@@ -125,6 +126,12 @@
 
 - https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls
 
+## Error Handling
+
+- https://blog.logrocket.com/error-handling-react-error-boundary/
+
 ## Testing
 
+- https://react.christmas/2020/6
+- https://blog.logrocket.com/enzyme-vs-react-testing-library-a-mindset-shift/
 - https://www.smashingmagazine.com/2020/06/practical-guide-testing-react-applications-jest/

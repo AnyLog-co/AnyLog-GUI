@@ -9,12 +9,6 @@ class ProxyCommunicator extends WebCommunicator {
   alterRequest(/* request: any */): void {
     // TODO: change to Axios type
   }
-
-  dehydrate(data: Record<string, unknown>): void {
-    // eslint-disable-next-line no-param-reassign
-    if (!data.type) data.type = 'ProxyCommunicator';
-    super.dehydrate(data);
-  }
 }
 
 export default ProxyCommunicator;
