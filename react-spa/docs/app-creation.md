@@ -6,14 +6,16 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 
 - Modern React development with hooks
 - Typescript
-- Prettier and ESLint
+- [Prettier and ESLint](https://terrislinenbach.medium.com/formatting-and-linting-a-modern-react-typescript-project-fa127e6426f)
 - Material-UI look and feel (version 5, alpha)
 - Data access via React Query 3 and Axios
 - Global state management via Recoil
 - "Loading" feedback via React Suspense
 - Page transitions via React Router
 - i18next for translations
-- CORS workaround proxy
+- [CORS workaround proxy](https://terrislinenbach.medium.com/an-advanced-cors-workaround-for-react-apps-40dec1a4a0cd)
+- A default error page
+- A custom 404 page
 - Testing with Jest and React Testing Library
   - A sample test invokes an external service is included
   - Because the example uses the proxy, you must start the app (npm run start) prior to running tests

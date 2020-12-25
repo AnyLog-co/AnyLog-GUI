@@ -3,18 +3,26 @@ import React, { FC } from 'react';
 import { useQuery } from 'react-query';
 
 import Loading from './LoadingDots';
+import isDev from '../lib/isDev';
 
 const QueryExample: FC = () => {
   const { isLoading, error, data } = useQuery('repoData', () => {
-    const headers = new Headers({
-      'X-Forward': 'https://api.github.com/repos/tannerlinsley/react-query',
-    });
+    let request;
+    const url = 'https://api.github.com/repos/tannerlinsley/react-query';
 
-    const myRequest = new Request('/external', {
-      headers,
-    });
+    if (isDev) {
+      const headers = new Headers({
+        'X-Forward': url,
+      });
 
-    return fetch(myRequest).then((res) => res.json());
+      request = new Request('/external', {
+        headers,
+      });
+    } else {
+      request = new Request(url);
+    }
+
+    return fetch(request).then((res) => res.json());
   });
 
   if (isLoading) return <Loading />;
