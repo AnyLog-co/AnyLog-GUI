@@ -1,0 +1,1 @@
+curl --location --request GET 'http://172.105.117.98:2249'    --header 'type: sql'    --header 'dbms: sample_data'    --header 'details: SELECT * FROM machine_data;'

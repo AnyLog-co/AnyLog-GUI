@@ -3,16 +3,23 @@ import React, { FC } from 'react';
 import { useQuery } from 'react-query';
 
 const Example: FC = () => {
-  fetch('api/foobar');
+  const { isLoading, error, data } = useQuery('repoData', () => {
+    const myHeaders = new Headers({
+      location: 'https://api.github.com/repos/tannerlinsley/react-query',
+    });
 
-  const { isLoading, error, data } = useQuery('repoData', () =>
-    fetch('https://api.github.com/repos/tannerlinsley/react-query').then((res) => res.json()),
-  );
+    const myRequest = new Request('/api', {
+      method: 'GET',
+      headers: myHeaders,
+    });
+
+    return fetch(myRequest).then((res) => res.json());
+  });
 
   if (isLoading) return <>Loading...</>;
-
   if (error) throw error;
 
+  console.log(data);
   return (
     <div>
       <h1>{data.name}</h1>

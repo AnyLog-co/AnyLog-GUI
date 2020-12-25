@@ -13,7 +13,7 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 - "Loading" feedback via React Suspense
 - Page transitions via React Router
 - i18next for translations
-- Testing with Enzyme and Jest
+- Testing with Jest and React Testing Library
 
 ## Steps
 

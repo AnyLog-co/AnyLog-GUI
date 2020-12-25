@@ -2,6 +2,8 @@ import Communicator from './Communicator';
 import ProxyCommunicator from './ProxyCommunicator';
 import WebCommunicator from './WebCommunicator';
 
+import isDev from '../isDev';
+
 const version = '1.0';
 const watermark = '3c0b2b839f87f169ecbacc6a4a76c0c1864abad2f66aef6a67ee4314a024cf9f';
 
@@ -30,10 +32,9 @@ class CommunicatorSerDe {
 
     switch (data.type) {
       case 'WebCommunicator': {
-        return new WebCommunicator(data.username, data.password, data.url);
-      }
-      case 'ProxyCommunicator': {
-        return new ProxyCommunicator(data.username, data.password, data.url);
+        return isDev
+          ? new ProxyCommunicator(data.username, data.password, data.url)
+          : new WebCommunicator(data.username, data.password, data.url);
       }
       default: {
         throw new Error('Unable to deserialize Communicator: Unknown type');
