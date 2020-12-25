@@ -13,11 +13,10 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 - "Loading" feedback via React Suspense
 - Page transitions via React Router
 - i18next for translations
+- CORS workaround proxy
 - Testing with Jest and React Testing Library
-
-# Should @types/* appear in devDependencies?
-
-Because React applications are bundled, it doesn't matter whether you use devDependencies. All dependencies are considered at build time. Modules that aren't needed are discarded. If you're building a reusable library, not including a @types module can cause issues for the module's users. [Reference](https://github.com/facebook/create-react-app/issues/6180#issuecomment-453640473).
+  - A sample test invokes an external service is included
+  - Because the example uses the proxy, you must start the app (npm run start) prior to running tests
 
 ## Steps
 
@@ -115,3 +114,8 @@ node_modules/
 15. Edit tsconfig.json
 
 - set compilerOptions.target to esnext
+
+# Should @types/* appear in devDependencies?
+
+Because React applications are bundled, it doesn't matter whether you use devDependencies. All dependencies are considered at build time. Modules that aren't needed are discarded. If you're building a reusable library, not including a @types module can cause issues for the module's users. [Reference](https://github.com/facebook/create-react-app/issues/6180#issuecomment-453640473).
+

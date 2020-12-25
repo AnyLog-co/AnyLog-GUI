@@ -54,7 +54,7 @@
     "format": "prettier . --write",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --testURL=http://localhost:3000",
     "eject": "react-scripts eject"
   },
   "browserslist": {

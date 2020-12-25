@@ -2,24 +2,24 @@
 import React, { FC } from 'react';
 import { useQuery } from 'react-query';
 
-const Example: FC = () => {
+import Loading from './LoadingDots';
+
+const QueryExample: FC = () => {
   const { isLoading, error, data } = useQuery('repoData', () => {
     const headers = new Headers({
       'X-Forward': 'https://api.github.com/repos/tannerlinsley/react-query',
     });
 
     const myRequest = new Request('/external', {
-      method: 'GET',
       headers,
     });
 
     return fetch(myRequest).then((res) => res.json());
   });
 
-  if (isLoading) return <>Loading...</>;
+  if (isLoading) return <Loading />;
   if (error) throw error;
 
-  console.log(data);
   return (
     <div>
       <h1>{data.name}</h1>
@@ -30,4 +30,4 @@ const Example: FC = () => {
   );
 };
 
-export default Example;
+export default QueryExample;
