@@ -15,6 +15,10 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 - i18next for translations
 - Testing with Jest and React Testing Library
 
+# Should @types/* appear in devDependencies?
+
+Because React applications are bundled, it doesn't matter whether you use devDependencies. All dependencies are considered at build time. Modules that aren't needed are discarded. If you're building a reusable library, not including a @types module can cause issues for the module's users. [Reference](https://github.com/facebook/create-react-app/issues/6180#issuecomment-453640473).
+
 ## Steps
 
 1. [Install nvm](https://heynode.com/tutorial/install-nodejs-locally-nvm)
@@ -28,8 +32,7 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 9.
 
 ```shell
-npm i --save-dev eslint prettier eslint-config-airbnb-typescript-prettier \
-  enzyme enzyme-adapter-react-16 react-test-renderer
+npm i --save-dev eslint prettier eslint-config-airbnb-typescript-prettier 
 
 npm i --save \
   axios \
@@ -39,7 +42,8 @@ npm i --save \
   react-router-dom @types/react-router-dom \
   # Material-UI 5
   @emotion/react @emotion/styled @material-ui/core@next typeface-roboto \
-  react-query @types/react-query
+  react-query @types/react-query \
+  react-table @types/react-table
 ```
 
 10. Create .eslintrc.js

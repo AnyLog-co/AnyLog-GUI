@@ -4,13 +4,13 @@ import { useQuery } from 'react-query';
 
 const Example: FC = () => {
   const { isLoading, error, data } = useQuery('repoData', () => {
-    const myHeaders = new Headers({
-      location: 'https://api.github.com/repos/tannerlinsley/react-query',
+    const headers = new Headers({
+      'X-Forward': 'https://api.github.com/repos/tannerlinsley/react-query',
     });
 
-    const myRequest = new Request('/api', {
+    const myRequest = new Request('/external', {
       method: 'GET',
-      headers: myHeaders,
+      headers,
     });
 
     return fetch(myRequest).then((res) => res.json());
