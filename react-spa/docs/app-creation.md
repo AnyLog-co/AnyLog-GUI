@@ -33,7 +33,7 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 9.
 
 ```shell
-npm i --save-dev eslint prettier eslint-config-airbnb-typescript-prettier 
+npm i --save-dev eslint prettier eslint-config-airbnb-typescript-prettier jest-localstorage-mock
 
 npm i --save \
   axios \
@@ -117,7 +117,6 @@ node_modules/
 
 - set compilerOptions.target to esnext
 
-# Should @types/* appear in devDependencies?
+# Should @types/\* appear in devDependencies?
 
 Because React applications are bundled, it doesn't matter whether you use devDependencies. All dependencies are considered at build time. Modules that aren't needed are discarded. If you're building a reusable library, not including a @types module can cause issues for the module's users. [Reference](https://github.com/facebook/create-react-app/issues/6180#issuecomment-453640473).
-
