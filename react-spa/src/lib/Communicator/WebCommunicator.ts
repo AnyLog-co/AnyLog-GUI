@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import Communicator from './Communicator';
+import Communicator, { Node } from './Communicator';
 
 class WebCommunicator extends Communicator {
   #url: string;
@@ -62,18 +62,38 @@ class WebCommunicator extends Communicator {
   // curl --location --request GET 'http://172.105.117.98:2249'    --header 'type: info'  --header 'details: blockchain get operator where company = anylog'
   // [{'operator': {'cluster': '496ba074887a7c5c48301d970e9d9b10', 'hostname': 'localhost', 'name': 'operator1', 'company': 'anylog', 'ip': '172.105.117.98', 'local ip': '172.105.117.98', 'port': '2148', 'rest port': '2149', 'db type': 'psql', 'loc': '1.2929, 103.8547', 'id': '642654015164360928a0e347961b6174', 'date': '2020-12-20T22:20:03.602061Z', 'member': 10}}]
 
-  async toJSON(headers: Record<string, string>): Promise<Record<string, unknown>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async getArray(headers: Record<string, string>): Promise<Record<string, any>[]> {
     const url = this.forward(headers);
     const response = await fetch(url, { headers });
     const text = await response.text();
     return JSON.parse(text.replace(/'/g, '"'));
   }
 
-  nodeStatus(company = 'anylog'): Promise<Record<string, unknown>> {
-    return this.toJSON({
+  async nodes(company: string): Promise<Node[]> {
+    const data = await this.getArray({
       type: 'info',
       details: `blockchain get operator where company = ${company}`,
     });
+
+    const newData: Node[] = data.map((item) => {
+      const first = Object.keys(item)[0];
+      const type = first === ('operator' || 'query') ? first : 'unknown';
+
+      let cluster: string;
+      let name: string;
+
+      if (type === 'unknown') {
+        cluster = '';
+        name = '';
+      } else {
+        ({ cluster, name } = item[type]);
+      }
+
+      return { type, cluster, name };
+    });
+
+    return newData;
   }
 }
 

@@ -7,7 +7,8 @@ import { QueryClientProvider } from 'react-query';
 import Login from '../views/Login';
 import Home from '../views/Home';
 import NotFound from '../views/NotFound';
-// import NodeStatus from './NodeStatus';
+import QueryExample from './QueryExample';
+import Nodes from './anylog/Nodes';
 import AuthRoute from './AuthRoute';
 import Header from '../views/Header';
 import queryClient from '../lib/queryClient';
@@ -20,11 +21,12 @@ const App: React.FC = () => (
         <BrowserRouter>
           <Header />
           <Switch>
-            {/*
-            <AuthRoute exact path="/status">
-              <NodeStatus />
+            <AuthRoute exact path="/queryExample">
+              <QueryExample />
             </AuthRoute>
-            */}
+            <AuthRoute exact path="/nodes">
+              <Nodes />
+            </AuthRoute>
             <AuthRoute exact path="/">
               <Home />
             </AuthRoute>
