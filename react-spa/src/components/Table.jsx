@@ -22,30 +22,24 @@ const Table = ({ columns, data }) => {
   return (
     <MaUTable {...getTableProps()}>
       <TableHead>
-        {headerGroups.map(headerGroup => (
+        {headerGroups.map((headerGroup) => (
           <TableRow {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map(column => (
-              <TableCell {...column.getHeaderProps()}>
-                {column.render('Header')}
-              </TableCell>
+            {headerGroup.headers.map((column) => (
+              <TableCell {...column.getHeaderProps()}>{column.render('Header')}</TableCell>
             ))}
           </TableRow>
         ))}
       </TableHead>
       <TableBody>
         {rows.map((row) => {
-          prepareRow(row)
+          prepareRow(row);
           return (
             <TableRow {...row.getRowProps()}>
-              {row.cells.map(cell => {
-                return (
-                  <TableCell {...cell.getCellProps()}>
-                    {cell.render('Cell')}
-                  </TableCell>
-                )
+              {row.cells.map((cell) => {
+                return <TableCell {...cell.getCellProps()}>{cell.render('Cell')}</TableCell>;
               })}
             </TableRow>
-          )
+          );
         })}
       </TableBody>
     </MaUTable>

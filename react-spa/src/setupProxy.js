@@ -9,5 +9,7 @@ module.exports = (app) =>
     request({
       uri,
       headers,
-    }).pipe(res);
+    })
+      .on('error', (error) => res.status(503).send(error.message))
+      .pipe(res);
   });
