@@ -17,8 +17,6 @@ const fromLocalStorage = () => {
       console.log(error);
       localStorage.removeItem('communicator');
     }
-    // eslint-disable-next-line no-console
-    console.log('Done deserializing communicator state');
   }
   return undefined;
 };
