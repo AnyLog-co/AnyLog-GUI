@@ -135,3 +135,4 @@
 - https://react.christmas/2020/6
 - https://blog.logrocket.com/enzyme-vs-react-testing-library-a-mindset-shift/
 - https://www.smashingmagazine.com/2020/06/practical-guide-testing-react-applications-jest/
+- [How to Test Asynchronous Methods with React Testing Library](https://www.polvara.me/posts/how-to-test-asynchronous-methods/)
