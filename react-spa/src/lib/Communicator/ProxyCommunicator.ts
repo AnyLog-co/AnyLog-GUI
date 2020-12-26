@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import WebCommunicator from './WebCommunicator';
 
 /**
@@ -6,8 +7,9 @@ import WebCommunicator from './WebCommunicator';
  */
 class ProxyCommunicator extends WebCommunicator {
   // eslint-disable-next-line class-methods-use-this
-  alterRequest(/* request: any */): void {
-    // TODO: change to Axios type
+  forward(headers: Record<string, string>): string {
+    headers['X-Forward'] = this.url;
+    return '/forward';
   }
 }
 

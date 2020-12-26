@@ -1,6 +1,4 @@
 /* eslint-disable no-param-reassign */
-import axios from 'axios';
-
 import Communicator from './Communicator';
 
 class WebCommunicator extends Communicator {
@@ -21,10 +19,13 @@ class WebCommunicator extends Communicator {
     super.dehydrate(data);
   }
 
-  // TODO change to Axios type
-  // eslint-disable-next-line class-methods-use-this
-  alterRequest(/* request: any */): void {
-    //
+  get url(): string {
+    return this.#url;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  forward(headers: Record<string, string>): string {
+    return this.#url;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
@@ -61,15 +62,18 @@ class WebCommunicator extends Communicator {
   // curl --location --request GET 'http://172.105.117.98:2249'    --header 'type: info'  --header 'details: blockchain get operator where company = anylog'
   // [{'operator': {'cluster': '496ba074887a7c5c48301d970e9d9b10', 'hostname': 'localhost', 'name': 'operator1', 'company': 'anylog', 'ip': '172.105.117.98', 'local ip': '172.105.117.98', 'port': '2148', 'rest port': '2149', 'db type': 'psql', 'loc': '1.2929, 103.8547', 'id': '642654015164360928a0e347961b6174', 'date': '2020-12-20T22:20:03.602061Z', 'member': 10}}]
 
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars
-  async nodeStatus(): Promise<Record<string, unknown>> {
-    const response = await axios.get(this.#url, {
-      headers: {
-        type: 'info',
-        details: 'blockchain get operator where company = anylog',
-      },
+  async toJSON(headers: Record<string, string>): Promise<Record<string, unknown>> {
+    const url = this.forward(headers);
+    const response = await fetch(url, { headers });
+    const text = await response.text();
+    return JSON.parse(text.replace(/'/g, '"'));
+  }
+
+  nodeStatus(company = 'anylog'): Promise<Record<string, unknown>> {
+    return this.toJSON({
+      type: 'info',
+      details: `blockchain get operator where company = ${company}`,
     });
-    return JSON.parse(response.data.replace(/'/g, '"'));
   }
 }
 
