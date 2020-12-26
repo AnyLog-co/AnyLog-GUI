@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { FC } from 'react';
+import React from 'react';
 import { useQuery } from 'react-query';
 
 import Loading from './LoadingDots';
 import isDev from '../lib/isDev';
 
-const QueryExample: FC = () => {
+const QueryExample: React.FC = () => {
   const { isLoading, error, data } = useQuery('repoData', () => {
     let request;
     const url = 'https://api.github.com/repos/tannerlinsley/react-query';
@@ -15,7 +15,7 @@ const QueryExample: FC = () => {
         'X-Forward': url,
       });
 
-      request = new Request('/external', {
+      request = new Request('/forward', {
         headers,
       });
     } else {

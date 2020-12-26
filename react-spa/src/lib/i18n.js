@@ -2,8 +2,9 @@ import i18n from 'i18next';
 import Backend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
-import EN from '../translations/en/translations.json';
+import EN_US from '../translations/en_us/translations.json';
 import DE from '../translations/de/translations.json';
+import isDev from './isDev';
 
 i18n
   .use(Backend)
@@ -11,14 +12,12 @@ i18n
   .use(initReactI18next)
   .init({
     resources: {
-      en: { translation: EN },
+      en_us: { translation: EN_US },
       de: { translation: DE },
     },
-    // default language when load the website in browser
-    lng: 'en',
-    // When react i18next not finding any language to as default in borwser
-    fallbackLng: 'en',
-    debug: true, // TODO:
+    lng: 'en_us',
+    fallbackLng: 'en_us',
+    debug: isDev,
     // keySeparator: '.',
     interpolation: {
       escapeValue: false,

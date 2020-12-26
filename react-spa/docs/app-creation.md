@@ -8,7 +8,7 @@ This is a React 17 single page application (SPA) for web browsers. It features:
 - Typescript
 - [Prettier and ESLint](https://terrislinenbach.medium.com/formatting-and-linting-a-modern-react-typescript-project-fa127e6426f)
 - Material-UI look and feel (version 5, alpha)
-- Data access via React Query 3 and Axios
+- Data access via React Query 3
 - Global state management via Recoil
 - "Loading" feedback via React Suspense
 - Page transitions via React Router

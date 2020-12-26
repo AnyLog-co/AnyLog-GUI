@@ -12,7 +12,7 @@ const Language: React.FC = () => {
   return (
     <>
       {t('App.select-language')}
-      <button onClick={() => changeLanguage('en')}>en</button>
+      <button onClick={() => changeLanguage('en_us')}>us</button>
       <button onClick={() => changeLanguage('de')}>de</button>
     </>
   );
