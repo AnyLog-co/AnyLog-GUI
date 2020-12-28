@@ -182,7 +182,7 @@ def row_count(conn, metadatas:str):
                   
    print(rc) 
 
-def blockchain_sub_query(conn:str, policy:str, where_condition:str, key:str): 
+def blockchain_sub_query(conn:str): 
     """
     Based on key, get sub-result from results
     :args: 
@@ -197,15 +197,17 @@ def blockchain_sub_query(conn:str, policy:str, where_condition:str, key:str):
         Policy: ___ | Where Condition: ___
             policy_name: key_value 
     """
-    print_stmt="Policy: %s | Where Condition: %s" % (policy, where_condition) 
-    output = query_data.get_sub_data(conn, policy, where_condition, key)
-    if output == {}: 
-        print('%s | Results: None' % print_stmt)
-    else: 
-        for policy in output: 
-            print_stmt += '\n\t%s: %s' % (policy, output[policy]) 
-        print(print_stmt) 
-
+    # Cluster 
+    results = query_data.query_blockchain_complex(conn, 'cluster', 'table_dbms=lsl_demo', 'id, company')
+    print('Clusters: ')
+    for result in results: 
+        stmt = "" 
+        for rslt in result: 
+            stmt += "%s: %s" % (rslt, result[rslt]) 
+            if rslt != list(result.keys())[-1]: 
+                stmt += " | " 
+        print(stmt) 
+    
 def main(): 
    """
    Print information regarding network based on company 
@@ -258,7 +260,7 @@ def main():
 
    print('complex blockchain query') 
    print('------------------------')
-   blockchain_sub_query(args.conn, 'cluster', 'company=anylog', 'table.name')
+   blockchain_sub_query(args.conn) 
 
 if __name__ == '__main__': 
    main() 

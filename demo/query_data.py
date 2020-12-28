@@ -124,41 +124,68 @@ def query_data(conn:str, dbms:str, query:str)->dict:
 
     return results
 
-def get_sub_data(conn:str, policy:str, where_condition:str, key:str)->dict:
+
+def query_blockchain_complex(conn:str, policy:str, where_condition:str, keys:str)->dict: 
     """
     Based on key, get sub-result from results
     :args: 
         conn:str - IP & Port 
         policy:str - policy to get from blockchain (master, operator, cluster, etc.)
         where_condition:str - where condition in blockchain 
-        key:str - sub value from blockchain 
-    :param: 
-        output:dict- results based on key + blockchain_query 
-        blockchain_query:str - blockchain query based on policy & where_condition 
-        blockchain_data:list - results based on blockchain_query 
+        keys:str - sub value from blockchain 
+    :param;
+        cluster_table:list - for cluster values in table 
+        index:int - index within list 
+        blockchain_query:str - query to execute 
     :return: 
-        results from blockchain 
+        list of outputs in dict
+    :sample-cmd: 
+        query_blockchain_complex('127.0.0.1:2049', 'cluster', 'table_name=ping_sensor', 'company') 
+
     """
-    output = {}
+    output = [] 
+    cluster_table = ['name', 'dbms', 'distribution', 'active'] 
+    blockchain_query = 'blockchain get %s' % policy 
 
-    blockchain_query="blockchain get %s" % policy
-    if where_condition != '': 
-        blockchain_query = blockchain_query + ' where %s' % where_condition 
-    blockchain_data = query_blockchain(conn, blockchain_query)
+    # Convert WHERE conditions into list & format if policy of cluster type
+    where_condition = where_condition.split('and') 
+    for where in where_condition: 
+        index = where_condition.index(where) 
+        where = where.replace(' ', '') 
+        base = where.split('=')[0] 
+        if policy == 'cluster' and base.split('_')[0] == 'table': 
+            new_base = 'table[%s]' % base.split('_')[1]
+            where = where.replace(base, new_base) 
+        where_condition[index] = where 
     
-    if blockchain_data != []: 
-        for row in blockchain_data:
-            if '.' in key: 
-                prt1 = key.split('.')[0] 
-                prt2 = key.split('.')[1] 
-                if isinstance(row[policy][prt1], list): 
-                    output[row[policy]['name']] = [] 
-                    for rw in row[policy][prt1]: 
-                        if rw[prt2] not in output[row[policy]['name']]:
-                            output[row[policy]['name']].append(rw[prt2])  
-                else:
-                    output[row[policy]['name']] = row[policy][key.split('.')[0]][key.split('.')[1]]
-            else: 
-                output[row[policy]['name']] = row[policy][key]
+    if len(where_condition) > 0: 
+        blockchain_query += ' where '
+        for where in where_condition: 
+            blockchain_query += where 
+            if where is not where_condition[-1]: 
+                blockchain_query += ' and '  
 
-    return output
+    # Convert key into list 
+    keys=keys.replace(' ', '').split(',') 
+    if len(keys) > 0 and (keys != [] and keys != ['']): 
+        blockchain_query += ' bring '
+        for key in keys:
+            blockchain_query += '[%s][%s]' % (policy, key) 
+            if key != keys[-1]: 
+                blockchain_query += ' | '
+            else: 
+                blockchain_query += " separator = , "
+
+    # Get results based on query 
+    results = query_blockchain(conn, blockchain_query)
+
+    # format results 
+    for result in results['Blockchain data'].split(','): 
+        data = {} 
+        result = result.split('|') 
+        for rslt in result:
+            index = result.index(rslt) 
+            data[keys[index]] = rslt 
+        output.append(data) 
+
+    return output 
