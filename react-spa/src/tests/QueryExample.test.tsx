@@ -1,13 +1,12 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { QueryClientProvider } from 'react-query';
+import { QueryClientProvider, QueryClient } from 'react-query';
 
 import QueryExample from '../components/QueryExample';
-import queryClient from '../lib/queryClient';
 
 it('calls external service', async () => {
   render(
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={new QueryClient()}>
       <QueryExample />
     </QueryClientProvider>,
   );

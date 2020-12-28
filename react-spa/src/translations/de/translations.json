@@ -1,9 +1,9 @@
 {
   "App": {
-    "select-language": "?"
+    "select-language": "Select a language (in Deutsche)"
   },
   "Login": {
-    "title": "Welcome to AnyLog (in Deutsch)!",
+    "title": "Welcome (in Deutsche)!",
     "button-login": "Log In"
   }
 }

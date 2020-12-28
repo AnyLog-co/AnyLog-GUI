@@ -1,10 +1,10 @@
+import { QueryClient } from 'react-query';
+
 export interface Node {
   type: 'query' | 'operator' | 'unknown';
   cluster: string;
   name: string;
 }
-
-// [{ 'operator': { 'cluster': '496ba074887a7c5c48301d970e9d9b10', 'h4stname': 'localhost', 'name': 'operator1', 'company': 'anylog', 'ip': '172.105.117.98', 'local ip': '172.105.117.98', 'port': '2148', 'rest port': '2149', 'db type': 'psql', 'loc': '1.2929, 103.8547', 'id': '642654015164360928a0e347961b6174', 'date': '2020-12-20T22:20:03.602061Z', 'member': 10 } }]
 
 /**
  * @description Abstract class that interacts with backend API and keeps track of the logged-in
@@ -13,6 +13,8 @@ export interface Node {
 abstract class Communicator {
   #username: string;
 
+  #queryClient: QueryClient = new QueryClient();
+
   constructor(username: string) {
     this.#username = username;
   }
@@ -20,6 +22,10 @@ abstract class Communicator {
   dehydrate(data: Record<string, unknown>): void {
     // eslint-disable-next-line no-param-reassign
     data.username = this.username;
+  }
+
+  get queryClient(): QueryClient {
+    return this.#queryClient;
   }
 
   get username(): string {
