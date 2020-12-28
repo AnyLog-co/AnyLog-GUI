@@ -124,4 +124,41 @@ def query_data(conn:str, dbms:str, query:str)->dict:
 
     return results
 
+def get_sub_data(conn:str, policy:str, where_condition:str, key:str)->dict:
+    """
+    Based on key, get sub-result from results
+    :args: 
+        conn:str - IP & Port 
+        policy:str - policy to get from blockchain (master, operator, cluster, etc.)
+        where_condition:str - where condition in blockchain 
+        key:str - sub value from blockchain 
+    :param: 
+        output:dict- results based on key + blockchain_query 
+        blockchain_query:str - blockchain query based on policy & where_condition 
+        blockchain_data:list - results based on blockchain_query 
+    :return: 
+        results from blockchain 
+    """
+    output = {}
 
+    blockchain_query="blockchain get %s" % policy
+    if where_condition != '': 
+        blockchain_query = blockchain_query + ' where %s' % where_condition 
+    blockchain_data = query_blockchain(conn, blockchain_query)
+    
+    if blockchain_data != []: 
+        for row in blockchain_data:
+            if '.' in key: 
+                prt1 = key.split('.')[0] 
+                prt2 = key.split('.')[1] 
+                if isinstance(row[policy][prt1], list): 
+                    output[row[policy]['name']] = [] 
+                    for rw in row[policy][prt1]: 
+                        if rw[prt2] not in output[row[policy]['name']]:
+                            output[row[policy]['name']].append(rw[prt2])  
+                else:
+                    output[row[policy]['name']] = row[policy][key.split('.')[0]][key.split('.')[1]]
+            else: 
+                output[row[policy]['name']] = row[policy][key]
+
+    return output
