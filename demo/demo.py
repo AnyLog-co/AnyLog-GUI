@@ -182,6 +182,30 @@ def row_count(conn, metadatas:str):
                   
    print(rc) 
 
+def blockchain_sub_query(conn:str, policy:str, where_condition:str, key:str): 
+    """
+    Based on key, get sub-result from results
+    :args: 
+        conn:str - IP & Port 
+        policy:str - policy to get from blockchain (master, operator, cluster, etc.)
+        where_condition:str - where condition in blockchain 
+        key:str - sub value from blockchain 
+    :param: 
+        print_stmt:str - statement to print 
+        output:dict- results from get_sub_data 
+    :print: 
+        Policy: ___ | Where Condition: ___
+            policy_name: key_value 
+    """
+    print_stmt="Policy: %s | Where Condition: %s" % (policy, where_condition) 
+    output = query_data.get_sub_data(conn, policy, where_condition, key)
+    if output == {}: 
+        print('%s | Results: None' % print_stmt)
+    else: 
+        for policy in output: 
+            print_stmt += '\n\t%s: %s' % (policy, output[policy]) 
+        print(print_stmt) 
+
 def main(): 
    """
    Print information regarding network based on company 
@@ -229,6 +253,12 @@ def main():
    print('count') 
    print('-----') 
    row_count(args.conn, metadata)
+
+   print('\n') 
+
+   print('complex blockchain query') 
+   print('------------------------')
+   blockchain_sub_query(args.conn, 'cluster', 'company=anylog', 'table.name')
 
 if __name__ == '__main__': 
    main() 
