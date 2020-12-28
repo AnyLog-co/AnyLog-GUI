@@ -3,6 +3,7 @@ import { useQuery } from 'react-query';
 import { useRecoilState } from 'recoil';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
+import Loading from '../LoadingDots';
 import Table from '../Table';
 import communicatorState, { OptionalCommunicator } from '../../lib/communicatorState';
 
@@ -27,7 +28,7 @@ const Nodes: React.FC = () => {
 
   const { isLoading, error, data } = useQuery('nodes', () => communicator.nodes('anylog'));
 
-  if (isLoading) return <>Loading...</>;
+  if (isLoading) return <Loading />;
 
   if (error) throw error;
   if (!data) throw new Error();

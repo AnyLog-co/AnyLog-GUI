@@ -15,6 +15,7 @@ const UserMenu: React.FC<Props> = ({ anchorEl, onClose }) => {
 
   const logout = () => {
     if (communicator) {
+      // TODO
       // communicator.logout();
       localStorage.removeItem('communicator');
       setCommunicator(undefined);

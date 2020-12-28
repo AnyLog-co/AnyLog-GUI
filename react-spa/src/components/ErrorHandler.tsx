@@ -7,8 +7,8 @@ interface Props {
 
 interface State {
   errorOccurred: boolean;
-  error: Error | undefined;
-  info: React.ErrorInfo | undefined;
+  error?: Error;
+  info?: string;
 }
 
 class ErrorHandler extends React.Component<Props, State> {
@@ -18,16 +18,18 @@ class ErrorHandler extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    this.setState({ errorOccurred: true, error, info });
+    const infoStr = JSON.stringify(info);
+    // eslint-disable-next-line no-console
+    console.log(`Error: ${error.message}\n${infoStr}`);
+    this.setState({ errorOccurred: true, error, info: infoStr });
   }
 
   render(): React.ReactNode {
     // eslint-disable-next-line react/destructuring-assignment
     return this.state.errorOccurred ? (
       <>
-        <h1>Error</h1>
-        <h2>{this.state.error?.message}</h2>
-        <h2>{this.state.info}</h2>
+        <h1>Error: {this.state.error?.message}</h1>
+        <h5>{this.state.info}</h5>
       </>
     ) : (
       this.props.children

@@ -81,7 +81,6 @@ function addUrl(url: string): void {
 
 readUrls();
 
-// TODO The URL component will become a drop down whose values are stored in localStorage
 const initialState: State = {
   username: '',
   password: '',
@@ -281,7 +280,7 @@ const Login: FC = () => {
             className={classes.loginBtn}
             disabled={state.isButtonDisabled}
             onClick={(event: MouseEvent<HTMLButtonElement>) => {
-              // TODO: This eliminates a warning that is sent to the console. It looks like crap but if you don't
+              // TODO: This eliminates a warning that is sent to the console. It's ugly but if you don't
               // do this, the SPA will reset itself when handleLogin fails.
               event.preventDefault();
               handleLogin();
