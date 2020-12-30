@@ -178,7 +178,8 @@ def row_count(conn, metadatas:str):
             for table in metadata['data'][key]:
                tbl = '%s.%s' % (key, table) 
                if tbl not in rc: 
-                  rc[tbl] = query_data.query_data(conn, key, query % table)['Query'][0]['count']
+                  #rc[tbl] = query_data.query_data(conn, key, query % table)['Query'][0]['count']
+                  print(query_data.query_data(conn, key, query % table))
                   
    print(rc) 
 
@@ -197,17 +198,33 @@ def blockchain_sub_query(conn:str):
         Policy: ___ | Where Condition: ___
             policy_name: key_value 
     """
+    cluster_id = '' 
     # Cluster 
-    results = query_data.query_blockchain_complex(conn, 'cluster', 'table_dbms=lsl_demo', 'id, company')
     print('Clusters: ')
+    cluster_id = [] 
+    results = query_data.query_blockchain_complex(conn, 'cluster', 'table_dbms=sample_data', 'id, company')
     for result in results: 
         stmt = "" 
         for rslt in result: 
+            if rslt == 'id': 
+                cluster_id.append(result[rslt])    
             stmt += "%s: %s" % (rslt, result[rslt]) 
             if rslt != list(result.keys())[-1]: 
                 stmt += " | " 
-        print(stmt) 
-    
+        print('\t%s\n' % stmt) 
+
+    print('Operator: ')
+    for cluster in cluster_id: 
+        results = query_data.query_blockchain_complex(conn, 'operator', 'cluster=%s' % cluster, 'id, company')
+        for result in results: 
+            stmt = "" 
+            for rslt in result: 
+                stmt += "%s: %s" % (rslt, result[rslt]) 
+                if rslt != list(result.keys())[-1]: 
+                    stmt += " | " 
+            print('\t%s\n' % stmt)   
+
+
 def main(): 
    """
    Print information regarding network based on company 

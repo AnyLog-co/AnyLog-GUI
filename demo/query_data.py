@@ -180,12 +180,15 @@ def query_blockchain_complex(conn:str, policy:str, where_condition:str, keys:str
     results = query_blockchain(conn, blockchain_query)
 
     # format results 
-    for result in results['Blockchain data'].split(','): 
-        data = {} 
-        result = result.split('|') 
-        for rslt in result:
-            index = result.index(rslt) 
-            data[keys[index]] = rslt 
-        output.append(data) 
+    try: 
+        for result in results['Blockchain data'].split(','): 
+            data = {} 
+            result = result.split('|') 
+            for rslt in result:
+                index = result.index(rslt) 
+                data[keys[index]] = rslt 
+            output.append(data) 
+    except: 
+        pass 
 
     return output 
