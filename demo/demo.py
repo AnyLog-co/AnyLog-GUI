@@ -117,9 +117,17 @@ def print_metadata(metadatas:dict):
    :print:
       company ==> dbms ==> table ==> cluster_id ==> operator IP/Port 
    """
-
    for metadata in metadatas: 
-      print(metadata) 
+      print('Cluster Name: %s' %  metadata['name']) 
+      for database in list(metadata['data'].keys()):
+          print('\tDatabase: %s' % database) 
+          for table in metadata['data'][database]: 
+              print('\t\t%s' % table) 
+          print('\tOperators: ') 
+          for operator in metadata['operator']:
+              print('\t\t%s' % operator) 
+
+      #print('\t%s' % metadata['data']) 
 
 def get_tables(conn:str, metadatas:list)->dict: 
    """
@@ -141,7 +149,11 @@ def get_tables(conn:str, metadatas:list)->dict:
              tbl = query_data.get_tables(conn, db, table)
              name = '%s.%s' % (db, table) 
              if name not in tables: 
-                tables[name] = tbl['table']['create'].replace('  ', '\n\t\t').replace(');', '\n\t);', 1).replace(';', ';\n\t').replace(' CREATE', 'CREATE') 
+                 if tbl != {}: 
+                     try: 
+                         tables[name] = tbl['table']['create'].replace('  ', '\n\t\t').replace(');', '\n\t);', 1).replace(';', ';\n\t').replace(' CREATE', 'CREATE')
+                     except: 
+                         tables[name] = tbl[0]['table']['create'].replace('(', '(\n\t', 1).replace(', ',',\n\t').replace(');', '\n);', 1).replace('; ',';\n')
 
    return tables 
    
@@ -155,11 +167,11 @@ def print_tables(tables:dict):
       dbms.name 
          CREATE 
    """
-   stmt = '%s\n\t%s' 
+   stmt = '%s\n\t%s\n' 
    for table in tables: 
        print(stmt % (table, tables[table]))
 
-def row_count(conn, metadatas:str): 
+def get_row_count(conn, metadatas:str): 
    """
    For each table execute query 
    :args: 
@@ -178,9 +190,25 @@ def row_count(conn, metadatas:str):
             for table in metadata['data'][key]:
                tbl = '%s.%s' % (key, table) 
                if tbl not in rc: 
-                  rc[tbl] = query_data.query_data(conn, key, query % table)['Query'][0]['count']
-                  
-   print(rc) 
+                   
+                  output = query_data.query_data(conn, key, query % table) 
+                  if 'AnyLog.error' in list(output.keys())[0]: 
+                      rc[tbl] = 'No count found'  
+                  else: 
+                      rc[tbl] = output['Query'][0]['count']
+   return rc                   
+
+def print_row_count(row_count:dict):
+    """
+    Formatted print for row count
+    :args: 
+        row_count:dict
+    :print: 
+        dbms.tbl: count
+    """
+    for table in row_count: 
+        print('\t%s: %s\n' % (table, row_count[table]))
+
 
 def blockchain_sub_query(conn:str): 
     """
@@ -214,7 +242,7 @@ def blockchain_sub_query(conn:str):
 
     print('Operator: ')
     for cluster in cluster_id: 
-        results = query_data.query_blockchain_complex(conn, 'operator', 'cluster=%s and hostname=localhost' % cluster, 'id, company')
+        results = query_data.query_blockchain_complex(conn, 'operator', 'cluster=%s' % cluster, 'id, company')
         for result in results: 
             stmt = "" 
             for rslt in result: 
@@ -270,7 +298,8 @@ def main():
 
    print('count') 
    print('-----') 
-   row_count(args.conn, metadata)
+   row_count = get_row_count(args.conn, metadata)
+   print_row_count(row_count)
 
    print('\n') 
    print('complex blockchain query') 
