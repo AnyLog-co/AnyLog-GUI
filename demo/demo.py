@@ -202,7 +202,7 @@ def blockchain_sub_query(conn:str):
     # Cluster 
     print('Clusters: ')
     cluster_id = [] 
-    results = query_data.query_blockchain_complex(conn, 'cluster', 'table_dbms=sample_data', 'id, company')
+    results = query_data.query_blockchain_complex(conn, 'cluster', '', 'id, company')
     for result in results: 
         stmt = "" 
         for rslt in result: 
@@ -215,7 +215,7 @@ def blockchain_sub_query(conn:str):
 
     print('Operator: ')
     for cluster in cluster_id: 
-        results = query_data.query_blockchain_complex(conn, 'operator', 'cluster=%s' % cluster, 'id, company')
+        results = query_data.query_blockchain_complex(conn, 'operator', 'cluster=%s and hostname=localhost' % cluster, 'id, company')
         for result in results: 
             stmt = "" 
             for rslt in result: 
@@ -247,6 +247,7 @@ def main():
    parser.add_argument('company', type=str, default='anylog', help='REST connection IP:Port') 
    args = parser.parse_args () 
 
+   """
    # Status 
    print('Status of each node')
    print('--------------------')
@@ -274,7 +275,7 @@ def main():
    row_count(args.conn, metadata)
 
    print('\n') 
-
+   """
    print('complex blockchain query') 
    print('------------------------')
    blockchain_sub_query(args.conn) 

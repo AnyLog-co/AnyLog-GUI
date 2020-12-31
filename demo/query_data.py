@@ -144,26 +144,31 @@ def query_blockchain_complex(conn:str, policy:str, where_condition:str, keys:str
 
     """
     output = [] 
-    cluster_table = ['name', 'dbms', 'distribution', 'active'] 
     blockchain_query = 'blockchain get %s' % policy 
 
     # Convert WHERE conditions into list & format if policy of cluster type
-    where_condition = where_condition.split('and') 
-    for where in where_condition: 
-        index = where_condition.index(where) 
-        where = where.replace(' ', '') 
-        base = where.split('=')[0] 
-        if policy == 'cluster' and base.split('_')[0] == 'table': 
-            new_base = 'table[%s]' % base.split('_')[1]
-            where = where.replace(base, new_base) 
-        where_condition[index] = where 
-    
-    if len(where_condition) > 0: 
-        blockchain_query += ' where '
-        for where in where_condition: 
-            blockchain_query += where 
-            if where is not where_condition[-1]: 
-                blockchain_query += ' and '  
+    if where_condition != '': 
+        where_condition = where_condition.split('and')
+        blockchain_query += ' where ' 
+        if isinstance(where_condition, list): 
+            for where in where_condition: 
+                where = where.replace(' ', '') 
+                base = where.split('=')[0] 
+                value = where.split('=')[1] 
+                if policy == 'cluster' and base.split('_', 1)[0] == 'table': 
+                    base = 'table[%s]' % base.split('_', 1)[1]
+                blockchain_query += ' %s=%s' % (base, value) 
+                if where != where_condition[-1]:
+                    blockchain_query += ' and '
+            blockchain_query = blockchain_query.rsplit('and', 1)[0] 
+
+        else: 
+            where_condition = where_condition.replace(' ', '') 
+            base = where_condition.split('=')[0] 
+            value = where_condition.split('=')[1] 
+            if base.split('_', 1) == 'table' and policy == 'cluster':
+                base = 'table[%s]' % base.split('_', 1)[0] 
+            blockchain_query += ' %s=%s ' % (base, value) 
 
     # Convert key into list 
     keys=keys.replace(' ', '').split(',') 
