@@ -197,17 +197,33 @@ def blockchain_sub_query(conn:str):
         Policy: ___ | Where Condition: ___
             policy_name: key_value 
     """
+    cluster_id = '' 
     # Cluster 
-    results = query_data.query_blockchain_complex(conn, 'cluster', 'table_dbms=lsl_demo', 'id, company')
     print('Clusters: ')
+    cluster_id = [] 
+    results = query_data.query_blockchain_complex(conn, 'cluster', '', 'id, company')
     for result in results: 
         stmt = "" 
         for rslt in result: 
+            if rslt == 'id': 
+                cluster_id.append(result[rslt])    
             stmt += "%s: %s" % (rslt, result[rslt]) 
             if rslt != list(result.keys())[-1]: 
                 stmt += " | " 
-        print(stmt) 
-    
+        print('\t%s\n' % stmt) 
+
+    print('Operator: ')
+    for cluster in cluster_id: 
+        results = query_data.query_blockchain_complex(conn, 'operator', 'cluster=%s and hostname=localhost' % cluster, 'id, company')
+        for result in results: 
+            stmt = "" 
+            for rslt in result: 
+                stmt += "%s: %s" % (rslt, result[rslt]) 
+                if rslt != list(result.keys())[-1]: 
+                    stmt += " | " 
+            print('\t%s\n' % stmt)   
+
+
 def main(): 
    """
    Print information regarding network based on company 
@@ -244,7 +260,7 @@ def main():
    print('---------------------')
    metadata = get_metadata(nodes, args.company) 
    print_metadata(metadata)
-   
+
    print('\n') 
 
    print('tables')
@@ -257,7 +273,6 @@ def main():
    row_count(args.conn, metadata)
 
    print('\n') 
-
    print('complex blockchain query') 
    print('------------------------')
    blockchain_sub_query(args.conn) 
