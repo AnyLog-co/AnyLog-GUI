@@ -141,7 +141,11 @@ def get_tables(conn:str, metadatas:list)->dict:
              tbl = query_data.get_tables(conn, db, table)
              name = '%s.%s' % (db, table) 
              if name not in tables: 
-                tables[name] = tbl['table']['create'].replace('  ', '\n\t\t').replace(');', '\n\t);', 1).replace(';', ';\n\t').replace(' CREATE', 'CREATE') 
+                 if tbl != {}: 
+                     try: 
+                         tables[name] = tbl['table']['create'].replace('  ', '\n\t\t').replace(');', '\n\t);', 1).replace(';', ';\n\t').replace(' CREATE', 'CREATE')
+                     except: 
+                         tables[name] = tbl[0]['table']['create'].replace('(', '(\n\t', 1).replace(', ',',\n\t').replace(');', '\n);', 1).replace('; ',';\n')
 
    return tables 
    
@@ -155,7 +159,7 @@ def print_tables(tables:dict):
       dbms.name 
          CREATE 
    """
-   stmt = '%s\n\t%s' 
+   stmt = '%s\n\t%s\n' 
    for table in tables: 
        print(stmt % (table, tables[table]))
 
@@ -178,9 +182,13 @@ def row_count(conn, metadatas:str):
             for table in metadata['data'][key]:
                tbl = '%s.%s' % (key, table) 
                if tbl not in rc: 
-                  rc[tbl] = query_data.query_data(conn, key, query % table)['Query'][0]['count']
+                   
+                  output = query_data.query_data(conn, key, query % table) 
+                  if 'AnyLog.error' in list(output.keys())[0]: 
+                      rc[tbl] = 'No count found'  
+                  else: 
+                      rc[tbl] = output['Query'][0]['count']
                   
-   print(rc) 
 
 def blockchain_sub_query(conn:str): 
     """

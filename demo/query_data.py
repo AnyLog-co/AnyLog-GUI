@@ -96,7 +96,7 @@ def get_tables(conn:str, database:str, name:str)->dict:
         print(e) 
         results = {} 
 
-    return results[0]
+    return results
 
 def query_data(conn:str, dbms:str, query:str)->dict: 
     """
