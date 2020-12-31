@@ -178,8 +178,7 @@ def row_count(conn, metadatas:str):
             for table in metadata['data'][key]:
                tbl = '%s.%s' % (key, table) 
                if tbl not in rc: 
-                  #rc[tbl] = query_data.query_data(conn, key, query % table)['Query'][0]['count']
-                  print(query_data.query_data(conn, key, query % table))
+                  rc[tbl] = query_data.query_data(conn, key, query % table)['Query'][0]['count']
                   
    print(rc) 
 
@@ -247,7 +246,6 @@ def main():
    parser.add_argument('company', type=str, default='anylog', help='REST connection IP:Port') 
    args = parser.parse_args () 
 
-   """
    # Status 
    print('Status of each node')
    print('--------------------')
@@ -262,7 +260,7 @@ def main():
    print('---------------------')
    metadata = get_metadata(nodes, args.company) 
    print_metadata(metadata)
-   
+
    print('\n') 
 
    print('tables')
@@ -275,7 +273,6 @@ def main():
    row_count(args.conn, metadata)
 
    print('\n') 
-   """
    print('complex blockchain query') 
    print('------------------------')
    blockchain_sub_query(args.conn) 
