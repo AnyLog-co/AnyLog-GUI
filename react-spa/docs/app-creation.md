@@ -1,6 +1,6 @@
 # Introduction
 
-This React-based single-page application was built using [Create React App](https://create-react-app.dev/) in October 2020.
+This React-based single-page application was built using [Create React App](https://create-react-app.dev/) in November 2020.
 
 ## Features
 
@@ -20,6 +20,19 @@ This React-based single-page application was built using [Create React App](http
 - Testing with Jest and React Testing Library
   - A sample test invokes an external service
   - Because the example uses the proxy, you must start the app (npm run start) prior to running tests
+
+## Download and Run
+
+- Install [nvm](https://heynode.com/tutorial/install-nodejs-locally-nvm) and git
+- `git clone https://github.com/dev-guy/react-spa.git`
+- `cd react-spa`
+- `nvm i`
+- `npm run start`
+
+## Additional npm scripts
+
+- Format using prettier: `npm run format`
+- Lint: `npm run lint`
 
 ## How this app was created
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import Communicator, { Node } from './Communicator';
+import Communicator, { Node, NodeType } from '.';
 
 class WebCommunicator extends Communicator {
   #url: string;
@@ -42,36 +42,36 @@ class WebCommunicator extends Communicator {
   private async getArray(headers: Record<string, string>): Promise<Record<string, any>[]> {
     const url = this.forward(headers);
     const response = await fetch(url, { headers });
-    if (response.status !== 200) throw new Error(response.status.toString());
-    return JSON.parse((await response.text()).replace(/'/g, '"'));
+    if (response.status !== 200) throw new Error(`Error ${response.status.toString()}`);
+    const result = JSON.parse((await response.text()).replace(/'/g, '"'));
+    if (!Array.isArray(result)) throw new Error('Return value is not an array');
+    return result;
   }
 
-  async nodes(company: string): Promise<Node[]> {
+  private async nodesWithType(type: NodeType): Promise<Node[]> {
     const data = await this.getArray({
       type: 'info',
-      details: `blockchain get operator where company = ${company}`,
+      details: `blockchain get ${type}`,
     });
 
-    if (!data) return [];
+    return data.reduce<Node[]>((newData, item) => {
+      const { company, cluster, name } = item[type];
+      newData.push({ type, company, cluster, name });
+      return newData;
+    }, []);
+  }
 
-    const newData: Node[] = data.map((item) => {
-      const first = Object.keys(item)[0];
-      const type = first === ('operator' || 'query') ? first : 'unknown';
+  async nodes(): Promise<Node[]> {
+    const promises = [NodeType.operator, NodeType.publisher, NodeType.query].map((type) => this.nodesWithType(type)); // :Promise<Node[]>[] =
 
-      let cluster: string;
-      let name: string;
+    const allData: Node[] = [];
 
-      if (type === 'unknown') {
-        cluster = '';
-        name = '';
-      } else {
-        ({ cluster, name } = item[type]);
-      }
-
-      return { type, cluster, name };
-    });
-
-    return newData;
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < promises.length; ++i) {
+      // eslint-disable-next-line no-await-in-loop
+      allData.push(...(await promises[i]));
+    }
+    return allData;
   }
 }
 

@@ -1,4 +1,4 @@
-import Communicator from './Communicator';
+import Communicator from '.';
 import ProxyCommunicator from './ProxyCommunicator';
 import WebCommunicator from './WebCommunicator';
 

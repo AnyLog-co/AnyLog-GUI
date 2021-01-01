@@ -9,6 +9,10 @@ import communicatorState, { OptionalCommunicator } from '../../lib/communicatorS
 
 const columns = [
   {
+    Header: 'Company',
+    accessor: 'company',
+  },
+  {
     Header: 'Cluster',
     accessor: 'cluster',
   },
@@ -26,7 +30,7 @@ const Nodes: React.FC = () => {
   const [communicator] = useRecoilState<OptionalCommunicator>(communicatorState);
   if (!communicator) throw new Error();
 
-  const { isLoading, error, data } = useQuery('nodes', () => communicator.nodes('anylog'));
+  const { isLoading, error, data } = useQuery('nodes', () => communicator.nodes());
 
   if (isLoading) return <Loading />;
 

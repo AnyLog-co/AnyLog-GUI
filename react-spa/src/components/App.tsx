@@ -2,16 +2,14 @@ import React from 'react';
 import { RecoilRoot } from 'recoil';
 
 import ErrorHandler from './ErrorHandler';
-import Routes from './Routes';
-import Header from './Header';
+import Root from './Root';
 
 const App: React.FC = () => (
-  <ErrorHandler>
-    <RecoilRoot>
-      <Header />
-      <Routes />
-    </RecoilRoot>
-  </ErrorHandler>
+  <RecoilRoot>
+    <ErrorHandler>
+      <Root />
+    </ErrorHandler>
+  </RecoilRoot>
 );
 
 export default App;

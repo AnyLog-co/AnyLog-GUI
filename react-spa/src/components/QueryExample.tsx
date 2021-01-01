@@ -2,12 +2,11 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 
-import Loading from './LoadingDots';
 import isDev from '../lib/isDev';
 
 const QueryExample: React.FC = () => {
-  const { isLoading, error, data } = useQuery('repoData', () => {
-    let request;
+  const { error, data } = useQuery('queryExample', () => {
+    let request: Request;
     const url = 'https://api.github.com/repos/tannerlinsley/react-query';
 
     if (isDev) {
@@ -22,17 +21,17 @@ const QueryExample: React.FC = () => {
       request = new Request(url);
     }
 
-    return fetch(request).then((res) => res.json());
+    return new Promise((res) => setTimeout(res, 5000)).then(() => fetch(request)).then((res) => res.json());
   });
 
-  if (isLoading) return <Loading />;
   if (error) throw error;
 
   return (
     <div>
       <h1>{data.name}</h1>
       <p>{data.description}</p>
-      <strong>👀 {data.subscribers_count}</strong> <strong>✨ {data.stargazers_count}</strong>{' '}
+      <strong>👀 {data.subscribers_count}</strong>
+      <strong>✨ {data.stargazers_count}</strong>
       <strong>🍴 {data.forks_count}</strong>
     </div>
   );
