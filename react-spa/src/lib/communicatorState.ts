@@ -1,6 +1,6 @@
 import { atom } from 'recoil';
 
-import Communicator from './Communicator/Communicator';
+import Communicator from './Communicator';
 import CommunicatorSerDe from './Communicator/CommunicatorSerDe';
 
 export type OptionalCommunicator = Communicator | undefined;
