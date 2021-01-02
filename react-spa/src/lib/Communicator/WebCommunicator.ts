@@ -1,5 +1,32 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-plusplus */
 /* eslint-disable no-param-reassign */
+import { JsonDecoder } from 'ts.data.json';
+
 import Communicator, { Node, NodeType } from '.';
+
+interface NodeKeys {
+  company: string;
+  cluster?: string;
+  name: string;
+  hostname: string;
+  ip: string;
+  'local ip': string;
+  port: string;
+}
+
+const nodeKeysDecoder = JsonDecoder.object<NodeKeys>(
+  {
+    company: JsonDecoder.string,
+    cluster: JsonDecoder.optional(JsonDecoder.string),
+    name: JsonDecoder.string,
+    hostname: JsonDecoder.string,
+    ip: JsonDecoder.string,
+    'local ip': JsonDecoder.string,
+    port: JsonDecoder.string,
+  },
+  'NodeKeys',
+);
 
 class WebCommunicator extends Communicator {
   #url: string;
@@ -41,6 +68,9 @@ class WebCommunicator extends Communicator {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async getArray(headers: Record<string, string>): Promise<Record<string, any>[]> {
     const url = this.forward(headers);
+    // Because the url and method are always the same (only the headers change), XmlHttp caches the response
+    headers.pragma = 'no-cache';
+    headers['cache-control'] = 'no-cache';
     const response = await fetch(url, { headers });
     if (response.status !== 200) throw new Error(`Error ${response.status.toString()}`);
     const result = JSON.parse((await response.text()).replace(/'/g, '"'));
@@ -54,21 +84,26 @@ class WebCommunicator extends Communicator {
       details: `blockchain get ${type}`,
     });
 
-    return data.reduce<Node[]>((newData, item) => {
-      const { company, cluster, name } = item[type];
-      newData.push({ type, company, cluster, name });
-      return newData;
-    }, []);
+    const results: Node[] = [];
+
+    for (let i = 0; i < data.length; ++i) {
+      let item = data[i];
+      item = item[type];
+      if (!item) throw new Error(`Nodes item is missing expected type '${type}'`);
+      const nodeKeys = await nodeKeysDecoder.decodePromise(item);
+      const copy = { ...nodeKeys, port: Number(nodeKeys.port) };
+      results.push({ type, ...copy });
+    }
+
+    return results;
   }
 
   async nodes(): Promise<Node[]> {
-    const promises = [NodeType.operator, NodeType.publisher, NodeType.query].map((type) => this.nodesWithType(type)); // :Promise<Node[]>[] =
+    const promises = [NodeType.operator, NodeType.publisher, NodeType.query].map((type) => this.nodesWithType(type));
 
     const allData: Node[] = [];
 
-    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < promises.length; ++i) {
-      // eslint-disable-next-line no-await-in-loop
       allData.push(...(await promises[i]));
     }
     return allData;

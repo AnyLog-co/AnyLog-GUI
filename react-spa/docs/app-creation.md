@@ -56,8 +56,10 @@ npm i --save \
   react-router-dom @types/react-router-dom \
   react-query @types/react-query \
   react-table @types/react-table \
+  react-error-boundary \
+  ts.data.json \
   jest-localstorage-mock \
-  request
+  request \
 
 # Material-UI 5
 npm i --save \

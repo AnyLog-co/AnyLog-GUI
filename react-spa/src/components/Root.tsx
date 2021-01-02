@@ -1,7 +1,9 @@
+/* eslint-disable react/button-has-type */
 import React, { Suspense } from 'react';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { QueryClientProvider } from 'react-query';
+import { QueryClientProvider, QueryErrorResetBoundary } from 'react-query';
 import { useRecoilState } from 'recoil';
+import { ErrorBoundary } from 'react-error-boundary';
 
 import Header from './Header';
 import Routes from './Routes';
@@ -17,9 +19,21 @@ const QueryRoot: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={<Loading />}>
         <Header />
-        <Suspense fallback={<Loading />}>
-          <Routes />
-        </Suspense>
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              fallbackRender={({ error, resetErrorBoundary }) => (
+                <>
+                  There was an error! <button onClick={() => resetErrorBoundary()}>Try again</button>
+                  <pre style={{ whiteSpace: 'normal' }}>{error.message}</pre>
+                </>
+              )}
+              onReset={reset}
+            >
+              <Routes />
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
       </Suspense>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

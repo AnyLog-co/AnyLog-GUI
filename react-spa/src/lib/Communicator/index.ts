@@ -1,7 +1,5 @@
 import { QueryClient } from 'react-query';
 
-import qc from '../queryClient';
-
 export enum NodeType {
   query = 'query',
   publisher = 'publisher',
@@ -11,8 +9,12 @@ export enum NodeType {
 export interface Node {
   type: NodeType;
   company: string;
-  cluster: string;
+  cluster?: string;
   name: string;
+  hostname: string;
+  ip: string;
+  'local ip': string;
+  port: number;
 }
 
 /**
@@ -22,7 +24,7 @@ export interface Node {
 abstract class Communicator {
   #username: string;
 
-  #queryClient: QueryClient = qc();
+  #queryClient: QueryClient = new QueryClient();
 
   constructor(username: string) {
     this.#username = username;

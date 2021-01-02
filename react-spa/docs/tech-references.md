@@ -19,6 +19,7 @@
 - [TypeScript: The starting point for learning TypeScript](https://www.typescriptlang.org/docs/)
 - [typescript - How do I decide whether @types/\* goes into `dependencies` or `devDependencies`? - Stack Overflow](https://stackoverflow.com/questions/45176661/how-do-i-decide-whether-types-goes-into-dependencies-or-devdependencies)
 - [Optional chaining](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#optional-chaining/State)
+- [TypeScript: validating external data](https://2ality.com/2020/06/validating-data-typescript.html)
 
 ## Production vs. Development
 
