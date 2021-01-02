@@ -68,9 +68,10 @@ class WebCommunicator extends Communicator {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async getArray(headers: Record<string, string>): Promise<Record<string, any>[]> {
     const url = this.forward(headers);
-    // Because the url and method are always the same (only the headers change), XmlHttp caches the response
+    // Because the url and method are always the same (only the headers change), XmlHttp caches the wrong response to
+    // different requests
     headers.pragma = 'no-cache';
-    headers['cache-control'] = 'no-cache';
+    headers['cache-control'] = 'no-store';
     const response = await fetch(url, { headers });
     if (response.status !== 200) throw new Error(`Error ${response.status.toString()}`);
     const result = JSON.parse((await response.text()).replace(/'/g, '"'));
@@ -78,6 +79,9 @@ class WebCommunicator extends Communicator {
     return result;
   }
 
+  /**
+   * @description Returns an array of nodes for a specified type
+   */
   private async nodesWithType(type: NodeType): Promise<Node[]> {
     const data = await this.getArray({
       type: 'info',
