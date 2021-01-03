@@ -21,6 +21,10 @@ const columns = [
     accessor: 'type',
   },
   {
+    Header: 'Status',
+    accessor: 'status',
+  },
+  {
     Header: 'Name',
     accessor: 'name',
   },

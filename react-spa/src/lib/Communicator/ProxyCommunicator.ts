@@ -7,8 +7,8 @@ import WebCommunicator from './WebCommunicator';
  */
 class ProxyCommunicator extends WebCommunicator {
   // eslint-disable-next-line class-methods-use-this
-  forward(headers: Record<string, string>): string {
-    headers['X-Forward'] = this.url;
+  protected forward(headers: Record<string, string>, url: string): string {
+    headers['X-Forward'] = url || this.url;
     return '/forward';
   }
 }

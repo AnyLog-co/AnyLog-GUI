@@ -6,6 +6,16 @@ export enum NodeType {
   operator = 'operator',
 }
 
+export enum NodeStatus {
+  running = 'running',
+  unknown = 'unknown',
+}
+
+export interface Location {
+  lat: number;
+  long: number;
+}
+
 export interface Node {
   type: NodeType;
   company: string;
@@ -15,6 +25,9 @@ export interface Node {
   ip: string;
   'local ip': string;
   port: number;
+  'rest port': number;
+  status: NodeStatus;
+  location: Location;
 }
 
 /**
