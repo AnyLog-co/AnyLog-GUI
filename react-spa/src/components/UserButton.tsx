@@ -4,7 +4,7 @@ import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useRecoilState } from 'recoil';
 
-import communicatorState, { OptionalCommunicator } from '../lib/communicatorState';
+import communicatorState, { OptionalCommunicator } from '../lib/Communicator/state';
 import UserMenu from './UserMenu';
 
 /**

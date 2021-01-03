@@ -1,7 +1,6 @@
 import Communicator from '.';
-import ProxyCommunicator from './ProxyCommunicator';
-import WebCommunicator from './WebCommunicator';
-
+import Proxy from './Proxy';
+import Web from './Web';
 import isDev from '../isDev';
 
 const version = '1.0';
@@ -11,7 +10,7 @@ const watermark = '3c0b2b839f87f169ecbacc6a4a76c0c1864abad2f66aef6a67ee4314a024c
  *
  * @description Serializer/deserializer for Communicator
  */
-class CommunicatorSerDe {
+class SerDe {
   static serialize(communicator: Communicator): string {
     const data = { version, watermark };
     communicator.dehydrate(data);
@@ -31,10 +30,10 @@ class CommunicatorSerDe {
     if (data.version !== version) throw new Error('Invalid input: Unsupported version');
 
     switch (data.type) {
-      case 'WebCommunicator': {
+      case 'Web': {
         return isDev
-          ? new ProxyCommunicator(data.username, data.password, data.url)
-          : new WebCommunicator(data.username, data.password, data.url);
+          ? new Proxy(data.username, data.password, data.url)
+          : new Web(data.username, data.password, data.url);
       }
       default: {
         throw new Error('Unable to deserialize Communicator: Unknown type');
@@ -43,4 +42,4 @@ class CommunicatorSerDe {
   }
 }
 
-export default CommunicatorSerDe;
+export default SerDe;

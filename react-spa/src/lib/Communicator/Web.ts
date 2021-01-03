@@ -32,7 +32,7 @@ const nodeKeysDecoder = JsonDecoder.object<NodeKeys>(
   'NodeKeys',
 );
 
-class WebCommunicator extends Communicator {
+class Web extends Communicator {
   #url: string;
 
   #password: string;
@@ -44,7 +44,7 @@ class WebCommunicator extends Communicator {
   }
 
   dehydrate(data: Record<string, unknown>): void {
-    if (!data.type) data.type = 'WebCommunicator';
+    if (!data.type) data.type = 'Web';
     data.password = this.#password;
     data.url = this.#url;
     super.dehydrate(data);
@@ -173,4 +173,4 @@ class WebCommunicator extends Communicator {
   }
 }
 
-export default WebCommunicator;
+export default Web;

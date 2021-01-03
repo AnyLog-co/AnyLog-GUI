@@ -6,7 +6,7 @@ import Loading from './LoadingDots';
 import isDev from '../lib/isDev';
 
 const QueryExample: React.FC = () => {
-  const { data } = useQuery('queryExample', () => {
+  const { error, data } = useQuery('queryExample', () => {
     let request: Request;
     const url = 'https://api.github.com/repos/tannerlinsley/react-query';
 
@@ -25,6 +25,7 @@ const QueryExample: React.FC = () => {
     return new Promise((res) => setTimeout(res, 5000)).then(() => fetch(request)).then((res) => res.json());
   });
 
+  if (error) throw error;
   if (!data) return <Loading />;
 
   return (

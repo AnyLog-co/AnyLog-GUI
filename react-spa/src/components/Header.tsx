@@ -4,7 +4,7 @@ import { useRecoilState } from 'recoil';
 
 import UserButton from './UserButton';
 import Language from './Language';
-import communicatorState from '../lib/communicatorState';
+import communicatorState from '../lib/Communicator/state';
 
 const Header: React.FC = () => {
   const [communicator] = useRecoilState(communicatorState);

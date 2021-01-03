@@ -2,7 +2,7 @@ import React from 'react';
 import { Redirect, Route } from 'react-router';
 import { useRecoilState } from 'recoil';
 
-import communicatorState from '../lib/communicatorState';
+import communicatorState from '../lib/Communicator/state';
 
 interface Props {
   children: React.ReactNode;

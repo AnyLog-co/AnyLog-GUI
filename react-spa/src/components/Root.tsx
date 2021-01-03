@@ -8,7 +8,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import Header from './Header';
 import Routes from './Routes';
 import qc from '../lib/queryClient';
-import communicatorState from '../lib/communicatorState';
+import communicatorState from '../lib/Communicator/state';
 import Loading from './LoadingDots';
 
 const QueryRoot: React.FC = () => {

@@ -16,9 +16,7 @@ const App: React.FC = () => {
           <Login />
         </Route>
         <Route exact path="/queryExample">
-          <React.Suspense fallback={<h1>loading</h1>}>
-            <QueryExample />
-          </React.Suspense>
+          <QueryExample />
         </Route>
         <AuthRoute exact path="/">
           <Home />

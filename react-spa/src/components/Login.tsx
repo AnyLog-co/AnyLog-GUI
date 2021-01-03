@@ -13,9 +13,9 @@ import CardHeader from '@material-ui/core/CardHeader';
 import Button from '@material-ui/core/Button';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 
-import ProxyCommunicator from '../lib/Communicator/ProxyCommunicator';
-import CommunicatorSerDe from '../lib/Communicator/CommunicatorSerDe';
-import communicatorState, { OptionalCommunicator } from '../lib/communicatorState';
+import ProxyCommunicator from '../lib/Communicator/Proxy';
+import CommunicatorSerDe from '../lib/Communicator/SerDe';
+import communicatorState, { OptionalCommunicator } from '../lib/Communicator/state';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

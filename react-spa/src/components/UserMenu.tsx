@@ -3,7 +3,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { useRecoilState } from 'recoil';
 
-import communicatorState, { OptionalCommunicator } from '../lib/communicatorState';
+import communicatorState, { OptionalCommunicator } from '../lib/Communicator/state';
 
 interface Props {
   anchorEl: Element | undefined;

@@ -4,7 +4,7 @@ import { useRecoilState } from 'recoil';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
 import Table from '../Table';
-import communicatorState, { OptionalCommunicator } from '../../lib/communicatorState';
+import communicatorState, { OptionalCommunicator } from '../../lib/Communicator/state';
 import Loading from '../LoadingDots';
 
 const columns = [
@@ -48,10 +48,11 @@ const columns = [
 
 const Nodes: React.FC = () => {
   const [communicator] = useRecoilState<OptionalCommunicator>(communicatorState);
-  if (!communicator) throw new Error();
+  if (!communicator) throw new Error('Not authenticated');
 
-  const { data } = useQuery('nodes', () => communicator.nodes());
+  const { data, error } = useQuery('nodes', () => communicator.nodes());
 
+  if (error) throw error;
   if (!data) return <Loading />;
 
   return (
