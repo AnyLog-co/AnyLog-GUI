@@ -2,6 +2,7 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-param-reassign */
 import { JsonDecoder } from 'ts.data.json';
+import 'whatwg-fetch';
 
 import Communicator, { Node, NodeType, NodeStatus, Location } from '.';
 

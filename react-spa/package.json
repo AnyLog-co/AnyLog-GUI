@@ -8,7 +8,6 @@
     "@material-ui/core": "^5.0.0-alpha.20",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
-    "clsx": "^1.1.1",
     "i18next": "^19.8.4",
     "i18next-browser-languagedetector": "^6.0.1",
     "i18next-http-backend": "^1.0.21",
@@ -25,7 +24,8 @@
     "recoil": "^0.1.2",
     "ts.data.json": "^1.5.0",
     "typeface-roboto": "^1.1.13",
-    "web-vitals": "^0.2.4"
+    "web-vitals": "^0.2.4",
+    "whatwg-fetch": "^3.5.0"
   },
   "devDependencies": {
     "@babel/preset-react": "^7.12.10",

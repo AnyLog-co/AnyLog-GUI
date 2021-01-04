@@ -59,7 +59,7 @@ npm i --save \
   react-error-boundary \
   ts.data.json \
   jest-localstorage-mock \
-  request
+  request whatwg-fetch
 
 # Material-UI 5
 npm i --save \

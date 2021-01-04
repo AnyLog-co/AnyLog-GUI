@@ -98,7 +98,7 @@
 ### Other Components
 
 - [All](https://material-ui.com/getting-started/supported-components/)
-- [Drawer](https://material-ui.com/api/swipeable-drawer/)
+- [[React+Material UI] Resizable Drawer Using Functional Component | by Joyce Cho | Medium](https://joycechocho.medium.com/react-material-ui-resizable-drawer-using-functional-component-83c9e6c70228)
 
 ## Other Component Libraries
 
