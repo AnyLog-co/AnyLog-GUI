@@ -11,7 +11,7 @@ i18n
   .init({
     backend: { loadPath: '/locales/{{lng}}/{{ns}}.json' },
     lng: 'en_us',
-    fallbackLng: 'en_us',
+    fallbackLng: 'en_us', // In case of error
     debug: isDev,
     // keySeparator: '.',
     interpolation: {

@@ -1,12 +1,15 @@
 import React from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 
-import Login from './Login';
-import Home from './Home';
-import QueryExample from './QueryExample';
-import Nodes from './network/Nodes';
+// Components
 import AuthRoute from './AuthRoute';
 import NotFound from './NotFound';
+
+// Views
+import Login from '../views/Login';
+import Nodes from '../views/Nodes';
+import Home from '../views/Home';
+import Logout from '../views/Logout';
 
 const App: React.FC = () => {
   return (
@@ -15,8 +18,8 @@ const App: React.FC = () => {
         <Route exact path="/login">
           <Login />
         </Route>
-        <Route exact path="/queryExample">
-          <QueryExample />
+        <Route exact path="/logout">
+          <Logout />
         </Route>
         <AuthRoute exact path="/">
           <Home />

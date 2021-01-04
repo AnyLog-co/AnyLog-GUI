@@ -1,7 +1,8 @@
+/* eslint-disable react/button-has-type */
 import React from 'react';
-import { useQuery } from 'react-query';
 import { useRecoilState } from 'recoil';
-import CssBaseline from '@material-ui/core/CssBaseline';
+import { useQuery, QueryErrorResetBoundary } from 'react-query';
+import { ErrorBoundary } from 'react-error-boundary';
 
 import Table from '../Table';
 import communicatorState, { OptionalCommunicator } from '../../lib/Communicator/state';
@@ -56,10 +57,22 @@ const Nodes: React.FC = () => {
   if (!data) return <Loading />;
 
   return (
-    <>
-      <CssBaseline />
-      <Table columns={columns} data={data} />
-    </>
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary
+          // eslint-disable-next-line @typescript-eslint/no-shadow
+          fallbackRender={({ error, resetErrorBoundary }) => (
+            <>
+              There was an error! <button onClick={() => resetErrorBoundary()}>Try again</button>
+              <pre style={{ whiteSpace: 'normal' }}>{error.message}</pre>
+            </>
+          )}
+          onReset={reset}
+        >
+          <Table columns={columns} data={data} />
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
   );
 };
 

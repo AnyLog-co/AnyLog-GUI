@@ -64,7 +64,7 @@ npm i --save \
 # Material-UI 5
 npm i --save \
   typeface-roboto \
-  @material-ui/lab @emotion/react @emotion/styled @material-ui/core@next typeface-roboto
+  @material-ui/lab @emotion/react @emotion/styled @material-ui/core@next typeface-roboto @material-ui/icons
 ```
 
 7. Create .eslintrc.js

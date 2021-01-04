@@ -1,9 +1,7 @@
 import React from 'react';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { useRecoilState } from 'recoil';
-
-import communicatorState, { OptionalCommunicator } from '../lib/Communicator/state';
+import { useHistory } from 'react-router-dom';
 
 interface Props {
   anchorEl: Element | undefined;
@@ -11,21 +9,18 @@ interface Props {
 }
 
 const UserMenu: React.FC<Props> = ({ anchorEl, onClose }) => {
-  const [communicator, setCommunicator] = useRecoilState<OptionalCommunicator>(communicatorState);
-
-  const logout = () => {
-    if (communicator) {
-      // TODO
-      // communicator.logout();
-      localStorage.removeItem('communicator');
-      setCommunicator(undefined);
-    }
-    onClose();
-  };
+  const history = useHistory();
 
   return (
     <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={onClose}>
-      <MenuItem onClick={logout}>Logout</MenuItem>
+      <MenuItem
+        onClick={() => {
+          history.push('/logout');
+          onClose();
+        }}
+      >
+        Logout
+      </MenuItem>
     </Menu>
   );
 };

@@ -17,7 +17,7 @@ const Header: React.FC = () => {
       <Grid item>
         <Language />
       </Grid>
-      <Grid item>{communicator ? <UserButton /> : <></>}</Grid>
+      <Grid item>{communicator ? <UserButton /> : null}</Grid>
     </Grid>
   );
 };
