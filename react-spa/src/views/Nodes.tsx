@@ -1,11 +1,11 @@
 import React from 'react';
 import NodesC from '../components/network/Nodes';
-import LeftNav from '../components/LeftNav';
+import Header from '../components/Header';
 
 const Nodes: React.FC = () => (
-  <LeftNav>
+  <Header>
     <NodesC />
-  </LeftNav>
+  </Header>
 );
 
 export default Nodes;

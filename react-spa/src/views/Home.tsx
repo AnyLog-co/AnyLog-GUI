@@ -1,6 +1,6 @@
 import React from 'react';
-import LeftNav from '../components/LeftNav';
+import Header from '../components/Header';
 
-const Home: React.FC = () => <LeftNav />;
+const Home: React.FC = () => <Header />;
 
 export default Home;

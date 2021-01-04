@@ -1,24 +1,54 @@
+// TODO add prop types
+/* eslint-disable react/prop-types */
+/* eslint-disable react/destructuring-assignment */
 import React from 'react';
-import Grid from '@material-ui/core/Grid';
-import { useRecoilState } from 'recoil';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import { makeStyles } from '@material-ui/core/styles';
 
+import ResizableDrawer from './ResizableDrawer';
 import UserButton from './UserButton';
 import Language from './Language';
-import communicatorState from '../lib/Communicator/state';
 
-const Header: React.FC = () => {
-  const [communicator] = useRecoilState(communicatorState);
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, react/require-default-props
+const Header: React.FC = (props: { children?: React.ReactNode }) => {
+  const useStyles = makeStyles((theme) => ({
+    root: {
+      display: 'flex',
+    },
+    appBar: {
+      zIndex: theme.zIndex.drawer + 1,
+    },
+    content: {
+      flexGrow: 1,
+      padding: theme.spacing(3),
+    },
+    contentShift: {
+      transition: theme.transitions.create('margin', {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      marginRight: 0,
+    },
+    toolbar: theme.mixins.toolbar,
+  }));
+
+  const classes = useStyles();
 
   return (
-    <Grid justifyContent="space-between" container spacing={3}>
-      <Grid item>
-        <img src="/logo.png" alt="Logo" />
-      </Grid>
-      <Grid item>
-        <Language />
-      </Grid>
-      <Grid item>{communicator ? <UserButton /> : null}</Grid>
-    </Grid>
+    <div className={classes.root}>
+      <AppBar position="fixed" className={classes.appBar}>
+        <Toolbar>
+          <UserButton />
+          <Language />
+        </Toolbar>
+      </AppBar>
+      <ResizableDrawer />
+      <main className={`$[classes.content} ${classes.contentShift}`}>
+        <div className={classes.toolbar} />
+        {props.children}
+      </main>
+    </div>
   );
 };
 
