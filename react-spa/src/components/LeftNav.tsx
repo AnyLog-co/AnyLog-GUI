@@ -29,14 +29,7 @@ const LeftNav: React.FC = (props: { children?: React.ReactNode }) => {
       }),
       marginRight: 0,
     },
-    toolbar: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      padding: theme.spacing(0, 1),
-      // necessary for content to be below app bar
-      ...theme.mixins.toolbar,
-    },
+    toolbar: theme.mixins.toolbar,
   }));
 
   const classes = useStyles();

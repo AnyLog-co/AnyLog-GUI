@@ -15,38 +15,32 @@ export const defaultDrawerWidth = 240;
 const minDrawerWidth = 50;
 const maxDrawerWidth = 1000;
 
-const useStyles = makeStyles((theme) => ({
-  drawer: {
-    width: 240,
-    flexShrink: 0,
-    whitespace: 'nowrap',
-  },
-  dragger: {
-    width: '5px',
-    cursor: 'ew-resize',
-    padding: '4px 0 0',
-    borderTop: '1px solid #ddd',
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 100,
-    backgroundColor: '#f4f7f9',
-  },
-  toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-  },
-}));
-
 const ResizableDrawer: React.FC = () => {
   const history = useHistory();
-  const classes = useStyles();
   const [drawerWidth, setDrawerWidth] = React.useState(defaultDrawerWidth);
+
+  const useStyles = makeStyles((theme) => ({
+    drawer: {
+      width: drawerWidth,
+      flexShrink: 0,
+      whitespace: 'nowrap',
+    },
+    dragger: {
+      width: '5px',
+      cursor: 'ew-resize',
+      padding: '4px 0 0',
+      borderTop: '1px solid #ddd',
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 100,
+      backgroundColor: '#f4f7f9',
+    },
+    toolbar: theme.mixins.toolbar,
+  }));
+
+  const classes = useStyles();
 
   const handleMouseMove = useCallback((e) => {
     const newWidth = e.clientX - document.body.offsetLeft;
