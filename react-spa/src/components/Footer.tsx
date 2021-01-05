@@ -21,7 +21,11 @@ const useStyles = makeStyles(() => ({
 
 const Footer: React.FC = () => {
   const classes = useStyles();
-  return <Container className={classes.footer}>{version}</Container>;
+  return (
+    <Container maxWidth={false} className={classes.footer}>
+      {version}
+    </Container>
+  );
 };
 
 export default Footer;
