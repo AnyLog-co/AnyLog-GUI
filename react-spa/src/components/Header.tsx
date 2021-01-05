@@ -21,10 +21,7 @@ const Header: React.FC = (props: { children?: React.ReactNode }) => {
       zIndex: theme.zIndex.drawer + 1,
     },
     content: {
-      flexGrow: 1,
       padding: theme.spacing(3),
-    },
-    contentShift: {
       transition: theme.transitions.create('margin', {
         easing: theme.transitions.easing.easeOut,
         duration: theme.transitions.duration.enteringScreen,
@@ -40,13 +37,13 @@ const Header: React.FC = (props: { children?: React.ReactNode }) => {
     <>
       <div className={classes.root}>
         <AppBar position="fixed" className={classes.appBar}>
-          <Toolbar>
+          <Toolbar disableGutters>
             <UserButton />
             <Language />
           </Toolbar>
         </AppBar>
         <ResizableDrawer />
-        <main className={`$[classes.content} ${classes.contentShift}`}>
+        <main className={classes.content}>
           <div className={classes.toolbar} />
           {props.children}
         </main>
