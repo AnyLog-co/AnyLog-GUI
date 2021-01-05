@@ -1,9 +1,8 @@
 {
   "App": {
-    "select-language": "Select a language (in Deutsche)"
+    "select-language": "Language (in Deutsche)"
   },
   "Login": {
-    "title": "Welcome (in Deutsche)!",
-    "button-login": "Log In"
+    "title": "Welcome (in Deutsche)!"
   }
 }

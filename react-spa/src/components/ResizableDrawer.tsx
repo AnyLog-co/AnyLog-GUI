@@ -19,7 +19,7 @@ const ResizableDrawer: React.FC = () => {
   const history = useHistory();
   const [drawerWidth, setDrawerWidth] = React.useState(defaultDrawerWidth);
 
-  const useStyles = makeStyles((theme) => ({
+  const classes = makeStyles((theme) => ({
     drawer: {
       width: drawerWidth,
       flexShrink: 0,
@@ -38,9 +38,7 @@ const ResizableDrawer: React.FC = () => {
       backgroundColor: '#f4f7f9',
     },
     toolbar: theme.mixins.toolbar,
-  }));
-
-  const classes = useStyles();
+  }))();
 
   const handleMouseMove = useCallback((e) => {
     const newWidth = e.clientX - document.body.offsetLeft;

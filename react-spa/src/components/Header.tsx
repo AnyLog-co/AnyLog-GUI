@@ -9,6 +9,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import ResizableDrawer from './ResizableDrawer';
 import UserButton from './UserButton';
 import Language from './Language';
+import Footer from './Footer';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, react/require-default-props
 const Header: React.FC = (props: { children?: React.ReactNode }) => {
@@ -36,19 +37,22 @@ const Header: React.FC = (props: { children?: React.ReactNode }) => {
   const classes = useStyles();
 
   return (
-    <div className={classes.root}>
-      <AppBar position="fixed" className={classes.appBar}>
-        <Toolbar>
-          <UserButton />
-          <Language />
-        </Toolbar>
-      </AppBar>
-      <ResizableDrawer />
-      <main className={`$[classes.content} ${classes.contentShift}`}>
-        <div className={classes.toolbar} />
-        {props.children}
-      </main>
-    </div>
+    <>
+      <div className={classes.root}>
+        <AppBar position="fixed" className={classes.appBar}>
+          <Toolbar>
+            <UserButton />
+            <Language />
+          </Toolbar>
+        </AppBar>
+        <ResizableDrawer />
+        <main className={`$[classes.content} ${classes.contentShift}`}>
+          <div className={classes.toolbar} />
+          {props.children}
+        </main>
+      </div>
+      <Footer />
+    </>
   );
 };
 

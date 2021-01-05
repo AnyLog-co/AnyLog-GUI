@@ -13,8 +13,8 @@ interface NodeKeys {
   hostname: string;
   ip: string;
   'local ip': string;
-  port: string;
-  'rest port': string;
+  port: number;
+  'rest port': number;
   loc: string;
 }
 
@@ -26,8 +26,8 @@ const nodeKeysDecoder = JsonDecoder.object<NodeKeys>(
     hostname: JsonDecoder.string,
     ip: JsonDecoder.string,
     'local ip': JsonDecoder.string,
-    port: JsonDecoder.string,
-    'rest port': JsonDecoder.string,
+    port: JsonDecoder.number,
+    'rest port': JsonDecoder.number,
     loc: JsonDecoder.string,
   },
   'NodeKeys',
@@ -89,7 +89,8 @@ class Web extends Communicator {
     // different requests
     const response = await fetch(url, { headers });
     if (response.status !== 200) throw new Error(`Error ${response.status.toString()}`);
-    const result = JSON.parse((await response.text()).replace(/'/g, '"'));
+    // const result = JSON.parse((await response.text()).replace(/'/g, '"'));
+    const result = JSON.parse(await response.text());
     if (typeof result !== 'object' || Array.isArray(result)) throw new Error('Return value is not an object');
     return result;
   }
@@ -103,7 +104,8 @@ class Web extends Communicator {
     headers['cache-control'] = 'no-store';
     const response = await fetch(url, { headers });
     if (response.status !== 200) throw new Error(`Error ${response.status.toString()}`);
-    const result = JSON.parse((await response.text()).replace(/'/g, '"'));
+    // const result = JSON.parse((await response.text()).replace(/'/g, '"'));
+    const result = JSON.parse(await response.text());
     if (!Array.isArray(result)) throw new Error('Return value is not an array');
     return result;
   }
@@ -130,7 +132,7 @@ class Web extends Communicator {
         location = { lat: Number(components[0]), long: Number(components[1]) };
       }
       // Get the status
-      let status: NodeStatus = NodeStatus.unknown;
+      let status: NodeStatus = NodeStatus.unknown; // Enums can't be undefined
       try {
         // TODO: http vs https
         const url = `http://${nodeKeys.ip}:${nodeKeys['rest port']}`;
@@ -143,16 +145,23 @@ class Web extends Communicator {
         );
         const parts = response.Status.split(' ');
         if (parts.length === 2) {
-          if (parts[1] === 'running') status = NodeStatus.running;
+          const statusStr = parts[1];
+          switch (statusStr) {
+            case 'running':
+              status = statusStr;
+              break;
+            default:
+              // eslint-disable-next-line no-console
+              console.log(`Unknown status ${statusStr}`);
+          }
         }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
       }
+
       const copy = {
         ...nodeKeys,
-        port: Number(nodeKeys.port),
-        'rest port': Number(nodeKeys['rest port']),
         location,
         status,
       };

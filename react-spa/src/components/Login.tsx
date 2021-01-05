@@ -4,7 +4,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { useRecoilState } from 'recoil';
 import { Redirect } from 'react-router';
 
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -17,7 +17,7 @@ import ProxyCommunicator from '../lib/Communicator/Proxy';
 import CommunicatorSerDe from '../lib/Communicator/SerDe';
 import communicatorState, { OptionalCommunicator } from '../lib/Communicator/state';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     container: {
       display: 'flex',
@@ -41,7 +41,6 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-// state type
 interface State {
   username: string;
   password: string;

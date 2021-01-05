@@ -2,8 +2,8 @@
 
 ## Login Form
 
-- [How to Router Redirect After Login | Pluralsight](https://www.pluralsight.com/guides/how-to-router-redirect-after-login)
-- [How to build a React Login Form with Typescript and React hooks | Suraj Sharma](https://surajsharma.net/blog/react-login-form-typescript)
+- [How to Router Redirect After Login](https://www.pluralsight.com/guides/how-to-router-redirect-after-login)
+- [How to build a React Login Form with Typescript and React hooks](https://surajsharma.net/blog/react-login-form-typescript)
 
 ## JavaScript
 
@@ -29,7 +29,7 @@
 ## ESLint and Prettier
 
 - [ESLint can't detect error from typescript · Issue #352 · typescript-eslint/typescript-eslint · GitHub](https://github.com/typescript-eslint/typescript-eslint/issues/352)
-- [Create-React-App with TypeScript, ESLint, Prettier, and Github Actions | by Bryan Grill | Medium](https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97)
+- [Create-React-App with TypeScript, ESLint, Prettier, and Github Actions](https://medium.com/@brygrill/create-react-app-with-typescript-eslint-prettier-and-github-actions-f3ce6a571c97)
 - [How to make Prettier work with ESLint - RWieruch](https://www.robinwieruch.de/prettier-eslint)
 - [How To Set Up ESLint, TypeScript, Prettier with Create React App](https://dev.to/benweiser/how-to-set-up-eslint-typescript-prettier-with-create-react-app-3675)
 - [choose configuration based on file extension](https://stackoverflow.com/questions/57107800/eslint-disable-extends-in-override)
@@ -38,16 +38,16 @@
 
 - [Dealing with CORS in Create React App](https://www.telerik.com/blogs/dealing-with-cors-in-create-react-app)
 - [Supporting CORS by Proxying Requests with Express](https://www.telerik.com/blogs/supporting-cors-by-proxying-requests-with-express)
-- [Proxying API Requests in Development | Create React AppMenuMenu](https://create-react-app.dev/docs/proxying-api-requests-in-development/)
+- [Proxying API Requests in Development](https://create-react-app.dev/docs/proxying-api-requests-in-development/)
 
 ## Retrieving External Data via REST
 
-- [Enhance Your HTTP-Request With Axios and TypeScript | by Oleh Zaporozhets | Level Up Coding](https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e)
-- [How and Why You Should Use React Query | by Nathan Sebhastian | Bits and Pieces](https://blog.bitsrc.io/how-to-start-using-react-query-4869e3d5680d)
+- [Enhance Your HTTP-Request With Axios and TypeScript](https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e)
+- [How and Why You Should Use React Query](https://blog.bitsrc.io/how-to-start-using-react-query-4869e3d5680d)
 - [Axios use proxy](https://masteringjs.io/tutorials/axios/proxy#:~:text=Axios%20supports%20a%20proxy%20option,request%20is%20actually%20meant%20for.)
 - [Data fetching in Redux is painful, get rid of it now](https://link.medium.com/kbT4qvO51bb)
 - [Practical React Query](https://tkdodo.eu/blog/practical-react-query)
-- [React how to display a loading indicator on fetch calls | Basefactor](https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls)
+- [React how to display a loading indicator on fetch calls](https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls)
 - [Using Suspense with react-query - LogRocket Blog](https://blog.logrocket.com/using-suspense-with-react-query/)
 
 ## State
@@ -56,8 +56,8 @@
 - [UseReducer With Typescript](https://dev.to/stephencweiss/usereducer-with-typescript-2k)
 - [Use Hooks + Context, not React + Redux - LogRocket Blog](https://blog.logrocket.com/use-hooks-and-context-not-react-and-redux/)
 - [The Wise Guide to React useState() Hook](https://dmitripavlutin.com/react-usestate-hook-guide/)
-- [Typed useState with TypeScript | Building SPAs](https://www.carlrippon.com/typed-usestate-with-typescript/)
-- [Change Parent Component State from Child using hooks in React | WebOmnizzFacebook iconTwitter iconWhatsApp icon](https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/)
+- [Typed useState with TypeScript](https://www.carlrippon.com/typed-usestate-with-typescript/)
+- [Change Parent Component State from Child using hooks in React](https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/)
 - [javascript - Loosing component data on page refresh in react - Stack Overflow](https://stackoverflow.com/questions/62487168/loosing-component-data-on-page-refresh-in-react)
 - [Why I Stopped Using Redux](https://dev.to/g_abud/why-i-quit-redux-1knl)
 - [React context API with asynchronous reducer](https://medium.com/@patrick.gross1987/how-to-use-the-react-context-api-with-an-asynchronous-reducer-5651c2dc26aa)
@@ -75,7 +75,7 @@
 - [React Hooks Tutorial: useState, useEffect, useReducer](https://www.valentinog.com/blog/hooks/)
 - [Custom Hooks](https://reactjs.org/docs/hooks-custom.html)
 - [Typing a useReducer React hook in TypeScript](https://www.sumologic.com/blog/react-hook-typescript/)
-- [Different ways to strongly-type function component props with TypeScript | Building SPAs](https://www.carlrippon.com/Different-ways-to-strongly-type-function-component-props-with-typescript/)
+- [Different ways to strongly-type function component props with TypeScript](https://www.carlrippon.com/Different-ways-to-strongly-type-function-component-props-with-typescript/)
 - [reactjs - How to type a React component that accepts another component as a prop, and all of that component's props? - Stack Overflow](https://stackoverflow.com/questions/61148557/how-to-type-a-react-component-that-accepts-another-component-as-a-prop-and-all)
 - [Default prop values with typescript](https://dev.to/chico1992/comment/10iim)
 - [A deep dive into Pure Component and React.memo(), and why we need them](https://link.medium.com/yXI54Isz2bb)
@@ -95,10 +95,14 @@
 - [React Data Grid component - Material-UI](https://material-ui.com/components/data-grid/)
 - [The Material-UI grid system - LogRocket Blog](https://blog.logrocket.com/the-material-ui-grid-system/)
 
-### Other Components
+### Drawer
+
+- [[React+Material UI] Resizable Drawer Using Functional Component | by Joyce Cho | Medium](https://joycechocho.medium.com/react-material-ui-resizable-drawer-using-functional-component-83c9e6c70228)
+- [ - YouTube](https://www.youtube.com/watch?v=jQyCEEzgnT)M
+
+### Other
 
 - [All](https://material-ui.com/getting-started/supported-components/)
-- [[React+Material UI] Resizable Drawer Using Functional Component | by Joyce Cho | Medium](https://joycechocho.medium.com/react-material-ui-resizable-drawer-using-functional-component-83c9e6c70228)
 
 ## Other Component Libraries
 

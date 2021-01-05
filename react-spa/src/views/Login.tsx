@@ -3,6 +3,7 @@ import Grid from '@material-ui/core/Grid';
 
 import LoginC from '../components/Login';
 import Language from '../components/Language';
+import Footer from '../components/Footer';
 
 const Login: React.FC = () => (
   <>
@@ -15,6 +16,7 @@ const Login: React.FC = () => (
       </Grid>
     </Grid>
     <LoginC />
+    <Footer />
   </>
 );
 
