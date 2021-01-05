@@ -25,7 +25,12 @@ const QueryExample: React.FC = () => {
     return new Promise((res) => setTimeout(res, 5000)).then(() => fetch(request)).then((res) => res.json());
   });
 
-  if (error) throw error;
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    throw error;
+  }
+
   if (!data) return <Loading />;
 
   return (
