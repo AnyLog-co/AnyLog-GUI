@@ -22,7 +22,7 @@ const QueryExample: React.FC = () => {
       request = new Request(url);
     }
 
-    return new Promise((res) => setTimeout(res, 5000)).then(() => fetch(request)).then((res) => res.json());
+    return fetch(request).then((res) => res.json());
   });
 
   if (error) {

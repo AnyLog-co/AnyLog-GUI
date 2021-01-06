@@ -12,5 +12,5 @@ it('calls external service', async () => {
   );
   // Use something like this to wait and dump elements
   // await new Promise((resolve) => setTimeout(resolve, 5000)).then(() => screen.debug());
-  await waitFor(() => expect(screen.getByText(/Hooks for fetching/)).toBeInTheDocument(), { timeout: 5000 });
+  await waitFor(() => expect(screen.getByText(/Hooks for fetching/)).toBeInTheDocument());
 });

@@ -111,6 +111,7 @@
 
 ## React Router
 
+- [Query Strimgs with React Router](https://spin.atomicobject.com/2019/10/01/a-quick-start-guide-to-query-strings-with-react-router/)
 - [javascript - React-router: How to manually invoke Link? - Stack Overflow](https://stackoverflow.com/questions/29244731/react-router-how-to-manually-invoke-link)
 - [How to create a private route in React (Route Guard) - example: for authenticated users only](https://dev.to/ibrahimawadhamid/how-to-create-a-private-route-in-react-route-guard-example-for-authenticated-users-only-kin)
 - [Integrate Routing in Typescript project with React-Router v5.2.0. Including Redux toolkit integration](https://medium.com/react-courses/how-to-integrate-routing-in-typescript-project-with-react-router-v5-2-0-a6b0ab160a1b)
