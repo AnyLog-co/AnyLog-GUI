@@ -5,6 +5,10 @@
 - [How to Router Redirect After Login](https://www.pluralsight.com/guides/how-to-router-redirect-after-login)
 - [How to build a React Login Form with Typescript and React hooks](https://surajsharma.net/blog/react-login-form-typescript)
 
+## CSS
+
+- [How to use CSS breakpoints to create responsive designs](https://getflywheel.com/layout/css-breakpoints-responsive-design-how-to/#:~:text=What%20is%20a%20CSS%20breakpoint,are%20used%20with%20media%20query.)
+
 ## JavaScript
 
 - [Import and export](https://javascript.info/import-export)
@@ -16,6 +20,7 @@
 
 ## Typescript
 
+- https://startup-cto.net/10-bad-typescript-habits-to-break-this-year/
 - [TypeScript: The starting point for learning TypeScript](https://www.typescriptlang.org/docs/)
 - [typescript - How do I decide whether @types/\* goes into `dependencies` or `devDependencies`? - Stack Overflow](https://stackoverflow.com/questions/45176661/how-do-i-decide-whether-types-goes-into-dependencies-or-devdependencies)
 - [Optional chaining](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#optional-chaining/State)
@@ -48,17 +53,17 @@
 - [Data fetching in Redux is painful, get rid of it now](https://link.medium.com/kbT4qvO51bb)
 - [Practical React Query](https://tkdodo.eu/blog/practical-react-query)
 - [React how to display a loading indicator on fetch calls](https://www.basefactor.com/react-how-to-display-a-loading-indicator-on-fetch-calls)
-- [Using Suspense with react-query - LogRocket Blog](https://blog.logrocket.com/using-suspense-with-react-query/)
+- [Using Suspense with react-query](https://blog.logrocket.com/using-suspense-with-react-query/)
 
 ## State
 
 - [What is a Reducer in JavaScript/React/Redux? - RWieruch](https://www.robinwieruch.de/javascript-reducer)
 - [UseReducer With Typescript](https://dev.to/stephencweiss/usereducer-with-typescript-2k)
-- [Use Hooks + Context, not React + Redux - LogRocket Blog](https://blog.logrocket.com/use-hooks-and-context-not-react-and-redux/)
+- [Use Hooks + Context, not React + Redux](https://blog.logrocket.com/use-hooks-and-context-not-react-and-redux/)
 - [The Wise Guide to React useState() Hook](https://dmitripavlutin.com/react-usestate-hook-guide/)
 - [Typed useState with TypeScript](https://www.carlrippon.com/typed-usestate-with-typescript/)
 - [Change Parent Component State from Child using hooks in React](https://webomnizz.com/change-parent-component-state-from-child-using-hooks-in-react/)
-- [javascript - Loosing component data on page refresh in react - Stack Overflow](https://stackoverflow.com/questions/62487168/loosing-component-data-on-page-refresh-in-react)
+- [Losing component data on page refresh in react](https://stackoverflow.com/questions/62487168/loosing-component-data-on-page-refresh-in-react)
 - [Why I Stopped Using Redux](https://dev.to/g_abud/why-i-quit-redux-1knl)
 - [React context API with asynchronous reducer](https://medium.com/@patrick.gross1987/how-to-use-the-react-context-api-with-an-asynchronous-reducer-5651c2dc26aa)
 
@@ -71,6 +76,11 @@
 
 ## Functional Components and Hooks
 
+- https://kyleshevlin.com/use-encapsulation
+- https://medium.com/better-programming/how-to-write-better-functional-components-in-react-bc974f777145
+- https://link.medium.com/MIyE5jkpfdb
+- https://dmitripavlutin.com/react-useeffect-infinite-loop/
+- https://tkdodo.eu/blog/simplifying-use-effect
 - [React Hooks Tutorial - 1 - Introduction - YouTube](https://www.youtube.com/watch?v=cF2lQ_gZeA8)
 - [React Hooks Tutorial: useState, useEffect, useReducer](https://www.valentinog.com/blog/hooks/)
 - [Custom Hooks](https://reactjs.org/docs/hooks-custom.html)
@@ -82,27 +92,32 @@
 
 ## Material UI
 
+- [All Components](https://material-ui.com/getting-started/supported-components/)
+
+### Forms
+
+- [Build a multi-step form with React Hooks, Formik, Yup and MaterialUI](https://medium.com/@nphivu414/build-a-multi-step-form-with-react-hooks-formik-yup-and-materialui-fa4f73545598)
+- [Lessons In Multi-Step Form With React & Material UI](https://www.maxongzb.com/lessons-in-multi-step-form-with-react-and-material-ui-reading-time-4-mins/)
+
 ### Fonts
 
 - [import roboto typeface?](https://github.com/mui-org/material-ui/issues/6256)
 
-### Themes
+### Themes and Styles
 
-- [Quickly set up a theme in Material-UI and access it in your components | by Kitson Broadhurst | Medium](https://medium.com/@kitson.broadhurst/quickly-set-up-a-theme-in-material-ui-and-access-it-in-your-components-ba0565304887)
+- [Quickly set up a theme in Material-UI and access it in your components](https://medium.com/@kitson.broadhurst/quickly-set-up-a-theme-in-material-ui-and-access-it-in-your-components-ba0565304887)
+- https://codeburst.io/my-journey-to-make-styling-with-material-ui-right-6a44f7c68113
+- https://www.joshwcomeau.com/css/styled-components/
 
 ### Grid
 
 - [React Data Grid component - Material-UI](https://material-ui.com/components/data-grid/)
-- [The Material-UI grid system - LogRocket Blog](https://blog.logrocket.com/the-material-ui-grid-system/)
+- [The Material-UI grid system](https://blog.logrocket.com/the-material-ui-grid-system/)
 
 ### Drawer
 
-- [[React+Material UI] Resizable Drawer Using Functional Component | by Joyce Cho | Medium](https://joycechocho.medium.com/react-material-ui-resizable-drawer-using-functional-component-83c9e6c70228)
-- [ - YouTube](https://www.youtube.com/watch?v=jQyCEEzgnT)M
-
-### Other
-
-- [All](https://material-ui.com/getting-started/supported-components/)
+- [Resizable Drawer Using Functional Component](https://joycechocho.medium.com/react-material-ui-resizable-drawer-using-functional-component-83c9e6c70228)
+- [Responsive Drawer](https://www.youtube.com/watch?v=jQyCEEzgnTM)
 
 ## Other Component Libraries
 
@@ -111,7 +126,8 @@
 
 ## React Router
 
-- [Query Strimgs with React Router](https://spin.atomicobject.com/2019/10/01/a-quick-start-guide-to-query-strings-with-react-router/)
+- https://blog.logrocket.com/using-hooks-with-react-router/
+- [Query Strings with React Router](https://spin.atomicobject.com/2019/10/01/a-quick-start-guide-to-query-strings-with-react-router/)
 - [javascript - React-router: How to manually invoke Link? - Stack Overflow](https://stackoverflow.com/questions/29244731/react-router-how-to-manually-invoke-link)
 - [How to create a private route in React (Route Guard) - example: for authenticated users only](https://dev.to/ibrahimawadhamid/how-to-create-a-private-route-in-react-route-guard-example-for-authenticated-users-only-kin)
 - [Integrate Routing in Typescript project with React-Router v5.2.0. Including Redux toolkit integration](https://medium.com/react-courses/how-to-integrate-routing-in-typescript-project-with-react-router-v5-2-0-a6b0ab160a1b)
@@ -128,7 +144,7 @@
 - [Localization with React JS](https://medium.com/@tariqul.islam.rony/internationalization-localization-with-react-js-65d6f6badd56)
 - [localizing Material-UI](https://material-ui.com/guides/localization/)
 - [localizing Material-UI date picker](https://stackoverflow.com/questions/58677350/how-to-change-the-language-for-keyboarddatepicker-material-ui)
-- [Getting started with internationalization (i18n) in React | Our Code World](https://ourcodeworld.com/articles/read/395/getting-started-with-internationalization-i18n-in-react)
+- [Getting started with internationalization (i18n) in React](https://ourcodeworld.com/articles/read/395/getting-started-with-internationalization-i18n-in-react)
 
 ### i18next
 
@@ -138,11 +154,16 @@
 
 ## Error Handling
 
-- [Simple error handling in React with react-error-boundary - LogRocket Blog](https://blog.logrocket.com/error-handling-react-error-boundary/)
+- [Simple error handling in React with react-error-boundary](https://blog.logrocket.com/error-handling-react-error-boundary/)
 
 ## Testing
 
-- [React Testing LibraryBekk](https://react.christmas/2020/6)
-- [Enzyme vs. react-testing-library: A mindset shift - LogRocket Blog](https://blog.logrocket.com/enzyme-vs-react-testing-library-a-mindset-shift/)
+- https://github.com/testing-library/react-hooks-testing-library
+- [React Testing Library](https://react.christmas/2020/6)
+- [Enzyme vs. react-testing-library: A mindset shift](https://blog.logrocket.com/enzyme-vs-react-testing-library-a-mindset-shift/)
 - [A Practical Guide To Testing React Applications With Jest](https://www.smashingmagazine.com/2020/06/practical-guide-testing-react-applications-jest/)
 - [How to Test Asynchronous Methods with React Testing Library](https://www.polvara.me/posts/how-to-test-asynchronous-methods/)
+
+## GraphQL
+
+- https://github.com/benawad/node-graphql-benchmarks

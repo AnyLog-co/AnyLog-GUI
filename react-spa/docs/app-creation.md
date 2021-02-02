@@ -52,6 +52,7 @@ npm i --save \
   react-loader-spinner @types/react-loader-spinner \
   recoil \
   react-dom @types/react-dom \
+  react-hook-form \
   react-router @types/react-router \
   react-router-dom @types/react-router-dom \
   react-query @types/react-query \
@@ -63,8 +64,8 @@ npm i --save \
 
 # Material-UI 5
 npm i --save \
-  typeface-roboto \
-  @material-ui/lab @emotion/react @emotion/styled @material-ui/core@next typeface-roboto @material-ui/icons
+  @material-ui/lab @emotion/react @emotion/styled @material-ui/core@next @material-ui/icons \
+  typeface-roboto
 ```
 
 7. Create .eslintrc.js
