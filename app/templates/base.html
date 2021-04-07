@@ -1,0 +1,16 @@
+
+<html>
+    <head>
+        {% if title %}
+        <title>AnyLog Network ({{ title }})</title>
+        {% else %}
+        <title>AnyLog Network</title>
+        {% endif %}
+    </head>
+    <body>
+        <div>AnyLog: <a herf="/index">{{ builder }} / {{ customer }} </a></div>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>
+

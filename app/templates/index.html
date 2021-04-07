@@ -1,0 +1,26 @@
+
+{% extends "base.html" %}
+
+
+{% block content %}
+
+         <table border = "1">
+            {% for key, value in metadata.data.installation.items() %}
+                <tr>
+                    <td><b>{{key}}</b></td>
+                    <b><td>{{value}}</td></b>
+                 </tr>
+                <!--h2>{{key}}: {{ value }}</h2-->
+            {% endfor %}
+        </table>
+        <hr>
+        <table border = "1">
+            {% for key, value in metadata.data.tags.items() %}
+                <tr>
+                    <td>{{key}}</td>
+                    <td>{{value.description}}</td>
+                </tr>
+                <!--div><p>{{key}}: {{value}}</p></div-->
+            {% endfor %}
+        </table>
+{% endblock %}
