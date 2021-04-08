@@ -2,6 +2,7 @@
 from flask import render_template, flash, redirect
 from app import app
 from app.forms import LoginForm
+from app.forms import CompanyForm
 
 import requests
 
@@ -86,8 +87,32 @@ def login():
     return render_template('login.html', title = 'Sign In', form = form)
 
 @app.route('/company')
+
 def company():
-    return redirect(('/login'))        # start with Login if not yet provided
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    
+    al_headers = {
+            'command' : "blockchain get operator bring.unique [operator][company] ,",
+            'User-Agent' : 'AnyLog/1.23'
+    }
+
+
+    try:
+        response = requests.get('http://10.0.0.78:7849', headers=al_headers)
+    except:
+        flash('AnyLog: Network connection failed')
+        return redirect(('/index'))     # Go to main page
+    else:
+        if response.status_code == 200:
+            data = response.text
+            if data and len(data) > 21:
+                companies = list(filter(None, data[21:-2].split(',')))
+        else:
+            companies = []
+
+    return render_template('companies.html', title = 'Company', companies = companies)
 
 @app.route('/sensor')
 def sensor():
@@ -95,6 +120,9 @@ def sensor():
 
 @app.route('/reports')
 def reports():
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
     return redirect(('/login'))        # start with Login if not yet provided
 
 @app.route('/alerts')
