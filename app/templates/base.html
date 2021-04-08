@@ -9,8 +9,9 @@
     <body>
         <div>
             AnyLog:
-            <a href="{{ url_for('index') }}">Machine</a>
+            <a href="{{ url_for('index') }}">AnyLog</a>
             <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('machine') }}">Machine</a>
         </div>
         <hr>
         {% with messages = get_flashed_messages() %}

@@ -3,9 +3,17 @@ from flask import render_template, flash, redirect
 from app import app
 from app.forms import LoginForm
 
+import requests
+
+
 @app.route('/')
 @app.route('/index')
 def index():
+    return redirect(('/login'))        # start with Login
+
+
+@app.route('/machine')
+def machine():
     metadata = {"id": "1",
                 "data": {"installation":
                              {"customer": "TuscanBrands",
@@ -32,11 +40,19 @@ def index():
 
     return render_template('index.html', title = 'Home', metadata = metadata, builder = "Orics", customer = metadata["data"]["installation"]["customer"])
 
+
 @app.route('/login', methods={'GET','POST'})
 def login():
     form = LoginForm()
     if form.validate_on_submit():
         flash('login requested for user {}, remember_me-={}'.format(
             form.username.data, form.remember_me.data))
+
+        al_headers = {'command' : 'get status'}
+
+        x = requests.get('http://10.0.0.78:7849', headers=al_headers)
+
+        flash('AnyLog {}'.format(x))
+
         return redirect(('/index'))
     return render_template('login.html', title = 'Sign In', form = form)
