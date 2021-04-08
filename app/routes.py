@@ -5,12 +5,20 @@ from app.forms import LoginForm
 
 import requests
 
+user_connect_ = False       # Flag indicating connected to the AnyLog Node 
+
+# -----------------------------------------------------------------------------------
+# GUI forms
+# HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
+# -----------------------------------------------------------------------------------
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return redirect(('/login'))        # start with Login
-
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login
+    
+    return render_template('main.html', title = 'Home')
 
 @app.route('/machine')
 def machine():
@@ -43,20 +51,38 @@ def machine():
 al_reply = None
 @app.route('/login', methods={'GET','POST'})
 def login():
-    global al_reply
+    '''
+    Inpuit login name & password, connecet to a node in the network
+    and move to main page to determine GUI to use
+    '''
+    global user_connect_
     form = LoginForm()
     if form.validate_on_submit():
         flash('login requested for user {}, remember_me-={}'.format(
             form.username.data, form.remember_me.data))
 
-        al_headers = {'command' : 'get status'}
+        al_headers = {
+            'command' : 'get status',
+            'User-Agent' : 'AnyLog/1.23'
+            }
 
+        try:
+            response = requests.get('http://10.0.0.78:7849', headers=al_headers)
+        except:
+            flash('AnyLog: No network connection')
+            user_connect_ = False
+        else:
+            if response.status_code == 200:
+                user_connect_ = True
+            else:
+                user_connect_ = False
+                flash('AnyLog: Netowk node failed to authenticate {}'.format(form.username.data))
         
-        al_reply = requests.get('http://10.0.0.78:7849', headers=al_headers)
+        if not user_connect_:
+            redirect(('/login'))        # Redo the login
 
-        flash('AnyLog {}'.format(al_reply))
+        return redirect(('/index'))     # Go to main page
 
-        return redirect(('/index'))
     return render_template('login.html', title = 'Sign In', form = form)
 
 @app.route('/company')
