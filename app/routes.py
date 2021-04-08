@@ -40,9 +40,10 @@ def machine():
 
     return render_template('index.html', title = 'Home', metadata = metadata, builder = "Orics", customer = metadata["data"]["installation"]["customer"])
 
-
+al_reply = None
 @app.route('/login', methods={'GET','POST'})
 def login():
+    global al_reply
     form = LoginForm()
     if form.validate_on_submit():
         flash('login requested for user {}, remember_me-={}'.format(
@@ -50,9 +51,34 @@ def login():
 
         al_headers = {'command' : 'get status'}
 
-        x = requests.get('http://10.0.0.78:7849', headers=al_headers)
+        
+        al_reply = requests.get('http://10.0.0.78:7849', headers=al_headers)
 
-        flash('AnyLog {}'.format(x))
+        flash('AnyLog {}'.format(al_reply))
 
         return redirect(('/index'))
     return render_template('login.html', title = 'Sign In', form = form)
+
+@app.route('/company')
+def company():
+    return redirect(('/login'))        # start with Login if not yet provided
+
+@app.route('/sensor')
+def sensor():
+    return redirect(('/login'))        # start with Login if not yet provided
+
+@app.route('/reports')
+def reports():
+    return redirect(('/login'))        # start with Login if not yet provided
+
+@app.route('/alerts')
+def alerts():
+    return redirect(('/login'))        # start with Login if not yet provided
+
+@app.route('/configure')
+def configure():
+    return redirect(('/login'))        # start with Login if not yet provided
+
+@app.route('/network')
+def network():
+    return redirect(('/login'))        # start with Login if not yet provided

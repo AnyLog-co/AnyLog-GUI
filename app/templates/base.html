@@ -8,10 +8,16 @@
     </head>
     <body>
         <div>
-            AnyLog:
-            <a href="{{ url_for('index') }}">AnyLog</a>
-            <a href="{{ url_for('login') }}">Login</a>
-            <a href="{{ url_for('machine') }}">Machine</a>
+            AnyLog Network:&nbsp
+            <a href="{{ url_for('index') }}">AnyLog</a>&nbsp
+            <a href="{{ url_for('login') }}">Login</a>&nbsp
+            <a href="{{ url_for('company') }}">Company</a>&nbsp
+            <a href="{{ url_for('machine') }}">Machine</a>&nbsp
+            <a href="{{ url_for('sensor') }}">Sensor</a>&nbsp
+            <a href="{{ url_for('reports') }}">Reports</a>&nbsp
+            <a href="{{ url_for('alerts') }}">Alerts</a>&nbsp
+            <a href="{{ url_for('configure') }}">Config</a>&nbsp
+            <a href="{{ url_for('network') }}">Network</a>&nbsp
         </div>
         <hr>
         {% with messages = get_flashed_messages() %}
