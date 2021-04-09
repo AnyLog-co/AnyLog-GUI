@@ -1,5 +1,5 @@
 
-from flask import render_template, flash, redirect
+from flask import render_template, flash, redirect, request
 from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
@@ -157,10 +157,15 @@ def configure():
     
     form = ConfigForm()
     if form.validate_on_submit():
-        flash('AnyLog: Network Member Node %s:%s' % (form.node_ip, form.node_port))
+        flash('AnyLog: Network Member Node {}:{}'.format(form.node_ip, form.node_port))
 
-    return render_template('configure.html', title = 'Configure Nrtwork Connection', form = form)
+    return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
+@app.route('/set_config', methods = ['GET', 'POST'])
+def set_config():
+    if request.method == 'POST':
+        my_form = request.form
+        return render_template('configure')
 # -----------------------------------------------------------------------------------
 # Network
 # -----------------------------------------------------------------------------------

@@ -5,8 +5,7 @@
 
 {% block content %}
     <h1>Configure</h1>
-    <form action="" method ="post" novalidate>
-        {{ form.hidden_tag() }}
+    <form action="{{ url_for('set_config') }}" method="post">
         <p>
             {{ form.node_ip.label }}<br>
             {{ form.node_ip(size = 32) }}<br>
