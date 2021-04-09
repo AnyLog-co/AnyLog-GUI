@@ -66,9 +66,6 @@ def login():
     global user_connect_
     form = LoginForm()
     if form.validate_on_submit():
-        flash('login requested for user {}, remember_me-={}'.format(
-            form.username.data, form.remember_me.data))
-
         al_headers = {
             'command' : 'get status',
             'User-Agent' : 'AnyLog/1.23'
@@ -77,7 +74,7 @@ def login():
         try:
             response = requests.get('http://10.0.0.78:7849', headers=al_headers)
         except:
-            flash('AnyLog: No network connection')
+            flash('AnyLog: No network connection', category='error')
             user_connect_ = False
         else:
             if response.status_code == 200:
