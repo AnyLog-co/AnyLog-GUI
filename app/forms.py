@@ -9,8 +9,8 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField('Remember_me')
     submit = SubmitField('Sign In')
 
-
-class CompanyForm(FlaskForm):
-    companyname = StringField('Username', validators=[DataRequired()])
-    submit = SubmitField('Submit')
-
+class ConfigForm(FlaskForm):
+    node_ip = StringField('IP', validators=[DataRequired()])
+    node_port = StringField('Port', validators=[DataRequired()])
+    remember_me = BooleanField('Remember_me')
+    submit = SubmitField('Save')

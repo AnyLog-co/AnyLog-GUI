@@ -2,7 +2,7 @@
 from flask import render_template, flash, redirect
 from app import app
 from app.forms import LoginForm
-from app.forms import CompanyForm
+from app.forms import ConfigForm
 from app.entities import Companies
 from app.entities import Item
 
@@ -154,7 +154,13 @@ def alerts():
 # -----------------------------------------------------------------------------------
 @app.route('/configure')
 def configure():
-    return redirect(('/login'))        # start with Login if not yet provided
+    
+    form = ConfigForm()
+    if form.validate_on_submit():
+        flash('AnyLog: Network Member Node %s:%s' % (form.node_ip, form.node_port))
+
+    return render_template('configure.html', title = 'Configure Nrtwork Connection', form = form)
+
 # -----------------------------------------------------------------------------------
 # Network
 # -----------------------------------------------------------------------------------
