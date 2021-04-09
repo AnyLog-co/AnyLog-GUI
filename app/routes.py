@@ -202,8 +202,26 @@ def network():
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
-    if request.method == 'POST':
-        pass
+    al_headers = {
+            'User-Agent' : 'AnyLog/1.23'
+    }
+
+
+    try:
+        al_headers["command"] = request.form["command"]
+        
+        response = requests.get('http://10.0.0.78:7849', headers=al_headers)
+    except:
+        flash('AnyLog: Network connection failed')
+        return redirect(('/network'))     # Go to main page
+    else:
+        # https://stackoverflow.com/questions/12244057/any-way-to-add-a-new-line-from-a-string-with-the-n-character-in-flask
+        if response.status_code == 200:
+            data = response.text
+            data = data.replace('\r','')
+            text = data.split('\n')
+            return render_template('output.html', title = 'Network Node Reply', text=text)
+  
     
     form = NetworkForm()         # New Form
 

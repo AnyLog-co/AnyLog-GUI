@@ -5,7 +5,7 @@
 
 {% block content %}
     <h1>Commands</h1>
-    <form action="{{ url_for('al_command') }}" method="get">
+    <form action="{{ url_for('al_command') }}" method="post">
         <p>
             {{ form.command.label }}<br>
             {{ form.command(size = 64) }}<br>
