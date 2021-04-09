@@ -123,7 +123,7 @@ def reports():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    return redirect(('/login'))        # start with Login if not yet provided
+    return render_template('reports.html', title = 'Orics')
 
 @app.route('/alerts')
 def alerts():
