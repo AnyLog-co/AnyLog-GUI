@@ -3,6 +3,7 @@ from flask import render_template, flash, redirect, request
 from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
+from app.forms import NetworkForm
 from app.entities import Companies
 from app.entities import Item
 
@@ -188,4 +189,24 @@ def set_config():
 # -----------------------------------------------------------------------------------
 @app.route('/network')
 def network():
-    return redirect(('/login'))        # start with Login if not yet provided
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    form = NetworkForm()         # New Form
+
+    def_dest = "10.0.0.78:7848"
+
+    return render_template('network.html', title = 'Network Status', form = form, def_dest=def_dest)
+
+
+@app.route('/al_command', methods = ['GET', 'POST'])
+def al_command():
+
+    if request.method == 'POST':
+        pass
+    
+    form = NetworkForm()         # New Form
+
+    def_dest = "10.0.0.78:7848"
+    
+    return render_template('network.html', title = 'Network Status', form = form, def_dest=def_dest)
