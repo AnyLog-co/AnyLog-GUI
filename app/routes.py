@@ -9,7 +9,8 @@ from app.entities import Item
 import requests
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
-
+node_config_ = {}           # Config as f(company_name)
+company_name_ = None        # Company to service
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
@@ -90,7 +91,12 @@ def login():
 
         return redirect(('/index'))     # Go to main page
 
-    return render_template('login.html', title = 'Sign In', form = form)
+    if company_name_:
+        title_str = 'Sign In: %s' % company_name_
+    else:
+        title_str = 'Sign In'
+
+    return render_template('login.html', title = title_str, form = form)
 
 # -----------------------------------------------------------------------------------
 # Companies
@@ -163,9 +169,23 @@ def configure():
 
 @app.route('/set_config', methods = ['GET', 'POST'])
 def set_config():
+    global node_config_
+    global company_name_
+
     if request.method == 'POST':
-        my_form = request.form
-        return render_template('configure')
+        conf = {}
+        conf["node_ip"] = request.form["node_ip"]
+        conf["node_port"] = request.form["node_port"]
+        conf["reports_ip"] = request.form["reports_ip"]
+        conf["reports_port"] = request.form["reports_ip"]
+
+        company_name = request.form["company"]
+        node_config_[company_name] = conf
+        company_name_ = company_name
+    
+    form = ConfigForm()         # New Form
+    
+    return render_template('configure.html', title = 'Configure Network Connection', form = form)
 # -----------------------------------------------------------------------------------
 # Network
 # -----------------------------------------------------------------------------------

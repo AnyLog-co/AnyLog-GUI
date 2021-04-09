@@ -1,6 +1,6 @@
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired
 
 class LoginForm(FlaskForm):
@@ -10,7 +10,11 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class ConfigForm(FlaskForm):
-    node_ip = StringField('IP', validators=[DataRequired()])
-    node_port = StringField('Port', validators=[DataRequired()])
+    company = StringField('Company', validators=[DataRequired()])
+    node_ip = StringField('Node IP', validators=[DataRequired()])
+    node_port = IntegerField('Node Port', validators=[DataRequired()])
+    reports_ip = StringField('Reports IP', validators=[DataRequired()])
+    reports_port = IntegerField('Reports Port', validators=[DataRequired()])
+
     remember_me = BooleanField('Remember_me')
     submit = SubmitField('Save')
