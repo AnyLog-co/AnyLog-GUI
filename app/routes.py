@@ -3,6 +3,8 @@ from flask import render_template, flash, redirect
 from app import app
 from app.forms import LoginForm
 from app.forms import CompanyForm
+from app.entities import Companies
+from app.entities import Item
 
 import requests
 
@@ -20,9 +22,11 @@ def index():
         return redirect(('/login'))        # start with Login
     
     return render_template('main.html', title = 'Home')
-
+# -----------------------------------------------------------------------------------
+# Machine
+# -----------------------------------------------------------------------------------
 @app.route('/machine')
-def machine():
+def machine(company_name = None):
     metadata = {"id": "1",
                 "data": {"installation":
                              {"customer": "TuscanBrands",
@@ -49,7 +53,9 @@ def machine():
 
     return render_template('index.html', title = 'Home', metadata = metadata, builder = "Orics", customer = metadata["data"]["installation"]["customer"])
 
-al_reply = None
+# -----------------------------------------------------------------------------------
+# Login
+# -----------------------------------------------------------------------------------
 @app.route('/login', methods={'GET','POST'})
 def login():
     '''
@@ -86,8 +92,10 @@ def login():
 
     return render_template('login.html', title = 'Sign In', form = form)
 
+# -----------------------------------------------------------------------------------
+# Companies
+# -----------------------------------------------------------------------------------
 @app.route('/company')
-
 def company():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
@@ -105,34 +113,51 @@ def company():
         flash('AnyLog: Network connection failed')
         return redirect(('/index'))     # Go to main page
     else:
+        companies_list = []
         if response.status_code == 200:
             data = response.text
             if data and len(data) > 21:
                 companies = list(filter(None, data[21:-2].split(',')))
-        else:
-            companies = []
+                
+                for company in companies:
+                    companies_list.append(Item(company))
 
-    return render_template('companies.html', title = 'Company', companies = companies)
+        table = Companies(companies_list)
+        table.border = True
 
+    return render_template('companies.html', table = table)
+
+
+# -----------------------------------------------------------------------------------
+# Sensor
+# -----------------------------------------------------------------------------------
 @app.route('/sensor')
 def sensor():
     return redirect(('/login'))        # start with Login if not yet provided
-
+# -----------------------------------------------------------------------------------
+# Reports
+# -----------------------------------------------------------------------------------
 @app.route('/reports')
 def reports():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
     return render_template('reports.html', title = 'Orics')
-
+# -----------------------------------------------------------------------------------
+# Alerts
+# -----------------------------------------------------------------------------------
 @app.route('/alerts')
 def alerts():
     return redirect(('/login'))        # start with Login if not yet provided
-
+# -----------------------------------------------------------------------------------
+# Configure
+# -----------------------------------------------------------------------------------
 @app.route('/configure')
 def configure():
     return redirect(('/login'))        # start with Login if not yet provided
-
+# -----------------------------------------------------------------------------------
+# Network
+# -----------------------------------------------------------------------------------
 @app.route('/network')
 def network():
     return redirect(('/login'))        # start with Login if not yet provided
