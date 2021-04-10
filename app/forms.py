@@ -19,7 +19,7 @@ class ConfigForm(FlaskForm):
     remember_me = BooleanField('Remember_me')
     submit = SubmitField('Save')
 
-class NetworkForm(FlaskForm):
+class CommandsForm(FlaskForm):
 
     command = StringField('Command', validators=[DataRequired()])
     destination = StringField('Destination (IP:Port)', validators=[])
