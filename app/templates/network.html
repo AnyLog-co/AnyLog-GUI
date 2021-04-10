@@ -2,8 +2,11 @@
 
 {% extends "base.html" %}
 
-
+  
 {% block content %}
+    <a href="{{ url_for('network') }}">Command</a>&nbsp
+    <a href="{{ url_for('install') }}">Install</a>&nbsp
+
     <h1>Commands</h1>
     <form action="{{ url_for('al_command') }}" method="post">
         <p>

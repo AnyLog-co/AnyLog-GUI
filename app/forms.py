@@ -25,3 +25,13 @@ class NetworkForm(FlaskForm):
     destination = StringField('Destination (IP:Port)', validators=[])
   
     submit = SubmitField('Submit')
+
+class InstallForm(FlaskForm):
+    connect_ip = StringField('New Node IP', validators=[DataRequired()])
+    connect_port = IntegerField('New Node Port', validators=[DataRequired()])
+    connect_pwd = StringField('New Node Password', validators=[DataRequired()])
+    is_operator = BooleanField('Operator')
+    is_publisher = BooleanField('Publisher')
+    is_query = BooleanField('Query')
+    is_master = BooleanField('Master')
+    deploy = SubmitField('Deploy')

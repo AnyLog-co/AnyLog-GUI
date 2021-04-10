@@ -4,6 +4,7 @@ from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
 from app.forms import NetworkForm
+from app.forms import InstallForm
 from app.entities import Companies
 from app.entities import Item
 
@@ -215,7 +216,6 @@ def al_command():
         flash('AnyLog: Network connection failed')
         return redirect(('/network'))     # Go to main page
     else:
-        # https://stackoverflow.com/questions/12244057/any-way-to-add-a-new-line-from-a-string-with-the-n-character-in-flask
         if response.status_code == 200:
             data = response.text
             data = data.replace('\r','')
@@ -228,3 +228,9 @@ def al_command():
     def_dest = "10.0.0.78:7848"
     
     return render_template('network.html', title = 'Network Status', form = form, def_dest=def_dest)
+
+@app.route('/install', methods = ['GET', 'POST'])
+def install():
+  
+    form = InstallForm()         # New Form
+    return render_template('install.html', title = 'Install Network Node', form = form)
