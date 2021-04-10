@@ -42,25 +42,28 @@ class gui():
     def set_menue(self):
         if self.gui_struct and not self.base_menue:
             self.base_menue = []
-            self.create_base_menue(self.gui_struct)
+            if isinstance(self.gui_struct, dict):
+                if "gui" in self.gui_struct and "children" in self.gui_struct["gui"]:     # Root of JSON
+                    self.create_base_menue(self.gui_struct["gui"]["children"])
 
 
     # ------------------------------------------------------------------------
     # Make the upper menue
     # ------------------------------------------------------------------------
-    def create_base_menue(self, gui_struct):
+    def create_base_menue(self, gui_list):
 
-        if "gui" in gui_struct:     # Root of JSON
-            self.create_base_menue(gui_struct["gui"])
-        else:
-            if "children" in gui_struct:
-                for child in gui_struct["children"]:
-                    if "name" in child:
-                        text_name = child["name"]
-                        url_link = url_for(text_name.lower())
+        if isinstance(gui_list,list):
+            for entry in gui_list:
+                if isinstance(entry, dict):
+                    if "name" in entry:
+                        text_name = entry["name"]
+                        try:
+                            url_link = url_for(text_name.lower())
+                        except:
+                            continue
                         self.base_menue.append((text_name, url_link))
-                        if "children" in child:
-                            self.create_base_menue(child["children"])
+                        if "children" in entry:
+                           self.create_base_menue(entry["children"])
 
     # ------------------------------------------------------------------------
     # Return the user menue based on the JSON file
