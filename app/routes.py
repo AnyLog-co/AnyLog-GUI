@@ -1,5 +1,5 @@
 
-from flask import render_template, flash, redirect, request
+from flask import render_template, flash, redirect, request, url_for
 from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
@@ -16,8 +16,8 @@ user_connect_ = False       # Flag indicating connected to the AnyLog Node
 node_config_ = {}           # Config as f(company_name)
 company_name_ = None        # Company to service
 
-gui_view = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
-gui_view.set_gui()
+gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
+gui_view_.set_gui()
 
 # -----------------------------------------------------------------------------------
 # GUI forms
@@ -27,10 +27,11 @@ gui_view.set_gui()
 @app.route('/')
 @app.route('/index')
 def index():
+
     if not user_connect_:
         return redirect(('/login'))        # start with Login
     
-    return render_template('main.html', title = 'Home')
+    return render_template('main.html', title = 'Home',  private_gui = gui_view_.get_base_menu() )
 # -----------------------------------------------------------------------------------
 # Machine
 # -----------------------------------------------------------------------------------
@@ -101,7 +102,9 @@ def login():
     else:
         title_str = 'Sign In'
 
-    return render_template('login.html', title = title_str, form = form)
+    gui_view_.set_menue()
+
+    return render_template('login.html', title = title_str, form = form,  private_gui = gui_view_.get_base_menu())
 
 # -----------------------------------------------------------------------------------
 # Companies
@@ -240,3 +243,5 @@ def install():
   
     form = InstallForm()         # New Form
     return render_template('install.html', title = 'Install Network Node', form = form)
+
+

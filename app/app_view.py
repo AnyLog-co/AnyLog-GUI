@@ -9,27 +9,64 @@ creation of derivative, compilation, decompilation, tampering or modification of
 to be broadly interpreted) you or your such affiliates shall unconditionally assign and transfer any intellectual property created by any
 such non-permitted act to AnyLog, Inc.
 '''
+from flask import url_for
 
 import json
 
 from config import Config
+
 
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
 # ------------------------------------------------------------------------
 
 class gui():
-    
+
     def __init__(self):
         self.gui_struct = None 
-
+        self.base_menue = None
+   # ------------------------------------------------------------------------
+    # Load the JSON and set main structures
+    # ------------------------------------------------------------------------
     def set_gui(self, file_name = None):
 
         if not file_name:
             file_name = Config.GUI_VIEW    # get from system variable
         
         self.gui_struct = load_json(file_name)
-        
+
+ 
+    # ------------------------------------------------------------------------
+    # Set Menu names and links based on the JSON file
+    # ------------------------------------------------------------------------
+    def set_menue(self):
+        if self.gui_struct and not self.base_menue:
+            self.base_menue = []
+            self.create_base_menue(self.gui_struct)
+
+
+    # ------------------------------------------------------------------------
+    # Make the upper menue
+    # ------------------------------------------------------------------------
+    def create_base_menue(self, gui_struct):
+
+        if "gui" in gui_struct:     # Root of JSON
+            self.create_base_menue(gui_struct["gui"])
+        else:
+            if "children" in gui_struct:
+                for child in gui_struct["children"]:
+                    if "name" in child:
+                        text_name = child["name"]
+                        url_link = url_for(text_name.lower())
+                        self.base_menue.append((text_name, url_link))
+                        if "children" in child:
+                            self.create_base_menue(child["children"])
+
+    # ------------------------------------------------------------------------
+    # Return the user menue based on the JSON file
+    # ------------------------------------------------------------------------
+    def get_base_menu(self):
+        return self.base_menue
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
 # ------------------------------------------------------------------------

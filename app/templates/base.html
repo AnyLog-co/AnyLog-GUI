@@ -9,7 +9,7 @@
     <body>
         <div>
             AnyLog Network:&nbsp
-            <a href="{{ url_for('index') }}">AnyLog</a>&nbsp
+            <a href="{{ url_value }}">Login</a>&nbsp
             <a href="{{ url_for('login') }}">Login</a>&nbsp
             <a href="{{ url_for('company') }}">Company</a>&nbsp
             <a href="{{ url_for('machine') }}">Machine</a>&nbsp
@@ -19,6 +19,12 @@
             <a href="{{ url_for('configure') }}">Config</a>&nbsp
             <a href="{{ url_for('network') }}">Network</a>&nbsp
             <a href="{{ url_for('network') }}">Policies</a>&nbsp
+            <dbr>
+            {% if private_gui %}
+                {% for text, url_target in private_gui %}
+                    <a href="{{ url_target }}"> {{text}} </a>&nbsp
+                {% endfor %}
+            {% endif %}
         </div>
         <hr>
         {% with messages = get_flashed_messages() %}
