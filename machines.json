@@ -1,0 +1,20 @@
+{
+    "gui" : {
+        "query" : "blockchain get operator bring.unique [operator][company] ,",
+        "children" : [
+            {
+                "name" : "Company",
+                "children" : [
+                    {
+                        "name" : "Machine",
+                        "children" : [
+                            {
+                                "name" : "Sensor"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

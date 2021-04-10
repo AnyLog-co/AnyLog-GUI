@@ -11,20 +11,13 @@ from app.entities import Item
 import requests
 
 from app import app_view        # maintains the logical view of the GUI from a JSON File
-app_view.load_json()            # Load the definition of the user view of the metadata from a JSON file
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 node_config_ = {}           # Config as f(company_name)
 company_name_ = None        # Company to service
 
-
-
-struct_info_ = {
-    "title" : "",           # The title to display
-    "cildren" : [],         # List of entriesm each entry is struct_info
-    "query"   : "Query to pull the data"
-
-}
+gui_view = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
+gui_view.set_gui()
 
 # -----------------------------------------------------------------------------------
 # GUI forms
