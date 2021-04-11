@@ -30,6 +30,8 @@ def index():
 
     if not user_connect_:
         return redirect(('/login'))        # start with Login
+
+    gui_view_.set_menue()
     
     return render_template('main.html', title = 'Home',  private_gui = gui_view_.get_base_menu() )
 # -----------------------------------------------------------------------------------
@@ -37,6 +39,10 @@ def index():
 # -----------------------------------------------------------------------------------
 @app.route('/machine')
 def machine(company_name = None):
+
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login
+
     metadata = {"id": "1",
                 "data": {"installation":
                              {"customer": "TuscanBrands",
@@ -61,7 +67,10 @@ def machine(company_name = None):
                               "Table:I.OutputCurrent": {"description": "Table Output Current"},
                               "ALARMS DESPLAY TIME": {"description": "Active Alarms"}}}}
 
-    return render_template('index.html', title = 'Home', metadata = metadata, builder = "Orics", customer = metadata["data"]["installation"]["customer"])
+
+    
+
+    return render_template('index.html', title = 'Home', metadata = metadata, builder = "Orics", customer = metadata["data"]["installation"]["customer"], private_gui = gui_view_.get_base_menu())
 
 # -----------------------------------------------------------------------------------
 # Login
@@ -73,7 +82,11 @@ def login():
     and move to main page to determine GUI to use
     '''
     global user_connect_
+
+    gui_view_.set_menue()
+
     form = LoginForm()
+
     if form.validate_on_submit():
         al_headers = {
             'command' : 'get status',
@@ -101,8 +114,6 @@ def login():
         title_str = 'Sign In: %s' % company_name_
     else:
         title_str = 'Sign In'
-
-    gui_view_.set_menue()
 
     return render_template('login.html', title = title_str, form = form,  private_gui = gui_view_.get_base_menu())
 
@@ -139,8 +150,7 @@ def company():
         table = Companies(companies_list)
         table.border = True
 
-    return render_template('companies.html', table = table)
-
+    return render_template('companies.html', table = table, private_gui = gui_view_.get_base_menu())
 
 # -----------------------------------------------------------------------------------
 # Sensor
@@ -156,7 +166,8 @@ def reports():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    return render_template('reports.html', title = 'Orics')
+
+    return render_template('reports.html', title = 'Orics', private_gui = gui_view_.get_base_menu())
 # -----------------------------------------------------------------------------------
 # Alerts
 # -----------------------------------------------------------------------------------
@@ -168,12 +179,14 @@ def alerts():
 # -----------------------------------------------------------------------------------
 @app.route('/configure')
 def configure():
+
+    gui_view_.set_menue()
     
     form = ConfigForm()
     if form.validate_on_submit():
         flash('AnyLog: Network Member Node {}:{}'.format(form.node_ip, form.node_port))
 
-    return render_template('configure.html', title = 'Configure Network Connection', form = form)
+    return render_template('configure.html', title = 'Configure Network Connection', form = form, private_gui = gui_view_.get_base_menu())
 
 @app.route('/set_config', methods = ['GET', 'POST'])
 def set_config():
@@ -193,7 +206,7 @@ def set_config():
     
     form = ConfigForm()         # New Form
     
-    return render_template('configure.html', title = 'Configure Network Connection', form = form)
+    return render_template('configure.html', title = 'Configure Network Connection', form = form, private_gui = gui_view_.get_base_menu())
 # -----------------------------------------------------------------------------------
 # Network
 # -----------------------------------------------------------------------------------
@@ -206,7 +219,7 @@ def network():
 
     def_dest = "10.0.0.78:7848"
 
-    return render_template('commands.html', title = 'Network Commands', form = form, def_dest=def_dest)
+    return render_template('commands.html', title = 'Network Commands', form = form, def_dest=def_dest, private_gui = gui_view_.get_base_menu())
 
 
 @app.route('/al_command', methods = ['GET', 'POST'])
@@ -229,19 +242,19 @@ def al_command():
             data = response.text
             data = data.replace('\r','')
             text = data.split('\n')
-            return render_template('output.html', title = 'Network Node Reply', text=text)
+            return render_template('output.html', title = 'Network Node Reply', text=text, private_gui = gui_view_.get_base_menu())
   
     
-    form = NetworkForm()         # New Form
+    form = CommandsForm()         # New Form
 
     def_dest = "10.0.0.78:7848"
     
-    return render_template('network.html', title = 'Network Status', form = form, def_dest=def_dest)
+    return render_template('network.html', title = 'Network Status', form = form, def_dest=def_dest, private_gui = gui_view_.get_base_menu())
 
 @app.route('/install', methods = ['GET', 'POST'])
 def install():
   
     form = InstallForm()         # New Form
-    return render_template('install.html', title = 'Install Network Node', form = form)
+    return render_template('install.html', title = 'Install Network Node', form = form, private_gui = gui_view_.get_base_menu())
 
 
