@@ -25,7 +25,20 @@ class gui():
     def __init__(self):
         self.config_struct = None 
         self.base_menue = None
-   # ------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------
+    # Get the IP and Port of the query node
+    # ------------------------------------------------------------------------
+    def get_query_node(self):
+        '''
+        Return the "query_node" value (IP:Port) from the JSON config struct
+        '''
+        if self.config_struct and "gui" in self.config_struct and "query_node" in self.config_struct["gui"]:
+            query_node = self.config_struct["gui"]["query_node"]
+        else:
+            query_node - None
+        return query_node
+    # ------------------------------------------------------------------------
     # Load the JSON and set main structures
     # ------------------------------------------------------------------------
     def set_gui(self, file_name = None):

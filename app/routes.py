@@ -21,6 +21,8 @@ company_name_ = None        # Company to service
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
 gui_view_.set_gui()
 
+query_node_ = None
+
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
@@ -262,17 +264,47 @@ def install():
 
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
+# https://hackersandslackers.com/flask-routes/
 # -----------------------------------------------------------------------------------
 @app.route('/tree')
+
 def tree( level = 1):
+    global query_node_
+
     # Need to login before navigating
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    
+    target_node = query_node_ or gui_view_.get_query_node()
+    if not target_node:
+        flash("AnyLog: Missing query node connection info")
+        return redirect(('/configure'))     # Get the query node info
+
     al_command = gui_view_.get_command( level )
     if not al_command:
         flash("AnyLog: Missing AnyLog Command in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        return redirect(('/index'))        # Show all user select options
 
+    # Run the query against the Query Node
+
+    al_headers = {
+        'User-Agent' : 'AnyLog/1.23',
+        'command' : al_command
+        }
+
+    try:
+        response = requests.get(target_node, headers=al_headers)
+    except:
+        flash('AnyLog: No network connection', category='error')
+        user_connect_ = False
+        redirect(('/login'))        # Redo the login
     
 
+    reply_list = []
+    if response.status_code == 200:
+        data = response.text
+    else:
+        flash('AnyLog: No data satisfies the request', category='error')
+        redirect(('/index'))        # Select a different path
+
+    redirect(('/index')) 
