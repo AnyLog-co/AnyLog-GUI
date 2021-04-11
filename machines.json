@@ -1,5 +1,6 @@
 {
     "gui" : {
+	"query_node" : "http://10.0.0.78:7849",
         "children" : [
             {
                 "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
@@ -8,6 +9,16 @@
                     {
                         "query" : "blockchain get machine where manufacturer = orics",
                         "name" : "Machine",
+                        "children" : [
+                            {
+                                "query" : "blockchain get tags where machine = -[id]",
+                                "name" : "Sensor"
+                            }
+                        ]
+                    },
+                   {
+                        "query" : "blockchain get machine where manufacturer = orics",
+                        "name" : "Machine2",
                         "children" : [
                             {
                                 "query" : "blockchain get tags where machine = -[id]",

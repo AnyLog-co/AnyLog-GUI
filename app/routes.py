@@ -270,6 +270,7 @@ def install():
 
 def tree( level = 1):
     global query_node_
+    global user_connect_
 
     # Need to login before navigating
     if not user_connect_:
@@ -298,6 +299,9 @@ def tree( level = 1):
         flash('AnyLog: No network connection', category='error')
         user_connect_ = False
         redirect(('/login'))        # Redo the login
+
+
+    gui_view_.set_menue( level )
     
 
     reply_list = []

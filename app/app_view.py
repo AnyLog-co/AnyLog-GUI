@@ -24,7 +24,11 @@ class gui():
 
     def __init__(self):
         self.config_struct = None 
-        self.base_menue = None
+
+        self.base_menue = None  # ?
+
+        self.gui_level = 1      # The hirerarchical level of the navigation
+        self.nav_bar = []       # Dynamic user menue to select a tree navigation
 
     # ------------------------------------------------------------------------
     # Get the IP and Port of the query node
@@ -52,7 +56,11 @@ class gui():
     # ------------------------------------------------------------------------
     # Set Menu names and links based on the JSON file
     # ------------------------------------------------------------------------
-    def set_menue(self):
+    def set_menue(self, gui_level = 0):
+        '''
+        Set the navigation menue as f (traversal level)
+        '''
+
         if self.config_struct and not self.base_menue:
             self.base_menue = []
             if isinstance(self.config_struct, dict):
@@ -83,6 +91,44 @@ class gui():
     # ------------------------------------------------------------------------
     def get_base_menu(self):
         return self.base_menue
+
+
+    # ------------------------------------------------------------------------
+    # Get the Navigation Bar as f(level)
+    # ------------------------------------------------------------------------
+    def get_nav_bar(self, gui_level):
+        '''
+        Get the Navigation Bar as f(level)
+        '''
+        if gui_level:
+            self.gui_level = gui_level      # Move backwards or stay on the previous leve
+
+        if self.config_struct:
+            if isinstance(self.config_struct, dict):
+                if "gui" in self.config_struct and "children" in self.config_struct["gui"]:     # Root of JSON
+                    json_struct = self.config_struct["gui"]["children"]     # root of JSON to use
+
+                    for i in range(self.gui_level):
+                        if i == self.gui_level - 1:
+                            # Last level - get all children
+                            for counter, entry in enumerate(json_struct):
+                                if "name" in entry:
+                                    text_name = entry["name"]       # The name to print
+                                    try:
+                                        url_link = url_for(text_name.lower())   # the link to use
+                                    except:
+                                        continue
+                                    if (i + counter) < len(self.nav_bar):
+                                        self.nav_bar[i + counter] = ((text_name, url_link))
+                                    else:
+                                        self.nav_bar.append((text_name, url_link))
+                        else:
+                            # Add the parents which were selected by the user
+                            pass
+ 
+
+     
+
 
     # ------------------------------------------------------------------------
     # Get the AnyLog command as f (level) from the user JSON configuration struct
