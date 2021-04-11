@@ -1,14 +1,16 @@
 {
     "gui" : {
-        "query" : "blockchain get operator bring.unique [operator][company] ,",
         "children" : [
             {
+                "query" : "blockchain get machine where manufacturer = orics  bring.unique [machine][manufacturer] ,",
                 "name" : "Company",
                 "children" : [
                     {
+                        "query" : "blockchain get machine where manufacturer = orics",
                         "name" : "Machine",
                         "children" : [
                             {
+                                "query" : "blockchain get tags where machine = -[id]",
                                 "name" : "Sensor"
                             }
                         ]
