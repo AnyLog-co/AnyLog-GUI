@@ -5,15 +5,15 @@
 {% block content %}
     <h1>AnyLog Network</h1><br>
 
-    <a href="{{ url_for('index') }}">AnyLog</a><br>
-    <a href="{{ url_for('login') }}">Login</a><br>
-    <a href="{{ url_for('company') }}">Company</a><br>
-    <a href="{{ url_for('machine') }}">Machine</a><br>
-    <a href="{{ url_for('sensor') }}">Sensor</a><br>
+    <a href="{{ url_for('index') }}">Home</a><br>
+  
+    {% if private_gui %}
+        {%- for text, url_target in private_gui -%}
+       
+            <a href="{{ url_target }}">{{text}}</a><br>
+        
+        {%- endfor -%}
+    {% endif %}
     <a href="{{ url_for('reports') }}">Reports</a><br>
-    <a href="{{ url_for('alerts') }}">Alerts</a><br>
-    <a href="{{ url_for('configure') }}">Config</a><br>
-    <a href="{{ url_for('network') }}">Network</a><br>
-    <a href="{{ url_for('index') }}">Policies</a><br>
 
  {% endblock %}
