@@ -354,9 +354,10 @@ def tree( level = 1):
     # Create a class dynamically with the needed attributes
     attributes = {}
     for entry in list_columns:
-        attributes[entry] = Col(entry)
+        attributes[entry.lower()] = Col(entry)
         
-    table = type ( 'AnyLogTable', (Table,), attributes)
+    TableClass = type ( 'AnyLogTable', (Table,), attributes)
+    table = TableClass(table_rows)
     table.border = True
 
     return render_template('companies.html', table = table, private_gui = gui_view_.get_base_menu())
