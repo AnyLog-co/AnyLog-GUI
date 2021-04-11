@@ -1,5 +1,6 @@
 
 from flask import render_template, flash, redirect, request, url_for
+from flask_table import  Table, Col
 from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
@@ -7,6 +8,7 @@ from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.entities import Companies
 from app.entities import Item
+from app.entities import AnyLogTable
 from app.entities import AnyLogItem
 
 from config import Config
@@ -266,6 +268,7 @@ def install():
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
 # https://hackersandslackers.com/flask-routes/
+# https://www.freecodecamp.org/news/dynamic-class-definition-in-python-3e6f7d20a381/
 # -----------------------------------------------------------------------------------
 @app.route('/tree')
 
@@ -321,7 +324,6 @@ def tree( level = 1):
         redirect(('/login'))        # Redo the login
 
 
-    reply_list = []
     if response.status_code == 200:
         data = response.text
         data_list = app_view.str_to_list(data)
@@ -343,13 +345,21 @@ def tree( level = 1):
                 value = entry[key]
             else:
                 value = ""
-            columns_list.append((key, str(value)))
+            columns_list.append(("company", str(value)))
         
         # Set a list of table entries
         table_rows.append(AnyLogItem(columns_list))
 
+    
+    # Create a class dynamically with the needed attributes
+    attributes = {}
+    for entry in list_columns:
+        attributes[entry] = Col(entry)
+        
+    table = type ( 'AnyLogTable', (Table,), attributes)
+    table.border = True
 
-    return render_template('install.html', title = 'Install Network Node', form = form, private_gui = gui_view_.get_base_menu())
+    return render_template('companies.html', table = table, private_gui = gui_view_.get_base_menu())
 
 # -----------------------------------------------------------------------------------
 # Show the navigation hierarchy

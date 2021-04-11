@@ -16,10 +16,19 @@ class Item(object):
 # Dynamically set the class variables
 # attr_name_val is a list whereas entries are tupples: attribute name + values
 # -----------------------------------------------------------------------------------
-class AnyLogTable(object):
-    def __init__(self, attr_name_val:list):
+class AnyLogTable(Table):
+    company = Col('Company')
+    def set_col(self, gui_level, attr_name_val:list):
+        '''
+        Define the the class attributes
+        Select to view the JSON or get the children
+        '''
         for entry in attr_name_val:
-            exec("self.{} = '{}'".format(entry[0], entry[1]))
+            setattr(AnyLogTable, entry, Col(entry))
+            #exec("AnyLogTable.{} = Col('{}')".format(entry, entry))
+
+        AnyLogTable.view = LinkCol('view', 'tree', url_kwargs=dict(company='company')) # SHow more info of the JSON
+        AnyLogTable.select = LinkCol('select', 'tree', url_kwargs=dict(level=gui_level + 1)) # Move to the next level
 
 # -----------------------------------------------------------------------------------
 # A class to maintain an entry in a table
