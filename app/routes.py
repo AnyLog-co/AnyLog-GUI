@@ -7,6 +7,7 @@ from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.entities import Companies
 from app.entities import Item
+from app.entities import AnyLogItem
 
 from config import Config
 
@@ -281,10 +282,29 @@ def tree( level = 1):
         flash("AnyLog: Missing query node connection info")
         return redirect(('/configure'))     # Get the query node info
 
-    al_command = gui_view_.get_command( level )
+    nav_list = []
+    gui_view_.get_nav_bar( nav_list, level )    # Set the user navigation links
+
+    gui_tree = gui_view_.get_view_location( level )
+
+    al_command = app_view.get_tree_entree(gui_tree, "query")
+
     if not al_command:
         flash("AnyLog: Missing AnyLog Command in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
         return redirect(('/index'))        # Show all user select options
+
+    # Get the columns names of the table to show
+    list_columns = app_view.get_tree_entree(gui_tree, "list_title")
+    if not list_columns:
+        flash("AnyLog: Missing 'list_columns' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        return redirect(('/index'))        # Show all user select options
+
+   # Get the keys to pull data from the JSON reply
+    list_keys = app_view.get_tree_entree(gui_tree, "list_keys")
+    if not list_keys:
+        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        return redirect(('/index'))        # Show all user select options
+       
 
     # Run the query against the Query Node
 
@@ -301,14 +321,40 @@ def tree( level = 1):
         redirect(('/login'))        # Redo the login
 
 
-    gui_view_.set_menue( level )
-    
-
     reply_list = []
     if response.status_code == 200:
         data = response.text
+        data_list = app_view.str_to_list(data)
+        if not data_list:
+            flash('AnyLog: Error in data format returned from node', category='error')
+            redirect(('/index'))        # Select a different path
     else:
         flash('AnyLog: No data satisfies the request', category='error')
         redirect(('/index'))        # Select a different path
 
-    redirect(('/index')) 
+    # Set table info to present in form
+
+    table_rows = []
+    for entry in data_list:
+        columns_list = []
+        for key in list_keys:
+            # Validate values in reply
+            if key in entry:
+                value = entry[key]
+            else:
+                value = ""
+            columns_list.append((key, str(value)))
+        
+        # Set a list of table entries
+        table_rows.append(AnyLogItem(columns_list))
+
+
+    return render_template('install.html', title = 'Install Network Node', form = form, private_gui = gui_view_.get_base_menu())
+
+# -----------------------------------------------------------------------------------
+# Show the navigation hierarchy
+# -----------------------------------------------------------------------------------
+@app.route('/show_list')
+def show_list( level = 1):
+
+    pass

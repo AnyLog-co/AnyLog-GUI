@@ -28,7 +28,6 @@ class gui():
         self.base_menue = None  # ?
 
         self.gui_level = 1      # The hirerarchical level of the navigation
-        self.nav_bar = []       # Dynamic user menue to select a tree navigation
 
     # ------------------------------------------------------------------------
     # Get the IP and Port of the query node
@@ -96,7 +95,7 @@ class gui():
     # ------------------------------------------------------------------------
     # Get the Navigation Bar as f(level)
     # ------------------------------------------------------------------------
-    def get_nav_bar(self, gui_level):
+    def get_nav_bar(self, nav_list, gui_level):
         '''
         Get the Navigation Bar as f(level)
         '''
@@ -115,20 +114,41 @@ class gui():
                                 if "name" in entry:
                                     text_name = entry["name"]       # The name to print
                                     try:
-                                        url_link = url_for(text_name.lower())   # the link to use
+                                        url_link = url_for('show_list')   # the link to use
                                     except:
                                         continue
-                                    if (i + counter) < len(self.nav_bar):
-                                        self.nav_bar[i + counter] = ((text_name, url_link))
+                                    if (i + counter) < len(nav_list):
+                                        nav_list[i + counter] = ((text_name, url_link))
                                     else:
-                                        self.nav_bar.append((text_name, url_link))
+                                        nav_list.append((text_name, url_link))
                         else:
                             # Add the parents which were selected by the user
                             pass
- 
+      
 
-     
+    # ------------------------------------------------------------------------
+    # get the JSON representing the view location
+    # ------------------------------------------------------------------------
+    def get_view_location(self, level):
+        
+        json_struct = None
+        if "gui" in self.config_struct:
+            json_struct = self.config_struct["gui"]
+            for i in range(level):
+                if not isinstance(json_struct, dict):
+                    json_struct = None
+                    break
+                if i == (level - 1):
+                    # get the command to get the entries
+                    break
+                else:
+                    if "children" in json_struct:
+                        json_struct = json_struct["children"]
+                    else:
+                        json_struct = None
+                        break
 
+        return json_struct      # The JSON location
 
     # ------------------------------------------------------------------------
     # Get the AnyLog command as f (level) from the user JSON configuration struct
@@ -138,20 +158,25 @@ class gui():
         Get the AnyLog command as f (level) from the user JSON configuration struct
         '''
 
-        json_struct = None
+        command = None
         if "gui" in self.config_struct:
             json_struct = self.config_struct["gui"]
             for i in range(level):
-                if "children" in json_struct:
-                    json_struct = json_struct["children"]
-                else:
-                    json_struct = None
+                if not isinstance(json_struct, dict):
                     break
+                if i == (level - 1):
+                    # get the command to get the entries
+                    if "query" in json_struct:
+                        command = json_struct["query"]
+                    else:
+                        break
+                else:
+                    if "children" in json_struct:
+                        json_struct = json_struct["children"]
+                    else:
+                        command = None
+                        break
 
-        if json_struct and "query" in json_struct:
-            command = json_struct["query"]
-        else:
-            command = None
         return command      # the AL command - if available
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
@@ -165,3 +190,27 @@ def load_json(file_name):
     except:
         data = None
     return data
+
+# ------------------------------------------------------------------------
+# Get entree from the JSON tree
+# ------------------------------------------------------------------------
+def get_tree_entree( json_struct, attr_name):
+
+    if attr_name in json_struct:
+        value = json_struct[attr_name]
+    else:
+        value = None
+    return value
+
+# =======================================================================================================================
+# String to list
+# =======================================================================================================================
+def str_to_list(data: str):
+
+    try:
+        list_obj = list(eval(data))
+    except:
+        list_obj = None
+    return list_obj
+
+
