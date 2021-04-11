@@ -8,6 +8,8 @@ from app.forms import InstallForm
 from app.entities import Companies
 from app.entities import Item
 
+from config import Config
+
 import requests
 
 from app import app_view        # maintains the logical view of the GUI from a JSON File
@@ -257,4 +259,20 @@ def install():
     form = InstallForm()         # New Form
     return render_template('install.html', title = 'Install Network Node', form = form, private_gui = gui_view_.get_base_menu())
 
+
+# -----------------------------------------------------------------------------------
+# Logical tree navigation
+# -----------------------------------------------------------------------------------
+@app.route('/tree')
+def tree( level = 1):
+    # Need to login before navigating
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    
+    al_command = gui_view_.get_command( level )
+    if not al_command:
+        flash("AnyLog: Missing AnyLog Command in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+
+    
 

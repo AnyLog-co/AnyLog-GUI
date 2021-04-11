@@ -23,7 +23,7 @@ from config import Config
 class gui():
 
     def __init__(self):
-        self.gui_struct = None 
+        self.config_struct = None 
         self.base_menue = None
    # ------------------------------------------------------------------------
     # Load the JSON and set main structures
@@ -33,18 +33,18 @@ class gui():
         if not file_name:
             file_name = Config.GUI_VIEW    # get from system variable
         
-        self.gui_struct = load_json(file_name)
+        self.config_struct = load_json(file_name)
 
  
     # ------------------------------------------------------------------------
     # Set Menu names and links based on the JSON file
     # ------------------------------------------------------------------------
     def set_menue(self):
-        if self.gui_struct and not self.base_menue:
+        if self.config_struct and not self.base_menue:
             self.base_menue = []
-            if isinstance(self.gui_struct, dict):
-                if "gui" in self.gui_struct and "children" in self.gui_struct["gui"]:     # Root of JSON
-                    self.create_base_menue(self.gui_struct["gui"]["children"])
+            if isinstance(self.config_struct, dict):
+                if "gui" in self.config_struct and "children" in self.config_struct["gui"]:     # Root of JSON
+                    self.create_base_menue(self.config_struct["gui"]["children"])
 
 
     # ------------------------------------------------------------------------
@@ -70,6 +70,30 @@ class gui():
     # ------------------------------------------------------------------------
     def get_base_menu(self):
         return self.base_menue
+
+    # ------------------------------------------------------------------------
+    # Get the AnyLog command as f (level) from the user JSON configuration struct
+    # ------------------------------------------------------------------------
+    def get_command(self, level):
+        '''
+        Get the AnyLog command as f (level) from the user JSON configuration struct
+        '''
+
+        json_struct = None
+        if "gui" in self.config_struct:
+            json_struct = self.config_struct["gui"]
+            for i in range(level):
+                if "children" in json_struct:
+                    json_struct = json_struct["children"]
+                else:
+                    json_struct = None
+                    break
+
+        if json_struct and "query" in json_struct:
+            command = json_struct["query"]
+        else:
+            command = None
+        return command      # the AL command - if available
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
 # ------------------------------------------------------------------------

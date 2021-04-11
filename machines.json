@@ -2,7 +2,7 @@
     "gui" : {
         "children" : [
             {
-                "query" : "blockchain get machine where manufacturer = orics  bring.unique [machine][manufacturer] ,",
+                "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
                 "name" : "Company",
                 "children" : [
                     {
