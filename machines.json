@@ -2,9 +2,9 @@
     "gui" : {
 
 	    "query_node" : "http://10.0.0.78:7849",
-        "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] separator = ,",
-        "list_title" : ["Company"],
-        "list_keys" : ["manufacturer"],
+        "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
+        "list_title" : ["Manufacturer", "ID"],
+        "list_keys" : ["manufacturer", "id"],
 
         "children" : [
                     {
