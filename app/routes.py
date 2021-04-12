@@ -38,10 +38,13 @@ def index():
 
     if not user_connect_:
         return redirect(('/login'))        # start with Login
+   
+    user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+    parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
 
-    gui_view_.set_menue()
-    
-    return render_template('main.html', title = 'Home',  private_gui = gui_view_.get_base_menu() )
+    title +  user_gui + dynamic_gui
+
+    return render_template('main.html', title = 'Home',  user_gui = user_menue, parent_gui = parent_menue, children_gui = children_menu )
 # -----------------------------------------------------------------------------------
 # Machine
 # -----------------------------------------------------------------------------------
@@ -281,7 +284,7 @@ def tree( level = 1):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    target_node = query_node_ or gui_view_.get_query_node()
+    target_node = query_node_ or gui_view_.get_base_info("query_node")
     if not target_node:
         flash("AnyLog: Missing query node connection info")
         return redirect(('/configure'))     # Get the query node info
@@ -366,7 +369,9 @@ def tree( level = 1):
     if not app_view.is_edge_node(gui_tree):
         # provide select option
         args = dict(id='id')
-        extra_args = {'level' : level + 1}
+        extra_args = {
+            'level' : level + 1
+            }
         attributes ["select"] = LinkCol('select', 'tree_move', url_kwargs=args, url_kwargs_extra=extra_args)
         
     TableClass = type ( 'AnyLogTable', (Table,), attributes)
@@ -377,8 +382,8 @@ def tree( level = 1):
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
 # -----------------------------------------------------------------------------------
-@app.route('/tree_move/<string:id><int:level>')
-def tree_move( id, level ):
+@app.route('/tree_move/<string:id><int:level><path:key>')
+def tree_move( id, level, tree ):
     '''
     Select the children elements or move to parent
     '''

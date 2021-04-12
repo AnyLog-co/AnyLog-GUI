@@ -30,14 +30,16 @@ class gui():
         self.gui_level = 1      # The hirerarchical level of the navigation
 
     # ------------------------------------------------------------------------
-    # Get the IP and Port of the query node
+    # Get Base Info from the config / JSON file
     # ------------------------------------------------------------------------
-    def get_query_node(self):
+    def get_base_info(self, key):
         '''
+        Base Info is in the config file under "gui"
+        i.e.
         Return the "query_node" value (IP:Port) from the JSON config struct
         '''
-        if self.config_struct and "gui" in self.config_struct and "query_node" in self.config_struct["gui"]:
-            query_node = self.config_struct["gui"]["query_node"]
+        if self.config_struct and "gui" in self.config_struct and key in self.config_struct["gui"]:
+            query_node = self.config_struct["gui"][key]
         else:
             query_node - None
         return query_node
@@ -51,7 +53,33 @@ class gui():
         
         self.config_struct = load_json(file_name)
 
- 
+    # ------------------------------------------------------------------------
+    # Get the dynamic menue based on the user navigation
+    # ------------------------------------------------------------------------
+    def get_dynamic_menue( self, gui_path ):
+        '''
+        Get the dynamic menue as f(user navigation)
+        gui_path - the path to the parent --> get the children
+        '''
+
+        parent_menue = []       # Collection of the menue names of the parents
+        children_menue = []         # Collection of the menue names of the children
+        if self.config_struct and "gui" in self.config_struct:
+            tree = self.config_struct["gui"]
+            self.add_path_children( tree, 0, gui_path, parent_menue, children_menue )
+        return [parent_menue, children_menue]
+    # ------------------------------------------------------------------------
+    # Create the dynamic menue based on the GUI path
+    # ------------------------------------------------------------------------
+    def add_path_children( self, tree, level, gui_path, parent_menue, child_menue ):
+
+        if not gui_path or level == len(gui_path):
+            # Add all children
+            if "children" in tree:
+                children_list = tree["children"]
+                for child in children_list:
+                    if "name" in child:
+                        child_menue.append(child["name"])
     # ------------------------------------------------------------------------
     # Set Menu names and links based on the JSON file
     # ------------------------------------------------------------------------

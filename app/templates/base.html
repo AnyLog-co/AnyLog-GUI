@@ -1,5 +1,7 @@
 <html>
+    <!-- process: title +  user_gui + dynamic_gui + flush messages (errors) -->
     <head>
+        <!-- Tab Display -->
         {% if title %}
         <title>AnyLog Network ({{ title }})</title>
         {% else %}
@@ -8,6 +10,7 @@
     </head>
     <body>
         <div>
+            <!-- System Fixed Pages -->
             AnyLog Network:&nbsp
             <a href="{{ url_for('login') }}">Login</a>&nbsp
             <a href="{{ url_for('alerts') }}">Alerts</a>&nbsp
@@ -16,9 +19,9 @@
             <a href="{{ url_for('network') }}">Policies</a>&nbsp
         </div>
         <div>
-            <a href="{{ url_for('index') }}">Home</a>&nbsp
-            {% if private_gui %}
-                {%- for text, url_target in private_gui -%}
+            <!-- Customer specific pages -->
+            {% if user_gui %}
+                {%- for text, url_target in user_gui -%}
                    
                     <a href="{{ url_target }}">{{text}}</a>&nbsp
                     
@@ -26,7 +29,21 @@
             {% endif %}
             <a href="{{ url_for('reports') }}">Reports</a>&nbsp
         </div>
+        <div>
+            <!-- Home Page -->
+            <a href="{{ url_for('index') }}">Home</a>&nbsp
+            <!-- Dynamic Pages - based on the config (JSON) file -->
+            {% if dynamic_gui %}
+                {%- for text, url_target in dynamic_gui -%}
+                   
+                    <a href="{{ url_target }}">{{text}}</a>&nbsp
+                    
+                {%- endfor -%}
+            {% endif %}
+           
+        </div>
         <hr>
+        <!-- ERROR Messages placed in Flush -->
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>

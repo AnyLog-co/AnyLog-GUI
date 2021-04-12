@@ -2,6 +2,10 @@
     "gui" : {
 
             "query_node" : "http://10.0.0.78:7849",
+            "url_pages"  : [
+                ["Company", "/companies"],
+                ["Reports", "http://127.0.0.1:3000"]
+            ],
 
             "children" : [
                 {
@@ -42,7 +46,7 @@
                         },
                         {
 
-                            "name" : "Tags",
+                            "name" : "Tag",
                             "query" : "blockchain get tags where metadata_id = 1",
 
                             "table_title" : ["Name", "ID", "Description", "Machine"],
