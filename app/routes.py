@@ -432,7 +432,7 @@ def exec_al_cmd( al_cmd ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    target_node = query_node_ or gui_view_.get_query_node()
+    target_node = query_node_ or gui_view_.get_base_info("query_node")
     if not target_node:
         flash("AnyLog: Missing query node connection info")
         return redirect(('/configure'))     # Get the query node info

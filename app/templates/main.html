@@ -3,17 +3,32 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <!-- process: title (for tab) + user_name + user_gui + parent_gui + child_gui + flush messages (errors) -->
     <h1>AnyLog Network</h1><br>
-
-    <a href="{{ url_for('index') }}">Home</a><br>
-  
-    {% if private_gui %}
-        {%- for text, url_target in private_gui -%}
+    {% if user_gui %}
+        <h3>{{ user_name }}&nbsp Reports</h3>
+        <p>
+        {%- for text, url_target in user_gui -%}
        
             <a href="{{ url_target }}">{{text}}</a><br>
         
         {%- endfor -%}
+        </p>
     {% endif %}
-    <a href="{{ url_for('reports') }}">Reports</a><br>
+
+    
+    {% if children_gui %}
+        <h3>Navigation</h3>
+        <p>
+        {%- for text in children_gui -%}
+   
+            <a href="{{ url_for('tree') }}">{{text}}</a><br>
+    
+        {%- endfor -%}
+        </p>
+    {% endif %}
+
+
+   
 
  {% endblock %}
