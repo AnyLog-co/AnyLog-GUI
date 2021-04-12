@@ -1,5 +1,5 @@
 
-from flask import render_template, flash, redirect, request, url_for
+from flask import render_template, flash, redirect, request, url_for, jsonify
 from flask_table import  Table, Col, LinkCol
 from app import app
 from app.forms import LoginForm
@@ -354,8 +354,13 @@ def tree( level = 1):
     attributes = {}
     for entry in list_columns:
         attributes[entry.lower()] = Col(entry)
-    
-    #attributes ["view"] = LinkCol('view', 'machine', url_kwargs=dict(company='company'))
+
+    if "id" in list_keys:
+        # Data includes an id of the JSON object
+        args = dict(id='id')
+        # Let the user select view to see the JSON
+        attributes ["view"] = LinkCol('view', 'view_policy', url_kwargs=args)
+
     #attributes ["select"] = LinkCol('select', 'machine', url_kwargs=dict(company='company'))
         
     TableClass = type ( 'AnyLogTable', (Table,), attributes)
@@ -365,9 +370,57 @@ def tree( level = 1):
     return render_template('entries_list.html', table = table, private_gui = gui_view_.get_base_menu())
 
 # -----------------------------------------------------------------------------------
-# Show the navigation hierarchy
+# Show AnyLog Policy by ID
 # -----------------------------------------------------------------------------------
-@app.route('/show_list')
-def show_list( level = 1):
+@app.route('/view_policy/<string:id>')
+def view_policy( id = None ):
 
-    pass
+    # Run the query against the Query Node
+    al_cmd = " blockchain get * where id = %s" % policy_id
+    data = exec_al_cmd( al_cmd )
+    json_list = app_view.str_to_list(data)
+    if not json_list:
+        flash('AnyLog: Error in data format returned from node', category='error')
+        redirect(('/index'))        # Select a different path
+
+    # organize JSON entries to display
+    data_list = []
+    for json_entry in json_list:
+        data_list.append(jsonify(json_entry))  #  transformed to a JSON string.
+
+    
+    return render_template('output.html', title = 'Network Node Reply', text=data_list, private_gui = gui_view_.get_base_menu())
+
+
+# -----------------------------------------------------------------------------------
+# Execute a command against the AnyLog Query Node
+# -----------------------------------------------------------------------------------
+def exec_al_cmd( al_cmd ):
+    '''
+    Run the query against the Query Node
+    '''
+
+    target_node = query_node_ or gui_view_.get_query_node()
+    if not target_node:
+        flash("AnyLog: Missing query node connection info")
+        return redirect(('/configure'))     # Get the query node info
+
+
+    al_headers = {
+        'User-Agent' : 'AnyLog/1.23',
+        'command' : al_cmd
+        }
+
+    try:
+        response = requests.get(target_node, headers=al_headers)
+    except:
+        flash('AnyLog: No network connection', category='error')
+        user_connect_ = False
+        redirect(('/login'))        # Redo the login
+
+    if response.status_code == 200:
+        data = response.text
+    else:
+        flash('AnyLog: No data satisfies the request', category='error')
+        redirect(('/index'))        # Select a different path
+    return data
