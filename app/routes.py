@@ -39,12 +39,11 @@ def index():
     if not user_connect_:
         return redirect(('/login'))        # start with Login
    
+    user_name = gui_view_.get_base_info("name")                 # The user name
     user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
     parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
 
-    title +  user_gui + dynamic_gui
-
-    return render_template('main.html', title = 'Home',  user_gui = user_menue, parent_gui = parent_menue, children_gui = children_menu )
+    return render_template('main.html', title='Home',user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 # -----------------------------------------------------------------------------------
 # Machine
 # -----------------------------------------------------------------------------------

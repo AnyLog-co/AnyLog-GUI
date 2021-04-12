@@ -1,5 +1,6 @@
 <html>
-    <!-- process: title +  user_gui + dynamic_gui + flush messages (errors) -->
+    
+    <!-- process: title + user_name + user_gui + parent_gui + child_gui + flush messages (errors) -->
     <head>
         <!-- Tab Display -->
         {% if title %}
@@ -19,6 +20,7 @@
             <a href="{{ url_for('network') }}">Policies</a>&nbsp
         </div>
         <div>
+            {{ user_name }}:&nbsp
             <!-- Customer specific pages -->
             {% if user_gui %}
                 {%- for text, url_target in user_gui -%}
@@ -32,13 +34,23 @@
         <div>
             <!-- Home Page -->
             <a href="{{ url_for('index') }}">Home</a>&nbsp
-            <!-- Dynamic Pages - based on the config (JSON) file -->
-            {% if dynamic_gui %}
-                {%- for text, url_target in dynamic_gui -%}
+            <!-- Dynamic Parent Pages - based on the config (JSON) file -->
+            {% if parent_gui %}
+                {%- for text in parent_gui -%}
                    
-                    <a href="{{ url_target }}">{{text}}</a>&nbsp
+                    <a href="{{ url_for('tree') }}">{{text}}</a>&nbsp
                     
                 {%- endfor -%}
+            {% endif %}
+            <!-- Dynamic Children Pages - based on the config (JSON) file -->
+            {% if children_gui %}
+                [&nbsp    
+                {%- for text in children_gui -%}
+                   
+                    <a href="{{ url_for('tree') }}">{{text}}</a>&nbsp
+                    
+                {%- endfor -%}
+                &nbsp]  
             {% endif %}
            
         </div>
