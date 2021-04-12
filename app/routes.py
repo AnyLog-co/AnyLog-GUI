@@ -363,13 +363,26 @@ def tree( level = 1):
         # Let the user select view to see the JSON
         attributes ["view"] = LinkCol('view', 'view_policy', url_kwargs=args)
 
-    #attributes ["select"] = LinkCol('select', 'machine', url_kwargs=dict(company='company'))
+    if not app_view.is_edge_node(gui_tree):
+        # provide select option
+        args = dict(id='id')
+        extra_args = {'level' : level + 1}
+        attributes ["select"] = LinkCol('select', 'tree_move', url_kwargs=args, url_kwargs_extra=extra_args)
         
     TableClass = type ( 'AnyLogTable', (Table,), attributes)
     table = TableClass(table_rows)
     table.border = True
 
     return render_template('entries_list.html', table = table, private_gui = gui_view_.get_base_menu())
+# -----------------------------------------------------------------------------------
+# Select the children elements or move to parent
+# -----------------------------------------------------------------------------------
+@app.route('/tree_move/<string:id><int:level>')
+def tree_move( id, level ):
+    '''
+    Select the children elements or move to parent
+    '''
+    pass
 
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
@@ -397,9 +410,11 @@ def view_policy( id = None ):
     # organize JSON entries to display
     data_list = []
     for json_entry in json_list:
-        data_list.append(str(json_entry))  #  transformed to a JSON string.
+        json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
+        data_list.append(json_string)  #  transformed to a JSON string.
 
     return render_template('output.html', title = 'Network Node Reply', text=data_list, private_gui = gui_view_.get_base_menu())
+
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
 # -----------------------------------------------------------------------------------

@@ -201,6 +201,15 @@ def get_tree_entree( json_struct, attr_name):
     else:
         value = None
     return value
+# ------------------------------------------------------------------------
+# Test if has children
+# ------------------------------------------------------------------------
+def is_edge_node(json_struct:dict):
+    '''
+    Retun False if node has "children" attribute
+    '''
+    
+    return not "children" in json_struct
 
 # =======================================================================================================================
 # String to list
