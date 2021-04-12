@@ -1,39 +1,54 @@
 {
     "gui" : {
 
-	    "query_node" : "http://10.0.0.78:7849",
-        "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
-        "list_title" : ["Manufacturer", "ID"],
-        "list_keys" : ["manufacturer", "id"],
+            "query_node" : "http://10.0.0.78:7849",
 
-        "children" : [
-                    {
+            "children" : [
+                {
+                    "name" : "Manufacturer",
                     "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
-                    "name" : "Company",
+
+                    "table_title" : ["Manufacturer", "ID"],
+                    "json_keys" : ["manufacturer", "id"],
+
                     "children" : [
-                                    {
-                                    "query" : "blockchain get machine where manufacturer = orics",
-                                    "name" : "Machine",
-                                    "children" : [
-                                                    {
-                                                        "query" : "blockchain get tags where machine = -[id]",
-                                                        "name" : "Sensor"
+                                {
+                                "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
+                                "name" : "Company",
+                                "children" : [
+                                                {
+                                                "query" : "blockchain get machine where manufacturer = orics",
+                                                "name" : "Machine",
+                                                "children" : [
+                                                                {
+                                                                    "query" : "blockchain get tags where machine = -[id]",
+                                                                    "name" : "Sensor"
+                                                                }
+                                                            ]
+                                                },
+                                                {
+                                                    "query" : "blockchain get machine where manufacturer = orics",
+                                                    "name" : "Machine2",
+                                                    "children" : [
+                                                                    {
+                                                                        "query" : "blockchain get tags where machine = -[id]",
+                                                                        "name" : "Sensor"
+                                                                    }
+                                                                ]
                                                     }
-                                                ]
-                                    },
-                                    {
-                                        "query" : "blockchain get machine where manufacturer = orics",
-                                        "name" : "Machine2",
-                                        "children" : [
-                                                        {
-                                                            "query" : "blockchain get tags where machine = -[id]",
-                                                            "name" : "Sensor"
-                                                        }
-                                                    ]
-                                        }
-                                ]
-                    }
-                ]
-            }
-            
+                                            ]
+                                }
+                            ]
+                        },
+                        {
+
+                            "name" : "Tags",
+                            "query" : "blockchain get tags where metadata_id = 1",
+
+                            "table_title" : ["Name", "ID", "Description", "Machine"],
+                            "json_keys" : ["Name", "ID", "Description", "Machine"]
+
+                       }
+                    ]
+                }
 }
