@@ -13,6 +13,7 @@ from app.entities import AnyLogItem
 from config import Config
 
 import requests
+from requests.exceptions import HTTPError
 
 from app import app_view        # maintains the logical view of the GUI from a JSON File
 
@@ -375,8 +376,17 @@ def tree( level = 1):
 @app.route('/view_policy/<string:id>')
 def view_policy( id = None ):
 
+        # Need to login before navigating
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+
     # Run the query against the Query Node
-    al_cmd = " blockchain get * where id = %s" % policy_id
+    if not id or not isinstance(id, str):
+        flash('AnyLog: Error in Policy ID', category='error')
+        redirect(('/index'))        # Select a different path
+
+    al_cmd = "blockchain get * where id = %s" % id
     data = exec_al_cmd( al_cmd )
     json_list = app_view.str_to_list(data)
     if not json_list:
@@ -399,6 +409,11 @@ def exec_al_cmd( al_cmd ):
     '''
     Run the query against the Query Node
     '''
+    global user_connect_
+
+    # Need to login before navigating
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
     target_node = query_node_ or gui_view_.get_query_node()
     if not target_node:
@@ -411,12 +426,23 @@ def exec_al_cmd( al_cmd ):
         'command' : al_cmd
         }
 
+    
     try:
         response = requests.get(target_node, headers=al_headers)
-    except:
-        flash('AnyLog: No network connection', category='error')
+    except HTTPError as http_err:
+        error_msg = "REST GET HTTP Error: %s" % str(http_err)
+        rest_err = True
+    except Exception as err:
+        error_msg = "REST GET Error: %s" % str(err)
+        rest_err = True
+    else:
+        rest_err = False
+       
+    if rest_err:
+        flash('AnyLog: %s' % error_msg, category='error')
         user_connect_ = False
         redirect(('/login'))        # Redo the login
+
 
     if response.status_code == 200:
         data = response.text
