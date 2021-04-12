@@ -396,7 +396,7 @@ def view_policy( id = None ):
     # organize JSON entries to display
     data_list = []
     for json_entry in json_list:
-        data_list.append(jsonify(json_entry))  #  transformed to a JSON string.
+        data_list.append(str(json_entry))  #  transformed to a JSON string.
 
     
     return render_template('output.html', title = 'Network Node Reply', text=data_list, private_gui = gui_view_.get_base_menu())
