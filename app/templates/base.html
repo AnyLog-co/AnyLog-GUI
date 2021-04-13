@@ -36,9 +36,9 @@
             <a href="{{ url_for('index') }}">Home</a>&nbsp
             <!-- Dynamic Parent Pages - based on the config (JSON) file -->
             {% if parent_gui %}
-                {%- for text in parent_gui -%}
+                {%- for text, url_target in parent_gui -%}
                    
-                    <a href="{{ url_for( 'tree' ) }}">{{text}}</a>&nbsp
+                    <a href="{{ url_target }}">{{text}}</a>&nbsp
                     
                 {%- endfor -%}
             {% endif %}
