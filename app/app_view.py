@@ -89,7 +89,7 @@ class gui():
         if self.config_struct and "gui" in self.config_struct:
             tree = self.config_struct["gui"]
             if gui_path:
-                gui_keys = gui_path[1:].split('@')
+                gui_keys = gui_path.split('@')
             else:
                 gui_keys = None
             self.add_path_children( tree, 0, gui_keys, parent_menue, children_menue )
@@ -114,7 +114,10 @@ class gui():
             if child_tree:
                 for child_name in child_tree:
                     url_link = url_for("tree")
-                    url_link += "/%s@%s" % (parent_path, child_name)
+                    if parent_path:
+                        url_link += "/%s@%s" % (parent_path, child_name)
+                    else:
+                         url_link +=  "/%s" % (child_name)
                     child_menue.append((child_name, url_link))
         else:
             # Add all parents to the parent_name list
@@ -122,7 +125,10 @@ class gui():
             parent_name = gui_keys[level]      # Get the link name from the path
                             
             url_link = url_for("tree")
-            url_link +=  "/%s@%s" % (parent_path, parent_name)
+            if parent_path:
+                url_link +=  "/%s@%s" % (parent_path, parent_name)
+            else:
+                url_link +=  "/%s" % (parent_name)
             parent_menue.append((parent_name, url_link))
 
             if parent_name in child_tree:
@@ -162,7 +168,7 @@ class gui():
     # Get the SUbtree by the selection path
     # ------------------------------------------------------------------------
     def get_subtree( self, selection ):
-        select_list = selection[1:].split('@')
+        select_list = selection.split('@')
         json_struct = self.config_struct["gui"]
         for entry in select_list:
             if not "children" in json_struct:
