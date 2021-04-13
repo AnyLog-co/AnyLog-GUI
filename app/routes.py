@@ -296,20 +296,20 @@ def tree( selection = "" ):
 
     gui_sub_tree = gui_view_.get_subtree( selection )    # Set the user navigation links
 
-    al_command = app_view.get_tree_entree(gui_tree, "query")
+    al_command = app_view.get_tree_entree(gui_sub_tree, "query")
 
     if not al_command:
         flash("AnyLog: Missing AnyLog Command in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
         return redirect(('/index'))        # Show all user select options
 
     # Get the columns names of the table to show
-    list_columns = app_view.get_tree_entree(gui_tree, "list_title")
+    list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
     if not list_columns:
         flash("AnyLog: Missing 'list_columns' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
         return redirect(('/index'))        # Show all user select options
 
    # Get the keys to pull data from the JSON reply
-    list_keys = app_view.get_tree_entree(gui_tree, "list_keys")
+    list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     if not list_keys:
         flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
         return redirect(('/index'))        # Show all user select options
@@ -368,19 +368,23 @@ def tree( selection = "" ):
         # Let the user select view to see the JSON
         attributes ["view"] = LinkCol('view', 'view_policy', url_kwargs=args)
 
-    if not app_view.is_edge_node(gui_tree):
+    if not app_view.is_edge_node(gui_sub_tree):
         # provide select option
         args = dict(id='id')
         extra_args = {
             'level' : level + 1
             }
-        attributes ["select"] = LinkCol('select', 'tree_move', url_kwargs=args, url_kwargs_extra=extra_args)
+        #attributes ["select"] = LinkCol('select', 'tree_move', url_kwargs=args, url_kwargs_extra=extra_args)
         
     TableClass = type ( 'AnyLogTable', (Table,), attributes)
     table = TableClass(table_rows)
     table.border = True
 
-    return render_template('entries_list.html', table = table, private_gui = gui_view_.get_base_menu())
+    user_name = gui_view_.get_base_info("name")                 # The user name
+    user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+    parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+
+    return render_template('entries_list.html', table = table,  user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
 # -----------------------------------------------------------------------------------

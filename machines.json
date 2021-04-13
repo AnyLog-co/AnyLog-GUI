@@ -7,9 +7,9 @@
                                 ["Reports", "http://127.0.0.1:3000"]
                             ],
 
-            "children" : [
+            "children" : {
+                "tag" :
                 {
-
                     "name" : "Tag",
                     "query" : "blockchain get tags where metadata_id = 1",
 
@@ -17,17 +17,20 @@
                     "json_keys" : ["Name", "ID", "Description", "Machine"]
 
                 },
+                "manufacturer" :
                 {
                     "name" : "Manufacturer",
                     "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
 
                     "table_title" : ["Manufacturer", "ID"],
                     "json_keys" : ["manufacturer", "id"],
-                    "children" : [
+                    "children" : {
+                            "company" :
                             {
                                 "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
                                 "name" : "Company",
-                                "children" : [
+                                "children" : {
+                                        "machine" :
                                         {
                                             "query" : "blockchain get machine where manufacturer = orics",
                                             "name" : "Machine",
@@ -38,6 +41,7 @@
                                                         }
                                                     ]
                                         },
+                                        "machine2" : 
                                         {
                                             "query" : "blockchain get machine where manufacturer = orics",
                                             "name" : "Machine2",
@@ -48,13 +52,13 @@
                                                             }
                                                         ]
                                         }
-                                    ]
+                                     }
                             }
-                    
+
                         
-                    ]
+                        }
                 }    
                 
-            ]
+            }
         }
 }

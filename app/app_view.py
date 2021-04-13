@@ -76,8 +76,8 @@ class gui():
         if not gui_path or level == len(gui_path):
             # Add all children
             if "children" in tree:
-                children_list = tree["children"]
-                for child in children_list:
+                children_dict = tree["children"]
+                for child in children_dict.values():
                     if "name" in child:
                         url_link = url_for("tree")
                         url_link += "/%s" % child["name"].lower()
@@ -126,10 +126,11 @@ class gui():
                 json_struct = None
                 break
             json_struct = json_struct["children"]
-            if "name" not in json_struct or json_struct["name"] != entry:
+            if entry not in json_struct:
                 json_struct = None  # Path not found
                 break
-
+            json_struct = json_struct[entry]
+            
         return json_struct
 
 # ------------------------------------------------------------------------
