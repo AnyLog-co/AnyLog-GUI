@@ -123,9 +123,16 @@ def login():
     else:
         title_str = 'Sign In'
 
-    user_name = gui_view_.get_base_info("name")                 # The user name
-    user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    if gui_view_.is_with_config():
+
+        user_name = gui_view_.get_base_info("name")                 # The user name
+        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    else:
+        # Faild to recognize the JSON Config File
+        form = ConfigForm()
+        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+        return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
 
     return render_template('login.html', title = title_str, form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
@@ -193,13 +200,24 @@ def alerts():
 @app.route('/configure')
 def configure():
 
-    gui_view_.set_menue()
-    
     form = ConfigForm()
+    if gui_view_.is_with_config():
+
+        user_name = gui_view_.get_base_info("name")                 # The user name
+        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    else:
+        # Faild to recognize the JSON Config File
+        if gui_view_.is_config_error():
+            flash(gui_view_.get_config_error())
+        
+        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+
     if form.validate_on_submit():
         flash('AnyLog: Network Member Node {}:{}'.format(form.node_ip, form.node_port))
 
-    return render_template('configure.html', title = 'Configure Network Connection', form = form, private_gui = gui_view_.get_base_menu())
+    return render_template('configure.html', title = 'Configure Network Connection', form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
 
 @app.route('/set_config', methods = ['GET', 'POST'])
 def set_config():
@@ -368,11 +386,13 @@ def tree( selection = "" ):
         # Let the user select view to see the JSON
         attributes ["view"] = LinkCol('view', 'view_policy', url_kwargs=args)
 
+    # If node has children - show the childrens
     if not app_view.is_edge_node(gui_sub_tree):
         # provide select option
         args = dict(id='id')
         extra_args = {
             'level' : level + 1
+
             }
         #attributes ["select"] = LinkCol('select', 'tree_move', url_kwargs=args, url_kwargs_extra=extra_args)
         
@@ -382,7 +402,7 @@ def tree( selection = "" ):
 
     user_name = gui_view_.get_base_info("name")                 # The user name
     user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    parent_menue, children_menue = gui_view_.get_dynamic_menue(selection)     # web pages based on the navigation
 
     return render_template('entries_list.html', table = table,  user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
 # -----------------------------------------------------------------------------------

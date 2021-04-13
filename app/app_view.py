@@ -12,6 +12,8 @@ such non-permitted act to AnyLog, Inc.
 from flask import url_for
 
 import json
+from json.decoder import JSONDecodeError
+
 
 from config import Config
 
@@ -24,11 +26,7 @@ class gui():
 
     def __init__(self):
         self.config_struct = None 
-
-        self.base_menue = None  # ?
-
-        self.gui_level = 1      # The hirerarchical level of the navigation
-
+        self.config_error = None    # Error set if COnfig file with error in structure
     # ------------------------------------------------------------------------
     # Get Base Info from the config / JSON file
     # ------------------------------------------------------------------------
@@ -41,17 +39,41 @@ class gui():
         if self.config_struct and "gui" in self.config_struct and key in self.config_struct["gui"]:
             query_node = self.config_struct["gui"][key]
         else:
-            query_node - None
+            query_node = None
         return query_node
     # ------------------------------------------------------------------------
     # Load the JSON and set main structures
     # ------------------------------------------------------------------------
     def set_gui(self, file_name = None):
+        '''
+        Load the JSON file and adds error if file strcure is not of JSON.
+        '''
 
         if not file_name:
             file_name = Config.GUI_VIEW    # get from system variable
         
-        self.config_struct = load_json(file_name)
+        self.config_struct, self.config_error = load_json(file_name)
+
+    def get_config_error(self):
+        '''
+        Error when config file read
+        '''
+        return self.config_struct
+
+    def is_config_error(self):
+        '''
+        Error when config file read
+        '''
+        return self.config_struct != None
+    # ------------------------------------------------------------------------
+    # Test config file available
+    # ------------------------------------------------------------------------
+    def is_with_config(self):
+        '''
+        Test if config file available
+        '''
+
+        return self.config_struct != None
 
     # ------------------------------------------------------------------------
     # Get the dynamic menue based on the user navigation
@@ -73,20 +95,34 @@ class gui():
     # ------------------------------------------------------------------------
     def add_path_children( self, tree, level, gui_path, parent_menue, child_menue ):
 
+        if "children" in tree:
+            child_tree = tree["children"]
+        else:
+            child_tree = None
+
         if not gui_path or level == len(gui_path):
             # Add all children
-            if "children" in tree:
-                children_dict = tree["children"]
-                for child in children_dict.values():
-                    if "name" in child:
-                        url_link = url_for("tree")
-                        url_link += "/%s" % child["name"].lower()
-                        child_menue.append((child["name"], url_link))
+            if child_tree:
+                for child_name in child_tree:
+                    url_link = url_for("tree")
+                    url_link += "/%s" % child_name
+                    child_menue.append((child_name, url_link))
+        else:
+            index = gui_path.find('/')
+            if index != -1:
+                parent_name = gui_path[:index]      # Get the link name from the path
+                child_name = gui_path[index + 1:]   # next layer
+            else:
+                parent_name = gui_path
+                child_name = None
+            
+            url_link = url_for("tree")
+            url_link += "/%s" % parent_name
+            parent_menue.append((parent_name, url_link))
+            if parent_name in child_tree:
+                child_tree = child_tree[parent_name]
  
-
-  
-  
-   
+            self.add_path_children(child_tree, level + 1, child_name, parent_menue, child_menue)
     # ------------------------------------------------------------------------
     # Get the AnyLog command as f (level) from the user JSON configuration struct
     # ------------------------------------------------------------------------
@@ -142,9 +178,15 @@ def load_json(file_name):
     try:
         f = open(file_name)
         data = json.load(f)
-    except:
+    except JSONDecodeError as e:
         data = None
-    return data
+        error_msg = "AnyLog: Config File format error - line: {} column: {} message: {}".format(e.lineno, e.colno, e.msg)
+    except:
+        error_msg = "AnyLog: Config File format error"
+        data = None
+    else:
+        error_msg = None
+    return [data, error_msg]
 
 # ------------------------------------------------------------------------
 # Get entree from the JSON tree
