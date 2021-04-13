@@ -10,11 +10,9 @@
             "children" : {
                 "Tag" :
                 {
-                    "query" : "blockchain get tags where metadata_id = 1",
-
-                    "table_title" : ["Name", "ID", "Description", "Machine"],
-                    "json_keys" : ["Name", "ID", "Description", "Machine"]
-
+                    "query" : "blockchain get tag bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
+                    "table_title" : ["Name", "Description", "ID"],
+                    "json_keys" : ["name", "description", "id"]
                 },
                 "Manufacturer" :
                 {
