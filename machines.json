@@ -25,19 +25,26 @@
                     "children" : {
                             "Company" :
                             {
-                                "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
+                                "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][customer] [machine][id] separator = ,",
+                                "table_title" : ["Customer", "ID"],
+                                "json_keys" : ["customer", "id"],
                                 "children" : {
                                         "Machine" :
                                         {
-                                            "query" : "blockchain get machine where manufacturer = orics",
+                                            "query" : "blockchain get machine where customer = TuscanBrands bring.unique.json [machine][machine] [machine][serial] [machine][id] separator = ,",
+                                            "table_title" : ["Machine", "Serial", "ID"],
+                                            "json_keys" : ["machine", "serial", "id"],
+                        
                                             "children" : {
                                                         "Sensor":
                                                         {
-                                                            "query" : "blockchain get tags where machine = -[id]"
+                                                            "query" : "blockchain get tag where id = ef261b0888acadb820a1145a600b5157 bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
+                                                            "table_title" : ["Tag", "Serial", "ID"],
+                                                            "json_keys" : ["machine", "serial", "id"]
                                                         }
                                             }
                                         },
-                                        "machine2" : 
+                                        "Robots" : 
                                         {
                                             "query" : "blockchain get machine where manufacturer = orics",
                                             "children" : {

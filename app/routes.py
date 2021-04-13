@@ -246,11 +246,28 @@ def network():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
+    if gui_view_.is_with_config():
+
+        user_name = gui_view_.get_base_info("name")                 # The user name
+        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    else:
+        # Faild to recognize the JSON Config File
+        if gui_view_.is_config_error():
+            flash(gui_view_.get_config_error())
+        
+        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+
+
     form = CommandsForm()         # New Form
 
-    def_dest = "10.0.0.78:7848"
+    target_node = query_node_ or gui_view_.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing query node connection info")
+        return redirect(('/configure'))     # Get the query node info
 
-    return render_template('commands.html', title = 'Network Commands', form = form, def_dest=def_dest, private_gui = gui_view_.get_base_menu())
+    return render_template('commands.html', title = 'Network Commands', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 
 
 @app.route('/al_command', methods = ['GET', 'POST'])
@@ -261,10 +278,29 @@ def al_command():
     }
 
 
+    if gui_view_.is_with_config():
+
+        user_name = gui_view_.get_base_info("name")                 # The user name
+        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    else:
+        # Faild to recognize the JSON Config File
+        if gui_view_.is_config_error():
+            flash(gui_view_.get_config_error())
+        
+        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+
+    target_node = query_node_ or gui_view_.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing query node connection info")
+        return redirect(('/configure'))     # Get the query node info
+
+
     try:
         al_headers["command"] = request.form["command"]
         
-        response = requests.get('http://10.0.0.78:7849', headers=al_headers)
+        response = requests.get(target_node, headers=al_headers)
     except:
         flash('AnyLog: Network connection failed')
         return redirect(('/network'))     # Go to main page
@@ -273,20 +309,44 @@ def al_command():
             data = response.text
             data = data.replace('\r','')
             text = data.split('\n')
-            return render_template('output.html', title = 'Network Node Reply', text=text, private_gui = gui_view_.get_base_menu())
+            return render_template('output.html', title = 'Network Node Reply', text=text, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
   
     
     form = CommandsForm()         # New Form
 
-    def_dest = "10.0.0.78:7848"
+    target_node = query_node_ or gui_view_.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing query node connection info")
+        return redirect(('/configure'))     # Get the query node info
     
-    return render_template('network.html', title = 'Network Status', form = form, def_dest=def_dest, private_gui = gui_view_.get_base_menu())
+    return render_template('network.html', title = 'Network Status', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 
 @app.route('/install', methods = ['GET', 'POST'])
 def install():
+
+    if gui_view_.is_with_config():
+
+        user_name = gui_view_.get_base_info("name")                 # The user name
+        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    else:
+        # Faild to recognize the JSON Config File
+        if gui_view_.is_config_error():
+            flash(gui_view_.get_config_error())
+        
+        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+
+
+    target_node = query_node_ or gui_view_.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing query node connection info")
+        return redirect(('/configure'))     # Get the query node info
+
+
   
     form = InstallForm()         # New Form
-    return render_template('install.html', title = 'Install Network Node', form = form, private_gui = gui_view_.get_base_menu())
+    return render_template('install.html', title = 'Install Network Node', form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 
 
 # -----------------------------------------------------------------------------------
@@ -302,7 +362,7 @@ def tree( selection = "" ):
     global user_connect_
     global gui_view_
 
-    level = 1
+    level = selection.count('@') + 1
     # Need to login before navigating
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
