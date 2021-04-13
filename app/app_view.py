@@ -82,104 +82,11 @@ class gui():
                         url_link = url_for("tree")
                         url_link += "/%s" % child["name"].lower()
                         child_menue.append((child["name"], url_link))
-    # ------------------------------------------------------------------------
-    # Set Menu names and links based on the JSON file
-    # ------------------------------------------------------------------------
-    def set_menue(self, gui_level = 0):
-        '''
-        Set the navigation menue as f (traversal level)
-        '''
+ 
 
-        if self.config_struct and not self.base_menue:
-            self.base_menue = []
-            if isinstance(self.config_struct, dict):
-                if "gui" in self.config_struct and "children" in self.config_struct["gui"]:     # Root of JSON
-                    self.create_base_menue(self.config_struct["gui"]["children"])
-
-
-    # ------------------------------------------------------------------------
-    # Make the upper menue
-    # ------------------------------------------------------------------------
-    def create_base_menue(self, gui_list):
-
-        if isinstance(gui_list,list):
-            for entry in gui_list:
-                if isinstance(entry, dict):
-                    if "name" in entry:
-                        text_name = entry["name"]
-                        try:
-                            url_link = url_for(text_name.lower())
-                        except:
-                            continue
-                        self.base_menue.append((text_name, url_link))
-                        if "children" in entry:
-                           self.create_base_menue(entry["children"])
-
-    # ------------------------------------------------------------------------
-    # Return the user menue based on the JSON file
-    # ------------------------------------------------------------------------
-    def get_base_menu(self):
-        return self.base_menue
-
-
-    # ------------------------------------------------------------------------
-    # Get the Navigation Bar as f(level)
-    # ------------------------------------------------------------------------
-    def get_nav_bar(self, nav_list, gui_level):
-        '''
-        Get the Navigation Bar as f(level)
-        '''
-        if gui_level:
-            self.gui_level = gui_level      # Move backwards or stay on the previous leve
-
-        if self.config_struct:
-            if isinstance(self.config_struct, dict):
-                if "gui" in self.config_struct and "children" in self.config_struct["gui"]:     # Root of JSON
-                    json_struct = self.config_struct["gui"]["children"]     # root of JSON to use
-
-                    for i in range(self.gui_level):
-                        if i == self.gui_level - 1:
-                            # Last level - get all children
-                            for counter, entry in enumerate(json_struct):
-                                if "name" in entry:
-                                    text_name = entry["name"]       # The name to print
-                                    try:
-                                        url_link = url_for('show_list')   # the link to use
-                                    except:
-                                        continue
-                                    if (i + counter) < len(nav_list):
-                                        nav_list[i + counter] = ((text_name, url_link))
-                                    else:
-                                        nav_list.append((text_name, url_link))
-                        else:
-                            # Add the parents which were selected by the user
-                            pass
-      
-
-    # ------------------------------------------------------------------------
-    # get the JSON representing the view location
-    # ------------------------------------------------------------------------
-    def get_view_location(self, level):
-        
-        json_struct = None
-        if "gui" in self.config_struct:
-            json_struct = self.config_struct["gui"]
-            for i in range(level):
-                if not isinstance(json_struct, dict):
-                    json_struct = None
-                    break
-                if i == (level - 1):
-                    # get the command to get the entries
-                    break
-                else:
-                    if "children" in json_struct:
-                        json_struct = json_struct["children"]
-                    else:
-                        json_struct = None
-                        break
-
-        return json_struct      # The JSON location
-
+  
+  
+   
     # ------------------------------------------------------------------------
     # Get the AnyLog command as f (level) from the user JSON configuration struct
     # ------------------------------------------------------------------------
@@ -208,6 +115,23 @@ class gui():
                         break
 
         return command      # the AL command - if available
+    # ------------------------------------------------------------------------
+    # Get the SUbtree by the selection path
+    # ------------------------------------------------------------------------
+    def get_subtree( self, selection ):
+        select_list = selection.split('/')
+        json_struct = self.config_struct["gui"]
+        for entry in select_list:
+            if not "children" in json_struct:
+                json_struct = None
+                break
+            json_struct = json_struct["children"]
+            if "name" not in json_struct or json_struct["name"] != entry:
+                json_struct = None  # Path not found
+                break
+
+        return json_struct
+
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
 # ------------------------------------------------------------------------

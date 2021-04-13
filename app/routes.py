@@ -93,8 +93,6 @@ def login():
     '''
     global user_connect_
 
-    gui_view_.set_menue()
-
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -125,7 +123,12 @@ def login():
     else:
         title_str = 'Sign In'
 
-    return render_template('login.html', title = title_str, form = form,  private_gui = gui_view_.get_base_menu())
+    user_name = gui_view_.get_base_info("name")                 # The user name
+    user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+    parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+
+
+    return render_template('login.html', title = title_str, form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
 
 # -----------------------------------------------------------------------------------
 # Companies
@@ -279,6 +282,7 @@ def install():
 def tree( selection = "" ):
     global query_node_
     global user_connect_
+    global gui_view_
 
     level = 1
     # Need to login before navigating
@@ -290,10 +294,7 @@ def tree( selection = "" ):
         flash("AnyLog: Missing query node connection info")
         return redirect(('/configure'))     # Get the query node info
 
-    nav_list = []
-    gui_view_.get_nav_bar( nav_list, level )    # Set the user navigation links
-
-    gui_tree = gui_view_.get_view_location( level )
+    gui_sub_tree = gui_view_.get_subtree( selection )    # Set the user navigation links
 
     al_command = app_view.get_tree_entree(gui_tree, "query")
 
