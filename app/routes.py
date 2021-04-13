@@ -186,8 +186,20 @@ def reports():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
+    if gui_view_.is_with_config():
 
-    return render_template('reports.html', title = 'Orics', private_gui = gui_view_.get_base_menu())
+        user_name = gui_view_.get_base_info("name")                 # The user name
+        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    else:
+        # Faild to recognize the JSON Config File
+        if gui_view_.is_config_error():
+            flash(gui_view_.get_config_error())
+        
+        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+
+    return render_template('reports.html', title = 'Orics', user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 # -----------------------------------------------------------------------------------
 # Alerts
 # -----------------------------------------------------------------------------------

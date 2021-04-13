@@ -38,9 +38,9 @@
                                             "children" : {
                                                         "Sensor":
                                                         {
-                                                            "query" : "blockchain get tag where id = ef261b0888acadb820a1145a600b5157 bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
-                                                            "table_title" : ["Tag", "Serial", "ID"],
-                                                            "json_keys" : ["machine", "serial", "id"]
+                                                            "query" : "blockchain get tag bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
+                                                            "table_title" : ["Name", "Description", "ID"],
+                                                            "json_keys" : ["name", "description", "id"]
                                                         }
                                             }
                                         },
