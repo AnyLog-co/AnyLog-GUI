@@ -1,0 +1,71 @@
+<html>
+    
+    <!-- process: title (for tab) + user_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
+    <head>
+        <!-- Tab Display -->
+        {% if title %}
+        <title>AnyLog Network ({{ title }})</title>
+        {% else %}
+        <title>AnyLog Network</title>
+        {% endif %}
+    </head>
+    <body>
+        <div>
+            <!-- System Fixed Pages -->
+            AnyLog Network:&nbsp
+            <a href="{{ url_for('login') }}">Login</a>&nbsp
+            <a href="{{ url_for('alerts') }}">Alerts</a>&nbsp
+            <a href="{{ url_for('configure') }}">Config</a>&nbsp
+            <a href="{{ url_for('network') }}">Network</a>&nbsp
+            <a href="{{ url_for('network') }}">Policies</a>&nbsp
+        </div>
+        <div>
+            {{ user_name }}:&nbsp
+            <!-- Customer specific pages -->
+            {% if user_gui %}
+                {%- for text, url_target in user_gui -%}
+                   
+                    <a href="{{ url_target }}">{{text}}</a>&nbsp
+                    
+                {%- endfor -%}
+            {% endif %}
+            <a href="{{ url_for('reports') }}">Reports</a>&nbsp
+        </div>
+        <div>
+            <!-- Home Page -->
+            <a href="{{ url_for('index') }}">Home</a>&nbsp
+            <!-- Dynamic Parent Pages - based on the config (JSON) file -->
+            {% if parent_gui %}
+                {%- for text in parent_gui -%}
+                   
+                    <a href="{{ url_for( 'tree' ) }}">{{text}}</a>&nbsp
+                    
+                {%- endfor -%}
+            {% endif %}
+            <!-- Dynamic Children Pages - based on the config (JSON) file -->
+            {% if children_gui %}
+                [&nbsp    
+                {%- for text, url_target in children_gui -%}
+                   
+                    <a href="{{ url_target }}">{{text}}</a>&nbsp
+                    
+                {%- endfor -%}
+                &nbsp]  
+            {% endif %}
+           
+        </div>
+        <hr>
+        <!-- ERROR Messages placed in Flush -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </body>
+</html>
+

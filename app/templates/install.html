@@ -1,0 +1,33 @@
+
+
+{% extends "base.html" %}
+
+  
+{% block content %}
+    <a href="{{ url_for('network') }}">Command</a>&nbsp
+    <a href="{{ url_for('install') }}">install</a>&nbsp
+
+    <h1>Command</h1>
+    <form action="{{ url_for('al_command') }}" method="post">
+        <p>
+            {{ form.connect_ip.label }}<br>
+            {{ form.connect_ip(size = 32) }}<br>
+        </p>
+        <p>
+            {{ form.connect_port.label }}<br>
+            {{ form.connect_port(size = 4) }}<br>
+        </p>
+        <p>
+            {{ form.connect_pwd.label }}<br>
+            {{ form.connect_pwd(size = 4) }}<br>
+        </p>
+
+        <p>{{ form.is_operator() }} {{form.is_operator.label}}</p>
+        <p>{{ form.is_publisher() }} {{form.is_publisher.label}}</p>
+        <p>{{ form.is_query() }} {{form.is_query.label}}</p>
+        <p>{{ form.is_master() }} {{form.is_master.label}}</p>
+
+        <p>{{ form.deploy() }}</p>
+    </form>
+{% endblock %}
+

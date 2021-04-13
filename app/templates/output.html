@@ -1,0 +1,12 @@
+
+
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>AnyLog Network</h1><br>
+
+    {% for line in text %}
+    <pre>{{ line }}</pre>
+    {% endfor %}
+
+ {% endblock %}
