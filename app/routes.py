@@ -424,7 +424,12 @@ def view_policy( id = None ):
         json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
         data_list.append(json_string)  #  transformed to a JSON string.
 
-    return render_template('output.html', title = 'Network Node Reply', text=data_list, private_gui = gui_view_.get_base_menu())
+    user_name = gui_view_.get_base_info("name")                 # The user name
+    user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+    parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+
+   
+    return render_template('output.html', title = 'Network Node Reply', text=data_list, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
 
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
