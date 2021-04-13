@@ -79,7 +79,9 @@ class gui():
                 children_list = tree["children"]
                 for child in children_list:
                     if "name" in child:
-                        child_menue.append(child["name"])
+                        url_link = url_for("tree")
+                        url_link += "/%s" % child["name"].lower()
+                        child_menue.append((child["name"], url_link))
     # ------------------------------------------------------------------------
     # Set Menu names and links based on the JSON file
     # ------------------------------------------------------------------------

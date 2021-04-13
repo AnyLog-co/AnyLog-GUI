@@ -20,9 +20,9 @@
     {% if children_gui %}
         <h3>Navigation</h3>
         <p>
-        {%- for text in children_gui -%}
+        {%- for text, url_target in children_gui -%}
    
-            <a href="{{ url_for('tree') }}">{{text}}</a><br>
+            <a href="{{ url_target }}">{{text}}</a><br>
     
         {%- endfor -%}
         </p>

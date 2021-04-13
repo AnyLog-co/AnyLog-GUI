@@ -45,9 +45,9 @@
             <!-- Dynamic Children Pages - based on the config (JSON) file -->
             {% if children_gui %}
                 [&nbsp    
-                {%- for text in children_gui -%}
+                {%- for text, url_target in children_gui -%}
                    
-                    <a href="{{ url_for( 'tree' ) }}">{{text}}</a>&nbsp
+                    <a href="{{ url_target }}">{{text}}</a>&nbsp
                     
                 {%- endfor -%}
                 &nbsp]  
