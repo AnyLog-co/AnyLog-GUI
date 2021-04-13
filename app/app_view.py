@@ -88,41 +88,48 @@ class gui():
         children_menue = []         # Collection of the menue names of the children
         if self.config_struct and "gui" in self.config_struct:
             tree = self.config_struct["gui"]
-            self.add_path_children( tree, 0, gui_path, parent_menue, children_menue )
+            if gui_path:
+                gui_keys = gui_path[1:].split('@')
+            else:
+                gui_keys = None
+            self.add_path_children( tree, 0, gui_keys, parent_menue, children_menue )
         return [parent_menue, children_menue]
     # ------------------------------------------------------------------------
     # Create the dynamic menue based on the GUI path
     # ------------------------------------------------------------------------
-    def add_path_children( self, tree, level, gui_path, parent_menue, child_menue ):
+    def add_path_children( self, tree, level, gui_keys, parent_menue, child_menue ):
 
         if "children" in tree:
             child_tree = tree["children"]
         else:
             child_tree = None
+        
+        if gui_keys and level:
+            parent_path = '@'.join(gui_keys[:level])
+        else:
+            parent_path = ""
 
-        if not gui_path or level == len(gui_path):
-            # Add all children
+        if not gui_keys or level == len(gui_keys):
+            # Add all children to the child_menue list
             if child_tree:
                 for child_name in child_tree:
                     url_link = url_for("tree")
-                    url_link += "/%s" % child_name
+                    url_link += "/%s@%s" % (parent_path, child_name)
                     child_menue.append((child_name, url_link))
         else:
-            index = gui_path.find('/')
-            if index != -1:
-                parent_name = gui_path[:index]      # Get the link name from the path
-                child_name = gui_path[index + 1:]   # next layer
-            else:
-                parent_name = gui_path
-                child_name = None
-            
+            # Add all parents to the parent_name list
+
+            parent_name = gui_keys[level]      # Get the link name from the path
+                            
             url_link = url_for("tree")
-            url_link += "/%s" % parent_name
+            url_link +=  "/%s@%s" % (parent_path, parent_name)
             parent_menue.append((parent_name, url_link))
+
             if parent_name in child_tree:
+                # Move to next layer
                 child_tree = child_tree[parent_name]
  
-            self.add_path_children(child_tree, level + 1, child_name, parent_menue, child_menue)
+            self.add_path_children(child_tree, level + 1, gui_keys, parent_menue, child_menue)
     # ------------------------------------------------------------------------
     # Get the AnyLog command as f (level) from the user JSON configuration struct
     # ------------------------------------------------------------------------
@@ -155,7 +162,7 @@ class gui():
     # Get the SUbtree by the selection path
     # ------------------------------------------------------------------------
     def get_subtree( self, selection ):
-        select_list = selection.split('/')
+        select_list = selection[1:].split('@')
         json_struct = self.config_struct["gui"]
         for entry in select_list:
             if not "children" in json_struct:
