@@ -38,7 +38,7 @@
             {% if parent_gui %}
                 {%- for text in parent_gui -%}
                    
-                    <a href="{{ url_for('tree') }}">{{text}}</a>&nbsp
+                    <a href="{{ url_for( 'tree' ) }}">{{text}}</a>&nbsp
                     
                 {%- endfor -%}
             {% endif %}
@@ -47,7 +47,7 @@
                 [&nbsp    
                 {%- for text in children_gui -%}
                    
-                    <a href="{{ url_for('tree') }}">{{text}}</a>&nbsp
+                    <a href="{{ url_for( 'tree' ) }}">{{text}}</a>&nbsp
                     
                 {%- endfor -%}
                 &nbsp]  

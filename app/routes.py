@@ -272,13 +272,15 @@ def install():
 # Logical tree navigation
 # https://hackersandslackers.com/flask-routes/
 # https://www.freecodecamp.org/news/dynamic-class-definition-in-python-3e6f7d20a381/
+# https://hackersandslackers.com/flask-routes/
 # -----------------------------------------------------------------------------------
 @app.route('/tree')
-
-def tree( level = 1):
+@app.route('/tree/<string:selection>')
+def tree( selection = "" ):
     global query_node_
     global user_connect_
 
+    level = 1
     # Need to login before navigating
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
