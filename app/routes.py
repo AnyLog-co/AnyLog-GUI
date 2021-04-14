@@ -6,6 +6,8 @@ from app.forms import LoginForm
 from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
+from app.forms import ConfDynamicReport
+
 from app.entities import Companies
 from app.entities import Item
 from app.entities import AnyLogItem
@@ -487,7 +489,7 @@ def configure_reports():
 
     user_name, user_menue, parent_menue, children_menue = get_select_menue()
 
-    return render_template('configure_reports.html', title='Configure Reports',user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+    return render_template('configure_reports.html', title='Configure Reports',form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 
 # -----------------------------------------------------------------------------------
 # Logout
