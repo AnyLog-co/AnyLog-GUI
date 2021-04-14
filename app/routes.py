@@ -1,5 +1,5 @@
 
-from flask import render_template, flash, redirect, request, url_for, jsonify
+from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
 from app import app
 from app.forms import LoginForm
@@ -27,6 +27,10 @@ gui_view_.set_gui()
 
 query_node_ = None
 
+active_reports_ = {         # A structure containing info per traversak and selected report data
+    "Default" : {}
+}
+
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
@@ -38,6 +42,7 @@ def index():
 
     if not user_connect_:
         return redirect(('/login'))        # start with Login
+
    
     user_name = gui_view_.get_base_info("name")                 # The user name
     user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
@@ -58,13 +63,16 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
+
+        target_node = get_target_node()
+
         al_headers = {
             'command' : 'get status',
             'User-Agent' : 'AnyLog/1.23'
             }
 
         try:
-            response = requests.get('http://10.0.0.78:7849', headers=al_headers)
+            response = requests.get(target_node, headers=al_headers)
         except:
             flash('AnyLog: No network connection', category='error')
             user_connect_ = False
@@ -77,6 +85,8 @@ def login():
         
         if not user_connect_:
             redirect(('/login'))        # Redo the login
+
+        session['username'] = request.form['username']
 
         return redirect(('/index'))     # Go to main page
 
@@ -205,8 +215,6 @@ def al_command():
 def install():
 
     user_name, user_menue, parent_menue, children_menue = get_select_menue()
-    target_node = get_target_node()
-
   
     form = InstallForm()         # New Form
     return render_template('install.html', title = 'Install Network Node', form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
@@ -444,3 +452,48 @@ def get_target_node():
         flash("AnyLog: Missing query node connection info")
         return redirect(('/configure'))     # Get the query node info
     return target_node
+
+# -----------------------------------------------------------------------------------
+# View the report structure being used
+# -----------------------------------------------------------------------------------
+@app.route('/dynamic_report/')
+def dynamic_report():
+    '''
+    View the report being used
+    '''
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    user_name = session['username']
+
+    return "Default"
+# -----------------------------------------------------------------------------------
+# Configure the dynamic reports
+# -----------------------------------------------------------------------------------
+@app.route('/configure_reports/', methods={'GET','POST'})
+def configure_reports():
+    '''
+    View the report being used
+    '''
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    user_name = session['username']
+
+    form = ConfDynamicReport()
+
+    if form.validate_on_submit():
+        pass
+
+    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+
+    return render_template('configure_reports.html', title='Configure Reports',user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+
+# -----------------------------------------------------------------------------------
+# Logout
+# -----------------------------------------------------------------------------------
+@app.route('/logout')
+def logout():
+   # remove the username from the session if it is there
+   session.pop('username', None)
+   return redirect(url_for('login'))

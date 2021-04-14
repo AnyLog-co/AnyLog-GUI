@@ -18,6 +18,7 @@
             <a href="{{ url_for('configure') }}">Config</a>&nbsp
             <a href="{{ url_for('network') }}">Network</a>&nbsp
             <a href="{{ url_for('network') }}">Policies</a>&nbsp
+            <a href="{{ url_for('logout') }}">logout</a>&nbsp
         </div>
         <div>
             {{ user_name }}:&nbsp
@@ -50,9 +51,15 @@
                     <a href="{{ url_target }}">{{text}}</a>&nbsp
                     
                 {%- endfor -%}
-                &nbsp]  
-            {% endif %}
-           
+                ]
+            {%- endif -%}
+            <!-- Name of Report to use -->
+            [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
+            {%- if report -%}
+                <a href="{{ url_for('dynamic_report') }}">{{report}}</a>&nbsp]
+            {%- else -%}
+                <a href="{{ url_for('dynamic_report') }}">Default</a>&nbsp]
+            {%- endif -%}
         </div>
         <hr>
         <!-- ERROR Messages placed in Flush -->

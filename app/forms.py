@@ -35,3 +35,11 @@ class InstallForm(FlaskForm):
     is_query = BooleanField('Query')
     is_master = BooleanField('Master')
     deploy = SubmitField('Deploy')
+
+class ConfDynamicReport(FlaskForm):
+    report_name = StringField('Report Name', validators=[DataRequired()])
+    new_name = StringField('New Name')
+    make_default = BooleanField('Set as Default')
+    reset = BooleanField('Reset Report')
+    deploy = SubmitField('Apply Changes')
+
