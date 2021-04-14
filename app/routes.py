@@ -45,44 +45,6 @@ def index():
 
     return render_template('main.html', title='Home',user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 # -----------------------------------------------------------------------------------
-# Machine
-# -----------------------------------------------------------------------------------
-@app.route('/machine')
-def machine(company_name = None):
-
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login
-
-    metadata = {"id": "1",
-                "data": {"installation":
-                             {"customer": "TuscanBrands",
-                              "machine_name": "VGF-R-40",
-                              "serial_number": "15575"},
-                         "tags":
-                             {"CODE OK": {"description": "Elevated access granted"},
-                              "HEATER TEMPERATURE 1": {"description": "Heater 1 Temperature"},
-                              "HEATER TEMPERATURE 2": {"description": "Heater 2 Temperature"},
-                              "HEATER TEMPERATURE 3": {"description": "Heater 3 Temperature"},
-                              "HEATER TEMPERATURE 4": {"description": "Heater 4 Temperature"},
-                              "TEMPERATURE LOW LIM": {"description": "Low Temperature Threshold"},
-                              "TEMPERATURE HIGH LIM": {"description": "High Temperature Threshold"},
-                              "ChamberLifter.OutputCurrent": {"description": "Chamber Lifter Output Current"},
-                              "MACHINE CYCLE TIME": {"description": "Machine Cycles (cycles/min)"},
-                              "SFR OK": {"description": "Safety Circuit Reset"},
-                              "BATCH COUNT": {"description": "Number of Trays Sealed"},
-                              "FilmSupply:I.OutputCurrent": {"description": "Film Supply Output Current"},
-                              "FilmAdvance:I.OutputCurrent": {"description": "Film Advance Output Current"},
-                              "OutfeedConv:I.OutputCurrent": {"description": "Outfeed Output Current"},
-                              "Capper:I.OutputCurrent": {"description": "Capper Output Current"},
-                              "Table:I.OutputCurrent": {"description": "Table Output Current"},
-                              "ALARMS DESPLAY TIME": {"description": "Active Alarms"}}}}
-
-
-    
-
-    return render_template('index.html', title = 'Home', metadata = metadata, builder = "Orics", customer = metadata["data"]["installation"]["customer"], private_gui = gui_view_.get_base_menu())
-
-# -----------------------------------------------------------------------------------
 # Login
 # -----------------------------------------------------------------------------------
 @app.route('/login', methods={'GET','POST'})
@@ -127,47 +89,7 @@ def login():
 
     return render_template('login.html', title = title_str, form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
 
-# -----------------------------------------------------------------------------------
-# Companies
-# -----------------------------------------------------------------------------------
-@app.route('/company')
-def company():
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
 
-    
-    al_headers = {
-            'command' : "blockchain get operator bring.unique [operator][company] ,",
-            'User-Agent' : 'AnyLog/1.23'
-    }
-
-
-    try:
-        response = requests.get('http://10.0.0.78:7849', headers=al_headers)
-    except:
-        flash('AnyLog: Network connection failed')
-        return redirect(('/index'))     # Go to main page
-    else:
-        companies_list = []
-        if response.status_code == 200:
-            data = response.text
-            if data and len(data) > 21:
-                companies = list(filter(None, data[21:-2].split(',')))
-                
-                for company in companies:
-                    companies_list.append(Item(company))
-
-        table = Companies(companies_list)
-        table.border = True
-
-    return render_template('companies.html', table = table, private_gui = gui_view_.get_base_menu())
-
-# -----------------------------------------------------------------------------------
-# Sensor
-# -----------------------------------------------------------------------------------
-@app.route('/sensor')
-def sensor():
-    return redirect(('/login'))        # start with Login if not yet provided
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------
@@ -383,18 +305,21 @@ def tree( selection = "" ):
     if "id" in list_keys:
         # Data includes an id of the JSON object
         args = dict(id='id')
+        extra_args = {
+            'selection' : selection
+            }
         # Let the user select view to see the JSON
-        attributes ["view"] = LinkCol('view', 'view_policy', url_kwargs=args)
+        attributes ["view"] = LinkCol('view', 'view_policy', url_kwargs=args, url_kwargs_extra=extra_args)
 
     # If node has children - show the childrens
     if not app_view.is_edge_node(gui_sub_tree):
         # provide select option
         args = dict(id='id')
         extra_args = {
-            'level' : level + 1
+            'selection' : selection
 
             }
-        #attributes ["select"] = LinkCol('select', 'tree_move', url_kwargs=args, url_kwargs_extra=extra_args)
+        # attributes ["select"] = LinkCol('select', 'edge_select', url_kwargs=args, url_kwargs_extra=extra_args)
         
     TableClass = type ( 'AnyLogTable', (Table,), attributes)
     table = TableClass(table_rows)
@@ -405,8 +330,8 @@ def tree( selection = "" ):
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
 # -----------------------------------------------------------------------------------
-@app.route('/tree_move/<string:id><int:level><path:key>')
-def tree_move( id, level, tree ):
+@app.route('/edge_select/<string:selection><string:id>')
+def edge_select( selection, id ):
     '''
     Select the children elements or move to parent
     '''
@@ -415,8 +340,8 @@ def tree_move( id, level, tree ):
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
 # -----------------------------------------------------------------------------------
-@app.route('/view_policy/<string:id>')
-def view_policy( id = None ):
+@app.route('/view_policy/<string:selection>@<string:id>')
+def view_policy( selection, id ):
 
         # Need to login before navigating
     if not user_connect_:
@@ -441,7 +366,7 @@ def view_policy( id = None ):
         json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
         data_list.append(json_string)  #  transformed to a JSON string.
 
-    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    user_name, user_menue, parent_menue, children_menue = get_select_menue(selection)
 
    
     return render_template('output.html', title = 'Network Node Reply', text=data_list, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
