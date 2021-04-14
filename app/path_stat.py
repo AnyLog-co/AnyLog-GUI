@@ -50,6 +50,9 @@ def set_new_state(user_name, report_name, is_default):
     global active_state_
 
     active_state_[user_name]['reports'][report_name] = { }
+    active_state_[user_name]['reports'][report_name]["path"] = [] # A list repreenting the path
+    active_state_[user_name]['reports'][report_name]["level"] = 0 # The current location in the list
+
     if is_default:
         active_state_[user_name]['selected'] = report_name
 
@@ -58,11 +61,29 @@ def set_new_state(user_name, report_name, is_default):
 # Update the status of the user
 # -----------------------------------------------------------------------------------
 def update_status(user_name, parent_menu, id, data):
+
+    '''
+    Keep the user path state as f(user_name + report_used)
+    '''
+
     global active_state_
     
     user_info = active_state_[user_name]
 
     report_used = user_info["selected"]
     
-    active_report = user_info[report_used]  # the report maintains the path info
+    path_info = user_info["reports"][report_used]  # the report maintains the path info
+
+    # Set the path to the data location
+    for index, step in enumerate(parent_menu):
+        step_name = step[0]
+        if index >= len(path_info["path"]):
+            path_info["path"].append( {})
+        path_info["path"][index]["name"] = step_name
+    
+    path_info["path"][index]["data"] = data    # Keep the data of that layer
+    path_info["level"] = index  # Keep current location
+
+
+
 
