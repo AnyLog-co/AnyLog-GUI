@@ -123,17 +123,7 @@ def login():
     else:
         title_str = 'Sign In'
 
-    if gui_view_.is_with_config():
-
-        user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
-    else:
-        # Faild to recognize the JSON Config File
-        form = ConfigForm()
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
-
+    user_name, user_menue, parent_menue, children_menue = get_select_menue()
 
     return render_template('login.html', title = title_str, form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
 
@@ -186,18 +176,7 @@ def reports():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    if gui_view_.is_with_config():
-
-        user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
-    else:
-        # Faild to recognize the JSON Config File
-        if gui_view_.is_config_error():
-            flash(gui_view_.get_config_error())
-        
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+    user_name, user_menue, parent_menue, children_menue = get_select_menue()
 
     return render_template('reports.html', title = 'Orics', user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 # -----------------------------------------------------------------------------------
@@ -258,26 +237,14 @@ def network():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    if gui_view_.is_with_config():
-
-        user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
-    else:
-        # Faild to recognize the JSON Config File
-        if gui_view_.is_config_error():
-            flash(gui_view_.get_config_error())
-        
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
-
-
-    form = CommandsForm()         # New Form
 
     target_node = query_node_ or gui_view_.get_base_info("query_node")
     if not target_node:
         flash("AnyLog: Missing query node connection info")
         return redirect(('/configure'))     # Get the query node info
+
+   
+    form = CommandsForm()         # New Form
 
     return render_template('commands.html', title = 'Network Commands', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 
@@ -289,20 +256,9 @@ def al_command():
             'User-Agent' : 'AnyLog/1.23'
     }
 
-
-    if gui_view_.is_with_config():
-
-        user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
-    else:
-        # Faild to recognize the JSON Config File
-        if gui_view_.is_config_error():
-            flash(gui_view_.get_config_error())
-        
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
-
+    
+    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+ 
     target_node = query_node_ or gui_view_.get_base_info("query_node")
     if not target_node:
         flash("AnyLog: Missing query node connection info")
@@ -330,25 +286,15 @@ def al_command():
     if not target_node:
         flash("AnyLog: Missing query node connection info")
         return redirect(('/configure'))     # Get the query node info
+
+    user_name, user_menue, parent_menue, children_menue = get_select_menue()
     
     return render_template('network.html', title = 'Network Status', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
 
 @app.route('/install', methods = ['GET', 'POST'])
 def install():
 
-    if gui_view_.is_with_config():
-
-        user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
-    else:
-        # Faild to recognize the JSON Config File
-        if gui_view_.is_config_error():
-            flash(gui_view_.get_config_error())
-        
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
-
+    user_name, user_menue, parent_menue, children_menue = get_select_menue()
 
     target_node = query_node_ or gui_view_.get_base_info("query_node")
     if not target_node:
@@ -404,6 +350,8 @@ def tree( selection = "" ):
         flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
         return redirect(('/index'))        # Show all user select options
        
+
+    user_name, user_menue, parent_menue, children_menue = get_select_menue(selection)
 
     # Run the query against the Query Node
 
@@ -472,10 +420,7 @@ def tree( selection = "" ):
     table = TableClass(table_rows)
     table.border = True
 
-    user_name = gui_view_.get_base_info("name")                 # The user name
-    user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menue, children_menue = gui_view_.get_dynamic_menue(selection)     # web pages based on the navigation
-
+  
     return render_template('entries_list.html', table = table,  user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
@@ -516,9 +461,7 @@ def view_policy( id = None ):
         json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
         data_list.append(json_string)  #  transformed to a JSON string.
 
-    user_name = gui_view_.get_base_info("name")                 # The user name
-    user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    user_name, user_menue, parent_menue, children_menue = get_select_menue()
 
    
     return render_template('output.html', title = 'Network Node Reply', text=data_list, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
@@ -571,3 +514,22 @@ def exec_al_cmd( al_cmd ):
         flash('AnyLog: No data satisfies the request', category='error')
         redirect(('/index'))        # Select a different path
     return data
+
+# -----------------------------------------------------------------------------------
+# Get the menue data based on the configuration file
+# Test if configuration file is available, otherwise go to configure form
+# -----------------------------------------------------------------------------------
+def get_select_menue(selection = ""):
+
+    if gui_view_.is_with_config():
+
+        user_name = gui_view_.get_base_info("name")                 # The user name
+        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menue, children_menue = gui_view_.get_dynamic_menue(selection)     # web pages based on the navigation
+    else:
+        # Faild to recognize the JSON Config File
+        form = ConfigForm()
+        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+
+    return [user_name, user_menue, parent_menue, children_menue]
