@@ -336,7 +336,7 @@ def tree( selection = "" ):
             'selection' : selection
             }
         # Let the user select view to see the JSON
-        attributes ["view"] = LinkCol('view', 'view_policy', url_kwargs=args, url_kwargs_extra=extra_args)
+        attributes ["Select"] = LinkCol('Select', 'view_policy', url_kwargs=args, url_kwargs_extra=extra_args)
 
     # If node has children - show the childrens
     if not app_view.is_edge_node(gui_sub_tree):
@@ -397,8 +397,13 @@ def view_policy( selection, id ):
 
     path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
 
+    # Make title from the path
+    title = ""
+    for parent in parent_menu:
+        title += parent[0] + " : "
+
    
-    return render_template('output.html', title = 'Network Node Reply', text=data_list, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+    return render_template('output.html', title = title, text=data_list, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
 
 # -----------------------------------------------------------------------------------
 # Save the path, the key and the data on the report used
