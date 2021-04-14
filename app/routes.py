@@ -238,12 +238,9 @@ def network():
         return redirect(('/login'))        # start with Login  if not yet provided
 
 
-    target_node = query_node_ or gui_view_.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
-
-   
+    target_node = get_target_node()
+    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    
     form = CommandsForm()         # New Form
 
     return render_template('commands.html', title = 'Network Commands', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
@@ -258,11 +255,7 @@ def al_command():
 
     
     user_name, user_menue, parent_menue, children_menue = get_select_menue()
- 
-    target_node = query_node_ or gui_view_.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
+    target_node = get_target_node()
 
 
     try:
@@ -282,11 +275,6 @@ def al_command():
     
     form = CommandsForm()         # New Form
 
-    target_node = query_node_ or gui_view_.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
-
     user_name, user_menue, parent_menue, children_menue = get_select_menue()
     
     return render_template('network.html', title = 'Network Status', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
@@ -295,12 +283,7 @@ def al_command():
 def install():
 
     user_name, user_menue, parent_menue, children_menue = get_select_menue()
-
-    target_node = query_node_ or gui_view_.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
-
+    target_node = get_target_node()
 
   
     form = InstallForm()         # New Form
@@ -325,11 +308,6 @@ def tree( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    target_node = query_node_ or gui_view_.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
-
     gui_sub_tree = gui_view_.get_subtree( selection )    # Set the user navigation links
 
     al_command = app_view.get_tree_entree(gui_sub_tree, "query")
@@ -352,6 +330,8 @@ def tree( selection = "" ):
        
 
     user_name, user_menue, parent_menue, children_menue = get_select_menue(selection)
+    target_node = get_target_node()
+
 
     # Run the query against the Query Node
 
@@ -479,10 +459,7 @@ def exec_al_cmd( al_cmd ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    target_node = query_node_ or gui_view_.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
+    target_node = get_target_node()
 
 
     al_headers = {
@@ -533,3 +510,12 @@ def get_select_menue(selection = ""):
         return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
     return [user_name, user_menue, parent_menue, children_menue]
+
+
+def get_target_node():
+
+    target_node = query_node_ or gui_view_.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing query node connection info")
+        return redirect(('/configure'))     # Get the query node info
+    return target_node
