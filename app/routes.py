@@ -1,3 +1,15 @@
+'''
+By using this source code, you acknowledge that this software in source code form remains a confidential information of AnyLog, Inc.,
+and you shall not transfer it to any other party without AnyLog, Inc.'s prior written consent. You further acknowledge that all right,
+title and interest in and to this source code, and any copies and/or derivatives thereof and all documentation, which describes
+and/or composes such source code or any such derivatives, shall remain the sole and exclusive property of AnyLog, Inc.,
+and you shall not edit, reverse engineer, copy, emulate, create derivatives of, compile or decompile or otherwise tamper or modify
+this source code in any way, or allow others to do so. In the event of any such editing, reverse engineering, copying, emulation,
+creation of derivative, compilation, decompilation, tampering or modification of this source code by you, or any of your affiliates (term
+to be broadly interpreted) you or your such affiliates shall unconditionally assign and transfer any intellectual property created by any
+such non-permitted act to AnyLog, Inc.
+'''
+
 
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
@@ -8,7 +20,6 @@ from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
 
-from app.entities import Companies
 from app.entities import Item
 from app.entities import AnyLogItem
 
@@ -19,6 +30,7 @@ import requests
 from requests.exceptions import HTTPError
 
 from app import app_view        # maintains the logical view of the GUI from a JSON File
+from app import path_stat       # Maintain the path of the user
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 node_config_ = {}           # Config as f(company_name)
@@ -29,9 +41,6 @@ gui_view_.set_gui()
 
 query_node_ = None
 
-active_reports_ = {         # A structure containing info per traversak and selected report data
-    "Default" : {}
-}
 
 # -----------------------------------------------------------------------------------
 # GUI forms
@@ -47,10 +56,10 @@ def index():
 
    
     user_name = gui_view_.get_base_info("name")                 # The user name
-    user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+    user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+    parent_menu, children_menu = gui_view_.get_dynamic_menu(None)     # web pages based on the navigation
 
-    return render_template('main.html', title='Home',user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+    return render_template('main.html', title='Home',user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
 # -----------------------------------------------------------------------------------
 # Login
 # -----------------------------------------------------------------------------------
@@ -90,6 +99,7 @@ def login():
 
         session['username'] = request.form['username']
 
+
         return redirect(('/index'))     # Go to main page
 
     if company_name_:
@@ -97,9 +107,16 @@ def login():
     else:
         title_str = 'Sign In'
 
-    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    if not 'username' in session:
+        redirect(('/login'))        # Redo the login - need a user name
+    
+    user_name = session['username']
+    if not path_stat.is_with_user( user_name ):
+        path_stat.set_new_user( user_name )
 
-    return render_template('login.html', title = title_str, form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
+    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+
+    return render_template('login.html', title = title_str, form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
 
 
 # -----------------------------------------------------------------------------------
@@ -110,9 +127,9 @@ def reports():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    user_name, user_menu, parent_menu, children_menu = get_select_menu()
 
-    return render_template('reports.html', title = 'Orics', user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+    return render_template('reports.html', title = 'Orics', user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
 # -----------------------------------------------------------------------------------
 # Alerts
 # -----------------------------------------------------------------------------------
@@ -129,8 +146,8 @@ def configure():
     if gui_view_.is_with_config():
 
         user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menue, children_menue = gui_view_.get_dynamic_menue(None)     # web pages based on the navigation
+        user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menu, children_menu = gui_view_.get_dynamic_menu(None)     # web pages based on the navigation
     else:
         # Faild to recognize the JSON Config File
         if gui_view_.is_config_error():
@@ -142,7 +159,7 @@ def configure():
     if form.validate_on_submit():
         flash('AnyLog: Network Member Node {}:{}'.format(form.node_ip, form.node_port))
 
-    return render_template('configure.html', title = 'Configure Network Connection', form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
+    return render_template('configure.html', title = 'Configure Network Connection', form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
 
 @app.route('/set_config', methods = ['GET', 'POST'])
 def set_config():
@@ -173,11 +190,11 @@ def network():
 
 
     target_node = get_target_node()
-    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    user_name, user_menu, parent_menu, children_menu = get_select_menu()
     
     form = CommandsForm()         # New Form
 
-    return render_template('commands.html', title = 'Network Commands', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+    return render_template('commands.html', title = 'Network Commands', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
 
 
 @app.route('/al_command', methods = ['GET', 'POST'])
@@ -188,7 +205,7 @@ def al_command():
     }
 
     
-    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    user_name, user_menu, parent_menu, children_menu = get_select_menu()
     target_node = get_target_node()
 
 
@@ -204,22 +221,22 @@ def al_command():
             data = response.text
             data = data.replace('\r','')
             text = data.split('\n')
-            return render_template('output.html', title = 'Network Node Reply', text=text, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+            return render_template('output.html', title = 'Network Node Reply', text=text, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
   
     
     form = CommandsForm()         # New Form
 
-    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    user_name, user_menu, parent_menu, children_menu = get_select_menu()
     
-    return render_template('network.html', title = 'Network Status', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+    return render_template('network.html', title = 'Network Status', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
 
 @app.route('/install', methods = ['GET', 'POST'])
 def install():
 
-    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    user_name, user_menu, parent_menu, children_menu = get_select_menu()
   
     form = InstallForm()         # New Form
-    return render_template('install.html', title = 'Install Network Node', form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+    return render_template('install.html', title = 'Install Network Node', form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
 
 
 # -----------------------------------------------------------------------------------
@@ -261,7 +278,7 @@ def tree( selection = "" ):
         return redirect(('/index'))        # Show all user select options
        
 
-    user_name, user_menue, parent_menue, children_menue = get_select_menue(selection)
+    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
     target_node = get_target_node()
 
 
@@ -336,7 +353,7 @@ def tree( selection = "" ):
     table.border = True
 
   
-    return render_template('entries_list.html', table = table,  user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
+    return render_template('entries_list.html', table = table,  user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
 # -----------------------------------------------------------------------------------
@@ -376,10 +393,24 @@ def view_policy( selection, id ):
         json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
         data_list.append(json_string)  #  transformed to a JSON string.
 
-    user_name, user_menue, parent_menue, children_menue = get_select_menue(selection)
+    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
+
+    path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
 
    
-    return render_template('output.html', title = 'Network Node Reply', text=data_list, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue )
+    return render_template('output.html', title = 'Network Node Reply', text=data_list, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+
+# -----------------------------------------------------------------------------------
+# Save the path, the key and the data on the report used
+# -----------------------------------------------------------------------------------
+def path_selection(parent_menu, id, data):
+
+    if not 'username' in session:
+        redirect(('/login'))        # Redo the login - need a user name
+
+    user_name = session["username"]
+
+    path_stat.update_status(user_name, parent_menu, id, data)
 
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
@@ -428,23 +459,23 @@ def exec_al_cmd( al_cmd ):
     return data
 
 # -----------------------------------------------------------------------------------
-# Get the menue data based on the configuration file
+# Get the menu data based on the configuration file
 # Test if configuration file is available, otherwise go to configure form
 # -----------------------------------------------------------------------------------
-def get_select_menue(selection = ""):
+def get_select_menu(selection = ""):
 
     if gui_view_.is_with_config():
 
         user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menue = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menue, children_menue = gui_view_.get_dynamic_menue(selection)     # web pages based on the navigation
+        user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
     else:
         # Faild to recognize the JSON Config File
         form = ConfigForm()
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
         return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
-    return [user_name, user_menue, parent_menue, children_menue]
+    return [user_name, user_menu, parent_menu, children_menu]
 
 
 def get_target_node():
@@ -487,9 +518,9 @@ def configure_reports():
     if form.validate_on_submit():
         pass
 
-    user_name, user_menue, parent_menue, children_menue = get_select_menue()
+    user_name, user_menu, parent_menu, children_menu = get_select_menu()
 
-    return render_template('configure_reports.html', title='Configure Reports',form = form, user_name=user_name,user_gui=user_menue,parent_gui=parent_menue,children_gui=children_menue)
+    return render_template('configure_reports.html', title='Configure Reports',form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
 
 # -----------------------------------------------------------------------------------
 # Logout
