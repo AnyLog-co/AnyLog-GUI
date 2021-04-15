@@ -41,9 +41,9 @@ class AnyLogTable(object):
                 A list of attr-val pairs: Col-Name + HTML Input type (https://www.w3schools.com/html/html_form_input_types.asp)
                 fir example: [('select','checkbox'), ('View','button')]
     '''
-    def __init__(self, table_name:str, column_names:list, column_keys:list, table_data:list, extr_col:list):
+    def __init__(self, table_name:str, column_names:list, column_keys:list, rows:list, extr_col:list):
         self.table_name = table_name
         self.column_names = column_names
         self.column_keys = column_keys
-        self.table_data = table_data
+        self.rows = rows
         self.extr_col = extr_col

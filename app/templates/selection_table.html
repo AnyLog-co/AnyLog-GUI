@@ -3,23 +3,23 @@
 {% block content %}
 
 <form action="{{url_for('selected')}}" method="POST">
-    <input type="hidden" name="order_id" value="{{ order_id }}">
+    {% for table in tables_list %}
     <table border="1">
         <tr>
-            <td>Product ID</td>
-            <td>Name</td>
-            <td>Size</td>
-            <td>Return</td>
+            {% for col_name in table.column_names %}
+                <td>{{col_name}}</td>
+            {% endfor %}
         </tr>
-        {% for product in product_list %}
+        {% for row in table.rows %}
         <tr>
-            <td>{{ product.id }}</td>
-            <td>{{ product.name }}</td>
-            <td>{{ product.size }}</td>
-            <td><input type="checkbox" name="{{ product.id }}"/></td>
+            {% for col_val in row %}
+            <td>{{ col_val }}</td>
+            {% endfor %}
+            <td><input type="checkbox" name="123"/></td>
         </tr>
         {% endfor %}
     </table>
+    {% endfor %}
     <input type="submit" value="Return">
 </form>
 
