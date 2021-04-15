@@ -328,7 +328,7 @@ def tree( selection = "" ):
                 value = entry[key]
             else:
                 value = ""
-            columns_list.append((key, str(value)))
+            columns_list.append(str(value))
         
         # Set a list of table entries
         table_rows.append(columns_list)
