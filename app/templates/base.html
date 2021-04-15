@@ -33,8 +33,16 @@
             <a href="{{ url_for('reports') }}">Reports</a>&nbsp
         </div>
         <div>
+            <!-- Name of Report to use -->
+            [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
+            {%- if report -%}
+                <a href="{{ url_for('dynamic_report') }}">{{report}}</a>&nbsp]
+            {%- else -%}
+                <a href="{{ url_for('dynamic_report') }}">Default</a>&nbsp]
+            {%- endif -%}
+
             <!-- Home Page -->
-            <a href="{{ url_for('index') }}">Home</a>&nbsp
+            <a href="{{ url_for('index') }}">Home</a>
             <!-- Dynamic Parent Pages - based on the config (JSON) file -->
             {% if parent_gui %}
                 {%- for text, url_target in parent_gui -%}
@@ -52,14 +60,7 @@
                     
                 {%- endfor -%}
                 ]
-            {%- endif -%}
-            <!-- Name of Report to use -->
-            [<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
-            {%- if report -%}
-                <a href="{{ url_for('dynamic_report') }}">{{report}}</a>&nbsp]
-            {%- else -%}
-                <a href="{{ url_for('dynamic_report') }}">Default</a>&nbsp]
-            {%- endif -%}
+            {%- endif -%}  
         </div>
         <hr>
         <!-- ERROR Messages placed in Flush -->

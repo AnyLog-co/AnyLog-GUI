@@ -527,7 +527,7 @@ def configure_reports():
     form = ConfDynamicReport()
 
     user_name = session["username"]
-    form.report_name.choices = path_stat.get_user_reports(user_name)
+    form.report_name.choices = path_stat.get_user_reports(user_name)    # set list with report names
 
     if form.report_name.data or form.new_report.data:   # User need to select existing report or new report
         ret_val, err_msg = path_stat.set_report(user_name, request.form.to_dict())   # Configure a new report or change report setting
