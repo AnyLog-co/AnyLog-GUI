@@ -338,15 +338,15 @@ def tree( selection = "" ):
         # Let the user select view to see the JSON
         attributes ["Select"] = LinkCol('Select', 'view_policy', url_kwargs=args, url_kwargs_extra=extra_args)
 
-    # If node has children - show the childrens
-    if not app_view.is_edge_node(gui_sub_tree):
-        # provide select option
-        args = dict(id='id')
-        extra_args = {
-            'selection' : selection
-
-            }
-        # attributes ["select"] = LinkCol('select', 'edge_select', url_kwargs=args, url_kwargs_extra=extra_args)
+        # If node has children - show the childrens
+        if app_view.is_edge_node(gui_sub_tree):
+            # provide select option
+            args = dict(id='id')
+            extra_args = {
+                'selection' : selection
+                }
+            # Include this edge node in the report
+            attributes ["Include"] = LinkCol('Include', 'edge_include', url_kwargs=args, url_kwargs_extra=extra_args)
         
     TableClass = type ( 'AnyLogTable', (Table,), attributes)
     table = TableClass(table_rows)
@@ -357,12 +357,18 @@ def tree( selection = "" ):
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
 # -----------------------------------------------------------------------------------
-@app.route('/edge_select/<string:selection><string:id>')
-def edge_select( selection, id ):
+@app.route('/edge_include/<string:selection>@<string:id>')
+def edge_include( selection, id ):
     '''
-    Select the children elements or move to parent
+    Add the edge to the report
     '''
-    pass
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    user_name = session["username"]
+    path_stat.add_report_entry(user_name, selection, id)
+
+    return redirect(url_for('tree', selection=selection))   # Return to the edge list of entries
 
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID

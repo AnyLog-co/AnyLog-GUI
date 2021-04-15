@@ -52,6 +52,7 @@ def set_new_state(user_name, report_name, is_default):
     active_state_[user_name]['reports'][report_name] = { }
     active_state_[user_name]['reports'][report_name]["path"] = [] # A list repreenting the path
     active_state_[user_name]['reports'][report_name]["level"] = 0 # The current location in the list
+    active_state_[user_name]['reports'][report_name]["entries"] = {} # The selected entries
 
     if is_default:
         active_state_[user_name]['selected'] = report_name
@@ -70,9 +71,9 @@ def update_status(user_name, parent_menu, id, data):
     
     user_info = active_state_[user_name]
 
-    report_used = user_info["selected"]
+    report_selected = user_info["selected"]
     
-    path_info = user_info["reports"][report_used]  # the report maintains the path info
+    path_info = user_info["reports"][report_selected]  # the report maintains the path info
 
     # Set the path to the data location
     for index, step in enumerate(parent_menu):
@@ -85,5 +86,18 @@ def update_status(user_name, parent_menu, id, data):
     path_info["level"] = index  # Keep current location
 
 
+# -----------------------------------------------------------------------------------
+# Add entry to the report
+# -----------------------------------------------------------------------------------
+def add_report_entry(user_name, selection, id):
 
+    global active_state_
+    
+    user_info = active_state_[user_name]
 
+    report_selected = user_info["selected"]
+
+    # Get a dictionary with all the selected edge nodes for the report
+    edge_selected = active_state_[user_name]['reports'][report_selected]["entries"] # The selected entries
+
+    edge_selected[id] = True
