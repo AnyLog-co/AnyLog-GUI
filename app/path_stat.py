@@ -10,6 +10,7 @@ to be broadly interpreted) you or your such affiliates shall unconditionally ass
 such non-permitted act to AnyLog, Inc.
 '''
 
+import copy
 
 active_state_ = {         # A structure containing info per traversak and selected report data
     

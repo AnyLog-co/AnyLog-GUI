@@ -254,13 +254,6 @@ def tree( selection = "" ):
     global user_connect_
     global gui_view_
 
-    '''
-    my_list = [{'id': 1, 'name': "product name", 'size' : 5}, 
-    {'id': 1, 'name': "product name2", 'size' : 3},
-    {'id': 2, 'name': "product 3", 'size' : 12},
-    {'id': 3, 'name': "product 4", 'size' : 43}]
-    return render_template('selection_table.html', product_list=my_list)
-    '''
 
     level = selection.count('@') + 1
     # Need to login before navigating
@@ -343,9 +336,9 @@ def tree( selection = "" ):
 
     return render_template('selection_table.html',  **template_vars )
 
-    #return render_template('selection_table.html', tables_list=[al_table], submit = "Submit", user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
-    
-
+# -----------------------------------------------------------------------------------
+# Process selected Items from a table
+# -----------------------------------------------------------------------------------
 @app.route('/selected', methods={'GET','POST'})
 @app.route('/selected/<string:selection>')
 def selected( selection = "" ):
@@ -353,7 +346,12 @@ def selected( selection = "" ):
     global user_connect_
     global gui_view_
 
-    return redirect(('/login'))        # start with Login  if not yet provided
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    selected_rows = request.form
+
+    pass
 
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
