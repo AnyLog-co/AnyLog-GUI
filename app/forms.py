@@ -49,10 +49,10 @@ class InstallForm(FlaskForm):
 
 class ConfDynamicReport(FlaskForm):
     
-    report_name = SelectField('Select Report', validators=[DataRequired()], validate_choice = False)
-    new_report = StringField('New Report')
-    rename = StringField('Rename Report')
-    make_default = BooleanField('Set as Default')
-    reset = BooleanField('Reset Report')
+    report_name = SelectField('Select Report', default="")
+    new_report = StringField('New Report', default="")
+    rename = StringField('Rename Report', default="")
+    make_default = BooleanField('Set as Default', default=False)
+    reset = BooleanField('Reset Report', default=False)
     submit = SubmitField('Apply Changes')
 

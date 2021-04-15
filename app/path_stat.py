@@ -123,7 +123,11 @@ def set_report(user_name, form_info):
     ''' 
 
     ret_val = True
-    report_name = form_info['report_name']
+    err_msg = None
+    if 'report_name' in form_info:
+        report_name = form_info['report_name']  
+    else:
+        report_name = ""        # user did not select an existing report
     is_default = form_info['make_default']
     if form_info['new_report'] or form_info['reset']:
         set_new_state(user_name, report_name, is_default)
