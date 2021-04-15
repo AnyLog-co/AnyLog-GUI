@@ -59,7 +59,8 @@ def set_new_state(user_name, report_name, is_default):
 
         
 # -----------------------------------------------------------------------------------
-# Update the status of the user
+# Update the path with the entries visited by the user 
+# The path is maintained as a f(report)
 # -----------------------------------------------------------------------------------
 def update_status(user_name, parent_menu, id, data):
 
@@ -87,10 +88,14 @@ def update_status(user_name, parent_menu, id, data):
 
 
 # -----------------------------------------------------------------------------------
-# Add entry to the report
+# Add an entry to the report
 # -----------------------------------------------------------------------------------
 def add_report_entry(user_name, selection, id):
 
+    '''
+    Add an entry to the report - 
+    Every report structure includes the list of Edge elements (and their parents) that participate in the report
+    '''
     global active_state_
     
     user_info = active_state_[user_name]
@@ -100,7 +105,8 @@ def add_report_entry(user_name, selection, id):
     # Get a dictionary with all the selected edge nodes for the report
     edge_selected = active_state_[user_name]['reports'][report_selected]["entries"] # The selected entries
 
-    edge_selected[id] = True
+    # Copy the path anf pathe elements to the list of selected items to print
+    edge_selected[id] = copy.deepcopy(active_state_[user_name]['reports'][report_selected]["path"])
 
 # -----------------------------------------------------------------------------------
 # Return the list of reports associated with the user

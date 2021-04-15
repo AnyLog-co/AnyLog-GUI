@@ -45,8 +45,8 @@ query_node_ = None
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
+# Example Table: https://progbook.org/shop5.html
 # -----------------------------------------------------------------------------------
-
 @app.route('/')
 @app.route('/index')
 def index():
@@ -252,6 +252,12 @@ def tree( selection = "" ):
     global user_connect_
     global gui_view_
 
+    my_list = [{'id': 1, 'name': "product name", 'size' : 5}, 
+    {'id': 1, 'name': "product name2", 'size' : 3},
+    {'id': 2, 'name': "product 3", 'size' : 12},
+    {'id': 3, 'name': "product 4", 'size' : 43}]
+    return render_template('selection_table.html', product_list=my_list)
+
     level = selection.count('@') + 1
     # Need to login before navigating
     if not user_connect_:
@@ -354,6 +360,16 @@ def tree( selection = "" ):
 
   
     return render_template('entries_list.html', table = table,  user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+
+@app.route('/selected', methods={'GET','POST'})
+@app.route('/selected/<string:selection>')
+def selected( selection = "" ):
+    global query_node_
+    global user_connect_
+    global gui_view_
+
+    return redirect(('/login'))        # start with Login  if not yet provided
+
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
 # -----------------------------------------------------------------------------------
@@ -412,7 +428,9 @@ def view_policy( selection, id ):
     return render_template('output.html', title = title, text=data_list, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
 
 # -----------------------------------------------------------------------------------
-# Save the path, the key and the data on the report used
+# User navigation in the metadata is stored in an object assigned to the report.
+# The path is the node inf as f(level).
+# The process saves the path, the key and the data selected.
 # -----------------------------------------------------------------------------------
 def path_selection(parent_menu, id, data):
 
