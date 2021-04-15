@@ -288,7 +288,6 @@ def tree( selection = "" ):
         return redirect(('/index'))        # Show all user select options
        
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
     target_node = get_target_node()
 
 
@@ -333,44 +332,19 @@ def tree( selection = "" ):
         # Set a list of table entries
         table_rows.append(columns_list)
 
-    extra_columns =  [('View','button'), ('select','checkbox')]
+    
+    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
+
+
+    extra_columns =  [('View','checkbox'), ('Select','checkbox')]
     al_table = AnyLogTable(parent_menu[-1][0], list_columns, list_keys, table_rows, extra_columns)
 
-    return render_template('selection_table.html', tables_list=[al_table],  user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+    template_vars = { 'tables_list' : [al_table], 'submit' : "Submit", 'user_name' : user_name,'user_gui' : user_menu,'parent_gui' : parent_menu,'children_gui' : children_menu}
+
+    return render_template('selection_table.html',  **template_vars )
+
+    #return render_template('selection_table.html', tables_list=[al_table], submit = "Submit", user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
     
-    
-    
-
-    # Create a class dynamically with the needed attributes
-    attributes = {}
-    for entry in list_columns:
-        attributes[entry.lower()] = Col(entry)
-
-    if "id" in list_keys:
-        # Data includes an id of the JSON object
-        args = dict(id='id')
-        extra_args = {
-            'selection' : selection
-            }
-        # Let the user select view to see the JSON
-        attributes ["Select"] = LinkCol('Select', 'view_policy', url_kwargs=args, url_kwargs_extra=extra_args)
-
-        # If node has children - show the childrens
-        if app_view.is_edge_node(gui_sub_tree):
-            # provide select option
-            args = dict(id='id')
-            extra_args = {
-                'selection' : selection
-                }
-            # Include this edge node in the report
-            attributes ["Include"] = LinkCol('Include', 'edge_include', url_kwargs=args, url_kwargs_extra=extra_args)
-        
-    TableClass = type ( 'AnyLogTable', (Table,), attributes)
-    table = TableClass(table_rows)
-    table.border = True
-
-  
-    return render_template('entries_list.html', table = table,  user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
 
 @app.route('/selected', methods={'GET','POST'})
 @app.route('/selected/<string:selection>')

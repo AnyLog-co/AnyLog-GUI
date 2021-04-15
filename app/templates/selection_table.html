@@ -5,22 +5,29 @@
 <form action="{{url_for('selected')}}" method="POST">
     {% for table in tables_list %}
     <table border="1">
-        <tr>
+        <tr>    <!-- table row  -->
             {% for col_name in table.column_names %}
-                <td>{{col_name}}</td>
+                <td>{{col_name}}</td> <!-- table cell  -->
+            {% endfor %}
+            {% for extra_column in table.extr_col %}
+                <td>{{extra_column[0]}}</td> <!-- extra cell name  -->
             {% endfor %}
         </tr>
         {% for row in table.rows %}
         <tr>
             {% for col_val in row %}
-            <td>{{ col_val }}</td>
+                <td>{{ col_val }}</td>
             {% endfor %}
-            <td><input type="checkbox" name="123"/></td>
+            {% for extra_column in table.extr_col %}
+                <td><input type={{extra_column[1]}} name={{extra_column[0]}}/></td> <!-- extra cell name  -->
+            {% endfor %}
         </tr>
         {% endfor %}
     </table>
     {% endfor %}
-    <input type="submit" value="Return">
+    {% if submit %}
+        <input type="submit" value={{submit}}>
+    {% endif %}
 </form>
 
 
