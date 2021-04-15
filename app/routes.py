@@ -23,6 +23,8 @@ from app.forms import ConfDynamicReport
 from app.entities import Item
 from app.entities import AnyLogItem
 
+from app.entities import AnyLogTable
+
 from config import Config
 
 import json
@@ -252,11 +254,13 @@ def tree( selection = "" ):
     global user_connect_
     global gui_view_
 
+    '''
     my_list = [{'id': 1, 'name': "product name", 'size' : 5}, 
     {'id': 1, 'name': "product name2", 'size' : 3},
     {'id': 2, 'name': "product 3", 'size' : 12},
     {'id': 3, 'name': "product 4", 'size' : 43}]
     return render_template('selection_table.html', product_list=my_list)
+    '''
 
     level = selection.count('@') + 1
     # Need to login before navigating
@@ -327,9 +331,16 @@ def tree( selection = "" ):
             columns_list.append((key, str(value)))
         
         # Set a list of table entries
-        table_rows.append(AnyLogItem(columns_list))
+        table_rows.append(columns_list)
 
+    extra_columns =  [('View','button'), ('select','checkbox')]
+    al_table = AnyLogTable(parent_menu[-1][0], list_columns, list_keys, table_rows, extra_columns)
+
+    return render_template('selection_table.html', tables_list=[al_table],  user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
     
+    
+    
+
     # Create a class dynamically with the needed attributes
     attributes = {}
     for entry in list_columns:
