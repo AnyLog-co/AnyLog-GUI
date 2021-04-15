@@ -1,5 +1,4 @@
 
-
 {% extends "base.html" %}
 
   
@@ -9,13 +8,17 @@
     <form action="{{ url_for('al_command') }}" method="post">
         <p>
             {{ form.report_name.label }}<br>
-            {{ form.report_name(size = 16) }}<br>
+            {{ form.report_name(size = 4) }}<br>
         </p>
         <p>
-            {{ form.new_name.label }}<br>
-            {{ form.new_name(size = 16) }}<br>
+            {{ form.rename.label }}<br>
+            {{ form.rename(size = 16) }}<br>
         </p>
-
+        <p>
+            {{ form.new_report.label }}<br>
+            {{ form.new_report(size = 16) }}<br>
+        </p>
+ 
         <p>{{ form.make_default() }} {{form.make_default.label}}</p>
         <p>{{ form.reset() }} {{form.reset.label}}</p>
 

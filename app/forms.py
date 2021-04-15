@@ -11,7 +11,7 @@ such non-permitted act to AnyLog, Inc.
 '''
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import DataRequired
 
 class LoginForm(FlaskForm):
@@ -48,8 +48,10 @@ class InstallForm(FlaskForm):
     deploy = SubmitField('Deploy')
 
 class ConfDynamicReport(FlaskForm):
-    report_name = StringField('Report Name', validators=[DataRequired()])
-    new_name = StringField('New Name')
+    
+    report_name = SelectField('Select Report', validators=[DataRequired()], validate_choice = False)
+    new_report = StringField('New Report')
+    rename = StringField('Rename Report')
     make_default = BooleanField('Set as Default')
     reset = BooleanField('Reset Report')
     deploy = SubmitField('Apply Changes')

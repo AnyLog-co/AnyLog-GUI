@@ -525,6 +525,7 @@ def configure_reports():
     user_name = session['username']
 
     form = ConfDynamicReport()
+    form.report_name.choices = [("123","456"), ("abc","def")]
 
     if form.validate_on_submit():
         pass
