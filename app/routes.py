@@ -525,10 +525,16 @@ def configure_reports():
     user_name = session['username']
 
     form = ConfDynamicReport()
-    form.report_name.choices = [("123","456"), ("abc","def")]
 
-    if form.validate_on_submit():
-        pass
+    user_name = session["username"]
+    form.report_name.choices = path_stat.get_user_reports(user_name)
+
+    if form.report_name.data or form.new_report.data:   # User need to select existing report or new report
+        ret_val, err_msg = path_stat.set_report(user_name, request.form.to_dict())   # Configure a new report or change report setting
+        if not ret_val:
+            if err_msg:
+                flash('AnyLog: %s' % err_msg, category='error')
+            return redirect(url_for('configure_reports'))
 
     user_name, user_menu, parent_menu, children_menu = get_select_menu()
 

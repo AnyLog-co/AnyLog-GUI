@@ -101,3 +101,52 @@ def add_report_entry(user_name, selection, id):
     edge_selected = active_state_[user_name]['reports'][report_selected]["entries"] # The selected entries
 
     edge_selected[id] = True
+
+# -----------------------------------------------------------------------------------
+# Return the list of reports associated with the user
+# -----------------------------------------------------------------------------------
+def get_user_reports(user_name):
+    global active_state_
+    '''
+    Return the klist of user reports
+    '''
+    
+    user_reports = active_state_[user_name]["reports"]
+    return list(user_reports.keys())
+
+# -----------------------------------------------------------------------------------
+# Configure a new report or change report setting
+# -----------------------------------------------------------------------------------
+def set_report(user_name, form_info):
+    '''
+    Configure a new report or change report setting
+    ''' 
+
+    ret_val = True
+    report_name = form_info['report_name']
+    is_default = form_info['make_default']
+    if form_info['new_report'] or form_info['reset']:
+        set_new_state(user_name, report_name, is_default)
+    elif form_info['rename']:
+        # replace the report info to a different name
+        new_name = form_info['rename']
+        user_reports = active_state_[user_name]['reports']
+        if report_name in user_reports:
+            if new_name in user_reports:
+                ret_val = False
+                err_msg = "Duplicate report name: %s" % report_name
+            else:
+                report_struct = user_reports[report_name]
+                active_state_[user_name]['reports'][new_name] = report_struct
+                active_state_[user_name]['reports'][report_name] = None
+        else:
+            ret_val = False
+            err_msg = "Wrong report name: %s" % report_name
+
+        if ret_val and is_default:
+            active_state_[user_name]['selected'] = new_name
+
+    elif is_default:
+        active_state_[user_name]['selected'] = report_name
+
+    return [ret_val, err_msg]
