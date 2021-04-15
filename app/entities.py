@@ -32,7 +32,7 @@ class AnyLogItem(object):
 # -----------------------------------------------------------------------------------
 class AnyLogTable(object):
     '''
-    Maintains table data and HTML print info
+    Maintains table data and HTML print info. Note: first col is always a unique ID
     table_name - a name representing the table
     column_names - a list with the table names
     column_keys - per each column - the attribute name in the JSON

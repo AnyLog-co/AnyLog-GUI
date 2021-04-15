@@ -11,34 +11,34 @@
                 "Tag" :
                 {
                     "query" : "blockchain get tag bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
-                    "table_title" : ["Name", "Description", "ID"],
-                    "json_keys" : ["name", "description", "id"]
+                    "table_title" : ["ID", "Name", "Description"],
+                    "json_keys" : ["id", "name", "description"]
                 },
                 "Manufacturer" :
                 {
                     "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
 
-                    "table_title" : ["Manufacturer", "ID"],
-                    "json_keys" : ["manufacturer", "id"],
+                    "table_title" : ["ID", "Manufacturer"],
+                    "json_keys" : ["id", "manufacturer"],
                     "children" : {
                             "Company" :
                             {
                                 "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][customer] [machine][id] separator = ,",
-                                "table_title" : ["Customer", "ID"],
-                                "json_keys" : ["customer", "id"],
+                                "table_title" : ["ID", "Customer"],
+                                "json_keys" : ["id", "customer"],
                                 "children" : {
                                         "Machine" :
                                         {
                                             "query" : "blockchain get machine where customer = TuscanBrands bring.unique.json [machine][machine] [machine][serial] [machine][id] separator = ,",
-                                            "table_title" : ["Machine", "Serial", "ID"],
-                                            "json_keys" : ["machine", "serial", "id"],
+                                            "table_title" : ["ID", "Machine", "Serial"],
+                                            "json_keys" : ["id", "machine", "serial"],
                         
                                             "children" : {
                                                         "Sensor":
                                                         {
                                                             "query" : "blockchain get tag bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
-                                                            "table_title" : ["Name", "Description", "ID"],
-                                                            "json_keys" : ["name", "description", "id"]
+                                                            "table_title" : ["ID", "Name", "Description"],
+                                                            "json_keys" : ["id", "name", "description"]
                                                         }
                                             }
                                         },
