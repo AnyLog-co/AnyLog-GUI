@@ -358,9 +358,9 @@ def selected( selection = "" ):
              # print the parents first
             pass      
         if key[:5] == "View.":
-            new_policy = get_json_policy(key[5:])
-            if new_policy:
-                policies += new_policy
+            retrieved_policy = get_json_policy(key[5:])
+            if retrieved_policy:
+                policies.append(retrieved_policy)
 
     # organize JSON entries to display
     data_list = []
