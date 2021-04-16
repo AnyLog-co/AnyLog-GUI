@@ -405,7 +405,9 @@ def selected( selection = "" ):
         data_list.append(json_string)  #  transformed to a JSON string.
 
 
-    select_info = get_select_menu()
+    select_info = get_select_menu(selection)
+
+    select_info['text'] = data_list
     
     # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
 

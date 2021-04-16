@@ -16,10 +16,10 @@
                 },
                 "Manufacturer" :
                 {
-                    "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][manufacturer] [machine][id] separator = ,",
+                    "query" : "blockchain get manufacturer where name = orics",
 
-                    "table_title" : ["ID", "Manufacturer"],
-                    "json_keys" : ["id", "manufacturer"],
+                    "table_title" : ["ID", "Name", "URL"],
+                    "json_keys" : ["id", "name", "url"],
                     "children" : {
                             "Company" :
                             {
