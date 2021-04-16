@@ -351,7 +351,33 @@ def selected( selection = "" ):
 
     selected_rows = request.form
 
-    pass
+    policies = []
+    for index, key in enumerate(selected_rows):
+        # print all entries flagged as View
+        if not index:
+             # print the parents first
+            pass      
+        if key[:5] == "View.":
+            new_policy = get_json_policy(key[5:])
+            if new_policy:
+                policies += new_policy
+
+    # organize JSON entries to display
+    data_list = []
+    for json_entry in policies:
+        json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
+        data_list.append(json_string)  #  transformed to a JSON string.
+
+    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
+
+    # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
+
+    # Make title from the path
+    title = ""
+    for parent in parent_menu:
+        title += parent[0] + " : "
+
+    return render_template('output.html', title = title, text=data_list, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
 
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
@@ -372,8 +398,7 @@ def edge_include( selection, id ):
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
 # -----------------------------------------------------------------------------------
-@app.route('/view_policy/<string:selection>@<string:id>')
-def view_policy( selection, id ):
+def get_json_policy( id ):
 
         # Need to login before navigating
     if not user_connect_:
@@ -389,26 +414,10 @@ def view_policy( selection, id ):
     data = exec_al_cmd( al_cmd )
     json_list = app_view.str_to_list(data)
     if not json_list:
-        flash('AnyLog: Error in data format returned from node', category='error')
+        flash('AnyLog: Error in data format returned for policy: %s' % id, category='error')
         redirect(('/index'))        # Select a different path
 
-    # organize JSON entries to display
-    data_list = []
-    for json_entry in json_list:
-        json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
-        data_list.append(json_string)  #  transformed to a JSON string.
-
-    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
-
-    path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
-
-    # Make title from the path
-    title = ""
-    for parent in parent_menu:
-        title += parent[0] + " : "
-
-   
-    return render_template('output.html', title = title, text=data_list, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+    return json_list
 
 # -----------------------------------------------------------------------------------
 # User navigation in the metadata is stored in an object assigned to the report.
