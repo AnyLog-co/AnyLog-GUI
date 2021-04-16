@@ -99,8 +99,9 @@ def login():
         if not user_connect_:
             redirect(('/login'))        # Redo the login
 
-        session['username'] = request.form['username']
-
+        user_name = request.form['username']
+        session['username'] = user_name
+        path_stat.set_new_user( user_name )
 
         return redirect(('/index'))     # Go to main page
 
@@ -109,12 +110,10 @@ def login():
     else:
         title_str = 'Sign In'
 
-    if not 'username' in session:
-        redirect(('/login'))        # Redo the login - need a user name
-    
-    user_name = session['username']
-    if not path_stat.is_with_user( user_name ):
-        path_stat.set_new_user( user_name )
+    if 'username' in session:
+        user_name = session['username']
+        if not path_stat.is_with_user( user_name ):
+            path_stat.set_new_user( user_name )
 
     user_name, user_menu, parent_menu, children_menu = get_select_menu()
 
@@ -329,10 +328,10 @@ def tree( selection = "" ):
     user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
 
 
-    extra_columns =  [('View','checkbox'), ('Select','checkbox')]
+    extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(parent_menu[-1][0], list_columns, list_keys, table_rows, extra_columns)
 
-    template_vars = { 'tables_list' : [al_table], 'submit' : "Submit", 'user_name' : user_name,'user_gui' : user_menu,'parent_gui' : parent_menu,'children_gui' : children_menu}
+    template_vars = { 'tables_list' : [al_table], 'submit' : "View", 'user_name' : user_name,'user_gui' : user_menu,'parent_gui' : parent_menu,'children_gui' : children_menu}
 
     return render_template('selection_table.html',  **template_vars )
 
@@ -357,8 +356,8 @@ def selected( selection = "" ):
         if not index:
              # print the parents first
             pass      
-        if key[:5] == "View.":
-            retrieved_policy = get_json_policy(key[5:])
+        if key[:7] == "Select.":
+            retrieved_policy = get_json_policy(key[7:])
             if retrieved_policy:
                 policies.append(retrieved_policy)
 
