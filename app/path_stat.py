@@ -87,9 +87,8 @@ def update_status(user_name, parent_menu, id, data):
     path_info["path"][index]["data"] = data    # Keep the data of that layer
     path_info["level"] = index  # Keep current location
 
-
 # -----------------------------------------------------------------------------------
-# Add an entry to the report
+# Add an entry to the report - This is an edge node
 # -----------------------------------------------------------------------------------
 def add_report_entry(user_name, selection, id):
 

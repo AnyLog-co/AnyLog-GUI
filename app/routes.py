@@ -397,15 +397,11 @@ def selected( selection = "" ):
         else:
             return redirect(url_for('home')) 
 
-
     policies = []
-    for index, key in enumerate(selected_rows):
-        # print all entries flagged as View
-        if not index:
-             # print the parents first
-            pass      
+    for key in selected_rows:    
         if key[:7] == "Select.":
-            retrieved_policy = get_json_policy(key[7:])
+            policy_id = key[7:]
+            retrieved_policy = get_json_policy(policy_id)
             if retrieved_policy:
                 policies.append(retrieved_policy)
 
@@ -414,14 +410,28 @@ def selected( selection = "" ):
         flash('AnyLog: Missing entry selection', category='error')
         return redirect(url_for('tree', selection=selection)) 
 
+    select_info = get_select_menu(selection)
+
+    if "Browse" in selected_rows:
+        # Put the key of the parent in the tree
+        if len(policies) > 1:
+            flash('AnyLog: Only one entry can be selected for browsing', category='error')
+            return redirect(url_for('tree', selection=selection))
+
+        child_name = selected_rows["Browse"]
+        # Update the path for the currently used report
+        path_selection(select_info['parent_gui'], policy_id, retrieved_policy)
+
+        # Move with the selected child
+        return redirect(url_for('tree', selection='%s@%s' % (selection, child_name)))
+           
+
+           
     # organize JSON entries to display
     data_list = []
     for json_entry in policies:
         json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
         data_list.append(json_string)  #  transformed to a JSON string.
-
-
-    select_info = get_select_menu(selection)
 
     select_info['text'] = data_list
     
@@ -474,7 +484,7 @@ def get_json_policy( id ):
 # The path is the node inf as f(level).
 # The process saves the path, the key and the data selected.
 # -----------------------------------------------------------------------------------
-def path_selection(parent_menu, id, data):
+def path_selection(parent_menu, policy_id, data):
 
     if not 'username' in session:
         redirect(('/login'))        # Redo the login - need a user name
