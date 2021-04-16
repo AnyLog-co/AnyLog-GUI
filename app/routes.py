@@ -331,7 +331,7 @@ def tree( selection = "" ):
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(parent_menu[-1][0], list_columns, list_keys, table_rows, extra_columns)
 
-    template_vars = { 'tables_list' : [al_table], 'submit' : "View", 'user_name' : user_name,'user_gui' : user_menu,'parent_gui' : parent_menu,'children_gui' : children_menu}
+    template_vars = { 'selection' : selection, 'tables_list' : [al_table], 'submit' : "View", 'user_name' : user_name,'user_gui' : user_menu,'parent_gui' : parent_menu,'children_gui' : children_menu}
 
     return render_template('selection_table.html',  **template_vars )
 
@@ -341,6 +341,9 @@ def tree( selection = "" ):
 @app.route('/selected', methods={'GET','POST'})
 @app.route('/selected/<string:selection>')
 def selected( selection = "" ):
+    '''
+    Called from selection_table.html
+    '''
     global query_node_
     global user_connect_
     global gui_view_
@@ -349,6 +352,14 @@ def selected( selection = "" ):
         return redirect(('/login'))        # start with Login  if not yet provided
 
     selected_rows = request.form
+
+    if not selection:
+        # Get that selection that is in the form
+        if 'selection' in selected_rows:
+            selection = selected_rows['selection']
+        else:
+            return redirect(url_for('home')) 
+
 
     policies = []
     for index, key in enumerate(selected_rows):
@@ -360,6 +371,11 @@ def selected( selection = "" ):
             retrieved_policy = get_json_policy(key[7:])
             if retrieved_policy:
                 policies.append(retrieved_policy)
+
+    if not len(policies):
+        # Nothing was selected - redo
+        flash('AnyLog: Missing entry selection', category='error')
+        return redirect(url_for('tree', selection=selection)) 
 
     # organize JSON entries to display
     data_list = []

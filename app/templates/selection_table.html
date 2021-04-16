@@ -30,6 +30,12 @@
     {% if submit %}
         <input type="submit" value={{submit}}>
     {% endif %}
+
+    <!-- Add the usr path to the form (if provided)  -->
+    {% if selection %}
+        <input type="hidden" value={{selection}} name = selection>
+    {% endif %}
+
 </form>
 
 
