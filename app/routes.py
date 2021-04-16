@@ -115,9 +115,11 @@ def login():
         if not path_stat.is_with_user( user_name ):
             path_stat.set_new_user( user_name )
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    select_info = get_select_menu()
+    select_info['title'] = title_str
+    select_info['form'] = form
 
-    return render_template('login.html', title = title_str, form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+    return render_template('login.html', **select_info)
 
 
 # -----------------------------------------------------------------------------------
@@ -128,9 +130,10 @@ def reports():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    select_info = get_select_menu()
+    select_info['title'] = 'Orics'
 
-    return render_template('reports.html', title = 'Orics', user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    return render_template('reports.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Alerts
 # -----------------------------------------------------------------------------------
@@ -191,13 +194,20 @@ def network():
 
 
     target_node = get_target_node()
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
     
     form = CommandsForm()         # New Form
+    
+    select_info = get_select_menu()
+    select_info['title'] = 'Network Commands'
+    select_info['form'] = form
+    select_info['def_dest'] = target_node
 
-    return render_template('commands.html', title = 'Network Commands', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
 
+    return render_template('commands.html', **select_info)
 
+# -----------------------------------------------------------------------------------
+# AnyLog Commands
+# -----------------------------------------------------------------------------------
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
@@ -206,7 +216,9 @@ def al_command():
     }
 
     
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    
+    select_info = get_select_menu()
+ 
     target_node = get_target_node()
 
 
@@ -222,23 +234,30 @@ def al_command():
             data = response.text
             data = data.replace('\r','')
             text = data.split('\n')
-            return render_template('output.html', title = 'Network Node Reply', text=text, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+
+            select_info['title'] = 'Network Node Reply'
+            select_info['text'] = text
+
+            return render_template('output.html', **select_info)
   
     
-    form = CommandsForm()         # New Form
-
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    select_info['title'] = 'Network Status'
+    select_info['form'] = CommandsForm()         # New Form
+    select_info['def_dest'] = target_node
     
-    return render_template('network.html', title = 'Network Status', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    return render_template('network.html', **select_info)
 
+# -----------------------------------------------------------------------------------
+# Install New Node
+# -----------------------------------------------------------------------------------
 @app.route('/install', methods = ['GET', 'POST'])
 def install():
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
-  
-    form = InstallForm()         # New Form
-    return render_template('install.html', title = 'Install Network Node', form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    select_info = get_select_menu()
+    select_info['title'] = 'Install Network Node'
+    select_info['form'] = installForm()
 
+    return render_template('install.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
@@ -325,21 +344,23 @@ def tree( selection = "" ):
         table_rows.append(columns_list)
 
     
-    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
-
-
+    select_info = get_select_menu(selection)
+    
     extra_columns =  [('Select','checkbox')]
-    al_table = AnyLogTable(parent_menu[-1][0], list_columns, list_keys, table_rows, extra_columns)
+    al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
 
-    template_vars = { 'selection' : selection, 'tables_list' : [al_table], 'submit' : "View", 'user_name' : user_name,'user_gui' : user_menu,'parent_gui' : parent_menu,'children_gui' : children_menu}
+    select_info['selection'] = selection
+    select_info['tables_list'] = [al_table]
+    select_info['submit'] =  "View"
+    
 
-    return render_template('selection_table.html',  **template_vars )
+    return render_template('selection_table.html',  **select_info )
 
 # -----------------------------------------------------------------------------------
 # Process selected Items from a table
 # -----------------------------------------------------------------------------------
 @app.route('/selected', methods={'GET','POST'})
-@app.route('/selected/<string:selection>')
+@app.route('/selected/<string:selection>', methods={'GET','POST'})
 def selected( selection = "" ):
     '''
     Called from selection_table.html
@@ -383,16 +404,12 @@ def selected( selection = "" ):
         json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
         data_list.append(json_string)  #  transformed to a JSON string.
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
 
+    select_info = get_select_menu()
+    
     # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
 
-    # Make title from the path
-    title = ""
-    for parent in parent_menu:
-        title += parent[0] + " : "
-
-    return render_template('output.html', title = title, text=data_list, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+    return render_template('output.html', **select_info )
 
 # -----------------------------------------------------------------------------------
 # Select the children elements or move to parent
@@ -511,9 +528,23 @@ def get_select_menu(selection = ""):
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
         return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
-    return [user_name, user_menu, parent_menu, children_menu]
+    select_info = {
+        'user_name' : user_name,
+        'user_gui' : user_menu,
+        'parent_gui' : parent_menu,
+        'children_gui' : children_menu,
+    }
 
+    # Make title from the path
+    title = ""
+    for parent in parent_menu:
+        title += parent[0] + " : "
+    select_info['title'] = title
 
+    return select_info
+# -----------------------------------------------------------------------------------
+# Get the target node from the Config Form or the Config File
+# -----------------------------------------------------------------------------------
 def get_target_node():
 
     target_node = query_node_ or gui_view_.get_base_info("query_node")
@@ -561,9 +592,11 @@ def configure_reports():
                 flash('AnyLog: %s' % err_msg, category='error')
             return redirect(url_for('configure_reports'))
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    select_info = get_select_menu()
+    select_info['title'] = "Configure Reports"
+    select_info['form'] = form
 
-    return render_template('configure_reports.html', title='Configure Reports',form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    return render_template('configure_reports.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Logout

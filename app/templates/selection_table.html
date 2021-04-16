@@ -2,7 +2,15 @@
 
 {% block content %}
 
-<h2>1235</h2>
+<h1>{{ title }}</h1>
+
+{% if selection %}
+<!-- Add the usr path to the form (if provided)  -->
+<form action="{{url_for('selected')}}/{{selection}}" method="POST">
+{% else %}
+<form action="{{url_for('selected')}}" method="POST">
+{% endif %}
+
 
 <form action="{{url_for('selected')}}" method="POST">
     {% for table in tables_list %}
@@ -30,12 +38,6 @@
     {% if submit %}
         <input type="submit" value={{submit}}>
     {% endif %}
-
-    <!-- Add the usr path to the form (if provided)  -->
-    {% if selection %}
-        <input type="hidden" value={{selection}} name = selection>
-    {% endif %}
-
 </form>
 
 
