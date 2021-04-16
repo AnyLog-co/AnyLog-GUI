@@ -67,13 +67,19 @@
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
+            <span style="color: red">
+               
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+
+            </span>
         </ul>
         {% endif %}
         {% endwith %}
-        {% block content %}{% endblock %}
+        {% block content %}
+        {% endblock %}
+        
     </body>
 </html>
 

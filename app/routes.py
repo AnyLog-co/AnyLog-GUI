@@ -327,14 +327,30 @@ def tree( selection = "" ):
         flash('AnyLog: No data satisfies the request', category='error')
         redirect(('/index'))        # Select a different path
 
-    # Set table info to present in form
+    if "bring" in al_command:
+        # Only sections of the policy retrieved - no policy type
+        # The table info is pulled from the bring command setup
+        policy_type = None
+    else:
+        # The table info is pulled from the source JSON policy
+        cmd_list = al_command.split(' ', 3)
+        if len(cmd_list) == 4 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
+            policy_type = cmd_list[2]
+        else:
+            policy_type = None
 
+    # Set table info to present in form
     table_rows = []
     for entry in data_list:
         columns_list = []
+        
         for key in list_keys:
             # Validate values in reply
-            if key in entry:
+            if policy_type and policy_type in entry and key in entry[policy_type]:
+                # Get the table data from the source Policy
+                value = entry[policy_type][key]
+            elif key in entry:
+                # Get the table data from the json resulting from the bring
                 value = entry[key]
             else:
                 value = ""
