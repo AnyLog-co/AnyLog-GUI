@@ -204,20 +204,41 @@ def update_command(user_name, selection, command):
         "blockchain get tag where machine = [machine][id]  bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,"
         --> [machine][id] is taken from the parents usinf the path described in the selection variable
     '''
-    cmd_words = command,split()
+    cmd_words = command.split()
+    value = None
     if len(cmd_words) > 7:
         if cmd_words[3] == "where" and cmd_words[5] == '=':
-            for word in cmd_words[6:]
+            for index, word in enumerate(cmd_words[6:]):
+                if word == 'bring':
+                    break       # End of WHERE part
+                value = None
                 if word[0] == '[' and word[-1] == ']':
                     keys_list = word.split('[')         # The list of keys to use to retrieve from the JSON
-                    if (len(keys_list) > 1:             # at least 2 keys (the first is the policy type)
+                    if len(keys_list) > 1:             # at least 2 keys (the first is the policy type)
                         parent_type = keys_list[:-1]
                         parent_policy = get_policy(user_name, selection, parent_type)   # Get the policy of the parent from the path
                         if parent_policy:
                             if parent_type in parent_policy:
                                 # pull the attribute value
-
-
+                                value = parent_policy
+                                for key in keys_list:
+                                    if isinstance(value,dict):
+                                        if key in value:
+                                            value = value[key]
+                                        else:
+                                            value = None
+                                    else:
+                                        value = None
+                                        break
+                if value:
+                    cmd_words[6 + index] = value    # Replace with value from parent
+    if value:
+        # command text was replaced with values from parents
+        updated_cmd = ' '.join(cmd_words)
+    else:
+        updated_cmd = command
+    
+    return updated_cmd
 
 # -----------------------------------------------------------------------------------
 # Get a policy from the path
