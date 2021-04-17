@@ -430,7 +430,7 @@ def selected( selection = "" ):
             policy_id = key[7:]
             retrieved_policy = get_json_policy(policy_id)
             if retrieved_policy:
-                policies.append(retrieved_policy)
+                policies.append(retrieved_policy[0])
 
     if not len(policies):
         # Nothing was selected - redo
@@ -477,22 +477,6 @@ def selected( selection = "" ):
     # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
 
     return render_template('output.html', **select_info )
-
-# -----------------------------------------------------------------------------------
-# Select the children elements or move to parent
-# -----------------------------------------------------------------------------------
-@app.route('/edge_include/<string:selection>@<string:id>')
-def edge_include( selection, id ):
-    '''
-    Add the edge to the report
-    '''
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session["username"]
-    path_stat.add_report_entry(user_name, selection, id)
-
-    return redirect(url_for('tree', selection=selection))   # Return to the edge list of entries
 
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID

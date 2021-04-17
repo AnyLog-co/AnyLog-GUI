@@ -116,27 +116,6 @@ def update_status(user_name, parent_menu, id, data):
     path_info["level"] = index  # Keep current location
 
 # -----------------------------------------------------------------------------------
-# Add an entry to the report - This is an edge node
-# -----------------------------------------------------------------------------------
-def add_report_entry(user_name, selection, id):
-
-    '''
-    Add an entry to the report - 
-    Every report structure includes the list of Edge elements (and their parents) that participate in the report
-    '''
-    global active_state_
-    
-    user_info = active_state_[user_name]
-
-    report_selected = user_info["selected"]
-
-    # Get a dictionary with all the selected edge nodes for the report
-    edge_selected = active_state_[user_name]['reports'][report_selected]["entries"] # The selected entries
-
-    # Copy the path anf pathe elements to the list of selected items to print
-    edge_selected[id] = copy.deepcopy(active_state_[user_name]['reports'][report_selected]["path"])
-
-# -----------------------------------------------------------------------------------
 # Return the list of reports associated with the user
 # -----------------------------------------------------------------------------------
 def get_user_reports(user_name):
@@ -306,10 +285,44 @@ def get_policy(user_name, selection, policy_type):
 # Add selected Entry to the list of entries in the report
 # -------------------------------------------------------------------------
 def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
+ 
     '''
-    Add edge entries to the entries queried in the report
+    Add an entry to the report - 
+    Every report structure includes the list of Edge elements (and their parents) that participate in the report
     '''
-    pass
+
+    global active_state_
+    
+    user_info = active_state_[user_name]
+
+    report_selected = user_info["selected"]
+
+    # Get a dictionary with all the selected edge nodes for the report
+    edge_selected = active_state_[user_name]['reports'][report_selected]["entries"] # The selected entries
+
+    policy_type = get_policy_type(json_entry)
+    if policy_type:
+        if "id" in json_entry[policy_type]:
+            policy_id = json_entry[policy_type]["id"]
+        else:
+            policy_id = None    # Missing ID for the policy
+    else:
+        # The JSON is not a policy
+        if "id" in json_entry:
+            policy_id = json_entry["id"]
+        else:
+            policy_id = None    # Missing ID for the json struct
+
+    if policy_id:
+        # Copy the path anf pathe elements to the list of selected items to print
+        if not policy_id in edge_selected:
+            # Not a duplicated node
+            edge_selected[policy_id] = {}
+            # The Path that determined the selected edge that is added to the report
+            edge_selected[policy_id]["path"] = copy.deepcopy(active_state_[user_name]['reports'][report_selected]["path"])
+            edge_selected[policy_id]["dbms_name"] = reset_str_chars(dbms_name)  # Make a dbms name (without spaces etc.)
+            edge_selected[policy_id]["table_name"] = reset_str_chars(table_name) # Make a table name (without spaces etc.)
+            edge_selected[policy_id]["edge"] = json_entry
 
 # -------------------------------------------------------------------------
 # Remove special chars that conflict with naming convention
@@ -318,3 +331,22 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
 def reset_str_chars( source_str ):
     global translate_dict_
     return source_str.translate ( translate_dict_ )
+
+# ======================================================================================================================
+# Get the type of policy
+# ======================================================================================================================
+def get_policy_type(policy):
+
+    if len(policy) == 1:
+        # Policy has one entry at the root
+        try:
+            policy_type = next(iter(policy))
+        except:
+            policy_type = None
+        else:
+            if not isinstance(policy[policy_type], dict):
+                policy_type = None  # second layer is not a dictionary
+    else:
+        policy_type = None
+
+    return policy_type
