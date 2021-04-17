@@ -21,24 +21,26 @@
             <a href="{{ url_for('logout') }}">logout</a>&nbsp
         </div>
         <div>
-            {{ company_name }}:&nbsp
-            <!-- Customer specific pages -->
-            {% if user_gui %}
-                {%- for text, url_target in user_gui -%}
-                   
-                    <a href="{{ url_target }}">{{text}}</a>&nbsp
+            {% if company_name %}
+                {{ company_name }}:&nbsp
+                <!-- Customer specific pages -->
+                {% if user_gui %}
+                    {%- for text, url_target in user_gui -%}
                     
-                {%- endfor -%}
+                        <a href="{{ url_target }}">{{text}}</a>&nbsp
+                        
+                    {%- endfor -%}
+                {% endif %}
+                <a href="{{ url_for('reports') }}">Reports</a>&nbsp
             {% endif %}
-            <a href="{{ url_for('reports') }}">Reports</a>&nbsp
         </div>
         <div>
             <!-- Name of Report to use -->
             [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
             {%- if report_name -%}
-                <a href="{{ url_for('dynamic_report') }}">{{report_name}}</a>&nbsp]
+                <a href="{{ url_for('dynamic_report') }}{{report_name}}">{{report_name}}</a>&nbsp]
             {%- else -%}
-                <a href="{{ url_for('dynamic_report') }}">Default</a>&nbsp]
+                <a href="{{ url_for('dynamic_report') }}Default">Default</a>&nbsp]
             {%- endif -%}
 
             <!-- Home Page -->

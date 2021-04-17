@@ -250,6 +250,23 @@ def update_command(user_name, selection, command):
         updated_cmd = command
     
     return updated_cmd
+# -----------------------------------------------------------------------------------
+# Get the info selected for the report
+# -----------------------------------------------------------------------------------
+def get_report_info(user_name, report_name):
+    '''
+    Return a link to the info cpllected on the report.
+    Includig: DBMS and Tables for output
+    '''
+    global active_state_
+    
+    user_info = active_state_[user_name]
+
+    if report_name in user_info["reports"]:
+        report_info = user_info["reports"][report_name]
+    else:
+        report_info = None
+    return report_info
 
 # -----------------------------------------------------------------------------------
 # Get a policy from the path

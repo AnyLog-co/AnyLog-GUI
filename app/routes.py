@@ -123,9 +123,12 @@ def login():
 
 # -----------------------------------------------------------------------------------
 # View the report structure being dynamically build by navigation
+#
+# Called from - base.html
 # -----------------------------------------------------------------------------------
 @app.route('/dynamic_report/')
-def dynamic_report():
+@app.route('/dynamic_report/<string:report_name>')
+def dynamic_report( report_name = "Default" ):
     '''
     View the report being used
     Called from - base.html
@@ -135,7 +138,12 @@ def dynamic_report():
 
     user_name = session['username']
 
-    report_name = path_stat.get_report_selected(user_name)
+    report_data = path_stat.get_report_info(user_name, report_name)
+    if not report_data or not len(report_data["entries"]):
+        flash("AnyLog: Report '%s' has no selections" % report_name)
+        return redirect(url_for('index')) 
+        #return redirect(url_for('home')) 
+
 
     return report_name
 # -----------------------------------------------------------------------------------
@@ -271,7 +279,7 @@ def install():
 
     select_info = get_select_menu()
     select_info['title'] = 'Install Network Node'
-    select_info['form'] = installForm()
+    select_info['form'] = InstallForm()
 
     return render_template('install.html', **select_info)
 
