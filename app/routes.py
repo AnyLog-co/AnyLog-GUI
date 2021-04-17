@@ -286,13 +286,13 @@ def tree( selection = "" ):
     al_command = path_stat.update_command(user_name, selection, command)   # Update the command with the parent info
 
     if not al_command:
-        flash("AnyLog: Missing AnyLog Command in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
         return redirect(('/index'))        # Show all user select options
 
     # Get the columns names of the table to show
     list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
     if not list_columns:
-        flash("AnyLog: Missing 'list_columns' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        flash("AnyLog: Missing 'list_columns' Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
         return redirect(('/index'))        # Show all user select options
 
    # Get the keys to pull data from the JSON reply
@@ -494,7 +494,7 @@ def path_selection(parent_menu, policy_id, data):
 
     user_name = session["username"]
 
-    path_stat.update_status(user_name, parent_menu, id, data)
+    path_stat.update_status(user_name, parent_menu, policy_id, data)
 
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node

@@ -81,8 +81,10 @@ def update_status(user_name, parent_menu, id, data):
     for index, step in enumerate(parent_menu):
         step_name = step[0]
         if index >= len(path_info["path"]):
-            path_info["path"].append( {})
-        path_info["path"][index]["name"] = step_name
+            path_info["path"].append( { "name" : step_name, "data" : None })
+        elif not path_info["path"][index]["name"] != step_name:
+            path_info["path"][index]["name"] = step_name
+            path_info["path"][index]["data"] = None
     
     path_info["path"][index]["data"] = data    # Keep the data of that layer
     path_info["level"] = index  # Keep current location
@@ -213,9 +215,9 @@ def update_command(user_name, selection, command):
                     break       # End of WHERE part
                 value = None
                 if word[0] == '[' and word[-1] == ']':
-                    keys_list = word.split('[')         # The list of keys to use to retrieve from the JSON
+                    keys_list = word[1:].split('[')         # The list of keys to use to retrieve from the JSON
                     if len(keys_list) > 1:             # at least 2 keys (the first is the policy type)
-                        parent_type = keys_list[:-1]
+                        parent_type = keys_list[0][:-1]
                         parent_policy = get_policy(user_name, selection, parent_type)   # Get the policy of the parent from the path
                         if parent_policy:
                             if parent_type in parent_policy:
@@ -224,7 +226,7 @@ def update_command(user_name, selection, command):
                                 for key in keys_list:
                                     if isinstance(value,dict):
                                         if key in value:
-                                            value = value[key]
+                                            value = value[key][:-1]
                                         else:
                                             value = None
                                     else:
@@ -232,6 +234,8 @@ def update_command(user_name, selection, command):
                                         break
                 if value:
                     cmd_words[6 + index] = value    # Replace with value from parent
+                else:
+                    break
     if value:
         # command text was replaced with values from parents
         updated_cmd = ' '.join(cmd_words)
