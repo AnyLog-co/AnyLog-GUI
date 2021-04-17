@@ -2,6 +2,9 @@
 
 {% block content %}
 
+
+<h1>{{ title }}</h1>
+
 <form action="{{url_for('selected')}}" method="POST"></form>
     <table border="1">
         <tr>    <!-- table row  -->
@@ -22,8 +25,11 @@
             {% endfor %}
         </tr>
         {% endfor %}
-
     </table>
+
+    {% for option in options_list %}
+        <td><input type="radio" name={{option}}></td> <!-- Select functionality  -->
+    {% endfor %}
 </form>
     
 {% endblock %}

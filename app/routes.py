@@ -149,12 +149,19 @@ def dynamic_report( report_name = "Default" ):
     for key, entry_info in report_entries.items():
         table_rows.append((key, entry_info["dbms_name"], entry_info["table_name"]))
 
-    extra_columns =  [('Remove','checkbox')]
+    # Remove - deletes the table from the report
+    # Ignore - ignores the table from this run
+    extra_columns =  [('Remove','checkbox'), ('Ignore','checkbox')]
  
     al_table = AnyLogTable("Report: %s" % report_name, list_columns, None, table_rows, extra_columns)
 
     select_info = get_select_menu()
     select_info['table'] = al_table
+    select_info['title'] = "Report: %s" % report_name
+
+    options_list = ["Min", "Max", "Avg", "Count", "Diff"]
+    select_info['options_list'] = options_list
+    
 
     return render_template('report_deploy.html',  **select_info )
 
