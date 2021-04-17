@@ -10,6 +10,21 @@ to be broadly interpreted) you or your such affiliates shall unconditionally ass
 such non-permitted act to AnyLog, Inc.
 '''
 
+# Conversion table to allow propper dbms names and table names
+translate_dict_ = {}
+for x in range (256):
+
+    char_x = chr(x)
+    if char_x == '_' or char_x == ' ' or char_x == '-' or char_x == '.' or char_x == '/' or char_x == '\\' or char_x == ':':
+        char_y = '_'
+    else:
+        if (char_x >= 'A' and char_x <= 'Z') or  (char_x >= 'a' and char_x <= 'z') or (char_x >= '0' and char_x <= '9'):
+           continue                 # No need to translate
+
+        char_y = "0x%02x" % x    # The string showing x in hex
+
+    translate_dict_[x] = char_y
+
 import copy
 
 active_state_ = {         # A structure containing info per traversak and selected report data
@@ -287,3 +302,11 @@ def get_policy(user_name, selection, policy_type):
             policy = path_info["path"][index]["data"]
     
     return policy
+
+# -------------------------------------------------------------------------
+# Remove special chars that conflict with naming convention
+# Database names and table names are set with alphanumeric characters
+# -------------------------------------------------------------------------
+def reset_str_chars( source_str ):
+    global translate_dict_
+    return source_str.translate ( translate_dict_ )

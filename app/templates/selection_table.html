@@ -36,7 +36,13 @@
     </table>
     {% endfor %}
     {% if submit %}
-        <input type="submit" value={{submit}}>
+        <!-- The "View" button  -->
+        <input type="submit" value={{submit}} name=View>
+    {% endif %}
+
+    {% if add %}
+        <!-- The "Add" button  -->
+        <input type="submit" value={{add}} name=Add>
     {% endif %}
 
      <!-- Navigate to children  -->
@@ -48,7 +54,17 @@
             <input type="submit" value={{text}} name=Browse>  
         {%- endfor -%}
     
-    {%- endif -%}  
+    {%- endif -%}
+
+    {% if dbms_name %}
+        <!-- Add DBMS Name  -->
+        <input type="hidden" value={{dbms_name}} name=dbms>
+    {% endif %}
+    {% if table_name %}
+    <!-- Add Table Name  -->
+        <input type="hidden" value={{table_name}} name=table>
+    {% endif %}
+
 </form>
 
 

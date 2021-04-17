@@ -38,7 +38,9 @@
                                                         {
                                                             "query" : "blockchain get tag where machine = [machine][id]  bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
                                                             "table_title" : ["ID", "Name", "Description"],
-                                                            "json_keys" : ["id", "name", "description"]
+                                                            "json_keys" : ["id", "name", "description"],
+                                                            "dbms_name" : "Orics",
+                                                            "table_name" : "[sensor][name]"
                                                         }
                                             }
                                         },

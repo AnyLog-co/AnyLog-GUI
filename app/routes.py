@@ -381,8 +381,7 @@ def tree( selection = "" ):
         # Set a list of table entries
         table_rows.append(columns_list)
 
-    
-    
+
     select_info = get_select_menu(selection)
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
@@ -390,12 +389,16 @@ def tree( selection = "" ):
     select_info['selection'] = selection
     select_info['tables_list'] = [al_table]
     select_info['submit'] =  "View"
-    
 
+    if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+        # These entries can be added to a report
+        select_info['add'] =  "Add"
+    
     return render_template('selection_table.html',  **select_info )
 
 # -----------------------------------------------------------------------------------
 # Process selected Items from a table
+# Organize the selected data and place the parent info in the path as f(report)
 # -----------------------------------------------------------------------------------
 @app.route('/selected', methods={'GET','POST'})
 @app.route('/selected/<string:selection>', methods={'GET','POST'})
@@ -442,11 +445,16 @@ def selected( selection = "" ):
 
         child_name = selected_rows["Browse"]
         # Update the path for the currently used report
+        # Place the parent info in the path as f(report)
+
         path_selection(select_info['parent_gui'], policy_id, retrieved_policy[0])   # Only one policy selected
 
         # Move with the selected child
         return redirect(url_for('tree', selection='%s@%s' % (selection, child_name)))
-           
+
+    if "Add" in selected_rows:
+        # Add selected rows to report
+        return redirect(url_for('tree', selection='%s' % (selection)))
 
            
     # organize JSON entries to display
@@ -507,6 +515,13 @@ def get_json_policy( id ):
 # The process saves the path, the key and the data selected.
 # -----------------------------------------------------------------------------------
 def path_selection(parent_menu, policy_id, data):
+
+    '''
+    Place the parent info in the path as f(report)
+    parent_menu - the details of the path
+    policy_id - the ID of the JSON policy
+    data - the policy JSON data
+    '''
 
     if not 'username' in session:
         return redirect(('/login'))        # Redo the login - need a user name
