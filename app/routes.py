@@ -278,9 +278,11 @@ def tree( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
+    select_info = get_select_menu(selection)
     gui_sub_tree = gui_view_.get_subtree( selection )    # Set the user navigation links
 
-    al_command = app_view.get_tree_entree(gui_sub_tree, "query")
+    command = app_view.get_tree_entree(gui_sub_tree, "query")   # get the command from the Config file
+    al_command = path_stat.update_command(select_info['user_name'], selection, command)   # Update the command with the parent info
 
     if not al_command:
         flash("AnyLog: Missing AnyLog Command in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
@@ -360,7 +362,7 @@ def tree( selection = "" ):
         table_rows.append(columns_list)
 
     
-    select_info = get_select_menu(selection)
+    
     
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)

@@ -191,3 +191,59 @@ def set_report(user_name, form_info):
             active_state_[user_name]['selected'] = report_name
 
     return [ret_val, err_msg]
+
+# -----------------------------------------------------------------------------------
+# Update AL command to retrieve info with info from the parent
+# -----------------------------------------------------------------------------------
+def update_command(user_name, selection, command):
+    
+    '''
+    If the bring command references the parent, bring the info from the parents.
+    selection - describes the parents path.
+    Example:
+        "blockchain get tag where machine = [machine][id]  bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,"
+        --> [machine][id] is taken from the parents usinf the path described in the selection variable
+    '''
+    cmd_words = command,split()
+    if len(cmd_words) > 7:
+        if cmd_words[3] == "where" and cmd_words[5] == '=':
+            for word in cmd_words[6:]
+                if word[0] == '[' and word[-1] == ']':
+                    keys_list = word.split('[')         # The list of keys to use to retrieve from the JSON
+                    if (len(keys_list) > 1:             # at least 2 keys (the first is the policy type)
+                        parent_type = keys_list[:-1]
+                        parent_policy = get_policy(user_name, selection, parent_type)   # Get the policy of the parent from the path
+                        if parent_policy:
+                            if parent_type in parent_policy:
+                                # pull the attribute value
+
+
+
+# -----------------------------------------------------------------------------------
+# Get a policy from the path
+# -----------------------------------------------------------------------------------
+def get_policy(user_name, selection, policy_type):
+
+    global active_state_
+    
+    user_info = active_state_[user_name]
+
+    report_selected = user_info["selected"]
+    
+    path_info = user_info["reports"][report_selected]  # the report maintains the path info
+
+    selection_list = selection.split('@')
+
+    policy = None
+
+    if path_info["level"] >= len(selection_list):
+        # No parent policy with the path provided
+
+        for index, entry in enumerate(selection_list):
+            if path_info["path"][index]["name"] != entry:
+                break
+        
+        if index == path_info["level"]:
+            policy = path_info["path"][index]["data"]
+    
+    return policy

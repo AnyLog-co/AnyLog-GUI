@@ -51,16 +51,6 @@
                     
                 {%- endfor -%}
             {% endif %}
-            <!-- Dynamic Children Pages - based on the config (JSON) file -->
-            {% if children_gui %}
-                [&nbsp    
-                {%- for text, url_target in children_gui -%}
-                   
-                    <a href="{{ url_target }}">{{text}}</a>&nbsp
-                    
-                {%- endfor -%}
-                ]
-            {%- endif -%}  
         </div>
         <hr>
         <!-- ERROR Messages placed in Flush -->
@@ -79,7 +69,7 @@
         {% endwith %}
         {% block content %}
         {% endblock %}
-        
+
     </body>
 </html>
 
