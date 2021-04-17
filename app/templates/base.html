@@ -1,6 +1,6 @@
 <html>
     
-    <!-- process: title (for tab) + user_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
+    <!-- process: title (for tab) + company_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
     <head>
         <!-- Tab Display -->
         {% if title %}
@@ -21,7 +21,7 @@
             <a href="{{ url_for('logout') }}">logout</a>&nbsp
         </div>
         <div>
-            {{ user_name }}:&nbsp
+            {{ company_name }}:&nbsp
             <!-- Customer specific pages -->
             {% if user_gui %}
                 {%- for text, url_target in user_gui -%}
@@ -35,7 +35,7 @@
         <div>
             <!-- Name of Report to use -->
             [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
-            {%- if report -%}
+            {%- if report_name -%}
                 <a href="{{ url_for('dynamic_report') }}">{{report}}</a>&nbsp]
             {%- else -%}
                 <a href="{{ url_for('dynamic_report') }}">Default</a>&nbsp]

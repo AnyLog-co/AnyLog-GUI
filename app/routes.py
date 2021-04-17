@@ -121,7 +121,23 @@ def login():
 
     return render_template('login.html', **select_info)
 
+# -----------------------------------------------------------------------------------
+# View the report structure being dynamically build by navigation
+# -----------------------------------------------------------------------------------
+@app.route('/dynamic_report/')
+def dynamic_report():
+    '''
+    View the report being used
+    Called from - base.html
+    '''
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
+    user_name = session['username']
+
+    report_name = path_stat.get_report_selected(user_name)
+
+    return report_name
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------
@@ -553,7 +569,7 @@ def get_select_menu(selection = ""):
 
     if gui_view_.is_with_config():
 
-        user_name = gui_view_.get_base_info("name")                 # The user name
+        company_name = gui_view_.get_base_info("name")                 # The user name
         user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
         parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
     else:
@@ -562,11 +578,15 @@ def get_select_menu(selection = ""):
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
         return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
+    user_name = session['username']
+    report_name = path_stat.get_report_selected(user_name)
+
     select_info = {
-        'user_name' : user_name,
+        'company_name' : company_name,
         'user_gui' : user_menu,
         'parent_gui' : parent_menu,
         'children_gui' : children_menu,
+        'report_name' : report_name
     }
 
     # Make title from the path
@@ -587,20 +607,6 @@ def get_target_node():
         return redirect(('/configure'))     # Get the query node info
     return target_node
 
-# -----------------------------------------------------------------------------------
-# View the report structure being used
-# -----------------------------------------------------------------------------------
-@app.route('/dynamic_report/')
-def dynamic_report():
-    '''
-    View the report being used
-    '''
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session['username']
-
-    return "Default"
 # -----------------------------------------------------------------------------------
 # Configure the dynamic reports
 # -----------------------------------------------------------------------------------
