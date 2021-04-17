@@ -2,6 +2,28 @@
 
 {% block content %}
 
-    {{ table }}
+<form action="{{url_for('selected')}}" method="POST"></form>
+    <table border="1">
+        <tr>    <!-- table row  -->
+            {% for col_name in table.column_names %}
+                <td>{{col_name}}</td> <!-- table cell  -->
+            {% endfor %}
+            {% for extra_column in table.extr_col %}
+                <td>{{extra_column[0]}}</td> <!-- extra cell name  -->
+            {% endfor %}
+        </tr>
+        {% for row in table.rows %}
+        <tr>
+            {% for col_val in row %}
+                <td>{{ col_val }}</td>
+            {% endfor %}
+            {% for extra_column in table.extr_col %}
+                <td><input type={{extra_column[1]}} name={{extra_column[0]}}.{{row[0]}}></td> <!-- extra cell name  -->
+            {% endfor %}
+        </tr>
+        {% endfor %}
+
+    </table>
+</form>
     
 {% endblock %}

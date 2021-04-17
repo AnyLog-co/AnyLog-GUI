@@ -142,10 +142,22 @@ def dynamic_report( report_name = "Default" ):
     if not report_data or not len(report_data["entries"]):
         flash("AnyLog: Report '%s' has no selections" % report_name)
         return redirect(url_for('index')) 
-        #return redirect(url_for('home')) 
 
+    list_columns = ["ID", "DBMS", "Table"]
+    table_rows = []
+    report_entries = report_data["entries"]     # The selected info
+    for key, entry_info in report_entries.items():
+        table_rows.append((key, entry_info["dbms_name"], entry_info["table_name"]))
 
-    return report_name
+    extra_columns =  [('Remove','checkbox')]
+ 
+    al_table = AnyLogTable("Report: %s" % report_name, list_columns, None, table_rows, extra_columns)
+
+    select_info = get_select_menu()
+    select_info['table'] = al_table
+
+    return render_template('report_deploy.html',  **select_info )
+
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------
@@ -430,7 +442,7 @@ def selected( selection = "" ):
         if 'selection' in selected_rows:
             selection = selected_rows['selection']
         else:
-            return redirect(url_for('home')) 
+            return redirect(url_for('index')) 
 
     policies = []
     for key in selected_rows:    
