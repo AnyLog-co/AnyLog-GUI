@@ -40,7 +40,7 @@
                                                             "table_title" : ["ID", "Name", "Description"],
                                                             "json_keys" : ["id", "name", "description"],
                                                             "dbms_name" : "Orics",
-                                                            "table_name" : "[sensor][name]"
+                                                            "table_name" : "[tag][name]"
                                                         }
                                             }
                                         },

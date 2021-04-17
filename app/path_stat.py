@@ -377,8 +377,8 @@ def get_policy_value(policy, key):
     '''
 
     value = None
-    if word[0] == '[' and word[-1] == ']':
-        keys_list = word[1:].split('[')         # The list of keys to use to retrieve from the JSON
+    if key[0] == '[' and key[-1] == ']':
+        keys_list = key[1:].split('[')         # The list of keys to use to retrieve from the JSON
         value = policy
         for entry in keys_list:                # at least 2 keys (the first is the policy type)
             if isinstance(value,dict):
