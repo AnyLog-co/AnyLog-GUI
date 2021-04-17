@@ -302,6 +302,14 @@ def get_policy(user_name, selection, policy_type):
             policy = path_info["path"][index]["data"]
     
     return policy
+# -------------------------------------------------------------------------
+# Add selected Entry to the list of entries in the report
+# -------------------------------------------------------------------------
+def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
+    '''
+    Add edge entries to the entries queried in the report
+    '''
+    pass
 
 # -------------------------------------------------------------------------
 # Remove special chars that conflict with naming convention

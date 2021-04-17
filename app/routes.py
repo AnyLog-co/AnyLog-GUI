@@ -294,8 +294,8 @@ def tree( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
- 
-    gui_sub_tree = gui_view_.get_subtree( selection )    # Set the user navigation links
+    # Get the location in the Config file to set the user navigation links
+    gui_sub_tree = gui_view_.get_subtree( selection )
 
     command = app_view.get_tree_entree(gui_sub_tree, "query")   # get the command from the Config file
     user_name = session["username"]
@@ -393,6 +393,8 @@ def tree( selection = "" ):
     if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
         # These entries can be added to a report
         select_info['add'] =  "Add"
+        select_info['dbms_name'] = gui_sub_tree["dbms_name"]
+        select_info['table_name'] = gui_sub_tree["table_name"]
     
     return render_template('selection_table.html',  **select_info )
 
@@ -454,6 +456,13 @@ def selected( selection = "" ):
 
     if "Add" in selected_rows:
         # Add selected rows to report
+        user_name = session["username"]
+        dbms_name = selected_rows["dbms"]
+        table_name = selected_rows["table"]
+        for json_entry in policies:
+            # Get the location in the Config file to get the database name and table name
+            path_stat.add_entry_to_report(user_name, dbms_name, table_name, json_entry)
+
         return redirect(url_for('tree', selection='%s' % (selection)))
 
            
