@@ -65,7 +65,11 @@ def set_new_state(user_name, report_name, is_default):
 def get_report_selected(user_name):
     global active_state_
 
-    return active_state_[user_name]["selected"]
+    if user_name in active_state_:
+        report_name = active_state_[user_name]["selected"]
+    else:
+        report_name = "Default"
+    return report_name
 # -----------------------------------------------------------------------------------
 # Update the path with the entries visited by the user 
 # The path is maintained as a f(report)

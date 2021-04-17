@@ -578,7 +578,12 @@ def get_select_menu(selection = ""):
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
         return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
-    user_name = session['username']
+    # get the loggin name a name from the conf file
+    if 'username' in session:
+        user_name = session['username']
+    else:
+        user_name = gui_view_.get_base_info("name") or "AnyLog"
+
     report_name = path_stat.get_report_selected(user_name)
 
     select_info = {

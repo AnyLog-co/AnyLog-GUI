@@ -36,7 +36,7 @@
             <!-- Name of Report to use -->
             [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
             {%- if report_name -%}
-                <a href="{{ url_for('dynamic_report') }}">{{report}}</a>&nbsp]
+                <a href="{{ url_for('dynamic_report') }}">{{report_name}}</a>&nbsp]
             {%- else -%}
                 <a href="{{ url_for('dynamic_report') }}">Default</a>&nbsp]
             {%- endif -%}
