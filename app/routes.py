@@ -97,7 +97,7 @@ def login():
                 flash('AnyLog: Netowk node failed to authenticate {}'.format(form.username.data))
         
         if not user_connect_:
-            redirect(('/login'))        # Redo the login
+            return redirect(('/login'))        # Redo the login
 
         user_name = request.form['username']
         session['username'] = user_name
@@ -317,7 +317,7 @@ def tree( selection = "" ):
     except:
         flash('AnyLog: No network connection', category='error')
         user_connect_ = False
-        redirect(('/login'))        # Redo the login
+        return redirect(('/login'))        # Redo the login
 
 
     if response.status_code == 200:
@@ -325,10 +325,13 @@ def tree( selection = "" ):
         data_list = app_view.str_to_list(data)
         if not data_list:
             flash('AnyLog: Error in data format returned from node', category='error')
-            redirect(('/index'))        # Select a different path
+            return redirect((url_for('index')))        # Select a different path
+        if not len(data_list):
+            flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
+            return redirect((url_for('index')))        # Select a different path
     else:
         flash('AnyLog: No data satisfies the request', category='error')
-        redirect(('/index'))        # Select a different path
+        return redirect(('/index'))        # Select a different path
 
     if "bring" in al_command:
         # Only sections of the policy retrieved - no policy type
@@ -423,7 +426,7 @@ def selected( selection = "" ):
 
         child_name = selected_rows["Browse"]
         # Update the path for the currently used report
-        path_selection(select_info['parent_gui'], policy_id, retrieved_policy)
+        path_selection(select_info['parent_gui'], policy_id, retrieved_policy[0])   # Only one policy selected
 
         # Move with the selected child
         return redirect(url_for('tree', selection='%s@%s' % (selection, child_name)))
@@ -471,14 +474,14 @@ def get_json_policy( id ):
     # Run the query against the Query Node
     if not id or not isinstance(id, str):
         flash('AnyLog: Error in Policy ID', category='error')
-        redirect(('/index'))        # Select a different path
+        return redirect(('/index'))        # Select a different path
 
     al_cmd = "blockchain get * where id = %s" % id
     data = exec_al_cmd( al_cmd )
     json_list = app_view.str_to_list(data)
     if not json_list:
         flash('AnyLog: Error in data format returned for policy: %s' % id, category='error')
-        redirect(('/index'))        # Select a different path
+        return redirect(('/index'))        # Select a different path
 
     return json_list
 
@@ -490,7 +493,7 @@ def get_json_policy( id ):
 def path_selection(parent_menu, policy_id, data):
 
     if not 'username' in session:
-        redirect(('/login'))        # Redo the login - need a user name
+        return redirect(('/login'))        # Redo the login - need a user name
 
     user_name = session["username"]
 
@@ -532,14 +535,14 @@ def exec_al_cmd( al_cmd ):
     if rest_err:
         flash('AnyLog: %s' % error_msg, category='error')
         user_connect_ = False
-        redirect(('/login'))        # Redo the login
+        return redirect(('/login'))        # Redo the login
 
 
     if response.status_code == 200:
         data = response.text
     else:
         flash('AnyLog: No data satisfies the request', category='error')
-        redirect(('/index'))        # Select a different path
+        return redirect(('/index'))        # Select a different path
     return data
 
 # -----------------------------------------------------------------------------------

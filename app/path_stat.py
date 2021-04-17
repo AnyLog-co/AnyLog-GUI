@@ -211,7 +211,7 @@ def update_command(user_name, selection, command):
     if len(cmd_words) > 7:
         if cmd_words[3] == "where" and cmd_words[5] == '=':
             for index, word in enumerate(cmd_words[6:]):
-                if word == 'bring':
+                if word == 'bring' or word.startswith("bring."):
                     break       # End of WHERE part
                 value = None
                 if word[0] == '[' and word[-1] == ']':
@@ -223,10 +223,11 @@ def update_command(user_name, selection, command):
                             if parent_type in parent_policy:
                                 # pull the attribute value
                                 value = parent_policy
-                                for key in keys_list:
+                                for entry in keys_list:
                                     if isinstance(value,dict):
+                                        key = entry[:-1]    # Remove closing brakets
                                         if key in value:
-                                            value = value[key][:-1]
+                                            value = value[key]
                                         else:
                                             value = None
                                     else:
@@ -261,14 +262,17 @@ def get_policy(user_name, selection, policy_type):
 
     policy = None
 
-    if path_info["level"] >= len(selection_list):
+    parent_level = (len(selection_list) - 2)    # Note: parent level starts at 0
+
+    if path_info["level"] >= parent_level:
         # No parent policy with the path provided
 
-        for index, entry in enumerate(selection_list):
+        for index in range (parent_level + 1):
+            entry = selection_list[index]
             if path_info["path"][index]["name"] != entry:
                 break
         
-        if index == path_info["level"]:
+        if index == parent_level:
             policy = path_info["path"][index]["data"]
     
     return policy
