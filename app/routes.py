@@ -205,24 +205,18 @@ def alerts():
 @app.route('/configure')
 def configure():
 
-    form = ConfigForm()
-    if gui_view_.is_with_config():
+    select_info = get_select_menu()
+    select_info["form"] = ConfigForm()
+    select_info["title"] = title = 'Configure Network Connection'
 
-        user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menu, children_menu = gui_view_.get_dynamic_menu(None)     # web pages based on the navigation
-    else:
+    if not gui_view_.is_with_config():
         # Faild to recognize the JSON Config File
         if gui_view_.is_config_error():
             flash(gui_view_.get_config_error())
         
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
-
-    if form.validate_on_submit():
-        flash('AnyLog: Network Member Node {}:{}'.format(form.node_ip, form.node_port))
-
-    return render_template('configure.html', title = 'Configure Network Connection', form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+        
+    return render_template('configure.html', **select_info )
 
 @app.route('/set_config', methods = ['GET', 'POST'])
 def set_config():
@@ -240,9 +234,12 @@ def set_config():
         node_config_[company_name] = conf
         company_name_ = company_name
     
-    form = ConfigForm()         # New Form
+
+    select_info = get_select_menu()
+    select_info["title"] = 'Configure Network Connection'
+    select_info["form"] = ConfigForm()         # New Form
     
-    return render_template('configure.html', title = 'Configure Network Connection', form = form, private_gui = gui_view_.get_base_menu())
+    return render_template('configure.html',**select_info)
 # -----------------------------------------------------------------------------------
 # Network
 # -----------------------------------------------------------------------------------
