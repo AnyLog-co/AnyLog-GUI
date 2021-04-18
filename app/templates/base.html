@@ -56,19 +56,24 @@
         </div>
         <hr>
         <!-- ERROR Messages placed in Flush -->
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <ul>
-            <span style="color: red">
-               
-                {% for message in messages %}
-                <li>{{ message }}</li>
-                {% endfor %}
-
-            </span>
-        </ul>
-        {% endif %}
-        {% endwith %}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <table border="2">
+                        <tr>    <!-- table row  -->
+                            <td>
+                            <span style="color: red">
+                                Errors
+                            </span>
+                            </td>
+                        </tr>
+                        {% for message in messages %}
+                            <tr>
+                                <td>{{ message }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+            {% endwith %}
         {% block content %}
         {% endblock %}
 
