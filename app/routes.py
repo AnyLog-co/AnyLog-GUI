@@ -194,7 +194,7 @@ def deploy_report():
     for key, info in report_tables.items():
         if "Ignore." + key in form_info:
             continue        # Ignore this selection in the report
-        tables_list.append((info[dbms_name], info[table_name]))
+        tables_list.append((info["dbms_name"], info["table_name"]))
 
 
     # Get all the info to genet=rate a report
