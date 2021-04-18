@@ -52,7 +52,8 @@ def set_new_user(user_name):
         "reports" : {
                     },
         "selected"  :   "My_Report",
-        "path" :    []
+        "path" :    [],          # navigation as f(user)
+        "level" : 0,             # The current location in the path
     }
     set_new_state(user_name, "My_Report", True)
 
@@ -66,8 +67,6 @@ def set_new_state(user_name, report_name, is_default):
     global active_state_
 
     active_state_[user_name]['reports'][report_name] = { }
-    active_state_[user_name]['reports'][report_name]["path"] = [] # A list repreenting the path
-    active_state_[user_name]['reports'][report_name]["level"] = 0 # The current location in the list
     active_state_[user_name]['reports'][report_name]["entries"] = {} # The selected entries
 
     if is_default:
@@ -113,22 +112,20 @@ def update_status(user_name, parent_menu, id, data):
     global active_state_
     
     user_info = active_state_[user_name]
-
-    report_selected = user_info["selected"]
-    
-    path_info = user_info["reports"][report_selected]  # the report maintains the path info
+  
+    path_info = user_info["path"]  # the report maintains the path info
 
     # Set the path to the data location
     for index, step in enumerate(parent_menu):
         step_name = step[0]
-        if index >= len(path_info["path"]):
-            path_info["path"].append( { "name" : step_name, "data" : None })
-        elif not path_info["path"][index]["name"] != step_name:
-            path_info["path"][index]["name"] = step_name
-            path_info["path"][index]["data"] = None
+        if index >= len(path_info):
+            path_info.append( { "name" : step_name, "data" : None })
+        elif not path_info[index]["name"] != step_name:
+            path_info[index]["name"] = step_name
+            path_info[index]["data"] = None
     
-    path_info["path"][index]["data"] = data    # Keep the data of that layer
-    path_info["level"] = index  # Keep current location
+    path_info[index]["data"] = data    # Keep the data of that layer
+    user_info["level"] = index  # Keep current location
 
 # -----------------------------------------------------------------------------------
 # Return the list of reports associated with the user
@@ -340,7 +337,7 @@ def get_policy(user_name, selection, policy_type):
 
     report_selected = user_info["selected"]
     
-    path_info = user_info["reports"][report_selected]  # the report maintains the path info
+    path_info = user_info["path"]  # the user path info
 
     selection_list = selection.split('@')
 
@@ -348,16 +345,16 @@ def get_policy(user_name, selection, policy_type):
 
     parent_level = (len(selection_list) - 2)    # Note: parent level starts at 0
 
-    if path_info["level"] >= parent_level:
+    if user_info["level"] >= parent_level:
         # No parent policy with the path provided
 
         for index in range (parent_level + 1):
             entry = selection_list[index]
-            if path_info["path"][index]["name"] != entry:
+            if path_info[index]["name"] != entry:
                 break
         
         if index == parent_level:
-            policy = path_info["path"][index]["data"]
+            policy = path_info[index]["data"]
     
     return policy
 # -------------------------------------------------------------------------
@@ -398,7 +395,7 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
             # Not a duplicated node
             edge_selected[policy_id] = {}
             # The Path that determined the selected edge that is added to the report
-            edge_selected[policy_id]["path"] = copy.deepcopy(active_state_[user_name]['reports'][report_selected]["path"])
+            edge_selected[policy_id]["path"] = copy.deepcopy(active_state_[user_name]['path'])
 
             db_name = get_policy_value(json_entry, dbms_name)    # Pull the dbms name from the policy
             if db_name:
