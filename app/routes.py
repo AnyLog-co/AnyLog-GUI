@@ -164,6 +164,7 @@ def dynamic_report( report_name = "My_Report" ):
     # select visualization platform
     visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
     select_info['visualization'] = visualization
+    select_info['report_name'] = report_name
     
     return render_template('report_deploy.html',  **select_info )
 # -----------------------------------------------------------------------------------
@@ -175,11 +176,26 @@ def deploy_report():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
+    user_name = session['username']
+
     form_info = request.form
 
-    # Remove the tables flagged as removed from the report
+    report_name = form_info["report_name"]
 
-    # Get the data after the remove to a local structure and consider the data which is ignored
+    # Remove the tables flagged as removed from the report
+    for entry in form_info:
+        if entry.startswith("Remove."):
+            # User removes this selsction from the report
+            path_stat.remove_selected_entry(user_name, report_name, entry[7:])
+
+    # get the tables selected for the report
+    tables_list = []
+    report_tables = path_stat.get_report_entries(user_name, report_name)
+    for key, info in report_tables.items():
+        if "Ignore." + key in form_info:
+            continue        # Ignore this selection in the report
+        tables_list.append((info[dbms_name], info[table_name]))
+
 
     # Get all the info to genet=rate a report
 
@@ -210,7 +226,7 @@ def configure():
 
     select_info = get_select_menu()
     select_info["form"] = ConfigForm()
-    select_info["title"] = title = 'Configure Network Connection'
+    select_info["title"] = 'Configure Network Connection'
 
     if not gui_view_.is_with_config():
         # Faild to recognize the JSON Config File

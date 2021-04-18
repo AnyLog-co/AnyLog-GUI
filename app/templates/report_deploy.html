@@ -4,6 +4,8 @@
 
 <form action="{{url_for('deploy_report')}}" method="POST">
 
+    <input type="hidden" value={{report_name}} name=report_name>
+
     <h1>{{ title }}</h1>
 
     <table border="1">

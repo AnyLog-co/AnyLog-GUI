@@ -140,6 +140,29 @@ def get_user_reports(user_name):
     return list(user_reports.keys())
 
 # -----------------------------------------------------------------------------------
+# Get the selection entries for the report
+# -----------------------------------------------------------------------------------
+def get_report_entries(user_name, report_name):
+    if report_name and report_name in active_state_[user_name]["reports"]:
+        report_entries = active_state_[user_name]["reports"][report_name]['entries']
+    else:
+        report_entries = None
+    return report_entries
+
+# -----------------------------------------------------------------------------------
+# Remove an entry from the report
+# -----------------------------------------------------------------------------------
+def remove_selected_entry(user_name, report_name, entry):
+    '''
+    Delete the entry from the list of entries in the report.
+    '''
+
+    if report_name and report_name in active_state_[user_name]["reports"]:
+        report_entries = active_state_[user_name]["reports"][report_name]
+        if entry in report_entries['entries']:
+            del report_entries['entries'][entry]
+
+# -----------------------------------------------------------------------------------
 # Configure a new report or change report setting
 # -----------------------------------------------------------------------------------
 def set_report(user_name, form_info):
@@ -334,8 +357,6 @@ def get_policy(user_name, selection, policy_type):
     global active_state_
     
     user_info = active_state_[user_name]
-
-    report_selected = user_info["selected"]
     
     path_info = user_info["path"]  # the user path info
 
