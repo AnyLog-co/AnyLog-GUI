@@ -54,5 +54,6 @@ class ConfDynamicReport(FlaskForm):
     rename = StringField('Rename Report', default="")
     make_default = BooleanField('Set as Default', default=False)
     reset = BooleanField('Reset Report', default=False)
+    delete = BooleanField('Delete Report', default=False)
     submit = SubmitField('Apply Changes')
 

@@ -73,6 +73,21 @@ def set_new_state(user_name, report_name, is_default):
     if is_default:
         active_state_[user_name]['selected'] = report_name
 
+# -----------------------------------------------------------------------------------
+# Delete a report
+# -----------------------------------------------------------------------------------  
+def delete_report(user_name, report_name):
+    user_reports = active_state_[user_name]['reports']
+    if len(user_reports) == 1:
+        # Only reset the report as one report needs to be available
+        set_new_state(user_name, report_name, True)
+    else:
+        del user_reports[report_name]
+        if active_state_[user_name]['selected'] == report_name:
+            # The deleted report is the default - set a different report as the default
+            next_report = user_reports.keys()[0]
+            active_state_[user_name]['selected'] == next_report
+
 
 # -----------------------------------------------------------------------------------
 # Get the report selected by the user
@@ -135,6 +150,7 @@ def set_report(user_name, form_info):
     Configure a new report or change report setting
     ''' 
 
+    selection_counter = 0
     ret_val = True
     err_msg = None
     if 'report_name' in form_info:
@@ -153,49 +169,71 @@ def set_report(user_name, form_info):
         new_name = "" 
 
     if 'make_default' in form_info:
+        selection_counter += 1
         is_default = form_info['make_default']
     else:
         is_default = False
 
     if 'reset' in form_info:
+        selection_counter += 1
         reset = form_info['reset']
     else:
         reset = False
+
+    if 'delete' in form_info:
+        selection_counter += 1
+        is_delete = form_info['delete']
+    else:
+        is_delete = False
+
 
     if new_report and report_name:
         ret_val = False
         err_msg = "Duplicate selections: select existing report or new report"
     else:
-
-        if new_report:
-            set_new_state(user_name, new_report, is_default)
-        elif reset:
-            set_new_state(user_name, report_name, is_default)
-        elif new_name:
-            # replace the report info to a different name
-            
-            user_reports = active_state_[user_name]['reports']
-            if report_name in user_reports:
-                if new_name in user_reports:
+        if selection_counter == 3 or (is_delete and (selection_counter != 1 or new_report)):
+            ret_val = False
+            err_msg = "Wrong selections: conflicting report selections"
+        else:
+            if is_delete:
+                if not report_name:
                     ret_val = False
-                    err_msg = "Duplicate report name: %s" % report_name
+                    err_msg = "Report not selected"
                 else:
-                    report_struct = user_reports[report_name]
-                    active_state_[user_name]['reports'][new_name] = report_struct
-                    del active_state_[user_name]['reports'][report_name]
+                    delete_report(user_name, report_name)
+            elif new_report:
+                if get_report_info(user_name, report_name):
+                    ret_val = False
+                    err_msg = "Duplicate report name"
+                else:
+                    set_new_state(user_name, new_report, is_default)
+            elif reset:
+                set_new_state(user_name, report_name, is_default)
+            elif new_name:
+                # replace the report info to a different name
+                
+                user_reports = active_state_[user_name]['reports']
+                if report_name in user_reports:
+                    if new_name in user_reports:
+                        ret_val = False
+                        err_msg = "Duplicate report name: %s" % report_name
+                    else:
+                        report_struct = user_reports[report_name]
+                        active_state_[user_name]['reports'][new_name] = report_struct
+                        del active_state_[user_name]['reports'][report_name]
 
-                    if active_state_[user_name]['selected'] == report_name:
-                        # keep default if old name was the default
-                        active_state_[user_name]['selected'] = new_name
-            else:
-                ret_val = False
-                err_msg = "Wrong report name: %s" % report_name
+                        if active_state_[user_name]['selected'] == report_name:
+                            # keep default if old name was the default
+                            active_state_[user_name]['selected'] = new_name
+                else:
+                    ret_val = False
+                    err_msg = "Wrong report name: %s" % report_name
 
-            if ret_val and is_default:
-                active_state_[user_name]['selected'] = new_name
+                if ret_val and is_default:
+                    active_state_[user_name]['selected'] = new_name
 
-        elif is_default:
-            active_state_[user_name]['selected'] = report_name
+            elif is_default:
+                active_state_[user_name]['selected'] = report_name
 
     return [ret_val, err_msg]
 

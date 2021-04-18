@@ -179,6 +179,11 @@ def deploy_report():
 
     form_info = request.form
 
+    # Remove the tables flagged as removed from the report
+
+    # Get the data after the remove to a local structure and consider the data which is ignored
+
+    # Get all the info to genet=rate a report
 
     return redirect(("http://127.0.0.1:3000/?orgId=1"))      
 # -----------------------------------------------------------------------------------
@@ -675,15 +680,16 @@ def configure_reports():
 
     form = ConfDynamicReport()
 
-    user_name = session["username"]
-    form.report_name.choices = path_stat.get_user_reports(user_name)    # set list with report names
-
     if form.report_name.data or form.new_report.data:   # User need to select existing report or new report
         ret_val, err_msg = path_stat.set_report(user_name, request.form.to_dict())   # Configure a new report or change report setting
         if not ret_val:
             if err_msg:
                 flash('AnyLog: %s' % err_msg, category='error')
-            return redirect(url_for('configure_reports'))
+        if not err_msg:
+            return redirect(url_for('configure_reports')) # After handling a successful form request, redirect to the page to get a fresh state
+
+    # Get the list of the user report to the GUI report menu
+    form.report_name.choices = path_stat.get_user_reports(user_name)    # set list with report names
 
     select_info = get_select_menu()
     select_info['title'] = "Configure Reports"
