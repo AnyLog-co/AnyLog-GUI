@@ -30,16 +30,29 @@
     <hr>
     <hr>
     <br>
+    <!-- Select Type of report  -->
     {% for option in options_list %}
         <input type="radio" id={{option}}  name={{option}}  value={{option}}> <!-- Select functionality  -->
         <label for={{option}}>{{option}}</label>&nbsp
     {% endfor %}
     <br><br>
+
+    <!-- Select Dates  -->
     <label for="start-date">Start: </label>
     <input type="datetime-local" id="start-date" name="start-date">
     &nbsp&nbsp&nbsp
     <label for="end-date">End:   </label>
     <input type="datetime-local" id="end-date" name="end-date">
+
+    <br><br>
+    <!-- Select Visualization Tool  -->
+    {% for option in visualization %}
+        <input type="radio" id={{option}}  name={{option}}  value={{option}}> 
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+    <br><br>
+
+    <input type="submit" value=submit name=submit>  
 
 </form>
     

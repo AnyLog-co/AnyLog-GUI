@@ -126,8 +126,8 @@ def login():
 #
 # Called from - base.html
 # -----------------------------------------------------------------------------------
-@app.route('/dynamic_report/')
-@app.route('/dynamic_report/<string:report_name>')
+@app.route('/dynamic_report/', methods={'GET','POST'})
+@app.route('/dynamic_report/<string:report_name>', methods={'GET','POST'})
 def dynamic_report( report_name = "My_Report" ):
     '''
     View the report being used
@@ -159,10 +159,14 @@ def dynamic_report( report_name = "My_Report" ):
     select_info['table'] = al_table
     select_info['title'] = "Report: %s" % report_name
 
+    # select grafics options
     options_list = ["Min", "Max", "Avg", "Count", "Diff"]
     select_info['options_list'] = options_list
-    
 
+    # select visualization platform
+    visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
+    select_info['visualization'] = visualization
+    
     return render_template('report_deploy.html',  **select_info )
 
 # -----------------------------------------------------------------------------------
