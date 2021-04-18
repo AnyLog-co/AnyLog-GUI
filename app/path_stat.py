@@ -51,10 +51,10 @@ def set_new_user(user_name):
     active_state_[user_name] = { 
         "reports" : {
                     },
-        "selected"  :   "Default",
+        "selected"  :   "My_Report",
         "path" :    []
     }
-    set_new_state(user_name, "Default", True)
+    set_new_state(user_name, "My_Report", True)
 
 # -----------------------------------------------------------------------------------
 # Reset or start a new state

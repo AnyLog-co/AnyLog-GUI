@@ -128,7 +128,7 @@ def login():
 # -----------------------------------------------------------------------------------
 @app.route('/dynamic_report/')
 @app.route('/dynamic_report/<string:report_name>')
-def dynamic_report( report_name = "Default" ):
+def dynamic_report( report_name = "My_Report" ):
     '''
     View the report being used
     Called from - base.html

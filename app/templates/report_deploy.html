@@ -26,10 +26,21 @@
         </tr>
         {% endfor %}
     </table>
-
+    <br>
+    <hr>
+    <hr>
+    <br>
     {% for option in options_list %}
-        <td><input type="radio" name={{option}}></td> <!-- Select functionality  -->
+        <input type="radio" id={{option}}  name={{option}}  value={{option}}> <!-- Select functionality  -->
+        <label for={{option}}>{{option}}</label>&nbsp
     {% endfor %}
+    <br><br>
+    <label for="start-date">Start: </label>
+    <input type="datetime-local" id="start-date" name="start-date">
+    &nbsp&nbsp&nbsp
+    <label for="end-date">End:   </label>
+    <input type="datetime-local" id="end-date" name="end-date">
+
 </form>
     
 {% endblock %}
