@@ -678,8 +678,9 @@ def configure_reports():
 
     form = ConfDynamicReport()
 
-    if form.report_name.data or form.new_report.data or form.rename.data:   # User need to select existing report or new report
-        ret_val, err_msg = path_stat.set_report(user_name, request.form.to_dict())   # Configure a new report or change report setting
+    form_info = request.form.to_dict()
+    if "submit" in form_info:   # User need to select existing report or new report
+        ret_val, err_msg = path_stat.set_report(user_name, form_info)   # Configure a new report or change report setting
         if not ret_val:
             if err_msg:
                 flash('AnyLog: %s' % err_msg, category='error')

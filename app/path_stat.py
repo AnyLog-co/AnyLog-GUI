@@ -203,7 +203,7 @@ def set_report(user_name, form_info):
             err_msg = "Wrong selections: conflicting report selections"
         else:
             # Test report not selected
-            if not report_name and (is_delete or reset or new_name):
+            if not report_name and (is_delete or reset or new_name) or (is_default and not report_name and not new_name):
                 ret_val = False
                 err_msg = "Report name not selected"
             else:
