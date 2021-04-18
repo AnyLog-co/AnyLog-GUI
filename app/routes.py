@@ -168,7 +168,19 @@ def dynamic_report( report_name = "My_Report" ):
     select_info['visualization'] = visualization
     
     return render_template('report_deploy.html',  **select_info )
+# -----------------------------------------------------------------------------------
+# Processing form: report_deploy.html
+# -----------------------------------------------------------------------------------
+@app.route('/deploy_report', methods={'GET','POST'})
+def deploy_report():
 
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    form_info = request.form
+
+
+    return redirect(("http://127.0.0.1:3000/?orgId=1"))      
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------

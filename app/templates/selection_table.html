@@ -11,8 +11,6 @@
 <form action="{{url_for('selected')}}" method="POST">
 {% endif %}
 
-
-<form action="{{url_for('selected')}}" method="POST">
     {% for table in tables_list %}
     <table border="1">
         <tr>    <!-- table row  -->
@@ -66,7 +64,5 @@
     {% endif %}
 
 </form>
-
-
-    
+   
 {% endblock %}
