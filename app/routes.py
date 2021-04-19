@@ -236,7 +236,13 @@ def configure():
         
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
 
-    visualize.test_connection( "grafana", "http://localhost:3000" )
+    # Test connectors to the Visualization platforms
+    platforms = gui_view_.get_base_info("visualization")
+    for entry in platforms:
+        ret_val, err_msg = visualize.test_connection( entry[0], entry[1] )  # Platform name + connect_string
+        if not ret_val:
+            flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
+
         
     return render_template('configure.html', **select_info )
 

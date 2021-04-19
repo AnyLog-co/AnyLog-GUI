@@ -2,7 +2,7 @@
     "gui" : {
             "name" : "Orics",
             "query_node" : "http://10.0.0.78:7849",
-            "visualization" : ["Grafana", "Power BI", "Excel"],
+            "visualization" : [["Grafana", "http://localhost:3000"], ["Power BI", "http://localhost:3001"], ["Excel", "http://localhost:3002"]],
             "url_pages"  : [
                                 ["Company", "/companies"],
                                 ["Reports", "http://127.0.0.1:3000"]

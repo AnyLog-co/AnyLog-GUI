@@ -21,7 +21,7 @@ def test_connection( grafana_url:str ):
     response, error_msg = rest_api.do_get(url, headers)
 
     if response and response.status_code == 200:
-        ret_val = True:
+        ret_val = True
     else:
         ret_val = False
     
