@@ -1,6 +1,6 @@
 <html>
     
-    <!-- process: title (for tab) + user_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
+    <!-- process: title (for tab) + company_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
     <head>
         <!-- Tab Display -->
         {% if title %}
@@ -17,24 +17,33 @@
             <a href="{{ url_for('alerts') }}">Alerts</a>&nbsp
             <a href="{{ url_for('configure') }}">Config</a>&nbsp
             <a href="{{ url_for('network') }}">Network</a>&nbsp
-            <a href="{{ url_for('network') }}">Policies</a>&nbsp
+            <a href="{{ url_for('policies') }}">Policies</a>&nbsp
             <a href="{{ url_for('logout') }}">logout</a>&nbsp
         </div>
         <div>
-            {{ user_name }}:&nbsp
-            <!-- Customer specific pages -->
-            {% if user_gui %}
-                {%- for text, url_target in user_gui -%}
-                   
-                    <a href="{{ url_target }}">{{text}}</a>&nbsp
+            {% if company_name %}
+                {{ company_name }}:&nbsp
+                <!-- Customer specific pages -->
+                {% if user_gui %}
+                    {%- for text, url_target in user_gui -%}
                     
-                {%- endfor -%}
+                        <a href="{{ url_target }}">{{text}}</a>&nbsp
+                        
+                    {%- endfor -%}
+                {% endif %}
             {% endif %}
-            <a href="{{ url_for('reports') }}">Reports</a>&nbsp
         </div>
         <div>
+            <!-- Name of Report to use -->
+            [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
+            {%- if report_name -%}
+                <a href="{{ url_for('dynamic_report') }}{{report_name}}">{{report_name}}</a>&nbsp]
+            {%- else -%}
+                <a href="{{ url_for('dynamic_report') }}Default">Default</a>&nbsp]
+            {%- endif -%}
+
             <!-- Home Page -->
-            <a href="{{ url_for('index') }}">Home</a>&nbsp
+            <a href="{{ url_for('index') }}">Home</a>
             <!-- Dynamic Parent Pages - based on the config (JSON) file -->
             {% if parent_gui %}
                 {%- for text, url_target in parent_gui -%}
@@ -43,36 +52,30 @@
                     
                 {%- endfor -%}
             {% endif %}
-            <!-- Dynamic Children Pages - based on the config (JSON) file -->
-            {% if children_gui %}
-                [&nbsp    
-                {%- for text, url_target in children_gui -%}
-                   
-                    <a href="{{ url_target }}">{{text}}</a>&nbsp
-                    
-                {%- endfor -%}
-                ]
-            {%- endif -%}
-            <!-- Name of Report to use -->
-            [<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
-            {%- if report -%}
-                <a href="{{ url_for('dynamic_report') }}">{{report}}</a>&nbsp]
-            {%- else -%}
-                <a href="{{ url_for('dynamic_report') }}">Default</a>&nbsp]
-            {%- endif -%}
         </div>
         <hr>
         <!-- ERROR Messages placed in Flush -->
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <ul>
-            {% for message in messages %}
-            <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% endwith %}
-        {% block content %}{% endblock %}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <table border="2">
+                        <tr>    <!-- table row  -->
+                            <td>
+                            <span style="color: red">
+                                Errors
+                            </span>
+                            </td>
+                        </tr>
+                        {% for message in messages %}
+                            <tr>
+                                <td>{{ message }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+            {% endwith %}
+        {% block content %}
+        {% endblock %}
+
     </body>
 </html>
 

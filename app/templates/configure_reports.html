@@ -5,7 +5,7 @@
 {% block content %}
 
     <h1>{{title}}</h1>
-    <form action="{{ url_for('al_command') }}" method="post">
+    <form action="" method="post">
         <p>
             {{ form.report_name.label }}<br>
             {{ form.report_name(size = 4) }}<br>
@@ -21,8 +21,9 @@
  
         <p>{{ form.make_default() }} {{form.make_default.label}}</p>
         <p>{{ form.reset() }} {{form.reset.label}}</p>
+        <p>{{ form.delete() }} {{form.delete.label}}</p>
 
-        <p>{{ form.deploy() }}</p>
+        <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}
 

@@ -19,9 +19,12 @@ from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
+from app.forms import Policies
 
 from app.entities import Item
 from app.entities import AnyLogItem
+
+from app.entities import AnyLogTable
 
 from config import Config
 
@@ -45,8 +48,8 @@ query_node_ = None
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
+# Example Table: https://progbook.org/shop5.html
 # -----------------------------------------------------------------------------------
-
 @app.route('/')
 @app.route('/index')
 def index():
@@ -54,12 +57,10 @@ def index():
     if not user_connect_:
         return redirect(('/login'))        # start with Login
 
-   
-    user_name = gui_view_.get_base_info("name")                 # The user name
-    user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menu, children_menu = gui_view_.get_dynamic_menu(None)     # web pages based on the navigation
-
-    return render_template('main.html', title='Home',user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    select_info = get_select_menu()
+    select_info['title'] = "Home"
+    
+    return render_template('main.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Login
 # -----------------------------------------------------------------------------------
@@ -95,10 +96,11 @@ def login():
                 flash('AnyLog: Netowk node failed to authenticate {}'.format(form.username.data))
         
         if not user_connect_:
-            redirect(('/login'))        # Redo the login
+            return redirect(('/login'))        # Redo the login
 
-        session['username'] = request.form['username']
-
+        user_name = request.form['username']
+        session['username'] = user_name
+        path_stat.set_new_user( user_name )
 
         return redirect(('/index'))     # Go to main page
 
@@ -107,18 +109,97 @@ def login():
     else:
         title_str = 'Sign In'
 
-    if not 'username' in session:
-        redirect(('/login'))        # Redo the login - need a user name
-    
+    if 'username' in session:
+        user_name = session['username']
+        if not path_stat.is_with_user( user_name ):
+            path_stat.set_new_user( user_name )
+
+    select_info = get_select_menu()
+    select_info['title'] = title_str
+    select_info['form'] = form
+
+    return render_template('login.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# View the report structure being dynamically build by navigation
+#
+# Called from - base.html
+# -----------------------------------------------------------------------------------
+@app.route('/dynamic_report/', methods={'GET','POST'})
+@app.route('/dynamic_report/<string:report_name>', methods={'GET','POST'})
+def dynamic_report( report_name = "My_Report" ):
+    '''
+    View the report being used
+    Called from - base.html
+    '''
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
     user_name = session['username']
-    if not path_stat.is_with_user( user_name ):
-        path_stat.set_new_user( user_name )
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    report_data = path_stat.get_report_info(user_name, report_name)
+    if not report_data or not len(report_data["entries"]):
+        flash("AnyLog: Report '%s' has no selections" % report_name)
+        return redirect(url_for('index')) 
 
-    return render_template('login.html', title = title_str, form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+    list_columns = ["ID", "DBMS", "Table"]
+    table_rows = []
+    report_entries = report_data["entries"]     # The selected info
+    for key, entry_info in report_entries.items():
+        table_rows.append((key, entry_info["dbms_name"], entry_info["table_name"]))
 
+    # Remove - deletes the table from the report
+    # Ignore - ignores the table from this run
+    extra_columns =  [('Remove','checkbox'), ('Ignore','checkbox')]
+ 
+    al_table = AnyLogTable("Report: %s" % report_name, list_columns, None, table_rows, extra_columns)
 
+    select_info = get_select_menu()
+    select_info['table'] = al_table
+    select_info['title'] = "Report: %s" % report_name
+
+    # select grafics options
+    options_list = ["Min", "Max", "Avg", "Count", "Diff"]
+    select_info['options_list'] = options_list
+
+    # select visualization platform
+    visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
+    select_info['visualization'] = visualization
+    select_info['report_name'] = report_name
+    
+    return render_template('report_deploy.html',  **select_info )
+# -----------------------------------------------------------------------------------
+# Processing form: report_deploy.html
+# -----------------------------------------------------------------------------------
+@app.route('/deploy_report', methods={'GET','POST'})
+def deploy_report():
+
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    user_name = session['username']
+
+    form_info = request.form
+
+    report_name = form_info["report_name"]
+
+    # Remove the tables flagged as removed from the report
+    for entry in form_info:
+        if entry.startswith("Remove."):
+            # User removes this selsction from the report
+            path_stat.remove_selected_entry(user_name, report_name, entry[7:])
+
+    # get the tables selected for the report
+    tables_list = []
+    report_tables = path_stat.get_report_entries(user_name, report_name)
+    for key, info in report_tables.items():
+        if "Ignore." + key in form_info:
+            continue        # Ignore this selection in the report
+        tables_list.append((info["dbms_name"], info["table_name"]))
+
+    # Get all the info to genet=rate a report
+
+    return redirect(("http://127.0.0.1:3000/?orgId=1"))      
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------
@@ -127,9 +208,10 @@ def reports():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    select_info = get_select_menu()
+    select_info['title'] = 'Orics'
 
-    return render_template('reports.html', title = 'Orics', user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    return render_template('reports.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Alerts
 # -----------------------------------------------------------------------------------
@@ -142,24 +224,18 @@ def alerts():
 @app.route('/configure')
 def configure():
 
-    form = ConfigForm()
-    if gui_view_.is_with_config():
+    select_info = get_select_menu()
+    select_info["form"] = ConfigForm()
+    select_info["title"] = 'Configure Network Connection'
 
-        user_name = gui_view_.get_base_info("name")                 # The user name
-        user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menu, children_menu = gui_view_.get_dynamic_menu(None)     # web pages based on the navigation
-    else:
+    if not gui_view_.is_with_config():
         # Faild to recognize the JSON Config File
         if gui_view_.is_config_error():
             flash(gui_view_.get_config_error())
         
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
-
-    if form.validate_on_submit():
-        flash('AnyLog: Network Member Node {}:{}'.format(form.node_ip, form.node_port))
-
-    return render_template('configure.html', title = 'Configure Network Connection', form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+        
+    return render_template('configure.html', **select_info )
 
 @app.route('/set_config', methods = ['GET', 'POST'])
 def set_config():
@@ -177,9 +253,12 @@ def set_config():
         node_config_[company_name] = conf
         company_name_ = company_name
     
-    form = ConfigForm()         # New Form
+
+    select_info = get_select_menu()
+    select_info["title"] = 'Configure Network Connection'
+    select_info["form"] = ConfigForm()         # New Form
     
-    return render_template('configure.html', title = 'Configure Network Connection', form = form, private_gui = gui_view_.get_base_menu())
+    return render_template('configure.html',**select_info)
 # -----------------------------------------------------------------------------------
 # Network
 # -----------------------------------------------------------------------------------
@@ -190,13 +269,20 @@ def network():
 
 
     target_node = get_target_node()
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
     
     form = CommandsForm()         # New Form
+    
+    select_info = get_select_menu()
+    select_info['title'] = 'Network Commands'
+    select_info['form'] = form
+    select_info['def_dest'] = target_node
 
-    return render_template('commands.html', title = 'Network Commands', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
 
+    return render_template('commands.html', **select_info)
 
+# -----------------------------------------------------------------------------------
+# AnyLog Commands
+# -----------------------------------------------------------------------------------
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
@@ -205,7 +291,9 @@ def al_command():
     }
 
     
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    
+    select_info = get_select_menu()
+ 
     target_node = get_target_node()
 
 
@@ -221,23 +309,30 @@ def al_command():
             data = response.text
             data = data.replace('\r','')
             text = data.split('\n')
-            return render_template('output.html', title = 'Network Node Reply', text=text, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+
+            select_info['title'] = 'Network Node Reply'
+            select_info['text'] = text
+
+            return render_template('output.html', **select_info)
   
     
-    form = CommandsForm()         # New Form
-
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    select_info['title'] = 'Network Status'
+    select_info['form'] = CommandsForm()         # New Form
+    select_info['def_dest'] = target_node
     
-    return render_template('network.html', title = 'Network Status', form = form, def_dest=target_node, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    return render_template('network.html', **select_info)
 
+# -----------------------------------------------------------------------------------
+# Install New Node
+# -----------------------------------------------------------------------------------
 @app.route('/install', methods = ['GET', 'POST'])
 def install():
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
-  
-    form = InstallForm()         # New Form
-    return render_template('install.html', title = 'Install Network Node', form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    select_info = get_select_menu()
+    select_info['title'] = 'Install Network Node'
+    select_info['form'] = InstallForm()
 
+    return render_template('install.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
@@ -252,23 +347,27 @@ def tree( selection = "" ):
     global user_connect_
     global gui_view_
 
+
     level = selection.count('@') + 1
     # Need to login before navigating
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    gui_sub_tree = gui_view_.get_subtree( selection )    # Set the user navigation links
+    # Get the location in the Config file to set the user navigation links
+    gui_sub_tree = gui_view_.get_subtree( selection )
 
-    al_command = app_view.get_tree_entree(gui_sub_tree, "query")
+    command = app_view.get_tree_entree(gui_sub_tree, "query")   # get the command from the Config file
+    user_name = session["username"]
+    al_command = path_stat.update_command(user_name, selection, command)   # Update the command with the parent info
 
     if not al_command:
-        flash("AnyLog: Missing AnyLog Command in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
         return redirect(('/index'))        # Show all user select options
 
     # Get the columns names of the table to show
     list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
     if not list_columns:
-        flash("AnyLog: Missing 'list_columns' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        flash("AnyLog: Missing 'list_columns' Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
         return redirect(('/index'))        # Show all user select options
 
    # Get the keys to pull data from the JSON reply
@@ -278,7 +377,6 @@ def tree( selection = "" ):
         return redirect(('/index'))        # Show all user select options
        
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
     target_node = get_target_node()
 
 
@@ -294,7 +392,7 @@ def tree( selection = "" ):
     except:
         flash('AnyLog: No network connection', category='error')
         user_connect_ = False
-        redirect(('/login'))        # Redo the login
+        return redirect(('/login'))        # Redo the login
 
 
     if response.status_code == 200:
@@ -302,79 +400,147 @@ def tree( selection = "" ):
         data_list = app_view.str_to_list(data)
         if not data_list:
             flash('AnyLog: Error in data format returned from node', category='error')
-            redirect(('/index'))        # Select a different path
+            return redirect((url_for('index')))        # Select a different path
+        if not len(data_list):
+            flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
+            return redirect((url_for('index')))        # Select a different path
     else:
         flash('AnyLog: No data satisfies the request', category='error')
-        redirect(('/index'))        # Select a different path
+        return redirect(('/index'))        # Select a different path
+
+    if "bring" in al_command:
+        # Only sections of the policy retrieved - no policy type
+        # The table info is pulled from the bring command setup
+        policy_type = None
+    else:
+        # The table info is pulled from the source JSON policy
+        cmd_list = al_command.split(' ', 3)
+        if len(cmd_list) == 4 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
+            policy_type = cmd_list[2]
+        else:
+            policy_type = None
 
     # Set table info to present in form
-
     table_rows = []
     for entry in data_list:
         columns_list = []
+        
         for key in list_keys:
             # Validate values in reply
-            if key in entry:
+            if policy_type and policy_type in entry and key in entry[policy_type]:
+                # Get the table data from the source Policy
+                value = entry[policy_type][key]
+            elif key in entry:
+                # Get the table data from the json resulting from the bring
                 value = entry[key]
             else:
                 value = ""
-            columns_list.append((key, str(value)))
+            columns_list.append(str(value))
         
         # Set a list of table entries
-        table_rows.append(AnyLogItem(columns_list))
+        table_rows.append(columns_list)
 
+
+    select_info = get_select_menu(selection)
+    extra_columns =  [('Select','checkbox')]
+    al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
+
+    select_info['selection'] = selection
+    select_info['tables_list'] = [al_table]
+    select_info['submit'] =  "View"
+
+    if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+        # These entries can be added to a report
+        select_info['add'] =  "Add"
+        select_info['dbms_name'] = gui_sub_tree["dbms_name"]
+        select_info['table_name'] = gui_sub_tree["table_name"]
     
-    # Create a class dynamically with the needed attributes
-    attributes = {}
-    for entry in list_columns:
-        attributes[entry.lower()] = Col(entry)
+    return render_template('selection_table.html',  **select_info )
 
-    if "id" in list_keys:
-        # Data includes an id of the JSON object
-        args = dict(id='id')
-        extra_args = {
-            'selection' : selection
-            }
-        # Let the user select view to see the JSON
-        attributes ["Select"] = LinkCol('Select', 'view_policy', url_kwargs=args, url_kwargs_extra=extra_args)
-
-        # If node has children - show the childrens
-        if app_view.is_edge_node(gui_sub_tree):
-            # provide select option
-            args = dict(id='id')
-            extra_args = {
-                'selection' : selection
-                }
-            # Include this edge node in the report
-            attributes ["Include"] = LinkCol('Include', 'edge_include', url_kwargs=args, url_kwargs_extra=extra_args)
-        
-    TableClass = type ( 'AnyLogTable', (Table,), attributes)
-    table = TableClass(table_rows)
-    table.border = True
-
-  
-    return render_template('entries_list.html', table = table,  user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
 # -----------------------------------------------------------------------------------
-# Select the children elements or move to parent
+# Process selected Items from a table
+# Organize the selected data and place the parent info in the path as f(report)
 # -----------------------------------------------------------------------------------
-@app.route('/edge_include/<string:selection>@<string:id>')
-def edge_include( selection, id ):
+@app.route('/selected', methods={'GET','POST'})
+@app.route('/selected/<string:selection>', methods={'GET','POST'})
+def selected( selection = "" ):
     '''
-    Add the edge to the report
+    Called from selection_table.html
     '''
+    global query_node_
+    global user_connect_
+    global gui_view_
+
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name = session["username"]
-    path_stat.add_report_entry(user_name, selection, id)
+    selected_rows = request.form
 
-    return redirect(url_for('tree', selection=selection))   # Return to the edge list of entries
+    if not selection:
+        # Get that selection that is in the form
+        if 'selection' in selected_rows:
+            selection = selected_rows['selection']
+        else:
+            return redirect(url_for('index')) 
+
+    policies = []
+    for key in selected_rows:    
+        if key[:7] == "Select.":
+            policy_id = key[7:]
+            retrieved_policy = get_json_policy(policy_id)
+            if retrieved_policy:
+                policies.append(retrieved_policy[0])
+
+    if not len(policies):
+        # Nothing was selected - redo
+        flash('AnyLog: Missing entry selection', category='error')
+        return redirect(url_for('tree', selection=selection)) 
+
+    select_info = get_select_menu(selection)
+
+    if "Browse" in selected_rows:
+        # Put the key of the parent in the tree
+        if len(policies) > 1:
+            flash('AnyLog: Only one entry can be selected for browsing', category='error')
+            return redirect(url_for('tree', selection=selection))
+
+        child_name = selected_rows["Browse"]
+        # Update the path for the currently used report
+        # Place the parent info in the path as f(report)
+
+        path_selection(select_info['parent_gui'], policy_id, retrieved_policy[0])   # Only one policy selected
+
+        # Move with the selected child
+        return redirect(url_for('tree', selection='%s@%s' % (selection, child_name)))
+
+    if "Add" in selected_rows:
+        # Add selected rows to report
+        user_name = session["username"]
+        dbms_name = selected_rows["dbms"]
+        table_name = selected_rows["table"]
+        for json_entry in policies:
+            # Get the location in the Config file to get the database name and table name
+            path_stat.add_entry_to_report(user_name, dbms_name, table_name, json_entry)
+
+        return redirect(url_for('tree', selection='%s' % (selection)))
+
+           
+    # organize JSON entries to display
+    data_list = []
+    for json_entry in policies:
+        json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
+        data_list.append(json_string)  #  transformed to a JSON string.
+
+    select_info['text'] = data_list
+    
+    # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
+
+    return render_template('output.html', **select_info )
 
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
 # -----------------------------------------------------------------------------------
-@app.route('/view_policy/<string:selection>@<string:id>')
-def view_policy( selection, id ):
+def get_json_policy( id ):
 
         # Need to login before navigating
     if not user_connect_:
@@ -384,44 +550,37 @@ def view_policy( selection, id ):
     # Run the query against the Query Node
     if not id or not isinstance(id, str):
         flash('AnyLog: Error in Policy ID', category='error')
-        redirect(('/index'))        # Select a different path
+        return redirect(('/index'))        # Select a different path
 
     al_cmd = "blockchain get * where id = %s" % id
     data = exec_al_cmd( al_cmd )
     json_list = app_view.str_to_list(data)
     if not json_list:
-        flash('AnyLog: Error in data format returned from node', category='error')
-        redirect(('/index'))        # Select a different path
+        flash('AnyLog: Error in data format returned for policy: %s' % id, category='error')
+        return redirect(('/index'))        # Select a different path
 
-    # organize JSON entries to display
-    data_list = []
-    for json_entry in json_list:
-        json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
-        data_list.append(json_string)  #  transformed to a JSON string.
-
-    user_name, user_menu, parent_menu, children_menu = get_select_menu(selection)
-
-    path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
-
-    # Make title from the path
-    title = ""
-    for parent in parent_menu:
-        title += parent[0] + " : "
-
-   
-    return render_template('output.html', title = title, text=data_list, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu )
+    return json_list
 
 # -----------------------------------------------------------------------------------
-# Save the path, the key and the data on the report used
+# User navigation in the metadata is stored in an object assigned to the report.
+# The path is the node inf as f(level).
+# The process saves the path, the key and the data selected.
 # -----------------------------------------------------------------------------------
-def path_selection(parent_menu, id, data):
+def path_selection(parent_menu, policy_id, data):
+
+    '''
+    Place the parent info in the path as f(report)
+    parent_menu - the details of the path
+    policy_id - the ID of the JSON policy
+    data - the policy JSON data
+    '''
 
     if not 'username' in session:
-        redirect(('/login'))        # Redo the login - need a user name
+        return redirect(('/login'))        # Redo the login - need a user name
 
     user_name = session["username"]
 
-    path_stat.update_status(user_name, parent_menu, id, data)
+    path_stat.update_status(user_name, parent_menu, policy_id, data)
 
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
@@ -459,14 +618,14 @@ def exec_al_cmd( al_cmd ):
     if rest_err:
         flash('AnyLog: %s' % error_msg, category='error')
         user_connect_ = False
-        redirect(('/login'))        # Redo the login
+        return redirect(('/login'))        # Redo the login
 
 
     if response.status_code == 200:
         data = response.text
     else:
         flash('AnyLog: No data satisfies the request', category='error')
-        redirect(('/index'))        # Select a different path
+        return redirect(('/index'))        # Select a different path
     return data
 
 # -----------------------------------------------------------------------------------
@@ -477,7 +636,7 @@ def get_select_menu(selection = ""):
 
     if gui_view_.is_with_config():
 
-        user_name = gui_view_.get_base_info("name")                 # The user name
+        company_name = gui_view_.get_base_info("name")                 # The user name
         user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
         parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
     else:
@@ -486,9 +645,32 @@ def get_select_menu(selection = ""):
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
         return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
-    return [user_name, user_menu, parent_menu, children_menu]
+    # get the loggin name a name from the conf file
+    if 'username' in session:
+        user_name = session['username']
+    else:
+        user_name = gui_view_.get_base_info("name") or "AnyLog"
 
+    report_name = path_stat.get_report_selected(user_name)
 
+    select_info = {
+        'company_name' : company_name,
+        'user_gui' : user_menu,
+        'parent_gui' : parent_menu,
+        'children_gui' : children_menu,
+        'report_name' : report_name
+    }
+
+    # Make title from the path
+    title = ""
+    for parent in parent_menu:
+        title += parent[0] + " : "
+    select_info['title'] = title
+
+    return select_info
+# -----------------------------------------------------------------------------------
+# Get the target node from the Config Form or the Config File
+# -----------------------------------------------------------------------------------
 def get_target_node():
 
     target_node = query_node_ or gui_view_.get_base_info("query_node")
@@ -497,20 +679,6 @@ def get_target_node():
         return redirect(('/configure'))     # Get the query node info
     return target_node
 
-# -----------------------------------------------------------------------------------
-# View the report structure being used
-# -----------------------------------------------------------------------------------
-@app.route('/dynamic_report/')
-def dynamic_report():
-    '''
-    View the report being used
-    '''
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session['username']
-
-    return "Default"
 # -----------------------------------------------------------------------------------
 # Configure the dynamic reports
 # -----------------------------------------------------------------------------------
@@ -525,14 +693,53 @@ def configure_reports():
     user_name = session['username']
 
     form = ConfDynamicReport()
-    form.report_name.choices = [("123","456"), ("abc","def")]
 
-    if form.validate_on_submit():
-        pass
+    form_info = request.form.to_dict()
+    if "submit" in form_info:   # User need to select existing report or new report
+        ret_val, err_msg = path_stat.set_report(user_name, form_info)   # Configure a new report or change report setting
+        if not ret_val:
+            if err_msg:
+                flash('AnyLog: %s' % err_msg, category='error')
+        if not err_msg:
+            return redirect(url_for('configure_reports')) # After handling a successful form request, redirect to the page to get a fresh state
 
-    user_name, user_menu, parent_menu, children_menu = get_select_menu()
+    # Get the list of the user report to the GUI report menu
+    form.report_name.choices = path_stat.get_user_reports(user_name)    # set list with report names
 
-    return render_template('configure_reports.html', title='Configure Reports',form = form, user_name=user_name,user_gui=user_menu,parent_gui=parent_menu,children_gui=children_menu)
+    select_info = get_select_menu()
+    select_info['title'] = "Configure Reports"
+    select_info['form'] = form
+
+    return render_template('configure_reports.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Update Policies based on the JSON Config file
+# -----------------------------------------------------------------------------------
+@app.route('/policies', methods={'GET','POST'})
+@app.route('/policies/<string:policy_name>', methods={'GET','POST'})
+def policies(policy_name = ""):
+   
+
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+
+    policies_list = gui_view_.get_base_info("policies")     # get the list of policies from the config file
+    
+    name_list = []  # Collect the names of the policies
+    if policies_list and isinstance(policies_list,list):
+        for policy in policies_list:
+            if "name" in policy:
+                policy_name = policy["name"]
+                name_list.append(policy_name)
+
+    select_info = get_select_menu()
+    select_info['title'] = "Network Policies"
+    select_info['form'] = Policies()
+    select_info['policies'] = name_list
+
+    return render_template('add_policies.html', **select_info)
+
 
 # -----------------------------------------------------------------------------------
 # Logout

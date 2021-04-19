@@ -26,3 +26,24 @@ class AnyLogItem(object):
     def __init__(self, attr_name_val:list):
         for entry in attr_name_val:
             exec("self.{} = '{}'".format(entry[0], entry[1]))
+
+# -----------------------------------------------------------------------------------
+# A class to maintain an AnyLog Table table
+# -----------------------------------------------------------------------------------
+class AnyLogTable(object):
+    '''
+    Maintains table data and HTML print info. Note: first col is always a unique ID
+    table_name - a name representing the table
+    column_names - a list with the table names
+    column_keys - per each column - the attribute name in the JSON
+    table_data - a list representing the rows whereas each entry is the list of the column values.
+    extr_col - additional table columns like checkbox or button
+                A list of attr-val pairs: Col-Name + HTML Input type (https://www.w3schools.com/html/html_form_input_types.asp)
+                fir example: [('select','checkbox'), ('View','button')]
+    '''
+    def __init__(self, table_name:str, column_names:list, column_keys:list, rows:list, extr_col:list):
+        self.table_name = table_name
+        self.column_names = column_names
+        self.column_keys = column_keys
+        self.rows = rows
+        self.extr_col = extr_col

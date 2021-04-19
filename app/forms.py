@@ -10,9 +10,11 @@ to be broadly interpreted) you or your such affiliates shall unconditionally ass
 such non-permitted act to AnyLog, Inc.
 '''
 
+# https://exploreflask.com/en/latest/forms.html
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, ValidationError
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -49,10 +51,15 @@ class InstallForm(FlaskForm):
 
 class ConfDynamicReport(FlaskForm):
     
-    report_name = SelectField('Select Report', validators=[DataRequired()], validate_choice = False)
-    new_report = StringField('New Report')
-    rename = StringField('Rename Report')
-    make_default = BooleanField('Set as Default')
-    reset = BooleanField('Reset Report')
-    deploy = SubmitField('Apply Changes')
+    report_name = SelectField('Select Report', default="")
+    new_report = StringField('New Report', default="")
+    rename = StringField('Rename Report', default="")
+    make_default = BooleanField('Set as Default', default=False)
+    reset = BooleanField('Reset Report', default=False)
+    delete = BooleanField('Delete Report', default=False)
+    submit = SubmitField('Apply Changes')
 
+
+class Policies(FlaskForm):
+
+    submit = SubmitField('Submit')
