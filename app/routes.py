@@ -713,10 +713,11 @@ def configure_reports():
     return render_template('configure_reports.html', **select_info)
 
 # -----------------------------------------------------------------------------------
-# Logout
+# Update Policies based on the JSON Config file
 # -----------------------------------------------------------------------------------
 @app.route('/policies', methods={'GET','POST'})
-def policies():
+@app.route('/policies/<string:policy_name>', methods={'GET','POST'})
+def policies(policy_name = ""):
    
 
     if not user_connect_:
@@ -726,7 +727,7 @@ def policies():
     policies_list = gui_view_.get_base_info("policies")     # get the list of policies from the config file
     
     name_list = []  # Collect the names of the policies
-    if policies_list and isinstance(policies_list,dict):
+    if policies_list and isinstance(policies_list,list):
         for policy in policies_list:
             if "name" in policy:
                 policy_name = policy["name"]
