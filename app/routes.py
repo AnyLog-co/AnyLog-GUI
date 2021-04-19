@@ -19,6 +19,7 @@ from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
+from app.forms import Policies
 
 from app.entities import Item
 from app.entities import AnyLogItem
@@ -710,6 +711,28 @@ def configure_reports():
     select_info['form'] = form
 
     return render_template('configure_reports.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Logout
+# -----------------------------------------------------------------------------------
+@app.route('/policies', methods={'GET','POST'})
+def policies():
+   
+
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    user_name = session['username']
+
+    form = Policies()
+
+
+    select_info = get_select_menu()
+    select_info['title'] = "Network Policies"
+    select_info['form'] = Policies()
+
+    return render_template('add_policies.html', **select_info)
+
 
 # -----------------------------------------------------------------------------------
 # Logout
