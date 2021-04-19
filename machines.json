@@ -64,5 +64,50 @@
                 }    
                 
             }
+        },
+    
+    "policies" : [
+        {
+            "name" : "Basic Authentication",
+            "struct" : {
+                "name" : ["User Name", "str", 30, 1],
+                "passoword" : ["Password", "str", 30, 1]
+            }
+
+        },
+        {
+            "name" : "Manufacturer",
+            "struct" : {
+                "manufacturer" : {
+                    "name" : ["Manufacturer", "str", 30, 1],
+                    "address" : ["Address", "str", 30, 1],
+                    "url" : ["URL", "url", 30, 1]
+                }
+            }
+                
+        },
+        {
+            "name" : "Company",
+            "struct" : {
+                "company" : {
+                    "name" : ["Company", "str", 30, 1],
+                    "manufacturer" : ["Manufacturer", "str", 30, 1],
+                    "url" : ["URL", "url", 30, 1]
+                }
+            }
+                
+        },
+        {
+            "name" : "Tag",
+            "struct" : {
+                "tag" : {
+                    "name" : ["Tag Name", "str", 30, 1],
+                    "description" : ["Description", "str", 30, 1],
+                    "machine" : ["Machine", "str", 30, 1]
+                }
+                
+            }
+
         }
+    ]
 }

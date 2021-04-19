@@ -196,7 +196,6 @@ def deploy_report():
             continue        # Ignore this selection in the report
         tables_list.append((info["dbms_name"], info["table_name"]))
 
-
     # Get all the info to genet=rate a report
 
     return redirect(("http://127.0.0.1:3000/?orgId=1"))      

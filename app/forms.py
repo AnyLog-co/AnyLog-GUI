@@ -49,7 +49,6 @@ class InstallForm(FlaskForm):
     is_master = BooleanField('Master')
     deploy = SubmitField('Deploy')
 
-
 class ConfDynamicReport(FlaskForm):
     
     report_name = SelectField('Select Report', default="")
