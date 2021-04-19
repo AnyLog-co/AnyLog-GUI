@@ -34,6 +34,7 @@ from requests.exceptions import HTTPError
 
 from app import app_view        # maintains the logical view of the GUI from a JSON File
 from app import path_stat       # Maintain the path of the user
+from app import visualize                # The connectors to Grafana, Power BI etc
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 node_config_ = {}           # Config as f(company_name)
@@ -234,6 +235,8 @@ def configure():
             flash(gui_view_.get_config_error())
         
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+
+    visualize.test_connection( "grafana", "http://localhost:3000" )
         
     return render_template('configure.html', **select_info )
 

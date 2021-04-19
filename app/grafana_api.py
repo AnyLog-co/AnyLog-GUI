@@ -1,8 +1,7 @@
 
+from app import json_api
+from app import rest_api
 
-
-import requests
-import json
 
 # -----------------------------------------------------------------------------------
 # Connect to Grafana Home dashboard
@@ -19,7 +18,13 @@ def test_connection( grafana_url:str ):
     # headers = {"Authorization":"Bearer #####API_KEY#####"}
 
     headers = {}
-    r = requests.get(url = url, headers = headers, verify=False)
-    print(r.json())
+    response, error_msg = rest_api.do_get(url, headers)
+
+    if response and response.status_code == 200:
+        ret_val = True:
+    else:
+        ret_val = False
+    
+    return [ret_val, error_msg]
 
 
