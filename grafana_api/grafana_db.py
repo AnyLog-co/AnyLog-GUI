@@ -74,7 +74,8 @@ class GrafanaDB:
       data = [] 
       sql = "SELECT data FROM dashboard WHERE title='%s';" % dashboard_name
       if graph_title != '': 
-         sql = sql.replace(';', " AND data LIKE '%s';" % '%' + graph_title + '%') 
+         graph_title = '%' + graph_title + '%'
+         sql = sql.replace(';', " AND data LIKE '%s';" % graph_title) 
 
       try: 
          self.cur.execute(sql) 
@@ -134,8 +135,7 @@ class GrafanaDB:
          status
       """
       status = True 
-      sql = "UPDATE dashboard SET data = '%s' WHERE title = '%s' AND data = '%s'" % (new_data, dashboard_name, old_data)
-      
+      sql = "UPDATE dashboard SET data = '%s' WHERE title = '%s' AND data = '%s';" % (new_data, dashboard_name, old_data)
       try:
          self.cur.execute(sql)
       except Exception as e: 
