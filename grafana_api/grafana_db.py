@@ -57,11 +57,11 @@ class GrafanaDB:
          status = False 
       return status 
 
-   def extract_data(self, dashboard_title:str, graph_title:str)->list:
+   def extract_data(self, dashboard_name:str, graph_title:str)->list:
       """
       extract data from database based on dashboard & graph titles respectivly
       :args: 
-         dashboard_title:str - dashboard title 
+         dashboard_name:str - dashboard title 
          graph_title:str - graph title 
       :param: 
          status:bool 
@@ -72,7 +72,9 @@ class GrafanaDB:
       """
       status = True 
       data = [] 
-      sql = "SELECT data FROM dashboard WHERE title='%s' AND data LIKE '%s';" % (dashboard_title, '%' + graph_title + '%')
+      sql = "SELECT data FROM dashboard WHERE title='%s';" % dashboard_name
+      if graph_title != '': 
+         sql = sql.replace(';', " AND data LIKE '%s';" % '%' + graph_title + '%') 
 
       try: 
          self.cur.execute(sql) 
@@ -88,12 +90,12 @@ class GrafanaDB:
 
       return data 
 
-   def update_dashboard_name(self, old_dashboard_title:str, new_dashboard_title:str)->bool: 
+   def update_dashboard_name(self, old_dashboard_name:str, new_dashboard_name:str)->bool: 
       """
       update dashboard title 
       :args: 
-         old_dashboard_title:str - original dashboard title 
-         new_dashboard_title:str - new dashboard title 
+         old_dashboard_name:str - original dashboard title 
+         new_dashboard_name:str - new dashboard title 
       :param: 
          status:bool 
          sql:str - query being execute 
@@ -101,7 +103,7 @@ class GrafanaDB:
          status
       """
       status = True 
-      sql = "UPDATE dashboard SET title = '%s' WHERE title = '%s';" % (new_dashboard_title, old_dashboard_title)
+      sql = "UPDATE dashboard SET title = '%s' WHERE title = '%s';" % (new_dashboard_name, old_dashboard_name)
        
       try:
          self.cur.execute(sql)
@@ -118,11 +120,11 @@ class GrafanaDB:
 
       return status 
          
-   def update_data(self, dashboard_title:str, new_data:str, old_data:str)->bool: 
+   def update_data(self, dashboard_name:str, new_data:str, old_data:str)->bool: 
       """
       update dashboard table (data column) 
       :args: 
-         dashboard_title:str - dashboard title 
+         dashboard_name:str - dashboard title 
          new_data:str - updated data 
          old_data:str - original data being replaced 
       :param: 
@@ -132,7 +134,7 @@ class GrafanaDB:
          status
       """
       status = True 
-      sql = "UPDATE dashboard SET data = '%s' WHERE title = '%s' AND data = '%s'" % (new_data, dashboard_title, old_data)
+      sql = "UPDATE dashboard SET data = '%s' WHERE title = '%s' AND data = '%s'" % (new_data, dashboard_name, old_data)
       
       try:
          self.cur.execute(sql)

@@ -61,7 +61,7 @@ def update_dashboard_name(gdb:GrafanaDB, dashboard_name:str)->(bool, str):
 
    return status, new_dashboard_name 
    
-def update_graph_name(gdb:GrafanaDB, dashboard_name:str, data:str)->bool: 
+def update_graph_title(gdb:GrafanaDB, dashboard_name:str, data:str)->bool: 
    """
    Update graph name
    :args: 
@@ -72,7 +72,7 @@ def update_graph_name(gdb:GrafanaDB, dashboard_name:str, data:str)->bool:
       status = bool 
       dict_data:dict - data as dictionary  
       default:str - default value from data 
-      graph_name:str - new graph name
+      graph_title:str - new graph name
    :return: 
       update data
    """
@@ -81,11 +81,11 @@ def update_graph_name(gdb:GrafanaDB, dashboard_name:str, data:str)->bool:
    dict_data = __convert_to_dict(data) 
    if dict_data: 
       default = dict_data['panels'][0]['title'] 
-      graph_name = input('New Graph Name (Default: %s): ' % default) 
-      if not graph_name: 
-         graph_name = default 
+      graph_title = input('New Graph Name (Default: %s): ' % default) 
+      if not graph_title: 
+         graph_title = default 
       else: 
-         dict_data['panels'][0]['title'] = graph_name
+         dict_data['panels'][0]['title'] = graph_title
       new_data = __convert_to_json(dict_data) 
    else: 
       status = False 
@@ -104,7 +104,7 @@ def update_graph_query(gdb:GrafanaDB, dashboard_name:str, data:str)->str:
       data:str - data object to convert
    :param: 
       dict_data:dict - data as dictionary  
-      graph_name:str - new graph name
+      graph_title:str - new graph name
    :return: 
       data
    """
@@ -136,7 +136,7 @@ def update_graph_query(gdb:GrafanaDB, dashboard_name:str, data:str)->str:
    return status  
      
 
-def main(cmd:str, gdb:GrafanaDB, data:str, dashboard_name:str, graph_name:str)->bool: 
+def main(cmd:str, gdb:GrafanaDB, data:str, dashboard_name:str, graph_title:str)->bool: 
    """
    Process to update information in grafana based on dashboard and graph name respectivly
    :args: 
@@ -144,7 +144,7 @@ def main(cmd:str, gdb:GrafanaDB, data:str, dashboard_name:str, graph_name:str)->
       gdb:grafana_db.GrafanaDB - connection to database 
       data:str - data from query 
       dashboard_name:str - dashboard name
-      graph_name:str - graph name
+      graph_title:str - graph name
    :param: 
       status:bool - list of statues from each process  
    :return: 
@@ -156,7 +156,7 @@ def main(cmd:str, gdb:GrafanaDB, data:str, dashboard_name:str, graph_name:str)->
       statuses.append(status) 
    if cmd == 'graph_title' or cmd == 'all': 
       for graph in data: 
-         status = update_graph_name(gdb, dashboard_name, graph[0])
+         status = update_graph_title(gdb, dashboard_name, graph[0])
          statuses.append(status) 
    if cmd == 'graph_query' or cmd == 'all': 
       for graph in data: 
