@@ -722,14 +722,20 @@ def policies():
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name = session['username']
 
-    form = Policies()
-
+    policies_list = gui_view_.get_base_info("policies")     # get the list of policies from the config file
+    
+    name_list = []  # Collect the names of the policies
+    if policies_list and isinstance(policies_list,dict):
+        for policy in policies_list:
+            if "name" in policy:
+                policy_name = policy["name"]
+                name_list.append(policy_name)
 
     select_info = get_select_menu()
     select_info['title'] = "Network Policies"
     select_info['form'] = Policies()
+    select_info['policies'] = name_list
 
     return render_template('add_policies.html', **select_info)
 

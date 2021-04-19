@@ -5,9 +5,23 @@
 {% block content %}
     <h1>{{title}}</h1><br>
 
+    <form action="{{url_for('deploy_report')}}" method="POST">
     
-
-
+        <h1>{{ title }}</h1>
+    
+        <table border="1">
+            <colgroup>
+                <col span="5" style="background-color:gray">
+                <col style="background-color:white">
+            </colgroup>
+            
+            <tr>    <!-- table row  -->
+                {% for policy_name in policies %}
+                    <td>{{policy_name}}</td> <!-- table cell  -->
+                {% endfor %}
+            </tr>
+        </table>
+    
 
 
     <input type="submit" value=Submit name=Submit>  
