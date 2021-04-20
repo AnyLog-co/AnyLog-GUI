@@ -677,12 +677,16 @@ def get_select_menu(selection = "", caller = ""):
 
     report_name = path_stat.get_report_selected(user_name)
 
-    select_info['company_name'] =company_name,
-    select_info['user_gui'] = user_menu,
-    select_info['parent_gui'] = parent_menu,
-    select_info['children_gui'] = children_menu,
-    select_info['report_name'] = report_name
-
+    if company_name:
+        select_info['company_name'] =company_name
+    if len(user_menu):
+        select_info['user_gui'] = user_menu
+    if len(parent_menu):
+        select_info['parent_gui'] = parent_menu
+    if len(children_menu):
+        select_info['children_gui'] = children_menu
+    if report_name:
+        select_info['report_name'] = report_name
 
     # Make title from the path
     title = ""
