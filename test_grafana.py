@@ -17,7 +17,7 @@ def update_report():
     connect_string = "http://localhost:3000"
     token = "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9"
     report_name = "My_Report"
-    tables_list = [("dbms1","table1")]
+    tables_list = [("orics","heater_temperature_2"), ("orics","filmsupply_i_outputcurrent")]
 
     url, err_msg = grafana_api.deploy_report(connect_string, token, report_name, tables_list)
 
