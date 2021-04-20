@@ -85,12 +85,12 @@ def deploy_report(grafana_url:str, token:str, report_name:str, tables_list:list)
                 except:
                     err_msg = "Failed to retrieve info from Grafana" 
                 else:
-                    first_panel = report_struct["dashboard"]["panels"][0]
-                    report_struct["dashboard"]["panels"].append(first_panel)
-            
-            if not err_msg:
-                # update report
-                update_dashboard(grafana_url, token, report_struct, report_id, report_uid, report_version)
+                    if not report_version:
+                        if "meta" in report_struct and "version" in  report_struct["meta"]:
+                            report_version = report_struct["meta"]["version"]
+
+                    # update report
+                    update_dashboard(grafana_url, token, report_struct["dashboard"], report_id, report_uid, report_version)
     
 
     return [url, err_msg]
@@ -201,17 +201,20 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
         "Content-Type":"application/json",
         "Accept": "application/json"
     }
-    
+
+    dashboard_data['id'] = report_id
+    dashboard_data['uid'] = report_uid
+    dashboard_data['version'] = report_version + 1
+
 
     updated_dashboard_data = {
-        "dashboard":   dashboard_data["dashboard"], 
+        "dashboard":   dashboard_data,
         "folderId": 0,
         "overwrite": True
     }
-    dashboard_data["dashboard"]['id'] = report_id
-    dashboard_data["dashboard"]['uid'] = report_uid
-    dashboard_data["dashboard"]['version']  = report_version + 1
 
+    del dashboard_data["panels"][1]
+    dashboard_data["panels"][0]['targets'].append(dashboard_data["panels"][0]['targets'][0])
     url = grafana_url + "/api/dashboards/db/"
 
     # http://127.0.0.1:3000/d/KnYOOwuMz/my_report
