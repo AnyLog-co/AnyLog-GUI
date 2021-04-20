@@ -56,22 +56,31 @@ def deploy_report(grafana_url:str, token:str, dashboard_name:str, tables_list:li
         if not dashboard_id:
             # deploy a new report
             dashboard_uid, err_msg = add_dashboard(grafana_url, token)
+            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
         else:
             dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_id, dashboard_name )
             if not err_msg:
                 if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
                     dasboard_version = dashboard_info["meta"]["version"]
-                    if "url" in  dashboard_info["meta"]:
-                        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+
+                    # Update the dasboard based on the tables and time to query
+                    err_msg = modify_dashboard(dashboard_info["dashboard"], tables_list)
+
+                    if not err_msg:
+                        # push update to Grafana
+                        err_msg = update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dasboard_version)
+
+                        if "url" in dashboard_info["meta"]:
+                            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+                    else:
+                        err_msg = "Grafana: unable to extract url from dasboard %s" % dashboard_name
+
                 else:
                     err_msg = "Grafana: unable to extract version from dasboard %s" % dashboard_name
 
-
                     # update report
-                    update_dashboard(grafana_url, token, report_struct["dashboard"], dashboard_id, dashboard_uid, dasboard_version)
 
-    if not err_msg:
-        url = "%s/d/%s/%s" % (grafana_url, report_uid , dashboard_name)
+
 
     return [url, err_msg]
 # -----------------------------------------------------------------------------------
