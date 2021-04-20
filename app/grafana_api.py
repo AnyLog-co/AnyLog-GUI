@@ -61,12 +61,13 @@ def deploy_report(grafana_url:str, token:str, report_name:str, tables_list:list)
                         # this is a dashboard entry
                         if "title" in entry and entry["title"] == report_name:
                             # reports exists
-                            if "uid" in entry:
-                                report_uid = entry["uid"]
-                            if "id" in entry:
-                                report_id = entry["id"]
-                            if report_uid and report_id:
-                                break       # report found
+                            report_id = entry["id"]
+                            report_uid = entry["uid"]
+                            if "version" in entry:
+                                report_version = entry["version"]
+                            else:
+                                report_version = 0
+                            break       # report found
             else:
                 err_msg = "Failed to retrieve info from Grafana. Grafana returned code: %u" % reply.status_code
 
@@ -89,7 +90,7 @@ def deploy_report(grafana_url:str, token:str, report_name:str, tables_list:list)
             
             if not err_msg:
                 # update report
-                update_dashboard(grafana_url, token, gr_struct, report_uid)
+                update_dashboard(grafana_url, token, report_struct, report_id, report_uid, report_version)
     
 
     return [url, err_msg]
@@ -193,7 +194,7 @@ def delete_dashboard(grafana_url):
 # * set id, uid, incremented version and set overwrite parameter to true. 
 # * make the same request as creating a new dashboard.dashboard
 # -----------------------------------------------------------------------------------
-def update_dashboard(grafana_url, token, dashboard_data, report_uid):
+def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, report_version):
 
     headers = {
         "Authorization":"Bearer %s" % token,
@@ -202,10 +203,22 @@ def update_dashboard(grafana_url, token, dashboard_data, report_uid):
     }
     
 
-    dashboard_data["overwrite"] = "True"
+    updated_dashboard_data = {
+        "dashboard":   dashboard_data["dashboard"], 
+        "folderId": 0,
+        "overwrite": True
+    }
+    dashboard_data["dashboard"]['id'] = report_id
+    dashboard_data["dashboard"]['uid'] = report_uid
+    dashboard_data["dashboard"]['version']  = report_version + 1
 
-    
-    reply = requests.post(url=grafana_url, headers=headers, data=json.dumps(dashboard_data), verify=False)
+    url = grafana_url + "/api/dashboards/db/"
+
+    # http://127.0.0.1:3000/d/KnYOOwuMz/my_report
+    # https://www.metricfire.com/docs/grafana-http-api/#Update-dashboard
+
+
+    reply = requests.post(url=url, headers=headers, data=json.dumps(updated_dashboard_data), verify=False)
 
     pass
 
