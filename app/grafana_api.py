@@ -272,16 +272,23 @@ def modify_dashboard(dashboard, tables_list):
 
     for panel in panels_list:
         targets = panel["targets"]      # Get the list of queries
-        targets_list = []
+        updated_targets = []
         if len(targets):
-            base_target = targets[0]    # An example target
+            base_target = copy.deepcopy(targets[0])    # An example target
             for table in tables_list:
-                base_target ["dbms"] = table[0]
-                base_target["dbms"] = table[1]
-                targets.append(base_target)
+                if "data" in base_target:
+                    data =  base_target["data"]         # This is the ANyLog Query
+                    al_query, err_msg = json_api.string_to_json(data)
+                    if not al_query:
+                        error_msg = "Grafana: Report does not contain 'Additional JSON Data' definitions"
+                        break
+
+                base_target["data"]["dbms"] = table[0]
+                base_target["data"]["table"] = table[1]
+                updated_targets.append(copy.deepcopy(base_target))   # Create a new entry
                 is_modified = True
             if is_modified:
-                panel["targets"] = targets_list     # Add a target with the dbms and table
+                panel["targets"] = updated_targets     # Add a target with the dbms and table
 
     return is_modified
 
