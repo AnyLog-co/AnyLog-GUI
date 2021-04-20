@@ -203,16 +203,17 @@ def deploy_report():
         flash('AnyLog: Select platform from options', category='error')
         return redirect(('/dynamic_report'))     # Go to main page
 
+    platform = form_info["platform"]    # Platform name + connect string
+    index = platform.find('.')
+    platform_name = platform[:index]
+    connect_string = platform[index + 1:]
 
-    report_url = None
-    '''
-    report_url, err_msg = visualize.deploy(platform_name, connect_string, report_name, tables_list)
+    report_url, err_msg = visualize.deploy_report(platform_name, connect_string, report_name, tables_list)
     if not report_url:
         # Failed to update the report
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
         return render_template('report_deploy.html',  **select_info )
 
-    '''
     return redirect((report_url))      
 # -----------------------------------------------------------------------------------
 # Reports
