@@ -36,83 +36,107 @@ def test_connection( grafana_url:str, token:str ):
 
 # -----------------------------------------------------------------------------------
 # Deploy a report
+# With Grafana - a report is a dashboard, each dashboard has multiple panels (a visualization window), each panel has multiple targets (queries to a table)
 # If the report is new - add the report
 # If the report exists - make an update
 # -----------------------------------------------------------------------------------
-def deploy_report(grafana_url:str, token:str, report_name:str, tables_list:list):
+def deploy_report(grafana_url:str, token:str, dashboard_name:str, tables_list:list):
 
     url = None
-    # Get the list of reports
+    # Get the list of dashboards
     reply, err_msg = get_dashboards( grafana_url, token )
     
     if reply:
-        try:
-            dashboards = reply.json()
-        except:
-            err_msg = "Failed to retrieve info from Grafana" 
-        else:
-            if reply.status_code == 200:
-                report_id = 0
-                report_uid = ""
-                # test if the report is in the list
-                for entry in dashboards:
-                    # every entry is a report
-                    if "type" in entry and entry["type"] == 'dash-db':
-                        # this is a dashboard entry
-                        if "title" in entry and entry["title"] == report_name:
-                            # reports exists
-                            report_id = entry["id"]
-                            report_uid = entry["uid"]
-                            if "version" in entry:
-                                report_version = entry["version"]
-                            else:
-                                report_version = 0
-                            break       # report found
-            else:
-                err_msg = "Failed to retrieve info from Grafana. Grafana returned code: %u" % reply.status_code
-
-
+        dashboard_id, dashboard_uid, err_msg = get_existing_dashboaard(reply, dashboard_name)
+    else:
+        err_msg = "Grafana failed to provide the list of dashboards"
 
     if not err_msg:
-        if not report_id:
+
+        if not dashboard_id:
             # deploy a new report
-            add_dashboard(grafana_url, token)
+            dashboard_uid, err_msg = add_dashboard(grafana_url, token)
         else:
-            gr_struct, err_msg = get_single_dashboard( grafana_url, token, report_uid )
-            if gr_struct.status_code == 200:
-                try:
-                    report_struct = gr_struct.json()
-                except:
-                    err_msg = "Failed to retrieve info from Grafana" 
+            dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_id, dashboard_name )
+            if not err_msg:
+                if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
+                    dasboard_version = dashboard_info["meta"]["version"]
+                    if "url" in  dashboard_info["meta"]:
+                        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
                 else:
-                    if not report_version:
-                        if "meta" in report_struct and "version" in  report_struct["meta"]:
-                            report_version = report_struct["meta"]["version"]
+                    err_msg = "Grafana: unable to extract version from dasboard %s" % dashboard_name
+
 
                     # update report
-                    update_dashboard(grafana_url, token, report_struct["dashboard"], report_id, report_uid, report_version)
-    
+                    update_dashboard(grafana_url, token, report_struct["dashboard"], dashboard_id, dashboard_uid, dasboard_version)
+
+    if not err_msg:
+        url = "%s/d/%s/%s" % (grafana_url, report_uid , dashboard_name)
 
     return [url, err_msg]
+# -----------------------------------------------------------------------------------
+# Find a dashboard by name
+# -----------------------------------------------------------------------------------
+def get_existing_dashboaard( dasborads_reply, dashboard_name ):
+
+    if dasborads_reply.status_code == 200:
+        # List of all dashboards is available
+        try:
+            dashboards = dasborads_reply.json()
+        except:
+            ret_val = False
+            err_msg = "Unable to parse Grafana data retrieved from request to dashboards"
+        else:
+            err_msg = None
+            report_id = 0
+            report_uid = ""
+            # test if the report is in the list
+            for entry in dashboards:
+                # every entry is a report
+                if "type" in entry and entry["type"] == 'dash-db':
+                    # this is a dashboard entry
+                    if "title" in entry and entry["title"] == dashboard_name:
+                        # reports exists
+                        report_id = entry["id"]
+                        report_uid = entry["uid"]
+
+    return [report_id, report_uid, err_msg]
 # -----------------------------------------------------------------------------------
 # Get a report
 # If the report is new - add the report
 # If the report exists - make an update
 # -----------------------------------------------------------------------------------
-def get_single_dashboard(grafana_url, token, report_uid):
+def get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name):
+    '''
+    Return the JSON data of the dashboard
+    '''
 
-    import copy
     headers = {
         "Authorization":"Bearer %s" % token,
         "Content-Type":"application/json",
         "Accept": "application/json"
     }
-    
 
     # get the content of dashboard from the example above
-    url = grafana_url + "/api/dashboards/uid/" + report_uid
+    url = grafana_url + "/api/dashboards/uid/" + dashboard_uid
     response, err_msg = rest_api.do_get(url, headers)
-    return [response, err_msg]
+
+    if response.status_code == 200:
+        try:
+            dashboard_struct = response.json()
+        except:
+            ret_val = False
+        else:
+            ret_val = True
+            err_msg = None
+    else:
+        ret_val = False
+
+    if not ret_val:
+        err_msg = "Grafana: Failed to retrieve dashboard %s" % dashboard_name
+        dashboard_struct = None
+
+    return [dashboard_struct, err_msg]
 
 # -----------------------------------------------------------------------------------
 # Add a new report
@@ -159,6 +183,10 @@ def add_dashboard(grafana_url:str, token:str):
 # There is no method to list dashboards, - do an empty search request and get dashboards from the results.
 # -----------------------------------------------------------------------------------
 def get_dashboards( grafana_url, token ):
+
+    '''
+    Return a list with all the dasboards
+    '''
 
     url = grafana_url + "/api/search?query=%"
     headers = {
@@ -213,8 +241,7 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
         "overwrite": True
     }
 
-    del dashboard_data["panels"][1]
-    dashboard_data["panels"][0]['targets'].append(dashboard_data["panels"][0]['targets'][0])
+    #dashboard_data["panels"][0]['targets'].append(dashboard_data["panels"][0]['targets'][0])
     url = grafana_url + "/api/dashboards/db/"
 
     # http://127.0.0.1:3000/d/KnYOOwuMz/my_report

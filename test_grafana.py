@@ -19,10 +19,10 @@ def update_report():
     report_name = "My_Report"
     tables_list = [("dbms1","table1")]
 
-    grafana_api.deploy_report(connect_string, token, report_name, tables_list)
+    url, err_msg = grafana_api.deploy_report(connect_string, token, report_name, tables_list)
 
 
-
+    return
 
 
 def main():
