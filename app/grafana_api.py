@@ -58,29 +58,27 @@ def deploy_report(grafana_url:str, token:str, dashboard_name:str, tables_list:li
             dashboard_uid, err_msg = add_dashboard(grafana_url, token)
             url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
         else:
-            dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_id, dashboard_name )
+            dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_uid, dashboard_name )
             if not err_msg:
                 if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
                     dasboard_version = dashboard_info["meta"]["version"]
 
                     # Update the dasboard based on the tables and time to query
-                    err_msg = modify_dashboard(dashboard_info["dashboard"], tables_list)
+                    is_modified = modify_dashboard(dashboard_info["dashboard"], tables_list)
 
-                    if not err_msg:
+                    if is_modified:
                         # push update to Grafana
                         err_msg = update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dasboard_version)
 
-                        if "url" in dashboard_info["meta"]:
-                            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+                    if not err_msg and "url" in dashboard_info["meta"]:
+                        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
                     else:
-                        err_msg = "Grafana: unable to extract url from dasboard %s" % dashboard_name
+                        err_msg = "Grafana: unable to update dasboard %s" % dashboard_name
 
                 else:
                     err_msg = "Grafana: unable to extract version from dasboard %s" % dashboard_name
 
                     # update report
-
-
 
     return [url, err_msg]
 # -----------------------------------------------------------------------------------
@@ -261,4 +259,32 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 
     pass
 
- 
+
+# -----------------------------------------------------------------------------------
+# Update the dashboard -
+# Go over all the panels and modify the targets on each panel.
+# Each target[0] is duplicated for each database and table
+# -----------------------------------------------------------------------------------
+def modify_dashboard(dashboard, tables_list):
+
+    panels_list = dashboard["panels"]
+    is_modified = False
+
+    for panel in panels_list:
+        targets = panel["targets"]      # Get the list of queries
+        targets_list = []
+        if len(targets):
+            base_target = targets[0]    # An example target
+            for table in tables_list:
+                base_target ["dbms"] = table[0]
+                base_target["dbms"] = table[1]
+                targets.append(base_target)
+                is_modified = True
+            if is_modified:
+                panel["targets"] = targets_list     # Add a target with the dbms and table
+
+    return is_modified
+
+
+
+
