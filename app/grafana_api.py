@@ -64,17 +64,16 @@ def deploy_report(grafana_url:str, token:str, dashboard_name:str, tables_list:li
                     dasboard_version = dashboard_info["meta"]["version"]
 
                     # Update the dasboard based on the tables and time to query
-                    is_modified = modify_dashboard(dashboard_info["dashboard"], tables_list)
-
-                    if is_modified:
-                        # push update to Grafana
-                        err_msg = update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dasboard_version)
-
-                    if not err_msg and "url" in dashboard_info["meta"]:
-                        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-                    else:
+                    is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list)
+                    if error_msg:
                         err_msg = "Grafana: unable to update dasboard %s" % dashboard_name
+                    else:
+                        if is_modified:
+                            # push update to Grafana
+                            err_msg = update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dasboard_version)
 
+                        if not err_msg and "url" in dashboard_info["meta"]:
+                            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
                 else:
                     err_msg = "Grafana: unable to extract version from dasboard %s" % dashboard_name
 
@@ -265,8 +264,8 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 # Go over all the panels and modify the targets on each panel.
 # Each target[0] is duplicated for each database and table
 # -----------------------------------------------------------------------------------
-def modify_dashboard(dashboard, tables_list):
-
+def modify_dashboard(dashboard, dashboard_name, tables_list):
+    error_msg = None
     panels_list = dashboard["panels"]
     is_modified = False
 
@@ -277,20 +276,31 @@ def modify_dashboard(dashboard, tables_list):
             base_target = copy.deepcopy(targets[0])    # An example target
             for table in tables_list:
                 if "data" in base_target:
-                    data =  base_target["data"]         # This is the ANyLog Query
-                    al_query, err_msg = json_api.string_to_json(data)
-                    if not al_query:
-                        error_msg = "Grafana: Report does not contain 'Additional JSON Data' definitions"
+                    json_str =  base_target["data"]         # This is the ANyLog Query
+                    al_query, err_msg = json_api.string_to_json(json_str)
+                    if not al_query or not isinstance(al_query,dict):
+                        error_msg = "Grafana: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
                         break
 
-                base_target["data"]["dbms"] = table[0]
-                base_target["data"]["table"] = table[1]
-                updated_targets.append(copy.deepcopy(base_target))   # Create a new entry
-                is_modified = True
+                    al_query["dbms"] = table[0]
+                    al_query["table"] = table[1]
+                    # Map back to a string
+                    data, error_msg = json_api.json_to_string(al_query)
+                    if error_msg:
+                        error_msg = "Grafana: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+                        break
+
+                    data = data.replace(',',',\r\n')
+                    data = data.replace('{', '{\r\n')
+                    data = data.replace('}', '\r\n}')
+                    base_target["data"] = data
+                    updated_targets.append(copy.deepcopy(base_target))   # Create a new entry
+                    is_modified = True
+
             if is_modified:
                 panel["targets"] = updated_targets     # Add a target with the dbms and table
 
-    return is_modified
+    return [is_modified, error_msg]
 
 
 
