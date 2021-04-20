@@ -29,15 +29,15 @@ def do_get(url, headers_data):
 # -----------------------------------------------------------------------------------
 # Post request
 # -----------------------------------------------------------------------------------
-def do_post(url, headers_data):
+def do_post(url, headers_data, data):
 
     try:
-        response = requests.get(url=url, params=None, verify=False, headers=headers_data)
+        response = response = requests.get(url=url, params=None, verify=False, headers=headers_data, data = data)
     except HTTPError as http_err:
-        error_msg = "REST GET HTTPError Error: %s" % str(http_err)
+        error_msg = "REST POST HTTPError Error: %s" % str(http_err)
         response = None
     except Exception as err:
-        error_msg = "REST GET Error: %s" % str(err)
+        error_msg = "REST POST Error: %s" % str(err)
         response = None
     else:
         error_msg = None

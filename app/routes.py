@@ -203,12 +203,17 @@ def deploy_report():
         flash('AnyLog: Select platform from options', category='error')
         return redirect(('/dynamic_report'))     # Go to main page
 
-    platform = form_info["platform"]    # Platform name + connect string
-    index = platform.find('.')
-    platform_name = platform[:index]
-    connect_string = platform[index + 1:]
+    platform = form_info["platform"]    # Platform name + connect string + token
+    connectors = platform.split('.')
+    if len(connectors) != 3:
+        flash('AnyLog: Visualization platform connect info is incorrect', category='error')
+        return redirect(('/dynamic_report'))     # Go to main page
 
-    report_url, err_msg = visualize.deploy_report(platform_name, connect_string, report_name, tables_list)
+    platform_name = platform[0]
+    connect_string = platform[1]
+    connect_token = platform[2]
+
+    report_url, err_msg = visualize.deploy_report(platform_name, connect_string, connect_token, report_name, tables_list)
     if not report_url:
         # Failed to update the report
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
@@ -253,7 +258,7 @@ def configure():
     # Test connectors to the Visualization platforms
     platforms = gui_view_.get_base_info("visualization")
     for entry in platforms:
-        ret_val, err_msg = visualize.test_connection( entry[0], entry[1] )  # Platform name + connect_string
+        ret_val, err_msg = visualize.test_connection( *entry )  # Platform name + connect_string
         if not ret_val:
             flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
 

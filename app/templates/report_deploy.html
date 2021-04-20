@@ -49,7 +49,8 @@
     <br><br>
     <!-- Select Visualization Tool  -->
     {% for option in visualization %}
-        <input type="radio" id=platform  name=platform  value={{option[0]}}.{{option[1]}}> 
+        <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
+        <input type="radio" id=platform  name=platform  value={{option[0]}}.{{option[1]}}.{{option[2]}}> 
         <label for=platform>{{option[0]}}</label>&nbsp
     {% endfor %}
     <br><br>

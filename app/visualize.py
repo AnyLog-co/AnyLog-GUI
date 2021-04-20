@@ -7,14 +7,14 @@ platforms_ = {
     "grafana" : grafana_api
 }
 
-def test_connection(platform, connect_string):
+def test_connection(platform, connect_string, token):
 
     connector = get_connector(platform)
     if not connector:
         error_msg = "%s not supported" % platform
         ret_val = False
     else:
-        ret_val, error_msg = connector.test_connection(connect_string)
+        ret_val, error_msg = connector.test_connection(connect_string, token)
     return [ret_val, error_msg]
 
 
