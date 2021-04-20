@@ -39,21 +39,55 @@ def test_connection( grafana_url:str, token:str ):
 # If the report is new - add the report
 # If the report exists - make an update
 # -----------------------------------------------------------------------------------
-def deploy_report(grafana_url:str, token):
+def deploy_report(grafana_url:str, token:str, report_name:str, tables_list:list):
 
+    url = None
     # Get the list of reports
-    url, error_msg = get_dashboards( grafana_url, token )
+    reply, err_msg = get_dashboards( grafana_url, token )
+    
+    if reply:
+        try:
+            dashboards = reply.json()
+        except:
+            err_msg = "Failed to retrieve info from Grafana" 
+        else:
+            if reply.status_code == 200:
+                report_id = 0
+                # test if the report is in the list
+                for entry in dashboards:
+                    # every entry is a report
+                    if "type" in entry and entry["type"] == 'dash-db':
+                        # this is a dashboard entry
+                        if "title" in entry and entry["title"] = report_name:
+                            # reports exists
+                            if "uid" in entry:
+                                report_uid = entry["uid"]
+                            if "id" in entry:
+                                report_id = entry["id"]
+            else:
+                err_msg = "Failed to retrieve info from Grafana. Grafana returned code: %u" % reply.status_code
 
-    return [url, error_msg]
+
+
+    if not err_msg:
+        if not report_id:
+            # deploy a new report
+            add_dashboard(grafana_url, token)
+        else:
+            # update report
+            update_dashboard(grafana_url, token)
+    
+
+    return [url, err_msg]
 # -----------------------------------------------------------------------------------
 # Add a new report
 # -----------------------------------------------------------------------------------
-def add_report(grafana_url:str):
+def add_dashboard(grafana_url:str, token:str):
 
     url = "%s/api/dashboards/db" % grafana_url
 
     headers_data = {
-        "Authorization":"Bearer eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+        "Authorization":"Bearer %s" %token,
         "Content-Type":"application/json",
         "Accept": "application/json"
     }
@@ -98,9 +132,9 @@ def get_dashboards( grafana_url, token ):
         "Accept": "application/json"
     }
 
-    response, error_msg = rest_api.do_get(url, headers)
+    response, err_msg = rest_api.do_get(url, headers)
 
-    return [response, error_msg]
+    return [response, err_msg]
 
 # -----------------------------------------------------------------------------------
 # Delete a dashboard
@@ -125,11 +159,11 @@ def delete_dashboard(grafana_url):
 # * set id, uid, incremented version and set overwrite parameter to true. 
 # * make the same request as creating a new dashboard.dashboard
 # -----------------------------------------------------------------------------------
-def update_dashboard(grafana_url):
+def update_dashboard(grafana_url, token):
 
     import copy
     headers = {
-        "Authorization":"Bearer #####API_KEY#####",
+        "Authorization":"Bearer %s" % token,
         "Content-Type":"application/json",
         "Accept": "application/json"
     }

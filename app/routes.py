@@ -201,23 +201,23 @@ def deploy_report():
     # Get the platform
     if "platform" not in form_info:
         flash('AnyLog: Select platform from options', category='error')
-        return redirect(('/dynamic_report'))     # Go to main page
+        return redirect(('/dynamic_report'))
 
     platform = form_info["platform"]    # Platform name + connect string + token
     connectors = platform.split('.')
     if len(connectors) != 3:
         flash('AnyLog: Visualization platform connect info is incorrect', category='error')
-        return redirect(('/dynamic_report'))     # Go to main page
+        return redirect(('/dynamic_report')) 
 
-    platform_name = platform[0]
-    connect_string = platform[1]
-    connect_token = platform[2]
+    platform_name = connectors[0]
+    connect_string = connectors[1]
+    connect_token = connectors[2]
 
     report_url, err_msg = visualize.deploy_report(platform_name, connect_string, connect_token, report_name, tables_list)
     if not report_url:
         # Failed to update the report
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
-        return render_template('report_deploy.html',  **select_info )
+        return redirect(('/dynamic_report'))
 
     return redirect((report_url))      
 # -----------------------------------------------------------------------------------
