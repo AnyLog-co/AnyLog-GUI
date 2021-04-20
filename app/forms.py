@@ -63,3 +63,5 @@ class ConfDynamicReport(FlaskForm):
 class Policies(FlaskForm):
 
     submit = SubmitField('Submit')
+
+

@@ -198,9 +198,22 @@ def deploy_report():
             continue        # Ignore this selection in the report
         tables_list.append((info["dbms_name"], info["table_name"]))
 
-    # Get all the info to genet=rate a report
+    # Get the platform
+    if "platform" not in form_info:
+        flash('AnyLog: Select platform from options', category='error')
+        return redirect(('/dynamic_report'))     # Go to main page
 
-    return redirect(("http://127.0.0.1:3000/?orgId=1"))      
+
+    report_url = None
+    '''
+    report_url, err_msg = visualize.deploy(platform_name, connect_string, report_name, tables_list)
+    if not report_url:
+        # Failed to update the report
+        flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
+        return render_template('report_deploy.html',  **select_info )
+
+    '''
+    return redirect((report_url))      
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------

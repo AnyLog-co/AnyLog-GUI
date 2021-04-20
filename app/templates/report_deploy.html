@@ -49,8 +49,8 @@
     <br><br>
     <!-- Select Visualization Tool  -->
     {% for option in visualization %}
-        <input type="radio" id={{option}}  name={{option}}  value={{option}}> 
-        <label for={{option}}>{{option}}</label>&nbsp
+        <input type="radio" id=platform  name=platform  value={{option[0]}}.{{option[1]}}> 
+        <label for=platform>{{option[0]}}</label>&nbsp
     {% endfor %}
     <br><br>
 

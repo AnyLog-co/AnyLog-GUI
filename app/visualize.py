@@ -1,5 +1,7 @@
 
 
+# Example - https://avleonov.com/2020/06/10/how-to-list-create-update-and-delete-grafana-dashboards-via-api/
+
 from app import grafana_api
 
 platforms_ = {
@@ -20,6 +22,26 @@ def test_connection(platform, connect_string):
 def visualize(platform, report_name, tables):
     pass
 
+# --------------------------------------------------------
+# Deploy to create or update an exising report in the platform
+# --------------------------------------------------------
+def deploy_report(platform_name, connect_string, report_name, tables_list):
+
+    '''
+    Deploy a new report (or update existing report) in the platform
+    return:
+        url to report
+        error message
+    '''
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+        url = None
+    else:
+        url, error_msg = connector.deploy_report(connect_string)
+
+    return [url, error_msg]
+
 
 # --------------------------------------------------------
 # Return the platform connector
@@ -36,4 +58,9 @@ def  get_connector(platform):
         connector = None
 
     return connector
+
+
+
+
+
 
