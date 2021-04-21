@@ -46,6 +46,30 @@ def deploy_report(**platform_info):
     token = None
     dashboard_name = None
     tables_list = None
+    base = None
+
+    params_required = [
+        ("url", str),
+        ("token", str),
+        ("report_name",str),
+        ("tables_list",list),
+        ("base",list),                 # The list of base reports
+    ]
+
+    for param in params_required:
+        key = param[0]
+        if key not in platform_info:
+            # Missing param
+            err_msg = "Grafana: Missing '%s' in visualization parameters" % key
+            return [None, err_msg]
+        value = platform_info[key]
+        if not isinstance(value, param[1]):
+            # Wrong data type
+            err_msg = "Grafana: Wrong visualization data structure for '%s'" % key
+            return [None, err_msg]
+        setattr(deploy_report, key, value)
+
+
 
     url = None
     # Get the list of dashboards
