@@ -179,12 +179,21 @@ def set_report(user_name, form_info):
         report_name = ""        # user did not select an existing report
     
     if 'new_report' in form_info:
-        new_report = form_info['new_report']  
+        new_report = form_info['new_report'] 
+        if len(new_report) == new_report.count(' '):
+            new_report = ""       # All spaces
+        else:
+            new_report = new_report.replace(' ','_')
     else:
         new_report = ""       
 
     if 'rename' in form_info:
-        new_name = form_info['rename']  
+        new_name = form_info['rename']
+        if ' ' in new_name:
+            if len(new_name) == new_name.count(' '):
+                new_name = ""       # All spaces
+            else:
+                new_name = new_name.replace(' ','_')
     else:
         new_name = "" 
 
@@ -226,7 +235,8 @@ def set_report(user_name, form_info):
             err_msg = "Wrong selections: conflicting report selections"
         else:
             # Test report not selected
-            if not report_name and (is_delete or reset or new_name) or (is_default and not report_name and not new_name):
+            if not report_name and (is_delete or reset or new_name) or \
+                        (is_default and not report_name and not new_name and not new_report):
                 ret_val = False
                 err_msg = "Report name not selected"
             else:

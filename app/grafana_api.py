@@ -98,14 +98,16 @@ def deploy_report(**platform_info):
                     else:
                         if is_modified:
                             # push update to Grafana
-                            err_msg = update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dasboard_version)
+                            if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dasboard_version):
+                                # Failed to upfate a report
+                                err_msg = "Grafana: failed to update dasboard %s" % dashboard_name
 
                         if not err_msg and "url" in dashboard_info["meta"]:
                             url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
                 else:
                     err_msg = "Grafana: unable to extract version from dasboard %s" % dashboard_name
 
-                    # update report
+                    
 
     return [url, err_msg]
 # -----------------------------------------------------------------------------------
@@ -282,7 +284,7 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 
     reply = requests.post(url=url, headers=headers, data=json.dumps(updated_dashboard_data), verify=False)
 
-    pass
+    return reply.status_code == 200
 
 
 # -----------------------------------------------------------------------------------
