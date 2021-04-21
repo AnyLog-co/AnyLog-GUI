@@ -24,7 +24,7 @@ def visualize(platform, report_name, tables):
 # --------------------------------------------------------
 # Deploy to create or update an exising report in the platform
 # --------------------------------------------------------
-def deploy_report(platform_name, connect_string, token, report_name, tables_list):
+def deploy_report(platform_name, **platform_info):
 
     '''
     Deploy a new report (or update existing report) in the platform
@@ -37,7 +37,7 @@ def deploy_report(platform_name, connect_string, token, report_name, tables_list
         error_msg = "%s not supported" % platform_name
         url = None
     else:
-        url, error_msg = connector.deploy_report(connect_string, token, report_name, tables_list)
+        url, error_msg = connector.deploy_report(**platform_info)
 
     return [url, error_msg]
 

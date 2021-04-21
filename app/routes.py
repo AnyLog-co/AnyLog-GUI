@@ -28,6 +28,7 @@ from app.entities import AnyLogTable
 
 from config import Config
 
+import copy
 import json
 import requests
 from requests.exceptions import HTTPError
@@ -37,7 +38,6 @@ from app import path_stat       # Maintain the path of the user
 from app import visualize                # The connectors to Grafana, Power BI etc
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
-node_config_ = {}           # Config as f(company_name)
 company_name_ = None        # Company to service
 
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
@@ -68,10 +68,12 @@ def index():
 @app.route('/login', methods={'GET','POST'})
 def login():
     '''
-    Inpuit login name & password, connecet to a node in the network
+    Input login name & password, connecet to a node in the network
     and move to main page to determine GUI to use
     '''
     global user_connect_
+
+    select_info = get_select_menu( caller = "login" )
 
     form = LoginForm()
 
@@ -115,7 +117,7 @@ def login():
         if not path_stat.is_with_user( user_name ):
             path_stat.set_new_user( user_name )
 
-    select_info = get_select_menu()
+   
     select_info['title'] = title_str
     select_info['form'] = form
 
@@ -203,17 +205,17 @@ def deploy_report():
         flash('AnyLog: Select platform from options', category='error')
         return redirect(('/dynamic_report'))
 
-    platform = form_info["platform"]    # Platform name + connect string + token
-    connectors = platform.split('.')
-    if len(connectors) != 3:
-        flash('AnyLog: Visualization platform connect info is incorrect', category='error')
-        return redirect(('/dynamic_report')) 
+    platform_name = form_info["platform"]    # Platform name + connect string + token
 
-    platform_name = connectors[0]
-    connect_string = connectors[1]
-    connect_token = connectors[2]
+    platforms_tree = gui_view_.get_base_info("visualization")
+    
+    # The Info from the config file
+    platform_info = copy.deepcopy( platforms_tree[platform_name])
+    # add info from the report 
+    platform_info['report_name'] = report_name
+    platform_info['tables_list'] = tables_list
 
-    report_url, err_msg = visualize.deploy_report(platform_name, connect_string, connect_token, report_name, tables_list)
+    report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:
         # Failed to update the report
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
@@ -241,10 +243,12 @@ def alerts():
 # -----------------------------------------------------------------------------------
 # Configure
 # -----------------------------------------------------------------------------------
-@app.route('/configure')
+@app.route('/configure', methods = ['GET', 'POST'])
 def configure():
 
-    select_info = get_select_menu()
+    global company_name_
+
+    select_info = get_select_menu( caller = "configure")
     select_info["form"] = ConfigForm()
     select_info["title"] = 'Configure Network Connection'
 
@@ -252,41 +256,28 @@ def configure():
         # Faild to recognize the JSON Config File
         if gui_view_.is_config_error():
             flash(gui_view_.get_config_error())
-        
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
 
     # Test connectors to the Visualization platforms
     platforms = gui_view_.get_base_info("visualization")
-    for entry in platforms:
-        ret_val, err_msg = visualize.test_connection( *entry )  # Platform name + connect_string
-        if not ret_val:
-            flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
-
-        
-    return render_template('configure.html', **select_info )
-
-@app.route('/set_config', methods = ['GET', 'POST'])
-def set_config():
-    global node_config_
-    global company_name_
+    if platforms:
+        for entry in platforms:
+            ret_val, err_msg = visualize.test_connection( *entry )  # Platform name + connect_string
+            if not ret_val:
+                flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
 
     if request.method == 'POST':
+        # Need to be completed
         conf = {}
         conf["node_ip"] = request.form["node_ip"]
         conf["node_port"] = request.form["node_port"]
         conf["reports_ip"] = request.form["reports_ip"]
         conf["reports_port"] = request.form["reports_ip"]
+  
 
-        company_name = request.form["company"]
-        node_config_[company_name] = conf
-        company_name_ = company_name
-    
-
-    select_info = get_select_menu()
     select_info["title"] = 'Configure Network Connection'
     select_info["form"] = ConfigForm()         # New Form
-    
-    return render_template('configure.html',**select_info)
+
+    return render_template('configure.html', **select_info )
 # -----------------------------------------------------------------------------------
 # Network
 # -----------------------------------------------------------------------------------
@@ -469,7 +460,7 @@ def tree( selection = "" ):
         table_rows.append(columns_list)
 
 
-    select_info = get_select_menu(selection)
+    select_info = get_select_menu(selection=selection)
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
 
@@ -524,7 +515,7 @@ def selected( selection = "" ):
         flash('AnyLog: Missing entry selection', category='error')
         return redirect(url_for('tree', selection=selection)) 
 
-    select_info = get_select_menu(selection)
+    select_info = get_select_menu(selection=selection)
 
     if "Browse" in selected_rows:
         # Put the key of the parent in the tree
@@ -660,18 +651,23 @@ def exec_al_cmd( al_cmd ):
 # Get the menu data based on the configuration file
 # Test if configuration file is available, otherwise go to configure form
 # -----------------------------------------------------------------------------------
-def get_select_menu(selection = ""):
+def get_select_menu(selection = "", caller = ""):
 
-    if gui_view_.is_with_config():
+    select_info = {}
 
-        company_name = gui_view_.get_base_info("name")                 # The user name
-        user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
-    else:
+    if not gui_view_.is_with_config():
         # Faild to recognize the JSON Config File
-        form = ConfigForm()
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+        if caller == "configure" or caller == "login":
+            # The config file is not available - ignore get_select_menu
+            return select_info  # return empty dictionary
+
+        form = ConfigForm()
         return render_template('configure.html', title = 'Configure Network Connection', form = form)
+
+    company_name = gui_view_.get_base_info("name")                 # The user name
+    user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+    parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
 
     # get the loggin name a name from the conf file
     if 'username' in session:
@@ -681,13 +677,16 @@ def get_select_menu(selection = ""):
 
     report_name = path_stat.get_report_selected(user_name)
 
-    select_info = {
-        'company_name' : company_name,
-        'user_gui' : user_menu,
-        'parent_gui' : parent_menu,
-        'children_gui' : children_menu,
-        'report_name' : report_name
-    }
+    if company_name:
+        select_info['company_name'] =company_name
+    if user_menu and len(user_menu):
+        select_info['user_gui'] = user_menu
+    if parent_menu and len(parent_menu):
+        select_info['parent_gui'] = parent_menu
+    if children_menu and len(children_menu):
+        select_info['children_gui'] = children_menu
+    if report_name:
+        select_info['report_name'] = report_name
 
     # Make title from the path
     title = ""
