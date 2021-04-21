@@ -42,12 +42,7 @@ def test_connection( grafana_url:str, token:str ):
 # -----------------------------------------------------------------------------------
 def deploy_report(**platform_info):
     
-    grafana_url = None
-    token = None
-    dashboard_name = None
-    tables_list = None
-    base = None
-
+    
     params_required = [
         ("url", str),
         ("token", str),
@@ -67,8 +62,12 @@ def deploy_report(**platform_info):
             # Wrong data type
             err_msg = "Grafana: Wrong visualization data structure for '%s'" % key
             return [None, err_msg]
-        setattr(deploy_report, key, value)
-
+        
+    grafana_url = platform_info['url']
+    token =  platform_info['token']
+    dashboard_name =  platform_info['report_name']
+    tables_list =  platform_info['tables_list']
+    base =  platform_info['base']
 
 
     url = None
