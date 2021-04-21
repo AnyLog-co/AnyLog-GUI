@@ -28,6 +28,7 @@ from app.entities import AnyLogTable
 
 from config import Config
 
+import copy
 import json
 import requests
 from requests.exceptions import HTTPError
@@ -204,17 +205,17 @@ def deploy_report():
         flash('AnyLog: Select platform from options', category='error')
         return redirect(('/dynamic_report'))
 
-    platform = form_info["platform"]    # Platform name + connect string + token
-    connectors = platform.split('.')
-    if len(connectors) != 3:
-        flash('AnyLog: Visualization platform connect info is incorrect', category='error')
-        return redirect(('/dynamic_report')) 
+    platform_name = form_info["platform"]    # Platform name + connect string + token
 
-    platform_name = connectors[0]
-    connect_string = connectors[1]
-    connect_token = connectors[2]
+    platforms_tree = gui_view_.get_base_info("visualization")
+    
+    # The Info from the config file
+    platform_info = copy.deepcopy( platforms_tree[platform_name])
+    # add info from the report 
+    platform_info['report_name'] = report_name
+    platform_info['tables_list'] = tables_list
 
-    report_url, err_msg = visualize.deploy_report(platform_name, connect_string, connect_token, report_name, tables_list)
+    report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:
         # Failed to update the report
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
@@ -654,12 +655,7 @@ def get_select_menu(selection = "", caller = ""):
 
     select_info = {}
 
-    if gui_view_.is_with_config():
-
-        company_name = gui_view_.get_base_info("name")                 # The user name
-        user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-        parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
-    else:
+    if not gui_view_.is_with_config():
         # Faild to recognize the JSON Config File
         flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
         if caller == "configure" or caller == "login":
@@ -668,6 +664,10 @@ def get_select_menu(selection = "", caller = ""):
 
         form = ConfigForm()
         return render_template('configure.html', title = 'Configure Network Connection', form = form)
+
+    company_name = gui_view_.get_base_info("name")                 # The user name
+    user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
+    parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
 
     # get the loggin name a name from the conf file
     if 'username' in session:
@@ -679,11 +679,11 @@ def get_select_menu(selection = "", caller = ""):
 
     if company_name:
         select_info['company_name'] =company_name
-    if len(user_menu):
+    if user_menu and len(user_menu):
         select_info['user_gui'] = user_menu
-    if len(parent_menu):
+    if parent_menu and len(parent_menu):
         select_info['parent_gui'] = parent_menu
-    if len(children_menu):
+    if children_menu and len(children_menu):
         select_info['children_gui'] = children_menu
     if report_name:
         select_info['report_name'] = report_name

@@ -40,7 +40,12 @@ def test_connection( grafana_url:str, token:str ):
 # If the report is new - add the report
 # If the report exists - make an update
 # -----------------------------------------------------------------------------------
-def deploy_report(grafana_url:str, token:str, dashboard_name:str, tables_list:list):
+def deploy_report(**platform_info):
+    
+    grafana_url = None
+    token = None
+    dashboard_name = None
+    tables_list = None
 
     url = None
     # Get the list of dashboards
@@ -90,7 +95,6 @@ def get_existing_dashboaard( dasborads_reply, dashboard_name ):
         try:
             dashboards = dasborads_reply.json()
         except:
-            ret_val = False
             err_msg = "Unable to parse Grafana data retrieved from request to dashboards"
         else:
             err_msg = None
@@ -218,7 +222,6 @@ def delete_dashboard(grafana_url):
         "Accept": "application/json"
     }
     r = requests.delete(url = url, headers = headers, verify=False)
-    print(r.json())
 
 # -----------------------------------------------------------------------------------
 # update an existing dashboard. 
