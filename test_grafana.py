@@ -14,12 +14,19 @@ from app import grafana_api
 
 
 def update_report():
-    connect_string = "http://localhost:3000"
-    token = "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9"
-    report_name = "My_Report"
-    tables_list = [("orics","heater_temperature_2"), ("orics","filmsupply_i_outputcurrent")]
 
-    url, err_msg = grafana_api.deploy_report(connect_string, token, report_name, tables_list)
+    platform_info = {
+        "url" : 'http://localhost:3000',
+        "token" : 'eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9',
+        "report_name" : 'New_Report',
+        "tables_list" : [('Orics', 'ALARMS_DESPLAY_TIME')],
+        "base" : ['Base-Report'],
+        'base_report' : 'AnyLog_Base'
+
+    }
+
+
+    url, err_msg = grafana_api.deploy_report(**platform_info)
 
 
     return

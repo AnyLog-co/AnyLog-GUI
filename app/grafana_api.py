@@ -48,7 +48,7 @@ def deploy_report(**platform_info):
         ("token", str),
         ("report_name",str),
         ("tables_list",list),
-        ("base",list),                 # The list of base reports
+        ("base_report",list),                 # The list of base reports
     ]
 
     for param in params_required:
@@ -67,7 +67,6 @@ def deploy_report(**platform_info):
     token =  platform_info['token']
     dashboard_name =  platform_info['report_name']
     tables_list =  platform_info['tables_list']
-    base =  platform_info['base']
 
 
     url = None
@@ -83,9 +82,25 @@ def deploy_report(**platform_info):
 
         if not dashboard_id:
             # deploy a new report
-            dashboard_uid, err_msg = add_dashboard(grafana_url, token)
-            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+            base_dashboard = platform_info['base_report']
+            dashboard_id, dashboard_uid, err_msg = get_existing_dashboaard(reply, base_dashboard)
+            if not dashboard_id:
+                # Missing base report
+                err_msg = "Grafana: Missing base dasboard: %s" % base_dashboard
+            else:
+                # Get the report
+                dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
+                if not err_msg:
+                    # Update the dasboard based on the tables and time to query
+                    is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list)
+                    if error_msg:
+                        err_msg = "Grafana: unable to update dasboard %s" % dashboard_name
+                    else:
+                        dashboard_uid, err_msg = add_dashboard(grafana_url, token)
+                        if not err_msg:
+                            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
         else:
+            # Update an existing report
             dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_uid, dashboard_name )
             if not err_msg:
                 if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
