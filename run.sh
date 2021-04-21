@@ -11,9 +11,9 @@ fi
 if [[ -f ${VIEW} ]] 
 then
    cp ${VIEW} ${ROOT_DIR}/view.json 
-elif [[ -f ${ROOT_DIR}/view/${VIEW} ]] 
+elif [[ -f ${ROOT_DIR}/views/${VIEW} ]] 
 then
-   cp ${ROOT_DIR}/view/${VIEW} ${ROOT_DIR}/view.json 
+   cp ${ROOT_DIR}/views/${VIEW} ${ROOT_DIR}/view.json 
 else
    echo "Failed to locate ${VIEW}. Please provide full path or make sure file is in ${ROOT_DIR}/view" 
    exit 1

@@ -14,7 +14,7 @@ such non-permitted act to AnyLog, Inc.
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField
-from wtforms.validators import DataRequired, ValidationError
+from wtforms.validators import DataRequired, Optional, ValidationError
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -23,7 +23,14 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class ConfigForm(FlaskForm):
+    # Default params: 
+    conn_user   = StringField('SSH connection user: '               , validators=[DataRequired()])
+    conn_ip     = StringField('SSH connection ip: '                 , validators=[DataRequired()])
+    conn_passwd = StringField('SSH connection password: '           , validators=[DataRequired()])
+    conn_port   = IntegerField('SSH connection port [default: 22]: ', validators=[DataRequired()], default=22)
+    node_type = StringField("\nNode Type [default: operator]: ", default='operator', validators=[Optional()])
     company = StringField('Company', validators=[DataRequired()])
+    
     node_ip = StringField('Node IP', validators=[DataRequired()])
     node_port = IntegerField('Node Port', validators=[DataRequired()])
     reports_ip = StringField('Reports IP', validators=[DataRequired()])
