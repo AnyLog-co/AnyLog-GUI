@@ -48,7 +48,7 @@ def deploy_report(**platform_info):
         ("token", str),
         ("report_name",str),
         ("tables_list",list),
-        ("base_report",list),                 # The list of base reports
+        ("base_report",str),                 # The list of base reports
     ]
 
     for param in params_required:
@@ -96,7 +96,7 @@ def deploy_report(**platform_info):
                     if error_msg:
                         err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
                     else:
-                        dashboard_uid, err_msg = add_dashboard(grafana_url, token)
+                        dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
                         if not err_msg:
                             url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
         else:
@@ -191,7 +191,7 @@ def get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name):
 # -----------------------------------------------------------------------------------
 # Add a new report
 # -----------------------------------------------------------------------------------
-def add_dashboard(grafana_url:str, token:str):
+def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard):
 
     url = "%s/api/dashboards/db" % grafana_url
 

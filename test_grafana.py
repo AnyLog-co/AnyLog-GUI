@@ -28,6 +28,12 @@ def update_report():
 
     url, err_msg = grafana_api.deploy_report(**platform_info)
 
+    print("\n\rExit")
+    if url:
+        print("\n\r%s" % url)
+    if err_msg:
+        print("\n\r%s" % err_msg)
+
 
     return
 
