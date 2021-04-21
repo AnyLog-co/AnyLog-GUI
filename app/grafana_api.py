@@ -201,19 +201,15 @@ def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard)
         "Accept": "application/json"
     }
     new_dashboard_data = {
-    "dashboard": {
-        "id": None,
-        "uid": None,
-        "title": "Production Overview",
-        "tags": [ "templated" ],
-        "timezone": "browser",
-        "schemaVersion": 16,
-        "version": 0
-    },
     "folderId": 0,
     "overwrite": False
     }
 
+    new_dashboard["title"] = dashboard_name
+    new_dashboard["id"] = None
+    new_dashboard["uid"] = None
+    new_dashboard["version"] = 0
+    new_dashboard_data["dashboard"] = new_dashboard
 
     reply_url = None
     report_data, err_msg = json_api.json_to_string(new_dashboard_data)
