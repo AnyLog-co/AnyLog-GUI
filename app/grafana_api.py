@@ -137,7 +137,7 @@ def deploy_report(**platform_info):
         # ?&from=now-2M&to=now
         # ?&from=202103011248&to=202105011248
         if to_date[:3] == "now":
-            url += "?&%sfrom=%s&to=now" % from_date
+            url += "?&from=%s&to=now" % from_date
         else:
             # Transform to  ms epoch
             ms_from = int((datetime(int(from_date[:4], from_date[5:7], from_date[8:9])) - datetime(1970, 1, 1)).total_seconds() * 1000)
