@@ -57,7 +57,11 @@ class InstallForm(FlaskForm):
     2. node_name should have a default value that's ${company_name}-${node_type}
     """
     build_type   = StringField('Build Type [options: alpine, debian, centos]: ', default='debian', validators=[Optional()])
-    node_type    = StringField('Node Type [options: master, operator, publisher, query]: ', default='operator', validators=[Optional()]) 
+    #node_type    = StringField('Node Type [options: master, operator, publisher, query]: ', default='operator', validators=[Optional()]) 
+    is_master    = BooleanField('Master') 
+    is_operator  = BooleanField('Operator') 
+    is_publisher = BooleanField('Publisher') 
+    is_query     = BooleanField('Query')
     company_name = StringField('Company Name: ', validators=[DataRequired()])
     node_name    = StringField('Node Name: ', validators=[DataRequired()])  
     
@@ -102,7 +106,9 @@ class InstallForm(FlaskForm):
     4. db_user default should be formatted_company_name
     """
     default_dbms = StringField('Database Name (Operator Only): ', validators=[Optional()]) 
-    db_type      = StringField('Database Type [options: psql, sqlite]: ', default="psql", validators=[DataRequired()])
+    #db_type      = StringField('Database Type [options: psql, sqlite]: ', default="psql", validators=[DataRequired()])
+    is_psql      = BooleanField('Postgres')
+    is_sqlite    = BooleanField('SQLite')
     db_user      = StringField('Database Credentials [format: user@ip:passwd]: ', default='admin@127.0.0.1:demo', validators=[DataRequired()])
     db_port      = IntegerField('Database Port: ', default=5432, validators=[DataRequired()]) 
 

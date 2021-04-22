@@ -22,8 +22,14 @@
 	    <h3>Basic AnyLog Parameters</h3> 
             {{ form.build_type.label }}
             {{ form.build_type(size = 4) }}<br><br> 
-            {{ form.node_type.label }}
-	    {{ form.node_type(size = 4) }}<br><br>
+	    Node Type:
+	    <blockquote> 
+	           {{ form.is_master() }} {{ form.is_master.label }}
+	    <br>   {{ form.is_operator() }} {{form.is_operator.label }}
+	    <br>   {{ form.is_publisher() }} {{ form.is_publisher.label }}
+	    <br>   {{ form.is_query() }} {{ form.is_query.label }}
+	    </blockquote> 
+            <br>
             {{ form.company_name.label }}
 	    {{ form.company_name(size = 4) }}<br><br>
             {{ form.node_name.label }}
@@ -73,8 +79,12 @@
 	    <h3>Database Information</h3> 
 	    {{ form.default_dbms.label }}
 	    {{ form.default_dbms(size = 4) }}<br><br>
-	    {{ form.db_type.label }}
-	    {{ form.db_type(size = 4) }}<br><br> 
+            Database Type: 
+	    <blockquote>
+	        {{ form.is_psql() }} {{ form.is_psql.label }}
+	    <br>{{ form.is_sqlite() }} {{ form.is_sqlite.label }}
+	    </blockquote> 
+	    <br> 
 	    {{ form.db_user.label }}
 	    {{ form.db_user(size = 10) }}<br><br>
 	    {{ form.db_port.label }}
