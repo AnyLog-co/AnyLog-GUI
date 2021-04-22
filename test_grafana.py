@@ -70,9 +70,9 @@ def update_report():
 
 def main():
     print("\r\nTest Grafana connector")
-    #update_report()
+    update_report()
 
-    update_dashboard()
+    #update_dashboard()
 
 if __name__ == "__main__":
     main()

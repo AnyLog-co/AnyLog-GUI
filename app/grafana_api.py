@@ -126,7 +126,6 @@ def deploy_report(**platform_info):
             else:
                 err_msg = "Grafana API: Unable to extract version from dasboard %s" % dashboard_name
 
-                    
 
     return [url, err_msg]
 # -----------------------------------------------------------------------------------
@@ -221,11 +220,11 @@ def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard)
     new_dashboard_data["dashboard"] = new_dashboard
 
 
-    reply_url = None
-    report_data, err_msg = json_api.json_to_string(new_dashboard_data)
+    dashboard_uid = None
+    dashboard_data, err_msg = json_api.json_to_string(new_dashboard_data)
 
-    if report_data:
-        response, err_msg = rest_api.do_post(url, headers_data, report_data)
+    if dashboard_data:
+        response, err_msg = rest_api.do_post(url=url, headers_data=headers_data, data_str=dashboard_data)
 
         if response:
             if response.status_code != 200:
@@ -237,10 +236,10 @@ def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard)
                     errno, err = sys.exc_info()[:2]
                     err_msg =  "Grafana API: Failed to update  new dashboard: %s" % str(err)
                 else:
-                    reply_url = grafana_url
+                    dashboard_uid =  post_reply["uid"]
 
     
-    return [reply_url, err_msg]
+    return [dashboard_uid, err_msg]
 # -----------------------------------------------------------------------------------
 # Get dasboards IDs
 # There is no method to list dashboards, - do an empty search request and get dashboards from the results.
@@ -309,10 +308,19 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
     # http://127.0.0.1:3000/d/KnYOOwuMz/my_report
     # https://www.metricfire.com/docs/grafana-http-api/#Update-dashboard
 
+    dashboard_data, err_msg = json_api.json_to_string(updated_dashboard_data)
 
-    reply = requests.post(url=url, headers=headers, data=json.dumps(updated_dashboard_data), verify=False)
+    if dashboard_data:
+        response, err_msg = rest_api.do_post(url=url, headers_data=headers, data_str=dashboard_data)
 
-    return reply.status_code == 200
+    if err_msg or response.status_code != 200:
+        ret_val = False
+    else:
+        ret_val = True
+
+    #reply = requests.post(url=url, headers=headers, data=json.dumps(updated_dashboard_data), verify=False)
+
+    return ret_val
 
 
 # -----------------------------------------------------------------------------------
