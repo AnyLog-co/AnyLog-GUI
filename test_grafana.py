@@ -12,11 +12,41 @@ such non-permitted act to AnyLog, Inc.
 
 from app import grafana_api
 
+import requests
+
+def update_dashboard():
+
+    headers = {"Accept": "application/json",
+               "Content-Type": "application/json",
+               "Authorization": "Bearer eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9"
+               }
+
+
+    #r = requests.get("http://www.127.0.0.1:3000", headers=headers)
+    #print(r.text)
+    #print(r.status_code)
+
+    dashboard = {"id": None,
+                 "title": "API_dashboard_test",
+                 "tags": ["CL-5"],
+                 "timezone": "browser",
+                 "rows": [{}],
+                 "schemaVersion": 6,
+                 "version": 0
+                 }
+    payload = {"dashboard": dashboard}
+    url = "http://127.0.0.1:3000/api/dashboards/db"
+
+    p = requests.post(url, headers=headers, json=payload)
+    print(p)
+    print(p.status_code)
+    print(p.text)
+
 
 def update_report():
 
     platform_info = {
-        "url" : 'http://localhost:3000',
+        "url" : 'http://127.0.0.1:3000',
         "token" : 'eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9',
         "report_name" : 'New_Report',
         "tables_list" : [('Orics', 'ALARMS_DESPLAY_TIME')],
@@ -40,7 +70,9 @@ def update_report():
 
 def main():
     print("\r\nTest Grafana connector")
-    update_report()
+    #update_report()
+
+    update_dashboard()
 
 if __name__ == "__main__":
     main()

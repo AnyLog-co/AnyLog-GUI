@@ -32,7 +32,7 @@ def do_get(url, headers_data):
 def do_post(url, headers_data, data):
 
     try:
-        response = response = requests.get(url=url, params=None, verify=False, headers=headers_data, data = data)
+        response = requests.get(url=url, params=None, verify=False, headers=headers_data, data = data)
     except HTTPError as http_err:
         error_msg = "REST POST HTTPError Error: %s" % str(http_err)
         response = None
