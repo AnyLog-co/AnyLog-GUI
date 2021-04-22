@@ -7,9 +7,9 @@ from app import json_api
 from app import rest_api
 
 import requests
-import json
 import copy
 import sys
+from datetime import datetime
 
 # -----------------------------------------------------------------------------------
 # Connect to Grafana Home dashboard
@@ -50,7 +50,8 @@ def deploy_report(**platform_info):
         ("report_name",str),
         ("tables_list",list),
         ("base_report",str),                 # The list of base reports
-        ("dates", str),
+        ("from_date", str),
+        ("to_date", str),
     ]
 
     for param in params_required:
@@ -69,7 +70,8 @@ def deploy_report(**platform_info):
     token =  platform_info['token']
     dashboard_name =  platform_info['report_name']
     tables_list =  platform_info['tables_list']
-
+    from_date = platform_info["from_date"]
+    to_date = platform_info["to_date"]
 
     url = None
     # Get the list of dashboards
@@ -127,6 +129,19 @@ def deploy_report(**platform_info):
             else:
                 err_msg = "Grafana API: Unable to extract version from dasboard %s" % dashboard_name
 
+    if not err_msg:
+        # Time range is added to the URL - https://grafana.com/docs/grafana/latest/dashboards/time-range-controls/#control-the-time-range-using-a-url
+        # Example data to add:
+        # ?&from=1614585600000&to=1619938799000
+        # ?&from=now-90d&to=now
+        # ?&from=now-2M&to=now
+        # ?&from=202103011248&to=202105011248
+        if to_date[:3] == "now":
+            url += "?&%sfrom=%s&to=now" % from_date
+        else:
+            # Transform to  ms epoch
+            ms_from = int((datetime(int(from_date[:4], from_date[5:7], from_date[8:9])) - datetime(1970, 1, 1)).total_seconds() * 1000)
+            ms_to = int((datetime(int(to_date[:4], to_date[5:7], to_date[8:9])) - datetime(1970, 1, 1)).total_seconds() * 1000)
 
     return [url, err_msg]
 # -----------------------------------------------------------------------------------

@@ -207,7 +207,7 @@ def deploy_report():
 
     platform_name = form_info["platform"]    # Platform name + connect string + token
 
-    report_date, err_msg = get_time_range(form_info)
+    from_date, to_date, err_msg = get_time_range(form_info)
     if err_msg:
         flash(err_msg, category='error')
         return redirect(('/dynamic_report'))
@@ -219,7 +219,8 @@ def deploy_report():
     # add info from the report 
     platform_info['report_name'] = report_name
     platform_info['tables_list'] = tables_list
-    platform_info['dates'] = report_date
+    platform_info['from_date'] = from_date
+    platform_info['to_date'] = from_date
     platform_info['base_report'] = "AnyLog_Base"
 
 
@@ -236,9 +237,8 @@ def deploy_report():
 def get_time_range(form_info):
 
     err_msg = None
-    report_date = None
-    wrong_selection = False
-
+    from_date = None
+    to_date = None
     wrong_selection = False
     if not form_info['date_range'] and form_info['start_date'] and form_info['end_date']:
         # select to dates
@@ -246,17 +246,16 @@ def get_time_range(form_info):
         to_date = form_info["end_date"]
         if from_date >= to_date:
             wrong_selection = True
-        else:
-            report_date = from_date + '-' + to_date
     elif form_info['date_range'] and not form_info['start_date'] and not form_info["end_date"]:
-        report_date = form_info['date_range']
+        from_date = "now" + form_info['date_range']
+        to_date = "now"
     else:
         wrong_selection = True
 
     if wrong_selection:
         err_msg = "AnyLog: Wrong selection for report date and time range"
 
-    return [report_date, err_msg]
+    return [from_date, to_date, err_msg]
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------
