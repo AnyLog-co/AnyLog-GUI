@@ -172,7 +172,7 @@ def dynamic_report( report_name = "My_Report" ):
     
     return render_template('report_deploy.html',  **select_info )
 # -----------------------------------------------------------------------------------
-# Processing form: report_deploy.html
+# Processing form: report_deploy.html - Push the info to the interface
 # -----------------------------------------------------------------------------------
 @app.route('/deploy_report', methods={'GET','POST'})
 def deploy_report():
@@ -207,6 +207,11 @@ def deploy_report():
 
     platform_name = form_info["platform"]    # Platform name + connect string + token
 
+    report_date, err_msg = get_time_range(form_info)
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(('/dynamic_report'))
+
     platforms_tree = gui_view_.get_base_info("visualization")
     
     # The Info from the config file
@@ -214,7 +219,9 @@ def deploy_report():
     # add info from the report 
     platform_info['report_name'] = report_name
     platform_info['tables_list'] = tables_list
+    platform_info['dates'] = report_date
     platform_info['base_report'] = "AnyLog_Base"
+
 
     report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:
@@ -222,7 +229,34 @@ def deploy_report():
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
         return redirect(('/dynamic_report'))
 
-    return redirect((report_url))      
+    return redirect((report_url))
+# -----------------------------------------------------------------------------------
+# Get the time range from the form - select between specifying the range and predefined options.
+# -----------------------------------------------------------------------------------
+def get_time_range(form_info):
+
+    err_msg = None
+    report_date = None
+    wrong_selection = False
+
+    wrong_selection = False
+    if not form_info['date_range'] and form_info['start_date'] and form_info['end_date']:
+        # select to dates
+        from_date = form_info['start_date']
+        to_date = form_info["end_date"]
+        if from_date >= to_date:
+            wrong_selection = True
+        else:
+            report_date = from_date + '-' + to_date
+    elif form_info['date_range'] and not form_info['start_date'] and not form_info["end_date"]:
+        report_date = form_info['date_range']
+    else:
+        wrong_selection = True
+
+    if wrong_selection:
+        err_msg = "AnyLog: Wrong selection for report date and time range"
+
+    return [report_date, err_msg]
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------
@@ -310,8 +344,7 @@ def al_command():
             'User-Agent' : 'AnyLog/1.23'
     }
 
-    
-    
+
     select_info = get_select_menu()
  
     target_node = get_target_node()

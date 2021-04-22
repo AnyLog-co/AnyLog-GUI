@@ -50,6 +50,7 @@ def deploy_report(**platform_info):
         ("report_name",str),
         ("tables_list",list),
         ("base_report",str),                 # The list of base reports
+        ("dates", str),
     ]
 
     for param in params_required:
