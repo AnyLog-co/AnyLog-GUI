@@ -9,6 +9,7 @@ from app import rest_api
 import requests
 import json
 import copy
+import sys
 
 # -----------------------------------------------------------------------------------
 # Connect to Grafana Home dashboard
@@ -48,7 +49,7 @@ def deploy_report(**platform_info):
         ("token", str),
         ("report_name",str),
         ("tables_list",list),
-        ("base",list),                 # The list of base reports
+        ("base_report",str),                 # The list of base reports
     ]
 
     for param in params_required:
@@ -67,7 +68,6 @@ def deploy_report(**platform_info):
     token =  platform_info['token']
     dashboard_name =  platform_info['report_name']
     tables_list =  platform_info['tables_list']
-    base =  platform_info['base']
 
 
     url = None
@@ -75,37 +75,57 @@ def deploy_report(**platform_info):
     reply, err_msg = get_dashboards( grafana_url, token )
     
     if reply:
-        dashboard_id, dashboard_uid, err_msg = get_existing_dashboaard(reply, dashboard_name)
+        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
     else:
-        err_msg = "Grafana failed to provide the list of dashboards"
+        err_msg = "Grafana API: Failed to provide the list of dashboards"
 
     if not err_msg:
 
         if not dashboard_id:
             # deploy a new report
-            dashboard_uid, err_msg = add_dashboard(grafana_url, token)
-            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-        else:
-            dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_uid, dashboard_name )
-            if not err_msg:
-                if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
-                    dasboard_version = dashboard_info["meta"]["version"]
-
+            base_dashboard = platform_info['base_report']
+            dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
+            if not dashboard_id:
+                # Missing base report
+                err_msg = "Grafana API: Missing base dasboard: %s" % base_dashboard
+            else:
+                # Get the report
+                dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
+                if not err_msg:
                     # Update the dasboard based on the tables and time to query
                     is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list)
                     if error_msg:
-                        err_msg = "Grafana: unable to update dasboard %s" % dashboard_name
+                        err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
                     else:
-                        if is_modified:
-                            # push update to Grafana
-                            err_msg = update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dasboard_version)
-
-                        if not err_msg and "url" in dashboard_info["meta"]:
+                        dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
+                        if not err_msg:
                             url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-                else:
-                    err_msg = "Grafana: unable to extract version from dasboard %s" % dashboard_name
+        else:
+            # Update an existing report
+            dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_uid, dashboard_name )
+            if not err_msg:
+                if not dashboard_version:
+                    if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
+                        dashboard_version = dashboard_info["meta"]["version"]
+                    else:
+                        dashboard_version = 1
 
-                    # update report
+                # Update the dasboard based on the tables and time to query
+                is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list)
+                if error_msg:
+                    err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
+                else:
+                    if is_modified:
+                        # push update to Grafana
+                        if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dashboard_version):
+                            # Failed to upfate a report
+                            err_msg = "Grafana API: Failed to update dasboard %s" % dashboard_name
+
+                    if not err_msg and "url" in dashboard_info["meta"]:
+                        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+            else:
+                err_msg = "Grafana API: Unable to extract version from dasboard %s" % dashboard_name
+
 
     return [url, err_msg]
 # -----------------------------------------------------------------------------------
@@ -113,16 +133,18 @@ def deploy_report(**platform_info):
 # -----------------------------------------------------------------------------------
 def get_existing_dashboaard( dasborads_reply, dashboard_name ):
 
+    report_id = 0
+    report_uid = ""
+    report_version = 0
     if dasborads_reply.status_code == 200:
         # List of all dashboards is available
         try:
             dashboards = dasborads_reply.json()
         except:
-            err_msg = "Unable to parse Grafana data retrieved from request to dashboards"
+            err_msg = "Grafana API: Unable to parse data retrieved from request to dashboards"
         else:
             err_msg = None
-            report_id = 0
-            report_uid = ""
+
             # test if the report is in the list
             for entry in dashboards:
                 # every entry is a report
@@ -132,8 +154,11 @@ def get_existing_dashboaard( dasborads_reply, dashboard_name ):
                         # reports exists
                         report_id = entry["id"]
                         report_uid = entry["uid"]
+                        if "version" in entry:
+                            report_version = entry["version"]
 
-    return [report_id, report_uid, err_msg]
+
+    return [report_id, report_uid, report_version, err_msg]
 # -----------------------------------------------------------------------------------
 # Get a report
 # If the report is new - add the report
@@ -166,7 +191,7 @@ def get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name):
         ret_val = False
 
     if not ret_val:
-        err_msg = "Grafana: Failed to retrieve dashboard %s" % dashboard_name
+        err_msg = "Grafana API: Failed to retrieve dashboard %s" % dashboard_name
         dashboard_struct = None
 
     return [dashboard_struct, err_msg]
@@ -174,7 +199,7 @@ def get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name):
 # -----------------------------------------------------------------------------------
 # Add a new report
 # -----------------------------------------------------------------------------------
-def add_dashboard(grafana_url:str, token:str):
+def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard):
 
     url = "%s/api/dashboards/db" % grafana_url
 
@@ -184,33 +209,37 @@ def add_dashboard(grafana_url:str, token:str):
         "Accept": "application/json"
     }
     new_dashboard_data = {
-    "dashboard": {
-        "id": None,
-        "uid": None,
-        "title": "Production Overview",
-        "tags": [ "templated" ],
-        "timezone": "browser",
-        "schemaVersion": 16,
-        "version": 0
-    },
     "folderId": 0,
     "overwrite": False
     }
 
+    new_dashboard["title"] = dashboard_name
+    new_dashboard["id"] = None
+    new_dashboard["uid"] = None
+    new_dashboard["version"] = 0
+    new_dashboard_data["dashboard"] = new_dashboard
 
-    reply_url = None
-    report_data, err_msg = json_api.json_to_string(new_dashboard_data)
 
-    if report_data:
-        response, err_msg = rest_api.do_post(url, headers_data, json.dumps(new_dashboard_data))
+    dashboard_uid = None
+    dashboard_data, err_msg = json_api.json_to_string(new_dashboard_data)
+
+    if dashboard_data:
+        response, err_msg = rest_api.do_post(url=url, headers_data=headers_data, data_str=dashboard_data)
 
         if response:
             if response.status_code != 200:
-                err_msg = "Failed to update Grafana report"
+                err_msg = "Grafana API: Failed to update a mew dashboard"
             else:
-                reply_url = grafana_url
+                try:
+                    post_reply = response.json()
+                except:
+                    errno, err = sys.exc_info()[:2]
+                    err_msg =  "Grafana API: Failed to update  new dashboard: %s" % str(err)
+                else:
+                    dashboard_uid =  post_reply["uid"]
+
     
-    return [reply_url, err_msg]
+    return [dashboard_uid, err_msg]
 # -----------------------------------------------------------------------------------
 # Get dasboards IDs
 # There is no method to list dashboards, - do an empty search request and get dashboards from the results.
@@ -279,10 +308,19 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
     # http://127.0.0.1:3000/d/KnYOOwuMz/my_report
     # https://www.metricfire.com/docs/grafana-http-api/#Update-dashboard
 
+    dashboard_data, err_msg = json_api.json_to_string(updated_dashboard_data)
 
-    reply = requests.post(url=url, headers=headers, data=json.dumps(updated_dashboard_data), verify=False)
+    if dashboard_data:
+        response, err_msg = rest_api.do_post(url=url, headers_data=headers, data_str=dashboard_data)
 
-    pass
+    if err_msg or response.status_code != 200:
+        ret_val = False
+    else:
+        ret_val = True
+
+    #reply = requests.post(url=url, headers=headers, data=json.dumps(updated_dashboard_data), verify=False)
+
+    return ret_val
 
 
 # -----------------------------------------------------------------------------------
@@ -305,7 +343,7 @@ def modify_dashboard(dashboard, dashboard_name, tables_list):
                     json_str =  base_target["data"]         # This is the ANyLog Query
                     al_query, err_msg = json_api.string_to_json(json_str)
                     if not al_query or not isinstance(al_query,dict):
-                        error_msg = "Grafana: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
+                        error_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
                         break
 
                     al_query["dbms"] = table[0]
@@ -313,7 +351,7 @@ def modify_dashboard(dashboard, dashboard_name, tables_list):
                     # Map back to a string
                     data, error_msg = json_api.json_to_string(al_query)
                     if error_msg:
-                        error_msg = "Grafana: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+                        error_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
                         break
 
                     data = data.replace(',',',\r\n')
