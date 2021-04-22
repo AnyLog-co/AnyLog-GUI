@@ -140,8 +140,11 @@ def deploy_report(**platform_info):
             url += "?&from=%s&to=now" % from_date
         else:
             # Transform to  ms epoch
-            ms_from = int((datetime(int(from_date[:4], from_date[5:7], from_date[8:9])) - datetime(1970, 1, 1)).total_seconds() * 1000)
-            ms_to = int((datetime(int(to_date[:4], to_date[5:7], to_date[8:9])) - datetime(1970, 1, 1)).total_seconds() * 1000)
+            ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), int(from_date[14:16]) ) \
+                           - datetime(1970, 1, 1)).total_seconds() * 1000)
+            ms_to = int((datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
+                 - datetime(1970, 1, 1)).total_seconds() * 1000)
+            url += "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
 
     return [url, err_msg]
 # -----------------------------------------------------------------------------------

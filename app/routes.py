@@ -220,7 +220,7 @@ def deploy_report():
     platform_info['report_name'] = report_name
     platform_info['tables_list'] = tables_list
     platform_info['from_date'] = from_date
-    platform_info['to_date'] = from_date
+    platform_info['to_date'] = to_date
     platform_info['base_report'] = "AnyLog_Base"
 
 
