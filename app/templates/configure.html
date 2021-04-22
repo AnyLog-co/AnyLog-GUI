@@ -10,19 +10,12 @@
     <h1>Configure</h1>
     
         <p>
-            {{ form.node_type.label }}<br>
-            {{ form.node_type(size = 32) }}<br>
-            {% for error in form.node_type.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
             {{ form.company.label }}<br>
             {{ form.company(size = 32) }}<br>
             {% for error in form.company.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-       </p>
+        </p>
        <p>
             {{ form.node_ip.label }}<br>
             {{ form.node_ip(size = 32) }}<br>

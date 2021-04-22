@@ -1,5 +1,3 @@
-
-
 {% extends "base.html" %}
 
   
@@ -10,24 +8,114 @@
     <h1>Command</h1>
     <form action="{{ url_for('al_command') }}" method="post">
         <p>
-            {{ form.connect_ip.label }}<br>
-            {{ form.connect_ip(size = 32) }}<br>
+	    <h3>Basic SCP/SSH Connection Info</h3>
+            {{ form.conn_info.label }}
+	    {{ form.conn_info(size = 10) }}<br><br> 
+            {{ form.conn_port.label }}
+	    {{ form.conn_port(size = 2) }}<br><br>
+            {{ form.conn_passwd.label }}
+	    {{ form.conn_passwd(size = 10) }}<br>
         </p>
-        <p>
-            {{ form.connect_port.label }}<br>
-            {{ form.connect_port(size = 4) }}<br>
-        </p>
-        <p>
-            {{ form.connect_pwd.label }}<br>
-            {{ form.connect_pwd(size = 4) }}<br>
-        </p>
+	<br>
 
-        <p>{{ form.is_operator() }} {{form.is_operator.label}}</p>
-        <p>{{ form.is_publisher() }} {{form.is_publisher.label}}</p>
-        <p>{{ form.is_query() }} {{form.is_query.label}}</p>
-        <p>{{ form.is_master() }} {{form.is_master.label}}</p>
+	<p>
+	    <h3>Basic AnyLog Parameters</h3> 
+            {{ form.build_type.label }}
+            {{ form.build_type(size = 4) }}<br><br> 
+            {{ form.node_type.label }}
+	    {{ form.node_type(size = 4) }}<br><br>
+            {{ form.company_name.label }}
+	    {{ form.company_name(size = 4) }}<br><br>
+            {{ form.node_name.label }}
+            {{ form.node_name(size = 4) }}<br>
+        </p>
+	<br>
 
-        <p>{{ form.deploy() }}</p>
+	<!-- Autentication -->
+	<p>
+	    <h3>REST Authentication</h3>
+	    {{ form.set_authentication.label }}
+	    {{ form.set_authentication() }} <br><br> 
+	    {{ form.authentication_user_info.label }}
+	    {{ form.authentication_user_info(size = 4) }}<br> 
+	</p> 
+	<br> 
+        
+	<p>
+	    <h3>Networking Configuration</h3> 
+	    {{ form.master_node.label }} 
+	    {{ form.master_node(size = 4) }}<br><br> 
+	    {{ form.anylog_tcp_port.label }}
+	    {{ form.anylog_tcp_port(size = 4) }}<br><br> 
+            {{ form.anylog_rest_port.label }} 
+	    {{ form.anylog_rest_port(size = 4) }}<br><br> 
+	    {{ form.local_broker.label }}
+	    {{ form.local_broker() }}<br><br> 
+	    {{ form.anylog_broker_port.label }}
+	    {{ form.anylog_broker_port(size = 4) }}<br> 
+	</p>
+        <br>
+
+	<p> 
+	    <h3>Operator Cluster Parameters</h3> 
+	    {{ form.enable_cluster.label }} 
+	    {{ form.enable_cluster() }}<br><br> 
+	    {{ form.cluster_id.label }}
+	    {{ form.cluster_id(size = 10) }}<br><br> 
+	    {{ form.cluster_name.label }} 
+	    {{ form.cluster_name(size = 4) }}<br><br>
+	    {{ form.table.label }}
+	    {{ form.table(size = 10) }}<br> 
+	</p> 
+	<br> 
+
+	<p> 
+	    <h3>Database Information</h3> 
+	    {{ form.default_dbms.label }}
+	    {{ form.default_dbms(size = 4) }}<br><br>
+	    {{ form.db_type.label }}
+	    {{ form.db_type(size = 4) }}<br><br> 
+	    {{ form.db_user.label }}
+	    {{ form.db_user(size = 10) }}<br><br>
+	    {{ form.db_port.label }}
+	    {{ form.db_port(size = 4) }}<br> 
+	</p> 
+	<br> 
+
+	<p>
+	    <h3>MQTT Information</h3>
+	    <p style="font-size: 12px">
+	        <b>Disclaimer</b>: MQTT connection works only with <i>Operator</i> & <i>Publisher</i> node types. 
+		Please note, if <i>local broker</i> is enabled then the <i>mqtt connection info</i> should be to "local" and <i>MQTT connection port</i> should be the same as <i>AnyLog broker port</i> 
+		Additionally, the default parameters set send data to an active MQTT broker we use for testing purposes. 
+		<br><br> 
+	    </p> 
+	    {{ form.mqtt_enable.label }} 
+	    {{ form.mqtt_enable() }}<br><br>
+	    {{ form.mqtt_enable_other.label }}
+	    {{ form.mqtt_enable_other() }} <br><br>
+	    {{ form.mqtt_conn_info.label }}
+	    {{ form.mqtt_conn_info( size = 10) }}<br><br> 
+	    {{ form.mqtt_conn_port.label }}
+            {{ form.mqtt_conn_port( size = 4) }}<br><br> 
+	    {{ form.mqtt_log.label }}
+	    {{ form.mqtt_log() }}<br><br> 
+
+	    {{ form.mqtt_topic_name.label }} 
+	    {{ form.mqtt_topic_name( size = 10 ) }}<br><br> 
+	    {{ form.mqtt_topic_dbms.label }}
+	    {{ form.mqtt_topic_dbms(size=4) }}<br><br>
+	    {{ form.mqtt_column_timestamp.label }}
+	    {{ form.mqtt_column_timestamp(size=10) }}<br><br>
+	    {{ form.mqtt_column_value_type.label }}
+	    {{ form.mqtt_column_value_type(size=4) }}<br><br> 
+	    {{ form.mqtt_column_value.label }}
+	    {{ form.mqtt_column_value(size=10) }}<br><br>
+	    {{ form.mqtt_extra_column.label }}
+	    {{ form.mqtt_extra_column(size=10) }}<br>
+	</p>
+        <br>
+	<p>{{ form.deploy() }}</p>
     </form>
 {% endblock %}
 
