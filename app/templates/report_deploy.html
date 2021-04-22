@@ -46,6 +46,22 @@
     <label for="end-date">End:   </label>
     <input type="datetime-local" id="end-date" name="end-date">
 
+    <!-- Select Date Range  -->
+    &nbsp&nbsp&nbsp
+    <label for="range">Date Range:</label>
+        <select name="date_range" id="date_range">
+            <option value="-5m">Last 5 minutes</option>
+            <option value="-15m">Last 15 minutes</option>
+            <option value="-30m">Last 30 minutes</option>
+            <option value="-1h">Last hour</option>
+            <option value="-3h">Last 3 hours</option>
+            <option value="-6h">last 6 hours</option>
+            <option value="-12h">Last 12 hours</option>
+            <option value="-1d">Last day</option>
+            <option value="-2d">Last 2 days</option>
+            <option value="-7d">Last 7 days</option>
+        </select>
+
     <br><br>
     <!-- Select Visualization Tool  -->
     {% for option in visualization %}

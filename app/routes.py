@@ -161,7 +161,7 @@ def dynamic_report( report_name = "My_Report" ):
     select_info['table'] = al_table
     select_info['title'] = "Report: %s" % report_name
 
-    # select grafics options
+    # select output options
     options_list = ["Min", "Max", "Avg", "Count", "Diff"]
     select_info['options_list'] = options_list
 
