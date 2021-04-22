@@ -214,6 +214,7 @@ def deploy_report():
     # add info from the report 
     platform_info['report_name'] = report_name
     platform_info['tables_list'] = tables_list
+    platform_info['base_report'] = "AnyLog_Base"
 
     report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:

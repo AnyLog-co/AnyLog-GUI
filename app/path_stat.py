@@ -450,7 +450,8 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
 # -------------------------------------------------------------------------
 def reset_str_chars( source_str ):
     global translate_dict_
-    return source_str.translate ( translate_dict_ )
+    source_lower = source_str.lower()
+    return source_lower.translate ( translate_dict_ )
 
 # ======================================================================================================================
 # Get the type of policy
