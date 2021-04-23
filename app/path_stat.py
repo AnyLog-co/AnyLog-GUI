@@ -61,7 +61,7 @@ def set_new_user(user_name):
 # -----------------------------------------------------------------------------------
 # Get user Path overview
 # -----------------------------------------------------------------------------------
-def get_path_overview(user_name, parent_menu):
+def get_path_overview(user_name, level, parent_menu):
     '''
     Return the step name and the name from the data instance at this layer
     '''
@@ -73,10 +73,8 @@ def get_path_overview(user_name, parent_menu):
     path_steps = []
     path_level = user_info["level"]
     # Set the path to the data location
-    for index, step in enumerate(parent_menu):
-        if index > path_level:
-            break
-        step_name = step[0]
+    for index in range(level - 1):
+        step_name = parent_menu[index][0]
         if index < len(path_info):
             if path_info[index]["data"]:
                 step_data = path_info[index]["data"]

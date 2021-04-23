@@ -524,12 +524,12 @@ def tree( selection = "" ):
     title = ""
     parent_menu = select_info["parent_gui"]
     for parent in parent_menu:
-        title += parent[0] + " : "
+        title +=  " [%s] " % parent[0]
     select_info['title'] = title
 
     tables_list = []    # A list to contain all the data to print - every entry represents a pth step
     # Set the tables representing the parents:
-    path_steps = path_stat.get_path_overview(user_name, select_info['parent_gui'])  # Get the info of the parent steps
+    path_steps = path_stat.get_path_overview(user_name, level, select_info['parent_gui'])  # Get the info of the parent steps
 
     for parent in path_steps:
         parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
