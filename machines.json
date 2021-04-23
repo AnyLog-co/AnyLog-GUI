@@ -18,8 +18,10 @@
                                 }
                             },
             "url_pages"  : [
-                ["Company", "/companies"],
-                ["Reports", "http://127.0.0.1:3000"]
+                ["Company", "https://orics.com/"],
+                ["Map", "http://45.79.152.190:3000/d/iZLDOXyGk/network-summary?orgId=1"],
+                ["Dashboards", "http://45.79.152.190:3000/dashboards"],
+                ["TestNet", "http://45.79.152.190:3000/dashboards"]
             ],
             "children" : {
                 "Tag" :
