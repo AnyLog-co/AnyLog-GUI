@@ -74,7 +74,6 @@ def get_path_overview(user_name, parent_menu):
     path_steps = []
     # Set the path to the data location
     for index, step in enumerate(parent_menu):
-        step_info = []
         step_name = step[0]
         if index < len(path_info):
             if path_info[index]["data"]:
@@ -91,8 +90,7 @@ def get_path_overview(user_name, parent_menu):
                         else:
                             value = ""
                         columns_val.append(value)
-                    step_info.append( (step_name, step_keys, step_title, [columns_val]) )
-                    path_steps.append(step_info)
+                    path_steps.append( (step_name, step_title, step_keys, [columns_val]) )
 
     return path_steps
 

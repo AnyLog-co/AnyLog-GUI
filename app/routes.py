@@ -532,7 +532,7 @@ def tree( selection = "" ):
     path_steps = path_stat.get_path_overview(user_name, select_info['parent_gui'])  # Get the info of the parent steps
 
     for parent in path_steps:
-        parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], None)
+        parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
         tables_list.append(parent_table)
 
     # Set table info to present in form
