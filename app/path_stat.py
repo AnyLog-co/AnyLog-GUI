@@ -57,6 +57,28 @@ def set_new_user(user_name):
     }
     set_new_state(user_name, "My_Report", True)
 
+
+# -----------------------------------------------------------------------------------
+# Get user Path overview
+# -----------------------------------------------------------------------------------
+def get_path_overview(user_name, parent_menu):
+    '''
+    Return the step name and the name from the data instance at this layer
+    '''
+    global active_state_
+
+    path_info = []
+    user_info = active_state_[user_name]
+
+    path_info = user_info["path"]  # the report maintains the path info
+
+    # Set the path to the data location
+    for index, step in enumerate(parent_menu):
+        step_name = step[0]
+        if index < len(path_info):
+            step_data = path_info[index]["data"]
+            step_keys = path_info[index]["keys"]
+
 # -----------------------------------------------------------------------------------
 # Reset or start a new state
 # -----------------------------------------------------------------------------------
@@ -103,10 +125,13 @@ def get_report_selected(user_name):
 # Update the path with the entries visited by the user 
 # The path is maintained as a f(report)
 # -----------------------------------------------------------------------------------
-def update_status(user_name, parent_menu, id, data):
+def update_status(user_name, parent_menu, list_keys, id, data):
 
     '''
     Keep the user path state as f(user_name + report_used)
+    The info maintained:
+        data - the user data
+        keys - the keys tp pull the info from the JSON
     '''
 
     global active_state_
@@ -119,12 +144,14 @@ def update_status(user_name, parent_menu, id, data):
     for index, step in enumerate(parent_menu):
         step_name = step[0]
         if index >= len(path_info):
-            path_info.append( { "name" : step_name, "data" : None })
+            path_info.append( { "name" : step_name, "data" : None, "keys": None })
         elif not path_info[index]["name"] != step_name:
             path_info[index]["name"] = step_name
             path_info[index]["data"] = None
+            path_info[index]["keys"] = None     # The keys to pull data from the JSON
     
     path_info[index]["data"] = data    # Keep the data of that layer
+    path_info[index]["keys"] = list_keys  # Keep the data of that layer
     user_info["level"] = index  # Keep current location
 
 # -----------------------------------------------------------------------------------

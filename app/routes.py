@@ -158,6 +158,8 @@ def dynamic_report( report_name = "My_Report" ):
     al_table = AnyLogTable("Report: %s" % report_name, list_columns, None, table_rows, extra_columns)
 
     select_info = get_select_menu()
+
+
     select_info['table'] = al_table
     select_info['title'] = "Report: %s" % report_name
 
@@ -516,6 +518,19 @@ def tree( selection = "" ):
         else:
             policy_type = None
 
+    select_info = get_select_menu(selection=selection)
+
+    # Make title from the path
+    title = ""
+    parent_menu = select_info["parent_gui"]
+    for parent in parent_menu:
+        title += parent[0] + " : "
+    select_info['title'] = title
+
+
+    # Set the tables representing the parents:
+    path_stat.get_path_overview(user_name, select_info['parent_gui'])
+
     # Set table info to present in form
     table_rows = []
     for entry in data_list:
@@ -537,7 +552,7 @@ def tree( selection = "" ):
         table_rows.append(columns_list)
 
 
-    select_info = get_select_menu(selection=selection)
+
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
 
@@ -676,7 +691,11 @@ def path_selection(parent_menu, policy_id, data):
 
     user_name = session["username"]
 
-    path_stat.update_status(user_name, parent_menu, policy_id, data)
+    # pull the keys that are used to print a summary of the data instance
+    gui_sub_tree = gui_view_.get_subtree(parent_menu[-1][1][6:])
+    list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
+
+    path_stat.update_status(user_name, parent_menu, list_keys, policy_id, data)
 
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
@@ -765,11 +784,6 @@ def get_select_menu(selection = "", caller = ""):
     if report_name:
         select_info['report_name'] = report_name
 
-    # Make title from the path
-    title = ""
-    for parent in parent_menu:
-        title += parent[0] + " : "
-    select_info['title'] = title
 
     return select_info
 # -----------------------------------------------------------------------------------
