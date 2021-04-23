@@ -12,6 +12,7 @@
 {% endif %}
 
     {% for table in tables_list %}
+    <h3>{{ table.table_name }}</h3>
     <table border="1">
         <tr>    <!-- table row  -->
             {% for col_name in table.column_names %}
@@ -31,7 +32,7 @@
             {% endfor %}
         </tr>
         {% endfor %}
-        <br>
+
     </table>
     {% endfor %}
     {% if submit %}

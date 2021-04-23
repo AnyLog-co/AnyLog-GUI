@@ -67,13 +67,15 @@ def get_path_overview(user_name, parent_menu):
     '''
     global active_state_
 
-    path_info = []
     user_info = active_state_[user_name]
 
     path_info = user_info["path"]  # the report maintains the path info
     path_steps = []
+    path_level = user_info["level"]
     # Set the path to the data location
     for index, step in enumerate(parent_menu):
+        if index > path_level:
+            break
         step_name = step[0]
         if index < len(path_info):
             if path_info[index]["data"]:
@@ -160,13 +162,14 @@ def update_status(user_name, parent_menu, list_keys, table_title, id, data):
         step_name = step[0]
         if index >= len(path_info):
             path_info.append( { "name" : step_name, "data" : None, "keys": None, "title": None, "id": None})
-        elif not path_info[index]["name"] != step_name:
+        elif path_info[index]["name"] != step_name:
             path_info[index]["name"] = step_name
             path_info[index]["data"] = None
             path_info[index]["keys"] = None     # The keys to pull data from the JSON
             path_info[index]["title"] = None  # The title rrelating to the keys
             path_info[index]["id"] = None
-    
+
+    path_info[index]["name"] = step_name
     path_info[index]["data"] = data    # Keep the data of that layer
     path_info[index]["keys"] = list_keys  # Keep the data of that layer
     path_info[index]["title"] = table_title  # Keep the printout title
