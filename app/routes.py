@@ -638,8 +638,7 @@ def selected( selection = "" ):
         for json_entry in policies:
             # Get the location in the Config file to get the database name and table name
             path_stat.add_entry_to_report(user_name, dbms_name, table_name, json_entry)
-
-        return redirect(url_for('tree', selection='%s' % (selection)))
+        return redirect(('/dynamic_report'))            # Goto delect type of report
 
            
     # organize JSON entries to display
