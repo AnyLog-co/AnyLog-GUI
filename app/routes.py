@@ -162,12 +162,35 @@ def dynamic_report( report_name = "My_Report" ):
     select_info['title'] = "Report: %s" % report_name
 
     # select output options
-    options_list = ["Min", "Max", "Avg", "Range", "Count"]
-    select_info['options_list'] = options_list
+    select_info['default_options_list'] = ["Min", "Max", "Avg"]    # These are flagged as selected
+    select_info['more_options_list'] = ["Range", "Count"]
+
 
     # select visualization platform
     visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
-    select_info['visualization'] = visualization
+    platforms = []
+    default_platform = None
+    for entry in visualization:
+        if "default" in visualization[entry] and visualization[entry]:  # look for the default platform
+            default_platform = entry
+        else:
+            platforms.append(entry)
+    if not default_platform:
+        if not len(platforms):
+            flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW)
+            return redirect(url_for('index'))
+        if len(platforms) == 1:
+            # Only one platform
+            default_platform = platforms[0]
+            platforms = None
+        else:
+            flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW)
+            return redirect(url_for('index'))
+
+    select_info['default_platform'] = default_platform      # Default like: Grafana
+    if platforms and len(platforms):
+        select_info['platforms'] = platforms                # Other platforms like power BI
+
     select_info['report_name'] = report_name
     
     return render_template('report_deploy.html',  **select_info )

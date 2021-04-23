@@ -34,11 +34,18 @@
     <br>
 
     <!-- Select Type of report - Min, Max, Avg -->
-    {% for option in options_list %}
+    {% for option in default_options_list %}
         <!-- Select functionality  -->
         <input type="checkbox" id={{option}} name={{option}} checked>
         <label for={{option}}>{{option}}</label>&nbsp
     {% endfor %}
+     <!-- Select Type of report - range, count -->
+    {% for option in more_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}}>
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+
     <br><br>
 
     <!-- Select Dates  -->
@@ -74,7 +81,9 @@
 
     <br><br>
     <!-- Select Visualization Tool  -->
-    {% for option in visualization %}
+    <input type="radio" id=platform  name=platform  value = {{default_platform}} checked>
+    <label for=platform>{{default_platform}}</label>&nbsp
+    {% for option in platforms %}
         <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
         <input type="radio" id=platform  name=platform  value={{option}}> 
         <label for=platform>{{option}}</label>&nbsp

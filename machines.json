@@ -5,7 +5,8 @@
             "visualization" : { 
                                 "Grafana" : { "url" : "http://localhost:3000",
                                               "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
-                                              "base"  :  ["Base-Report"]
+                                              "base"  :  ["Base-Report"],
+                                              "default" : true
                                 },
                                 "Power BI" : { "url" : "http://localhost:3000",
                                     "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
