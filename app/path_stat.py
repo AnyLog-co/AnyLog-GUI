@@ -71,17 +71,30 @@ def get_path_overview(user_name, parent_menu):
     user_info = active_state_[user_name]
 
     path_info = user_info["path"]  # the report maintains the path info
-
+    path_steps = []
     # Set the path to the data location
     for index, step in enumerate(parent_menu):
+        step_info = []
         step_name = step[0]
         if index < len(path_info):
-            step_data = path_info[index]["data"]
-            step_keys = path_info[index]["keys"]
-            step_title = path_info[index]["title"]
+            if path_info[index]["data"]:
+                step_data = path_info[index]["data"]
+                step_keys = path_info[index]["keys"]
+                step_title = path_info[index]["title"]
+                policy_type = get_policy_type(step_data)
+                if policy_type:
+                    policy = step_data[policy_type]     # Get the data from the JSON structure
+                    columns_val = []
+                    for key in step_keys:
+                        if key in policy:
+                            value = str(policy[key])
+                        else:
+                            value = ""
+                        columns_val.append(value)
+                    step_info.append( (step_name, step_keys, step_title, [columns_val]) )
+                    path_steps.append(step_info)
 
-        
-
+    return path_steps
 
 # -----------------------------------------------------------------------------------
 # Reset or start a new state

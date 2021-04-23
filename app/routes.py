@@ -529,7 +529,7 @@ def tree( selection = "" ):
 
 
     # Set the tables representing the parents:
-    path_stat.get_path_overview(user_name, select_info['parent_gui'])
+    path_steps = path_stat.get_path_overview(user_name, select_info['parent_gui'])  # Get the info of the parent steps
 
     # Set table info to present in form
     table_rows = []
