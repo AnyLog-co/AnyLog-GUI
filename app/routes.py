@@ -527,9 +527,13 @@ def tree( selection = "" ):
         title += parent[0] + " : "
     select_info['title'] = title
 
-
+    tables_list = []    # A list to contain all the data to print - every entry represents a pth step
     # Set the tables representing the parents:
     path_steps = path_stat.get_path_overview(user_name, select_info['parent_gui'])  # Get the info of the parent steps
+
+    for parent in path_steps:
+        parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], None)
+        tables_list.append(parent_table)
 
     # Set table info to present in form
     table_rows = []
@@ -556,8 +560,10 @@ def tree( selection = "" ):
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
 
+    tables_list.append(al_table)    # Add the children
+
     select_info['selection'] = selection
-    select_info['tables_list'] = [al_table]
+    select_info['tables_list'] = tables_list
     select_info['submit'] =  "View"
 
     if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
