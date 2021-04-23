@@ -212,6 +212,8 @@ def deploy_report():
         flash(err_msg, category='error')
         return redirect(('/dynamic_report'))
 
+    query_functions = get_query_functions(form_info)  # get min, max, count, avg
+
     platforms_tree = gui_view_.get_base_info("visualization")
     
     # The Info from the config file
@@ -222,6 +224,7 @@ def deploy_report():
     platform_info['from_date'] = from_date
     platform_info['to_date'] = to_date
     platform_info['base_report'] = "AnyLog_Base"
+    platform_info['functions'] = query_functions
 
 
     report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
@@ -231,6 +234,24 @@ def deploy_report():
         return redirect(('/dynamic_report'))
 
     return redirect((report_url))
+
+# -----------------------------------------------------------------------------------
+# Get the functions of the query - min, max etc.
+# -----------------------------------------------------------------------------------
+def get_query_functions(form_info):
+    functions = []
+    if "Min" in form_info:
+        functions.append("min")
+    if "Max" in form_info:
+        functions.append("max")
+    if "Avg" in form_info:
+        functions.append("avg")
+    if "Count" in form_info:
+        functions.append("count")
+    if "Diff" in form_info:
+        functions.append("Diff")
+    return functions
+
 # -----------------------------------------------------------------------------------
 # Get the time range from the form - select between specifying the range and predefined options.
 # -----------------------------------------------------------------------------------

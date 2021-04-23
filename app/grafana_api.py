@@ -52,6 +52,7 @@ def deploy_report(**platform_info):
         ("base_report",str),                 # The list of base reports
         ("from_date", str),
         ("to_date", str),
+        ("functions",list),                 # Query functions like min max etc
     ]
 
     for param in params_required:
@@ -72,6 +73,7 @@ def deploy_report(**platform_info):
     tables_list =  platform_info['tables_list']
     from_date = platform_info["from_date"]
     to_date = platform_info["to_date"]
+    functions = platform_info["functions"]
 
     url = None
     # Get the list of dashboards
@@ -96,7 +98,7 @@ def deploy_report(**platform_info):
                 dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
                 if not err_msg:
                     # Update the dasboard based on the tables and time to query
-                    is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list)
+                    is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list, functions)
                     if error_msg:
                         err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
                     else:
@@ -114,7 +116,7 @@ def deploy_report(**platform_info):
                         dashboard_version = 1
 
                 # Update the dasboard based on the tables and time to query
-                is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list)
+                is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list, functions)
                 if error_msg:
                     err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
                 else:
@@ -347,7 +349,7 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 # Go over all the panels and modify the targets on each panel.
 # Each target[0] is duplicated for each database and table
 # -----------------------------------------------------------------------------------
-def modify_dashboard(dashboard, dashboard_name, tables_list):
+def modify_dashboard(dashboard, dashboard_name, tables_list, functions):
     error_msg = None
     panels_list = dashboard["panels"]
     is_modified = False
@@ -367,15 +369,18 @@ def modify_dashboard(dashboard, dashboard_name, tables_list):
 
                     al_query["dbms"] = table[0]
                     al_query["table"] = table[1]
+
+                    if len(functions):
+                        # If user specified SQL functions Min Max etc
+                        al_query["functions"] = functions
+
                     # Map back to a string
-                    data, error_msg = json_api.json_to_string(al_query)
+
+                    data, error_msg = format_grafana_json(al_query)
                     if error_msg:
                         error_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
                         break
 
-                    data = data.replace(',',',\r\n')
-                    data = data.replace('{', '{\r\n')
-                    data = data.replace('}', '\r\n}')
                     base_target["data"] = data
                     updated_targets.append(copy.deepcopy(base_target))   # Create a new entry
                     is_modified = True
@@ -385,6 +390,33 @@ def modify_dashboard(dashboard, dashboard_name, tables_list):
 
     return [is_modified, error_msg]
 
+# -----------------------------------------------------------------------------------
+# Format the Grafana JSON (in the additional JSON data)
+# -----------------------------------------------------------------------------------
+def format_grafana_json(al_query):
 
+    data_str, error_msg = json_api.json_to_string(al_query)
+    if error_msg:
+        error_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+    else:
+        error_msg = None
+        data_list = data_str.split('[')     # no nre line inside a list
 
+        for index, entry in enumerate(data_list):
+            if not index:
+                offset = 0  # format the entire row
+            else:
+                offset = entry.find(']')
+            if offset != -1:
+                data_formated = entry[offset:].replace(',', ',\r\n')
+                data_formated = data_formated.replace('{', '{\r\n')
+                data_formated = data_formated.replace('}', '\r\n}')
+                data_formated = entry[:offset] + data_formated
+            else:
+                data_formated = entry
+            data_list[index] = data_formated
+
+        data_formated = '['.join(data_list)
+
+    return [data_formated, error_msg]
 
