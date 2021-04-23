@@ -78,6 +78,10 @@ def get_path_overview(user_name, parent_menu):
         if index < len(path_info):
             step_data = path_info[index]["data"]
             step_keys = path_info[index]["keys"]
+            step_title = path_info[index]["title"]
+
+        
+
 
 # -----------------------------------------------------------------------------------
 # Reset or start a new state
@@ -125,7 +129,7 @@ def get_report_selected(user_name):
 # Update the path with the entries visited by the user 
 # The path is maintained as a f(report)
 # -----------------------------------------------------------------------------------
-def update_status(user_name, parent_menu, list_keys, id, data):
+def update_status(user_name, parent_menu, list_keys, table_title, id, data):
 
     '''
     Keep the user path state as f(user_name + report_used)
@@ -144,14 +148,18 @@ def update_status(user_name, parent_menu, list_keys, id, data):
     for index, step in enumerate(parent_menu):
         step_name = step[0]
         if index >= len(path_info):
-            path_info.append( { "name" : step_name, "data" : None, "keys": None })
+            path_info.append( { "name" : step_name, "data" : None, "keys": None, "title": None, "id": None})
         elif not path_info[index]["name"] != step_name:
             path_info[index]["name"] = step_name
             path_info[index]["data"] = None
             path_info[index]["keys"] = None     # The keys to pull data from the JSON
+            path_info[index]["title"] = None  # The title rrelating to the keys
+            path_info[index]["id"] = None
     
     path_info[index]["data"] = data    # Keep the data of that layer
     path_info[index]["keys"] = list_keys  # Keep the data of that layer
+    path_info[index]["title"] = table_title  # Keep the printout title
+    path_info[index]["id"] = id
     user_info["level"] = index  # Keep current location
 
 # -----------------------------------------------------------------------------------

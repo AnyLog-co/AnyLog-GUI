@@ -694,8 +694,9 @@ def path_selection(parent_menu, policy_id, data):
     # pull the keys that are used to print a summary of the data instance
     gui_sub_tree = gui_view_.get_subtree(parent_menu[-1][1][6:])
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
+    table_title = app_view.get_tree_entree(gui_sub_tree, "table_title")
 
-    path_stat.update_status(user_name, parent_menu, list_keys, policy_id, data)
+    path_stat.update_status(user_name, parent_menu, list_keys, table_title, policy_id, data)
 
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
