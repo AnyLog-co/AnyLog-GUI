@@ -32,9 +32,11 @@
     <hr>
     <hr>
     <br>
-    <!-- Select Type of report  -->
+
+    <!-- Select Type of report - Min, Max, Avg -->
     {% for option in options_list %}
-        <input type="radio" id={{option}}  name={{option}}  value={{option}}> <!-- Select functionality  -->
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}} checked>
         <label for={{option}}>{{option}}</label>&nbsp
     {% endfor %}
     <br><br>

@@ -162,7 +162,7 @@ def dynamic_report( report_name = "My_Report" ):
     select_info['title'] = "Report: %s" % report_name
 
     # select output options
-    options_list = ["Min", "Max", "Avg", "Count", "Diff"]
+    options_list = ["Min", "Max", "Avg"]
     select_info['options_list'] = options_list
 
     # select visualization platform

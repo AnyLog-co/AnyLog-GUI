@@ -355,6 +355,9 @@ def modify_dashboard(dashboard, dashboard_name, tables_list, functions):
     is_modified = False
 
     for panel in panels_list:
+        if not "title" in panel or not panel["title"] or panel["title"] == "Panel Title":
+            # Change the panel name to be as the report name
+            panel["title"] = dashboard_name
         targets = panel["targets"]      # Get the list of queries
         updated_targets = []
         if len(targets):
