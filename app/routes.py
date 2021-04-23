@@ -162,7 +162,7 @@ def dynamic_report( report_name = "My_Report" ):
     select_info['title'] = "Report: %s" % report_name
 
     # select output options
-    options_list = ["Min", "Max", "Avg"]
+    options_list = ["Min", "Max", "Avg", "Range", "Count"]
     select_info['options_list'] = options_list
 
     # select visualization platform
@@ -248,8 +248,8 @@ def get_query_functions(form_info):
         functions.append("avg")
     if "Count" in form_info:
         functions.append("count")
-    if "Diff" in form_info:
-        functions.append("Diff")
+    if "Range" in form_info:
+        functions.append("range")
     return functions
 
 # -----------------------------------------------------------------------------------
