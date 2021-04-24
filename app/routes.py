@@ -38,7 +38,6 @@ from app import path_stat       # Maintain the path of the user
 from app import visualize                # The connectors to Grafana, Power BI etc
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
-company_name_ = None        # Company to service
 
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
 gui_view_.set_gui()
@@ -107,10 +106,8 @@ def login():
 
         return redirect(('/index'))     # Go to main page
 
-    if company_name_:
-        title_str = 'Sign In: %s' % company_name_
-    else:
-        title_str = 'Sign In'
+
+    title_str = 'Sign In'
 
     if 'username' in session:
         user_name = session['username']
@@ -336,8 +333,6 @@ def alerts():
 # -----------------------------------------------------------------------------------
 @app.route('/configure', methods = ['GET', 'POST'])
 def configure():
-
-    global company_name_
 
     select_info = get_select_menu( caller = "configure")
     select_info["form"] = ConfigForm()
