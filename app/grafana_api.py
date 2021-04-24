@@ -124,7 +124,7 @@ def deploy_report(**platform_info):
                 dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
                 if not err_msg:
                     # Update the dasboard based on the tables and time to query
-                    is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list, functions)
+                    is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
                     if error_msg:
                         err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
                     else:
@@ -134,6 +134,7 @@ def deploy_report(**platform_info):
         else:
             # Update an existing report
             dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_uid, dashboard_name )
+
             if not err_msg:
                 if not dashboard_version:
                     if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
@@ -142,7 +143,7 @@ def deploy_report(**platform_info):
                         dashboard_version = 1
 
                 # Update the dasboard based on the tables and time to query
-                is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list, functions)
+                is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
                 if error_msg:
                     err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
                 else:
@@ -375,7 +376,7 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 # Go over all the panels and modify the targets on each panel.
 # Each target[0] is duplicated for each database and table
 # -----------------------------------------------------------------------------------
-def modify_dashboard(dashboard, dashboard_name, tables_list, functions):
+def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_list, functions):
     error_msg = None
     panels_list = dashboard["panels"]
     is_modified = False
