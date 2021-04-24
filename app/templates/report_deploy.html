@@ -32,7 +32,10 @@
     <hr>
     <hr>
     <br>
-
+    <!-- Input title for panel -->
+    Title:&nbsp
+    <input type="text" id="title" name="title" value={{report_name}}>
+    <br><br>
     <!-- Select Type of report - Min, Max, Avg -->
     {% for option in default_options_list %}
         <!-- Select functionality  -->
@@ -80,15 +83,43 @@
         </select>
 
     <br><br>
-    <!-- Select Visualization Tool  -->
-    <input type="radio" id=platform  name=platform  value = {{default_platform}} checked>
-    <label for=platform>{{default_platform}}</label>&nbsp
-    {% for option in platforms %}
-        <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
-        <input type="radio" id=platform  name=platform  value={{option}}> 
-        <label for=platform>{{option}}</label>&nbsp
-    {% endfor %}
-    <br><br>
+    {% if panels_list %}
+
+        <hr>
+        <hr>
+        <br>
+
+        <!-- Select Replace, Add, Remove of a panel -->
+        Panels:&nbsp
+
+        <select name="panel" id="panel">    <!-- show list of panels  and select-->
+            {% for panel in panels_list %}
+                <option value="-5m">{{panel}}</option>
+            {% endfor %}
+        </select>
+
+        <input type="radio" id=operation  name=operation  value = Replace checked>
+        <label for=operation>Replace or </label>&nbsp
+
+        <input type="radio" id=operation  name=operation  value=Remove>
+        <label for=operation>Remove</label>&nbsp
+
+        <br>
+        <input type="radio" id=operation  name=operation  value=Add>
+        <label for=operation>Add Panel</label>
+
+    {% else %}
+        <!-- Select Visualization Tool  -->
+        <input type="radio" id=platform  name=platform  value = {{default_platform}} checked>
+        <label for=platform>{{default_platform}}</label>&nbsp
+        {% for option in platforms %}
+            <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
+            <input type="radio" id=platform  name=platform  value={{option}}>
+            <label for=platform>{{option}}</label>&nbsp
+        {% endfor %}
+    {% endif %}
+
+    <br><br><br>
 
     <input type="submit" value="Submit" name="Submit">
 
