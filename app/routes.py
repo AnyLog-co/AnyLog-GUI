@@ -247,7 +247,6 @@ def deploy_report():
 
     report_name = form_info["report_name"]
 
-
     # Remove the tables flagged as removed from the report
     for entry in form_info:
         if entry.startswith("Remove."):
@@ -283,6 +282,11 @@ def deploy_report():
     
     # The Info from the config file
     platform_info = copy.deepcopy( platforms_tree[platform_name])
+
+    if 'title' in form_info:
+        platform_info['title'] = form_info['title']
+    platform_info['operation'] = form_info['operation']
+
     # add info from the report 
     platform_info['report_name'] = report_name
     platform_info['tables_list'] = tables_list
