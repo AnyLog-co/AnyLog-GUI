@@ -130,7 +130,7 @@ def login():
 # -----------------------------------------------------------------------------------
 @app.route('/dynamic_report/', methods={'GET','POST'})
 @app.route('/dynamic_report/<string:report_name>', methods={'GET','POST'})
-def dynamic_report( report_name = "My_Report" ):
+def dynamic_report( report_name = "" ):
     '''
     View the report being used
     Called from - base.html
@@ -139,6 +139,10 @@ def dynamic_report( report_name = "My_Report" ):
         return redirect(('/login'))        # start with Login  if not yet provided
 
     user_name = session['username']
+
+    select_info = get_select_menu()
+    if not report_name:
+        report_name = select_info["report_name"]
 
     report_data = path_stat.get_report_info(user_name, report_name)
     if not report_data or not len(report_data["entries"]):

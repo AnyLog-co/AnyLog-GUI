@@ -121,7 +121,7 @@ def delete_report(user_name, report_name):
         del user_reports[report_name]
         if active_state_[user_name]['selected'] == report_name:
             # The deleted report is the default - set a different report as the default
-            next_report = user_reports.keys()[0]
+            next_report = list(user_reports.keys())[0]
             active_state_[user_name]['selected'] == next_report
 
 
@@ -225,7 +225,8 @@ def set_report(user_name, form_info):
     else:
         report_name = ""        # user did not select an existing report
     
-    if 'new_report' in form_info:
+    if 'new_report' in form_info and len(form_info['new_report']):
+        report_name = ""        # Ignore report selection
         new_report = form_info['new_report'] 
         if len(new_report) == new_report.count(' '):
             new_report = ""       # All spaces
@@ -234,7 +235,7 @@ def set_report(user_name, form_info):
     else:
         new_report = ""       
 
-    if 'rename' in form_info:
+    if 'rename' in form_info and len(form_info['rename']):
         new_name = form_info['rename']
         if ' ' in new_name:
             if len(new_name) == new_name.count(' '):
