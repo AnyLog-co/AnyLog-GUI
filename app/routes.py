@@ -198,6 +198,13 @@ def dynamic_report( report_name = "" ):
         select_info['platforms'] = platforms                # Other platforms like power BI
 
     select_info['report_name'] = report_name
+
+    # Get the list of panels to the report (if Available and suggest to replace a panel or add a panel)
+    url = "http://localhost:3000"
+    token = "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9"
+    panels_list = visualize.get_panels("Grafana", url, token, report_name)
+    if panels_list and len(panels_list):
+        select_info['panels_list'] = panels_list     # Add the list of existing panels in this report
     
     return render_template('report_deploy.html',  **select_info )
 # -----------------------------------------------------------------------------------

@@ -36,6 +36,26 @@ def test_connection( grafana_url:str, token:str ):
     return [ret_val, error_msg]
 
 # -----------------------------------------------------------------------------------
+# Get the list of panels for the dashboard name
+# -----------------------------------------------------------------------------------
+def get_panels(grafana_url:str, token:str, dashboard_name:str):
+
+    panels_list = []
+    reply, err_msg = get_dashboards(grafana_url, token)
+    if reply:
+        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
+        if dashboard_id:
+            dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
+            if dashboard_info:
+                if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
+                    panels = dashboard_info['dashboard']['panels']
+                    for entry in panels:
+                        if 'title' in entry:
+                            panels_list.append(entry['title'])
+
+    return panels_list
+
+# -----------------------------------------------------------------------------------
 # Deploy a report
 # With Grafana - a report is a dashboard, each dashboard has multiple panels (a visualization window), each panel has multiple targets (queries to a table)
 # If the report is new - add the report
