@@ -197,12 +197,10 @@ def dynamic_report( report_name = "" ):
     select_info['report_name'] = report_name
 
     # Get the list of panels to the report (if Available and suggest to replace a panel or add a panel)
-
-    '''
     platform, panels_list = get_panels_list(user_name, report_name)
     if panels_list and len(panels_list):
         select_info['panels_list'] = panels_list     # Add the list of existing panels in this report
-    '''
+
     return render_template('report_deploy.html',  **select_info )
 
 # -----------------------------------------------------------------------------------
@@ -212,12 +210,27 @@ def dynamic_report( report_name = "" ):
 def get_panels_list(user_name, report_name):
 
     platform_name = path_stat.get_platform_name(user_name, report_name)
-    platform = path_stat.get_report_platform(user_name, report_name)
-    url = "http://localhost:3000"
-    token = "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9"
-    panels_list = visualize.get_panels("Grafana", url, token, report_name)
+    platforms_tree = gui_view_.get_base_info("visualization")
+    panels_list = []
+    if not platform_name:
+        # Get from all platforms
+        for platform_option in platforms_tree:
+            if "url" in platforms_tree[platform_option] and "token" in platforms_tree[platform_option]:
+                url = platforms_tree[platform_option]['url']
+                token = platforms_tree[platform_option]['token']
+                one_list = visualize.get_panels(platform_option, url, token, report_name)
+                if one_list and len(one_list):
+                    panels_list += one_list
+    else:
+        # Platform was selected
+        if platform_name in platforms_tree:
+            platform_option = platforms_tree[platform_name]
+            if "url" in platform_option and "token" in platform_option:
+                url = platform_option['url']
+                token = platform_option['token']
+                panels_list = visualize.get_panels(platform_name, url, token, report_name)
 
-
+    return [platform_name, panels_list]
 
 # -----------------------------------------------------------------------------------
 # Processing form: report_deploy.html - Push the info to the interface
