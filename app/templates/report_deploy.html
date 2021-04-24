@@ -101,17 +101,18 @@
         <input type="radio" id=operation  name=operation  value = Replace checked>
         <label for=operation>Replace or </label>&nbsp
 
+        <input type="radio" id=operation  name=operation  value=Add>
+        <label for=operation>Add</label>+
+
         <input type="radio" id=operation  name=operation  value=Remove>
         <label for=operation>Remove</label>&nbsp
 
-        <br>
-        <input type="radio" id=operation  name=operation  value=Add>
-        <label for=operation>Add Panel</label>
 
     {% else %}
         <!-- Select Visualization Tool  -->
         <input type="radio" id=platform  name=platform  value = {{default_platform}} checked>
         <label for=platform>{{default_platform}}</label>&nbsp
+
         {% for option in platforms %}
             <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
             <input type="radio" id=platform  name=platform  value={{option}}>
