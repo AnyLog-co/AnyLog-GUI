@@ -108,8 +108,7 @@
         <label for=operation>Remove</label>
 
     {% endif %}
-    {% if platform %}
-    {% else %}
+    {% if default_platform %}
         <br>
         <br>
         <hr>
@@ -118,12 +117,14 @@
         <!-- Select Visualization Tool  -->
         <input type="radio" id=platform  name=platform  value = {{default_platform}} checked>
         <label for=platform>{{default_platform}}</label>&nbsp
+        {% if default_platform %}
+            {% for option in platforms_list %}
+                <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
+                <input type="radio" id=platform  name=platform  value={{option}}>
+                <label for=platform>{{option}}</label>&nbsp
+            {% endfor %}
+        {% endif %}
 
-        {% for option in platforms %}
-            <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
-            <input type="radio" id=platform  name=platform  value={{option}}>
-            <label for=platform>{{option}}</label>&nbsp
-        {% endfor %}
     {% endif %}
 
     <br><br><br>

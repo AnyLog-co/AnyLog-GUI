@@ -168,38 +168,38 @@ def dynamic_report( report_name = "" ):
     select_info['default_options_list'] = ["Min", "Max", "Avg"]    # These are flagged as selected
     select_info['more_options_list'] = ["Range", "Count"]
 
-
-    # select visualization platform
-    visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
-    platforms = []
-    default_platform = None
-    for entry in visualization:
-        if "default" in visualization[entry] and visualization[entry]:  # look for the default platform
-            default_platform = entry
-        else:
-            platforms.append(entry)
-    if not default_platform:
-        if not len(platforms):
-            flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW)
-            return redirect(url_for('index'))
-        if len(platforms) == 1:
-            # Only one platform
-            default_platform = platforms[0]
-            platforms = None
-        else:
-            flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW)
-            return redirect(url_for('index'))
-
-    select_info['default_platform'] = default_platform      # Default like: Grafana
-    if platforms and len(platforms):
-        select_info['platforms'] = platforms                # Other platforms like power BI
-
-    select_info['report_name'] = report_name
-
     # Get the list of panels to the report (if Available and suggest to replace a panel or add a panel)
     platform, panels_list = get_panels_list(user_name, report_name)
     if panels_list and len(panels_list):
-        select_info['panels_list'] = panels_list     # Add the list of existing panels in this report
+        select_info['panels_list'] = panels_list  # Add the list of existing panels in this report
+    if not platform:
+        # select visualization platform
+        visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
+        platforms = []
+        default_platform = None
+        for entry in visualization:
+            if "default" in visualization[entry] and visualization[entry]:  # look for the default platform
+                default_platform = entry
+            else:
+                platforms.append(entry)
+        if not default_platform:
+            if not len(platforms):
+                flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW)
+                return redirect(url_for('index'))
+            if len(platforms) == 1:
+                # Only one platform
+                default_platform = platforms[0]
+                platforms = None
+            else:
+                flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW)
+                return redirect(url_for('index'))
+
+        select_info['default_platform'] = default_platform      # Default like: Grafana
+        if platforms and len(platforms):
+            select_info['platforms_list'] = platforms                # Other platforms like power BI
+
+    select_info['report_name'] = report_name
+
 
     return render_template('report_deploy.html',  **select_info )
 
@@ -263,12 +263,14 @@ def deploy_report():
         tables_list.append((info["dbms_name"], info["table_name"]))
 
     # Get the platform
-    if "platform" not in form_info:
-        flash('AnyLog: Select platform from options', category='error')
-        return redirect(('/dynamic_report'))
+    platform_name = path_stat.get_platform_name(user_name, report_name)
+    if not platform_name:
+        if "platform" not in form_info:
+            flash('AnyLog: Select platform from options', category='error')
+            return redirect(('/dynamic_report'))
 
-    platform_name = form_info["platform"]    # Platform name + connect string + token
-    path_stat.set_platform_name(user_name, report_name, platform_name)
+        platform_name = form_info["platform"]    # Platform name + connect string + token
+        path_stat.set_platform_name(user_name, report_name, platform_name)
 
     from_date, to_date, err_msg = get_time_range(form_info)
     if err_msg:
