@@ -73,6 +73,7 @@ def deploy_report(**platform_info):
         ("from_date", str),
         ("to_date", str),
         ("functions",list),                 # Query functions like min max etc
+        ("operation", str),
     ]
 
     for param in params_required:
@@ -94,6 +95,11 @@ def deploy_report(**platform_info):
     from_date = platform_info["from_date"]
     to_date = platform_info["to_date"]
     functions = platform_info["functions"]
+    operation = platform_info["operation"]      # Add panel or delete or remove a panel
+    if 'title' in platform_info:
+        title = platform_info['title']
+    else:
+        title = dashboard_name                  # Use same nme as dashboard
 
     url = None
     # Get the list of dashboards
