@@ -247,6 +247,7 @@ def deploy_report():
 
     report_name = form_info["report_name"]
 
+
     # Remove the tables flagged as removed from the report
     for entry in form_info:
         if entry.startswith("Remove."):
@@ -267,6 +268,7 @@ def deploy_report():
         return redirect(('/dynamic_report'))
 
     platform_name = form_info["platform"]    # Platform name + connect string + token
+    path_stat.set_platform_name(user_name, report_name, platform_name)
 
     from_date, to_date, err_msg = get_time_range(form_info)
     if err_msg:
