@@ -56,7 +56,28 @@ def set_new_user(user_name):
         "level" : 0,             # The current location in the path
     }
     set_new_state(user_name, "My_Report", True)
+# -----------------------------------------------------------------------------------
+# Get the name of the visualization platform
+# -----------------------------------------------------------------------------------
+def get_platform_name(user_name, report_name):
+    global active_state_
+    user_info = active_state_[user_name]
 
+    platform = None
+    if report_name in user_info['reports']:
+        if 'platform' in user_info['reports'][report_name]:
+            platform =  user_info['reports'][report_name]['platform']
+    return platform
+# -----------------------------------------------------------------------------------
+# Set the name of the visualization platform for the report
+# -----------------------------------------------------------------------------------
+def set_platform_name(user_name, report_name, platform):
+    
+    global active_state_
+    user_info = active_state_[user_name]
+
+    if report_name in user_info['reports']:
+        user_info['reports'][report_name]['platform'] = platform
 
 # -----------------------------------------------------------------------------------
 # Get user Path overview

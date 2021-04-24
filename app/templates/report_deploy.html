@@ -99,16 +99,19 @@
         </select>
 
         <input type="radio" id=operation  name=operation  value = Replace checked>
-        <label for=operation>Replace or </label>&nbsp
+        <label for=operation>Replace</label>&nbsp
 
         <input type="radio" id=operation  name=operation  value=Add>
-        <label for=operation>Add</label>+
+        <label for=operation>Add</label>&nbsp
 
         <input type="radio" id=operation  name=operation  value=Remove>
-        <label for=operation>Remove</label>&nbsp
+        <label for=operation>Remove</label>
 
-
+    {% endif %}
+    {% if platform %}
     {% else %}
+        <hr>
+        <br>
         <!-- Select Visualization Tool  -->
         <input type="radio" id=platform  name=platform  value = {{default_platform}} checked>
         <label for=platform>{{default_platform}}</label>&nbsp
