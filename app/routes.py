@@ -341,9 +341,12 @@ def configure():
     platforms = gui_view_.get_base_info("visualization")
     if platforms:
         for entry in platforms:
-            ret_val, err_msg = visualize.test_connection( *entry )  # Platform name + connect_string
-            if not ret_val:
-                flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
+            if isinstance(platforms[entry], dict) and "url" in platforms[entry] and "token" in platforms[entry]:
+                ret_val, err_msg = visualize.test_connection( entry, platforms[entry]["url"], platforms[entry]["token"] )  # Platform name + connect_string
+                if not ret_val:
+                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
+            else:
+                flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW))
 
     if request.method == 'POST':
         # Need to be completed
