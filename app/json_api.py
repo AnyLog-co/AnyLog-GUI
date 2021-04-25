@@ -48,7 +48,63 @@ def json_to_string(json_struct):
     else:
         error_msg = None
 
-
     return [data_str, error_msg]
+
+
+
+# -----------------------------------------------------------------------------------
+# Print setup of JSON for output_tree.html
+# Every entry that is set in print_struct has 3 attributes
+# - Is last in the subtree
+# - is key (True) or value (False)
+# - The data (key or value)
+# -----------------------------------------------------------------------------------
+def setup_print_tree( is_last, source_struct, print_struct ):
+    '''
+    Update print_struct with a setup for output_tree.html
+
+    :param source_struct: A dictionary or a list
+    :param print_struct: A structure to send to output_tree.html
+    :return:
+    '''
+
+
+
+    if isinstance(source_struct, dict):
+        counter = len(source_struct) - 1  # The number of entries
+        index = 0
+        for key, value in source_struct.items():
+            if index == counter:
+                print_struct.append((True, True, "\"%s\" : " %  key))          # last in the hierarchy
+            else:
+                print_struct.append((False, True, "\"%s\" : " %  key))          # last in the hierarchy
+
+            setup_print_tree( True, value, print_struct )
+            index += 1
+
+    elif isinstance(source_struct, list):
+        counter = len(source_struct) - 1  # The number of entries
+        for index, entry in enumerate(source_struct):
+            if index == counter:
+                setup_print_tree(True, entry, print_struct)      # last in the hierarchy
+            else:
+                setup_print_tree(False, entry, print_struct)      # last in the hierarchy
+
+    else:
+        if isinstance(source_struct,str):
+            value = "\"%s\"" % source_struct
+        else:
+            value = str(source_struct)
+
+        print_struct.append((is_last, False, value))  # last in the hierarchy
+
+
+
+
+
+
+
+
+
 
 

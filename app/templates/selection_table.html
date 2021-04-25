@@ -2,16 +2,14 @@
 
 {% block content %}
 
-<h1>{{ title }}</h1>
-
 {% if selection %}
 <!-- Add the usr path to the form (if provided)  -->
 <form action="{{url_for('selected')}}/{{selection}}" method="POST">
 {% else %}
 <form action="{{url_for('selected')}}" method="POST">
 {% endif %}
-
     {% for table in tables_list %}
+    <h3>{{ table.table_name }}</h3>
     <table border="1">
         <tr>    <!-- table row  -->
             {% for col_name in table.column_names %}
@@ -31,6 +29,7 @@
             {% endfor %}
         </tr>
         {% endfor %}
+
     </table>
     {% endfor %}
     {% if submit %}
@@ -45,10 +44,11 @@
 
      <!-- Navigate to children  -->
     {% if children_gui %}
-        <span style="color: green">Browse:</span>
+         &nbsp
+        <span style="color: midnightblue">Browse:</span>
         
         {%- for text, url_target in children_gui -%}
-            &nbsp   
+            &nbsp
             <input type="submit" value={{text}} name=Browse>  
         {%- endfor -%}
     

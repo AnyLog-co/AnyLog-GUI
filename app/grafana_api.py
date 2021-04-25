@@ -7,9 +7,9 @@ from app import json_api
 from app import rest_api
 
 import requests
-import json
 import copy
 import sys
+from datetime import datetime
 
 # -----------------------------------------------------------------------------------
 # Connect to Grafana Home dashboard
@@ -26,14 +26,34 @@ def test_connection( grafana_url:str, token:str ):
     if token:
         headers["Authorization"] = "Bearer %s" % token
 
-    response, error_msg = rest_api.do_get(url, headers)
+    response, err_msg = rest_api.do_get(url, headers)
 
     if response and response.status_code == 200:
         ret_val = True
     else:
         ret_val = False
     
-    return [ret_val, error_msg]
+    return [ret_val, err_msg]
+
+# -----------------------------------------------------------------------------------
+# Get the list of panels for the dashboard name
+# -----------------------------------------------------------------------------------
+def get_panels(grafana_url:str, token:str, dashboard_name:str):
+
+    panels_list = []
+    reply, err_msg = get_dashboards(grafana_url, token)
+    if reply:
+        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
+        if dashboard_id:
+            dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
+            if dashboard_info:
+                if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
+                    panels = dashboard_info['dashboard']['panels']
+                    for entry in panels:
+                        if 'title' in entry:
+                            panels_list.append(entry['title'])
+
+    return panels_list
 
 # -----------------------------------------------------------------------------------
 # Deploy a report
@@ -50,6 +70,10 @@ def deploy_report(**platform_info):
         ("report_name",str),
         ("tables_list",list),
         ("base_report",str),                 # The list of base reports
+        ("from_date", str),
+        ("to_date", str),
+        ("functions",list),                 # Query functions like min max etc
+        ("operation", str),
     ]
 
     for param in params_required:
@@ -68,7 +92,14 @@ def deploy_report(**platform_info):
     token =  platform_info['token']
     dashboard_name =  platform_info['report_name']
     tables_list =  platform_info['tables_list']
-
+    from_date = platform_info["from_date"]
+    to_date = platform_info["to_date"]
+    functions = platform_info["functions"]
+    operation = platform_info["operation"]      # Add panel or delete or remove a panel
+    if 'title' in platform_info:
+        title = platform_info['title']
+    else:
+        title = dashboard_name                  # Use same nme as dashboard
 
     url = None
     # Get the list of dashboards
@@ -93,16 +124,15 @@ def deploy_report(**platform_info):
                 dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
                 if not err_msg:
                     # Update the dasboard based on the tables and time to query
-                    is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list)
-                    if error_msg:
-                        err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
-                    else:
+                    is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
+                    if not err_msg:
                         dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
                         if not err_msg:
                             url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
         else:
             # Update an existing report
             dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_uid, dashboard_name )
+
             if not err_msg:
                 if not dashboard_version:
                     if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
@@ -111,10 +141,8 @@ def deploy_report(**platform_info):
                         dashboard_version = 1
 
                 # Update the dasboard based on the tables and time to query
-                is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], dashboard_name, tables_list)
-                if error_msg:
-                    err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
-                else:
+                is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
+                if not err_msg:
                     if is_modified:
                         # push update to Grafana
                         if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dashboard_version):
@@ -126,6 +154,22 @@ def deploy_report(**platform_info):
             else:
                 err_msg = "Grafana API: Unable to extract version from dasboard %s" % dashboard_name
 
+    if not err_msg:
+        # Time range is added to the URL - https://grafana.com/docs/grafana/latest/dashboards/time-range-controls/#control-the-time-range-using-a-url
+        # Example data to add:
+        # ?&from=1614585600000&to=1619938799000
+        # ?&from=now-90d&to=now
+        # ?&from=now-2M&to=now
+        # ?&from=202103011248&to=202105011248
+        if to_date[:3] == "now":
+            url += "?&from=%s&to=now" % from_date
+        else:
+            # Transform to  ms epoch
+            ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), int(from_date[14:16]) ) \
+                           - datetime(1970, 1, 1)).total_seconds() * 1000)
+            ms_to = int((datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
+                 - datetime(1970, 1, 1)).total_seconds() * 1000)
+            url += "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
 
     return [url, err_msg]
 # -----------------------------------------------------------------------------------
@@ -328,44 +372,129 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 # Go over all the panels and modify the targets on each panel.
 # Each target[0] is duplicated for each database and table
 # -----------------------------------------------------------------------------------
-def modify_dashboard(dashboard, dashboard_name, tables_list):
-    error_msg = None
-    panels_list = dashboard["panels"]
+def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_list, functions):
+
+    err_msg = None
     is_modified = False
-
-    for panel in panels_list:
-        targets = panel["targets"]      # Get the list of queries
-        updated_targets = []
-        if len(targets):
-            base_target = copy.deepcopy(targets[0])    # An example target
-            for table in tables_list:
-                if "data" in base_target:
-                    json_str =  base_target["data"]         # This is the ANyLog Query
-                    al_query, err_msg = json_api.string_to_json(json_str)
-                    if not al_query or not isinstance(al_query,dict):
-                        error_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
+    panels_list = dashboard["panels"]
+    panels_counter = len(panels_list)
+    if not panels_counter:
+        # A report needs to have one panel
+        err_msg = "Grafana API: Report (%s) has no panels" % dashboard_name
+    else:
+        if operation == 'Replace':
+            if panels_counter == 1:
+                panels_list[0]['id'] = 1
+                is_modified, err_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
+            else:
+                for panel in panels_list:
+                    if 'title' in panel and panel['title'] == panel_name:
+                        is_modified, err_msg = replace_panel(dashboard_name, panel, panel_name, tables_list, functions)
                         break
-
-                    al_query["dbms"] = table[0]
-                    al_query["table"] = table[1]
-                    # Map back to a string
-                    data, error_msg = json_api.json_to_string(al_query)
-                    if error_msg:
-                        error_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+                if not err_msg:
+                    if not is_modified:
+                        err_msg = "Grafana API: Panel (%s) not available in dasboard: %s" % (panel_name, dashboard_name)
+        elif operation == 'Add':
+            # Find non duplicate name
+            for panel in panels_list:
+                if 'title' in panel and panel['title'] == panel_name:
+                    err_msg =  "Grafana API: Duplicate panel names (%s) for dasboard: %s" % (panel_name, dashboard_name)
+                    break
+            if not err_msg:
+                new_panel = copy.deepcopy(panels_list[0])
+                new_panel['id'] = panels_counter + 1
+                panels_list.append(new_panel)      # Duplicate the same panel
+                is_modified, err_msg = replace_panel(dashboard_name, panels_list[-1], panel_name, tables_list, functions)
+        elif operation == 'Remove':
+            if panels_counter == 1:
+                err_msg = "Grafana API: Removal of a panel from a single panel dashboard is not allowed"
+            else:
+                is_deleted = False
+                for index, panel in enumerate(panels_list):
+                    if 'title' in panel and panel['title'] == panel_name:
+                        is_deleted = True
+                        del panels_list[index]
                         break
-
-                    data = data.replace(',',',\r\n')
-                    data = data.replace('{', '{\r\n')
-                    data = data.replace('}', '\r\n}')
-                    base_target["data"] = data
-                    updated_targets.append(copy.deepcopy(base_target))   # Create a new entry
+                if is_deleted:
+                    # Change panels IDs
+                    for index, panel in enumerate(panels_list):
+                        panel['id'] = index + 1
                     is_modified = True
 
-            if is_modified:
-                panel["targets"] = updated_targets     # Add a target with the dbms and table
+    return [is_modified, err_msg]
+# -----------------------------------------------------------------------------------
+# Replace the content of an existing panel
+# -----------------------------------------------------------------------------------
+def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
 
-    return [is_modified, error_msg]
+    err_msg = None
+    is_modified = False
+    if not "title" in panel or not panel["title"] or panel["title"] != panel_title:
+        # Change the panel name to be as the report name
+        panel["title"] = panel_title
+        is_modified = True
 
+    targets = panel["targets"]  # Get the list of queries
+    updated_targets = []
+    if len(targets):
+        base_target = copy.deepcopy(targets[0])  # An example target
+        for table in tables_list:
+            if "data" in base_target:
+                json_str = base_target["data"]  # This is the ANyLog Query
+                al_query, err_msg = json_api.string_to_json(json_str)
+                if not al_query or not isinstance(al_query, dict):
+                    err_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
+                    break
 
+                al_query["dbms"] = table[0]
+                al_query["table"] = table[1]
 
+                if len(functions):
+                    # If user specified SQL functions Min Max etc
+                    al_query["functions"] = functions
+
+                # Map back to a string
+
+                data, err_msg = format_grafana_json(al_query)
+                if err_msg:
+                    err_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+                    break
+
+                base_target["data"] = data
+                updated_targets.append(copy.deepcopy(base_target))  # Create a new entry
+                is_modified = True
+
+        if is_modified:
+            panel["targets"] = updated_targets  # Add a target with the dbms and table
+
+    return [is_modified, err_msg]
+# -----------------------------------------------------------------------------------
+# Format the Grafana JSON (in the additional JSON data)
+# -----------------------------------------------------------------------------------
+def format_grafana_json(al_query):
+
+    data_str, err_msg = json_api.json_to_string(al_query)
+    if err_msg:
+        err_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+    else:
+        err_msg = None
+        data_list = data_str.split('[')     # no nre line inside a list
+
+        for index, entry in enumerate(data_list):
+            if not index:
+                offset = 0  # format the entire row
+            else:
+                offset = entry.find(']')
+            if offset != -1:
+                data_formated = entry[offset:].replace(',', ',\r\n')
+                data_formated = data_formated.replace('{', '{\r\n')
+                data_formated = data_formated.replace('}', '\r\n}')
+                data_formated = entry[:offset] + data_formated
+            else:
+                data_formated = entry
+            data_list[index] = data_formated
+
+        data_formated = '['.join(data_list)
+
+    return [data_formated, err_msg]
 

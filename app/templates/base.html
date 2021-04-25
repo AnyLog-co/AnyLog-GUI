@@ -3,66 +3,71 @@
     <!-- process: title (for tab) + company_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
     <head>
         <!-- Tab Display -->
-        {% if title %}
-        <title>AnyLog Network ({{ title }})</title>
-        {% else %}
-        <title>AnyLog Network</title>
-        {% endif %}
+
+        <title>AnyLog</title>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     </head>
     <body>
-        <div>
-            <!-- System Fixed Pages -->
-            AnyLog Network:&nbsp
-            <a href="{{ url_for('login') }}">Login</a>&nbsp
-            <a href="{{ url_for('alerts') }}">Alerts</a>&nbsp
-            <a href="{{ url_for('configure') }}">Config</a>&nbsp
-            <a href="{{ url_for('network') }}">Network</a>&nbsp
-            <a href="{{ url_for('policies') }}">Policies</a>&nbsp
-            <a href="{{ url_for('logout') }}">logout</a>&nbsp
-        </div>
-        <div>
-            {% if company_name %}
-                {{ company_name }}:&nbsp
-                <!-- Customer specific pages -->
-                {% if user_gui %}
-                    {%- for text, url_target in user_gui -%}
-                    
+        <img src="{{ url_for('static', filename='css/anylog-logo.png') }}" class="floatRight">
+        <div class="header">
+            <div>
+                <!-- System Fixed Pages -->
+                <mark class="header-txt">
+                AnyLog Network:&nbsp
+                </mark>
+                <a href="{{ url_for('login') }}">Login</a>&nbsp
+                <a href="{{ url_for('alerts') }}">Alerts</a>&nbsp
+                <a href="{{ url_for('configure') }}">Config</a>&nbsp
+                <a href="{{ url_for('network') }}">Network</a>&nbsp
+                <a href="{{ url_for('policies') }}">Policies</a>&nbsp
+                <a href="{{ url_for('logout') }}">Logout</a>&nbsp
+            </div>
+            <div>
+                {% if company_name %}
+                    <mark class="header-txt">
+                    {{ company_name }}:&nbsp
+                    </mark>
+                    <!-- Customer specific pages -->
+                    {% if user_gui %}
+                        {%- for text, url_target in user_gui -%}
+
+                            <a href="{{ url_target }}">{{text}}</a>&nbsp
+
+                        {%- endfor -%}
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div>
+                <!-- Name of Report to use -->
+                [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
+                {%- if report_name -%}
+                    <a href="{{ url_for('dynamic_report') }}{{report_name}}">{{report_name}}</a>&nbsp]
+                {%- else -%}
+                    <a href="{{ url_for('dynamic_report') }}Default">Default</a>&nbsp]
+                {%- endif -%}
+
+                <!-- Home Page -->
+                <a href="{{ url_for('index') }}">Home</a>
+                <!-- Dynamic Parent Pages - based on the config (JSON) file -->
+                {% if parent_gui %}
+                    {%- for text, url_target in parent_gui -%}
+
                         <a href="{{ url_target }}">{{text}}</a>&nbsp
-                        
+
                     {%- endfor -%}
                 {% endif %}
-            {% endif %}
-        </div>
-        <div>
-            <!-- Name of Report to use -->
-            [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
-            {%- if report_name -%}
-                <a href="{{ url_for('dynamic_report') }}{{report_name}}">{{report_name}}</a>&nbsp]
-            {%- else -%}
-                <a href="{{ url_for('dynamic_report') }}Default">Default</a>&nbsp]
-            {%- endif -%}
-
-            <!-- Home Page -->
-            <a href="{{ url_for('index') }}">Home</a>
-            <!-- Dynamic Parent Pages - based on the config (JSON) file -->
-            {% if parent_gui %}
-                {%- for text, url_target in parent_gui -%}
-                   
-                    <a href="{{ url_target }}">{{text}}</a>&nbsp
-                    
-                {%- endfor -%}
-            {% endif %}
+            </div>
         </div>
         <hr>
+        <h1 class="title">{{ title }}</h1>
         <!-- ERROR Messages placed in Flush -->
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                    <table border="2">
+                    <table border="2" class="table error-table">
                         <tr>    <!-- table row  -->
                             <td>
-                            <span style="color: red">
-                                Errors
-                            </span>
+                            Errors
                             </td>
                         </tr>
                         {% for message in messages %}
@@ -72,10 +77,10 @@
                         {% endfor %}
                     </table>
                 {% endif %}
+
             {% endwith %}
         {% block content %}
         {% endblock %}
-
     </body>
 </html>
 

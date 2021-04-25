@@ -56,6 +56,64 @@ def set_new_user(user_name):
         "level" : 0,             # The current location in the path
     }
     set_new_state(user_name, "My_Report", True)
+# -----------------------------------------------------------------------------------
+# Get the name of the visualization platform
+# -----------------------------------------------------------------------------------
+def get_platform_name(user_name, report_name):
+    global active_state_
+    user_info = active_state_[user_name]
+
+    platform = None
+    if report_name in user_info['reports']:
+        if 'platform' in user_info['reports'][report_name]:
+            platform =  user_info['reports'][report_name]['platform']
+    return platform
+# -----------------------------------------------------------------------------------
+# Set the name of the visualization platform for the report
+# -----------------------------------------------------------------------------------
+def set_platform_name(user_name, report_name, platform):
+    
+    global active_state_
+    user_info = active_state_[user_name]
+
+    if report_name in user_info['reports']:
+        user_info['reports'][report_name]['platform'] = platform
+
+# -----------------------------------------------------------------------------------
+# Get user Path overview
+# -----------------------------------------------------------------------------------
+def get_path_overview(user_name, level, parent_menu):
+    '''
+    Return the step name and the name from the data instance at this layer
+    '''
+    global active_state_
+
+    user_info = active_state_[user_name]
+
+    path_info = user_info["path"]  # the report maintains the path info
+    path_steps = []
+    path_level = user_info["level"]
+    # Set the path to the data location
+    for index in range(level - 1):
+        step_name = parent_menu[index][0]
+        if index < len(path_info):
+            if path_info[index]["data"]:
+                step_data = path_info[index]["data"]
+                step_keys = path_info[index]["keys"]
+                step_title = path_info[index]["title"]
+                policy_type = get_policy_type(step_data)
+                if policy_type:
+                    policy = step_data[policy_type]     # Get the data from the JSON structure
+                    columns_val = []
+                    for key in step_keys:
+                        if key in policy:
+                            value = str(policy[key])
+                        else:
+                            value = ""
+                        columns_val.append(value)
+                    path_steps.append( (step_name, step_title, step_keys, [columns_val]) )
+
+    return path_steps
 
 # -----------------------------------------------------------------------------------
 # Reset or start a new state
@@ -84,7 +142,7 @@ def delete_report(user_name, report_name):
         del user_reports[report_name]
         if active_state_[user_name]['selected'] == report_name:
             # The deleted report is the default - set a different report as the default
-            next_report = user_reports.keys()[0]
+            next_report = list(user_reports.keys())[0]
             active_state_[user_name]['selected'] == next_report
 
 
@@ -103,10 +161,13 @@ def get_report_selected(user_name):
 # Update the path with the entries visited by the user 
 # The path is maintained as a f(report)
 # -----------------------------------------------------------------------------------
-def update_status(user_name, parent_menu, id, data):
+def update_status(user_name, parent_menu, list_keys, table_title, id, data):
 
     '''
     Keep the user path state as f(user_name + report_used)
+    The info maintained:
+        data - the user data
+        keys - the keys tp pull the info from the JSON
     '''
 
     global active_state_
@@ -119,12 +180,19 @@ def update_status(user_name, parent_menu, id, data):
     for index, step in enumerate(parent_menu):
         step_name = step[0]
         if index >= len(path_info):
-            path_info.append( { "name" : step_name, "data" : None })
-        elif not path_info[index]["name"] != step_name:
+            path_info.append( { "name" : step_name, "data" : None, "keys": None, "title": None, "id": None})
+        elif path_info[index]["name"] != step_name:
             path_info[index]["name"] = step_name
             path_info[index]["data"] = None
-    
+            path_info[index]["keys"] = None     # The keys to pull data from the JSON
+            path_info[index]["title"] = None  # The title rrelating to the keys
+            path_info[index]["id"] = None
+
+    path_info[index]["name"] = step_name
     path_info[index]["data"] = data    # Keep the data of that layer
+    path_info[index]["keys"] = list_keys  # Keep the data of that layer
+    path_info[index]["title"] = table_title  # Keep the printout title
+    path_info[index]["id"] = id
     user_info["level"] = index  # Keep current location
 
 # -----------------------------------------------------------------------------------
@@ -178,7 +246,8 @@ def set_report(user_name, form_info):
     else:
         report_name = ""        # user did not select an existing report
     
-    if 'new_report' in form_info:
+    if 'new_report' in form_info and len(form_info['new_report']):
+        report_name = ""        # Ignore report selection
         new_report = form_info['new_report'] 
         if len(new_report) == new_report.count(' '):
             new_report = ""       # All spaces
@@ -187,7 +256,7 @@ def set_report(user_name, form_info):
     else:
         new_report = ""       
 
-    if 'rename' in form_info:
+    if 'rename' in form_info and len(form_info['rename']):
         new_name = form_info['rename']
         if ' ' in new_name:
             if len(new_name) == new_name.count(' '):
@@ -450,7 +519,8 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
 # -------------------------------------------------------------------------
 def reset_str_chars( source_str ):
     global translate_dict_
-    return source_str.translate ( translate_dict_ )
+    source_lower = source_str.lower()
+    return source_lower.translate ( translate_dict_ )
 
 # ======================================================================================================================
 # Get the type of policy

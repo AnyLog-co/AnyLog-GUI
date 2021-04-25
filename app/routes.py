@@ -19,7 +19,6 @@ from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
-from app.forms import Policies
 
 from app.entities import Item
 from app.entities import AnyLogItem
@@ -35,10 +34,11 @@ from requests.exceptions import HTTPError
 
 from app import app_view        # maintains the logical view of the GUI from a JSON File
 from app import path_stat       # Maintain the path of the user
-from app import visualize                # The connectors to Grafana, Power BI etc
+from app import visualize       # The connectors to Grafana, Power BI etc
+from app import anylog_api      # Connector to the network
+from app import json_api        # JSON data mapper
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
-company_name_ = None        # Company to service
 
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
 gui_view_.set_gui()
@@ -59,7 +59,7 @@ def index():
         return redirect(('/login'))        # start with Login
 
     select_info = get_select_menu()
-    select_info['title'] = "Home"
+    select_info['title'] = "AnyLog Network"
     
     return render_template('main.html', **select_info)
 # -----------------------------------------------------------------------------------
@@ -107,10 +107,8 @@ def login():
 
         return redirect(('/index'))     # Go to main page
 
-    if company_name_:
-        title_str = 'Sign In: %s' % company_name_
-    else:
-        title_str = 'Sign In'
+
+    title_str = 'Sign In'
 
     if 'username' in session:
         user_name = session['username']
@@ -130,7 +128,7 @@ def login():
 # -----------------------------------------------------------------------------------
 @app.route('/dynamic_report/', methods={'GET','POST'})
 @app.route('/dynamic_report/<string:report_name>', methods={'GET','POST'})
-def dynamic_report( report_name = "My_Report" ):
+def dynamic_report( report_name = "" ):
     '''
     View the report being used
     Called from - base.html
@@ -139,6 +137,10 @@ def dynamic_report( report_name = "My_Report" ):
         return redirect(('/login'))        # start with Login  if not yet provided
 
     user_name = session['username']
+
+    select_info = get_select_menu()
+    if not report_name:
+        report_name = select_info["report_name"]
 
     report_data = path_stat.get_report_info(user_name, report_name)
     if not report_data or not len(report_data["entries"]):
@@ -155,24 +157,89 @@ def dynamic_report( report_name = "My_Report" ):
     # Ignore - ignores the table from this run
     extra_columns =  [('Remove','checkbox'), ('Ignore','checkbox')]
  
-    al_table = AnyLogTable("Report: %s" % report_name, list_columns, None, table_rows, extra_columns)
+    al_table = AnyLogTable(report_name, list_columns, None, table_rows, extra_columns)
 
     select_info = get_select_menu()
+
+
     select_info['table'] = al_table
-    select_info['title'] = "Report: %s" % report_name
+    select_info['title'] = report_name
 
-    # select grafics options
-    options_list = ["Min", "Max", "Avg", "Count", "Diff"]
-    select_info['options_list'] = options_list
+    # select output options
+    select_info['default_options_list'] = ["Min", "Max", "Avg"]    # These are flagged as selected
+    select_info['more_options_list'] = ["Range", "Count"]
 
-    # select visualization platform
-    visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
-    select_info['visualization'] = visualization
+    # Get the list of panels to the report (if Available and suggest to replace a panel or add a panel)
+    platform, panels_list = get_panels_list(user_name, report_name)
+    if panels_list and len(panels_list):
+        select_info['panels_list'] = panels_list  # Add the list of existing panels in this report
+    if not platform:
+        # select visualization platform
+        visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
+        platforms = []
+        default_platform = None
+        for entry in visualization:
+            if "default" in visualization[entry] and visualization[entry]:  # look for the default platform
+                default_platform = entry
+            else:
+                platforms.append(entry)
+        if not default_platform:
+            if not len(platforms):
+                flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW)
+                return redirect(url_for('index'))
+            if len(platforms) == 1:
+                # Only one platform
+                default_platform = platforms[0]
+                platforms = None
+            else:
+                flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW)
+                return redirect(url_for('index'))
+
+        select_info['default_platform'] = default_platform      # Default like: Grafana
+        if platforms and len(platforms):
+            select_info['platforms_list'] = platforms                # Other platforms like power BI
+
     select_info['report_name'] = report_name
-    
+
+
     return render_template('report_deploy.html',  **select_info )
+
 # -----------------------------------------------------------------------------------
-# Processing form: report_deploy.html
+# If a visualization platform was selected, get the panels from the platform
+# Otherwise, search in all platforms
+# -----------------------------------------------------------------------------------
+def get_panels_list(user_name, report_name):
+
+    platform_name = path_stat.get_platform_name(user_name, report_name)
+    platforms_tree = gui_view_.get_base_info("visualization")
+    panels_list = []
+    if not platform_name:
+        # Get from all platforms
+        for platform_option in platforms_tree:
+            if "url" in platforms_tree[platform_option] and "token" in platforms_tree[platform_option]:
+                url = platforms_tree[platform_option]['url']
+                token = platforms_tree[platform_option]['token']
+                one_list = visualize.get_panels(platform_option, url, token, report_name)
+                if one_list and len(one_list):
+                    panels_list += one_list
+    else:
+        # Platform was selected
+        if platform_name in platforms_tree:
+            platform_option = platforms_tree[platform_name]
+            if "url" in platform_option and "token" in platform_option:
+                url = platform_option['url']
+                token = platform_option['token']
+                panels_list = visualize.get_panels(platform_name, url, token, report_name)
+
+    for index, entry in enumerate(panels_list):
+        if entry.find(' ') != -1:
+            # replace space with underline
+            panels_list[index] = entry.replace(' ','_')
+
+    return [platform_name, panels_list]
+
+# -----------------------------------------------------------------------------------
+# Processing form: report_deploy.html - Push the info to the interface
 # -----------------------------------------------------------------------------------
 @app.route('/deploy_report', methods={'GET','POST'})
 def deploy_report():
@@ -201,19 +268,51 @@ def deploy_report():
         tables_list.append((info["dbms_name"], info["table_name"]))
 
     # Get the platform
-    if "platform" not in form_info:
-        flash('AnyLog: Select platform from options', category='error')
+    platform_name = path_stat.get_platform_name(user_name, report_name)
+    if not platform_name:
+        if "platform" not in form_info:
+            flash('AnyLog: Select platform from options', category='error')
+            return redirect(('/dynamic_report'))
+
+        platform_name = form_info["platform"]    # Platform name + connect string + token
+        path_stat.set_platform_name(user_name, report_name, platform_name)
+
+    from_date, to_date, err_msg = get_time_range(form_info)
+    if err_msg:
+        flash(err_msg, category='error')
         return redirect(('/dynamic_report'))
 
-    platform_name = form_info["platform"]    # Platform name + connect string + token
+    query_functions = get_query_functions(form_info)  # get min, max, count, avg
 
     platforms_tree = gui_view_.get_base_info("visualization")
     
     # The Info from the config file
     platform_info = copy.deepcopy( platforms_tree[platform_name])
-    # add info from the report 
+
+    if 'operation' in form_info:
+        operation = form_info['operation']
+    else:
+        operation = 'Replace'       # With new report - replces the existing panel
+
+    platform_info['operation'] = operation
+
+    if operation == 'Remove' or operation == 'Replace':
+        if 'panel' in form_info:
+            platform_info['title'] = form_info['panel'].replace('_',' ')     # Take the title from the panel select list
+        else:
+            platform_info['title'] = form_info['title']
+    else:
+        if 'title' in form_info:
+            platform_info['title'] = form_info['title'] # take the title from the input field
+
+    # add info from the report
+
+    platform_info['from_date'] = from_date
+    platform_info['to_date'] = to_date
     platform_info['report_name'] = report_name
     platform_info['tables_list'] = tables_list
+    platform_info['base_report'] = "AnyLog_Base"
+    platform_info['functions'] = query_functions
 
     report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:
@@ -221,7 +320,50 @@ def deploy_report():
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
         return redirect(('/dynamic_report'))
 
-    return redirect((report_url))      
+    return redirect((report_url))
+
+# -----------------------------------------------------------------------------------
+# Get the functions of the query - min, max etc.
+# -----------------------------------------------------------------------------------
+def get_query_functions(form_info):
+    functions = []
+    if "Min" in form_info:
+        functions.append("min")
+    if "Max" in form_info:
+        functions.append("max")
+    if "Avg" in form_info:
+        functions.append("avg")
+    if "Count" in form_info:
+        functions.append("count")
+    if "Range" in form_info:
+        functions.append("range")
+    return functions
+
+# -----------------------------------------------------------------------------------
+# Get the time range from the form - select between specifying the range and predefined options.
+# -----------------------------------------------------------------------------------
+def get_time_range(form_info):
+
+    err_msg = None
+    from_date = None
+    to_date = None
+    wrong_selection = False
+    if not form_info['date_range'] and form_info['start_date'] and form_info['end_date']:
+        # select to dates
+        from_date = form_info['start_date']
+        to_date = form_info["end_date"]
+        if from_date >= to_date:
+            wrong_selection = True
+    elif form_info['date_range'] and not form_info['start_date'] and not form_info["end_date"]:
+        from_date = "now" + form_info['date_range']
+        to_date = "now"
+    else:
+        wrong_selection = True
+
+    if wrong_selection:
+        err_msg = "AnyLog: Wrong selection for report date and time range"
+
+    return [from_date, to_date, err_msg]
 # -----------------------------------------------------------------------------------
 # Reports
 # -----------------------------------------------------------------------------------
@@ -231,7 +373,7 @@ def reports():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
-    select_info['title'] = 'Orics'
+    select_info['title'] = 'Reports'
 
     return render_template('reports.html', **select_info)
 # -----------------------------------------------------------------------------------
@@ -246,8 +388,6 @@ def alerts():
 @app.route('/configure', methods = ['GET', 'POST'])
 def configure():
 
-    global company_name_
-
     select_info = get_select_menu( caller = "configure")
     select_info["form"] = ConfigForm()
     select_info["title"] = 'Configure Network Connection'
@@ -261,9 +401,12 @@ def configure():
     platforms = gui_view_.get_base_info("visualization")
     if platforms:
         for entry in platforms:
-            ret_val, err_msg = visualize.test_connection( *entry )  # Platform name + connect_string
-            if not ret_val:
-                flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
+            if isinstance(platforms[entry], dict) and "url" in platforms[entry] and "token" in platforms[entry]:
+                ret_val, err_msg = visualize.test_connection( entry, platforms[entry]["url"], platforms[entry]["token"] )  # Platform name + connect_string
+                if not ret_val:
+                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
+            else:
+                flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW))
 
     if request.method == 'POST':
         # Need to be completed
@@ -309,8 +452,7 @@ def al_command():
             'User-Agent' : 'AnyLog/1.23'
     }
 
-    
-    
+
     select_info = get_select_menu()
  
     target_node = get_target_node()
@@ -439,6 +581,23 @@ def tree( selection = "" ):
         else:
             policy_type = None
 
+    select_info = get_select_menu(selection=selection)
+
+    # Make title from the path
+    title = ""
+    parent_menu = select_info["parent_gui"]
+    for parent in parent_menu:
+        title +=  " [%s] " % parent[0]
+    select_info['title'] = title
+
+    tables_list = []    # A list to contain all the data to print - every entry represents a pth step
+    # Set the tables representing the parents:
+    path_steps = path_stat.get_path_overview(user_name, level, select_info['parent_gui'])  # Get the info of the parent steps
+
+    for parent in path_steps:
+        parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
+        tables_list.append(parent_table)
+
     # Set table info to present in form
     table_rows = []
     for entry in data_list:
@@ -460,12 +619,14 @@ def tree( selection = "" ):
         table_rows.append(columns_list)
 
 
-    select_info = get_select_menu(selection=selection)
+
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
 
+    tables_list.append(al_table)    # Add the children
+
     select_info['selection'] = selection
-    select_info['tables_list'] = [al_table]
+    select_info['tables_list'] = tables_list
     select_info['submit'] =  "View"
 
     if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
@@ -540,11 +701,12 @@ def selected( selection = "" ):
         for json_entry in policies:
             # Get the location in the Config file to get the database name and table name
             path_stat.add_entry_to_report(user_name, dbms_name, table_name, json_entry)
-
-        return redirect(url_for('tree', selection='%s' % (selection)))
+        return redirect(('/dynamic_report'))            # Goto delect type of report
 
            
     # organize JSON entries to display
+    data_list = []
+    json_api.setup_print_tree(True,  policies, data_list)
     data_list = []
     for json_entry in policies:
         json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
@@ -554,7 +716,7 @@ def selected( selection = "" ):
     
     # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
 
-    return render_template('output.html', **select_info )
+    return render_template('output_tree.html', **select_info )
 
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
@@ -599,7 +761,12 @@ def path_selection(parent_menu, policy_id, data):
 
     user_name = session["username"]
 
-    path_stat.update_status(user_name, parent_menu, policy_id, data)
+    # pull the keys that are used to print a summary of the data instance
+    gui_sub_tree = gui_view_.get_subtree(parent_menu[-1][1][6:])
+    list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
+    table_title = app_view.get_tree_entree(gui_sub_tree, "table_title")
+
+    path_stat.update_status(user_name, parent_menu, list_keys, table_title, policy_id, data)
 
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
@@ -688,11 +855,6 @@ def get_select_menu(selection = "", caller = ""):
     if report_name:
         select_info['report_name'] = report_name
 
-    # Make title from the path
-    title = ""
-    for parent in parent_menu:
-        title += parent[0] + " : "
-    select_info['title'] = title
 
     return select_info
 # -----------------------------------------------------------------------------------
@@ -750,23 +912,34 @@ def policies(policy_name = ""):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-
-    policies_list = gui_view_.get_base_info("policies")     # get the list of policies from the config file
-    
-    name_list = []  # Collect the names of the policies
-    if policies_list and isinstance(policies_list,list):
-        for policy in policies_list:
-            if "name" in policy:
-                policy_name = policy["name"]
-                name_list.append(policy_name)
-
     select_info = get_select_menu()
     select_info['title'] = "Network Policies"
-    select_info['form'] = Policies()
-    select_info['policies'] = name_list
+    select_info['policies'] = gui_view_.get_policies_list()  # Collect the names of the policies
 
-    return render_template('add_policies.html', **select_info)
+    if policy_name:
+        # A policy was selected
+        policy = gui_view_.get_policy_info(policy_name)
+        if len(request.form):
+            # send policy from Form
+            target_node = get_target_node()
 
+            err_msg = anylog_api.deliver_policy(target_node, policy, request.form)
+            if err_msg:
+                flash('AnyLog Connector: %s' % err_msg, category='error')
+
+        # Goto the same form again to add a new policy
+        select_info['policy_name'] = policy_name
+        policy = gui_view_.get_policy_info(policy_name)
+        if policy:
+            select_info['policy_name'] = policy_name
+            policy_attr, err_msg = app_view.set_policy_form(policy_name, policy)
+            if err_msg:
+                flash("AnyLog: Error in %s policy declarations in config file: %s" % (policy_name, err_msg), category='error')
+            else:
+                select_info["policy"] = policy_attr
+                return render_template('policy_add.html', **select_info)
+
+    return render_template('policies.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Logout

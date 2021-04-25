@@ -6,8 +6,6 @@
 
     <input type="hidden" value={{report_name}} name=report_name>
 
-    <h1>{{ title }}</h1>
-
     <table border="1">
         <tr>    <!-- table row  -->
             {% for col_name in table.column_names %}
@@ -32,30 +30,112 @@
     <hr>
     <hr>
     <br>
-    <!-- Select Type of report  -->
-    {% for option in options_list %}
-        <input type="radio" id={{option}}  name={{option}}  value={{option}}> <!-- Select functionality  -->
+
+    <!-- Select Type of report - Min, Max, Avg -->
+    {% for option in default_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}} checked>
         <label for={{option}}>{{option}}</label>&nbsp
     {% endfor %}
+     <!-- Select Type of report - range, count -->
+    {% for option in more_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}}>
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+
     <br><br>
 
     <!-- Select Dates  -->
     <label for="start-date">Start: </label>
-    <input type="datetime-local" id="start-date" name="start-date">
+    <input type="datetime-local" id="start_date" name="start_date">
     &nbsp&nbsp&nbsp
     <label for="end-date">End:   </label>
-    <input type="datetime-local" id="end-date" name="end-date">
+    <input type="datetime-local" id="end_date" name="end_date">
+
+    <!-- Select Date Range  -->
+    &nbsp&nbsp&nbsp
+    <label for="range">Date Range:</label>
+        <select name="date_range" id="date_range">
+            <option value="">Dates selection</option>
+            <option value="-5m">Last 5 minutes</option>
+            <option value="-15m">Last 15 minutes</option>
+            <option value="-30m">Last 30 minutes</option>
+            <option value="-1h">Last hour</option>
+            <option value="-3h">Last 3 hours</option>
+            <option value="-6h">last 6 hours</option>
+            <option value="-12h">Last 12 hours</option>
+            <option value="-1d">Last day</option>
+            <option value="-2d">Last 2 days</option>
+            <option value="-7d">Last 7 days</option>
+            <option value="-14d">Last 14 days</option>
+            <option value="-1M">Last 1 month</option>
+            <option value="-2M">Last 2 months</option>
+            <option value="-3M">Last 3 months</option>
+            <option value="-1y">Last 1 year</option>
+            <option value="-2y">Last 2 years</option>
+            <option value="-3y">Last 3 years</option>
+        </select>
 
     <br><br>
-    <!-- Select Visualization Tool  -->
-    {% for option in visualization %}
-        <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
-        <input type="radio" id=platform  name=platform  value={{option}}> 
-        <label for=platform>{{option}}</label>&nbsp
-    {% endfor %}
-    <br><br>
+    {% if panels_list %}
 
-    <input type="submit" value=submit name=submit>  
+        <hr>
+        <hr>
+        <br>
+
+        <!-- Select Replace, Add, Remove of a panel -->
+        <input type="radio" id=operation  name=operation  value = Replace checked>
+        <label for=operation>Replace</label>&nbsp
+
+        <input type="radio" id=operation  name=operation  value=Remove>
+        <label for=operation>Remove</label>
+
+        &nbsp &nbsp Select Panel:&nbsp
+
+        <select name="panel" id="panel">    <!-- show list of panels  and select-->
+            {% for panel in panels_list %}
+                <option value={{panel}}>{{panel}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <br>
+
+        <input type="radio" id=operation  name=operation  value=Add>
+        <label for=operation>Add</label>&nbsp
+
+        <!-- Input title for panel -->
+        &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+        Name Panel:&nbsp
+        <input type="text" id="title" name="title" value={{report_name}}>
+
+    {% else %}
+        <br>
+        Name Panel:&nbsp
+        <input type="text" id="title" name="title" value={{report_name}}>
+    {% endif %}
+    {% if default_platform %}
+        <br>
+        <br>
+        <hr>
+        <hr>
+        <br>
+        <!-- Select Visualization Tool  -->
+        <input type="radio" id=platform  name=platform  value = {{default_platform}} checked>
+        <label for=platform>{{default_platform}}</label>&nbsp
+        {% if default_platform %}
+            {% for option in platforms_list %}
+                <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
+                <input type="radio" id=platform  name=platform  value={{option}}>
+                <label for=platform>{{option}}</label>&nbsp
+            {% endfor %}
+        {% endif %}
+
+    {% endif %}
+
+    <br><br><br>
+
+    <input type="submit" value="Submit" name="Submit">
 
 </form>
     

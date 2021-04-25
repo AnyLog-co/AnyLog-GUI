@@ -21,6 +21,22 @@ def test_connection(platform, connect_string, token):
 def visualize(platform, report_name, tables):
     pass
 
+
+# --------------------------------------------------------
+# Get the list of panels for the named report
+# --------------------------------------------------------
+def get_panels(platform_name, url:str, token:str, report_name:str):
+    '''
+    The list of panels for the named report in the named platform
+    '''
+
+    connector = get_connector(platform_name)
+    if not connector:
+        panels_list = None
+    else:
+        panels_list = connector.get_panels(url, token, report_name)
+
+    return panels_list
 # --------------------------------------------------------
 # Deploy to create or update an exising report in the platform
 # --------------------------------------------------------
