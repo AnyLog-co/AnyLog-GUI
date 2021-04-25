@@ -924,7 +924,7 @@ def policies(policy_name = ""):
     select_info['form'] = Policies()
     select_info['policies'] = name_list
 
-    return render_template('add_policies.html', **select_info)
+    return render_template('policies.html', **select_info)
 
 
 # -----------------------------------------------------------------------------------

@@ -115,10 +115,25 @@
                     }
                         
                 },
+
                 {
-                    "name" : "Tag",
+                    "name" : "Machine",
                     "struct" : {
-                        "tag" : {
+                        "Machine" : {
+                            "name" : ["Machine name", "str", 30, 1],
+                            "description" : ["Description", "str", 30, 1],
+                            "machine" : ["Machine", "str", 30, 1]
+                        }
+
+                    }
+
+                },
+
+
+                {
+                    "name" : "Sensor",
+                    "struct" : {
+                        "Sensor" : {
                             "name" : ["Tag Name", "str", 30, 1],
                             "description" : ["Description", "str", 30, 1],
                             "machine" : ["Machine", "str", 30, 1]
