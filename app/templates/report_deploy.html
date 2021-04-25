@@ -32,10 +32,7 @@
     <hr>
     <hr>
     <br>
-    <!-- Input title for panel -->
-    Title:&nbsp
-    <input type="text" id="title" name="title" value={{report_name}}>
-    <br><br>
+
     <!-- Select Type of report - Min, Max, Avg -->
     {% for option in default_options_list %}
         <!-- Select functionality  -->
@@ -90,22 +87,30 @@
         <br>
 
         <!-- Select Replace, Add, Remove of a panel -->
-        Panels:&nbsp
+        <input type="radio" id=operation  name=operation  value = Replace checked>
+        <label for=operation>Replace</label>&nbsp
+
+        <input type="radio" id=operation  name=operation  value=Remove>
+        <label for=operation>Remove</label>
+
+        &nbsp &nbsp Select Panel:&nbsp
 
         <select name="panel" id="panel">    <!-- show list of panels  and select-->
             {% for panel in panels_list %}
-                <option value="-5m">{{panel}}</option>
+                <option value={{panel}}>{{panel}}</option>
             {% endfor %}
         </select>
-
-        <input type="radio" id=operation  name=operation  value = Replace checked>
-        <label for=operation>Replace</label>&nbsp
+        <br>
+        <br>
 
         <input type="radio" id=operation  name=operation  value=Add>
         <label for=operation>Add</label>&nbsp
 
-        <input type="radio" id=operation  name=operation  value=Remove>
-        <label for=operation>Remove</label>
+        <!-- Input title for panel -->
+        &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+        Name Panel:&nbsp
+        <input type="text" id="title" name="title" value={{report_name}}>
+
 
     {% endif %}
     {% if default_platform %}

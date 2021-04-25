@@ -26,14 +26,14 @@ def test_connection( grafana_url:str, token:str ):
     if token:
         headers["Authorization"] = "Bearer %s" % token
 
-    response, error_msg = rest_api.do_get(url, headers)
+    response, err_msg = rest_api.do_get(url, headers)
 
     if response and response.status_code == 200:
         ret_val = True
     else:
         ret_val = False
     
-    return [ret_val, error_msg]
+    return [ret_val, err_msg]
 
 # -----------------------------------------------------------------------------------
 # Get the list of panels for the dashboard name
@@ -124,10 +124,8 @@ def deploy_report(**platform_info):
                 dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
                 if not err_msg:
                     # Update the dasboard based on the tables and time to query
-                    is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
-                    if error_msg:
-                        err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
-                    else:
+                    is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
+                    if not err_msg:
                         dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
                         if not err_msg:
                             url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
@@ -143,10 +141,8 @@ def deploy_report(**platform_info):
                         dashboard_version = 1
 
                 # Update the dasboard based on the tables and time to query
-                is_modified, error_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
-                if error_msg:
-                    err_msg = "Grafana API: Unable to update dasboard %s" % dashboard_name
-                else:
+                is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
+                if not err_msg:
                     if is_modified:
                         # push update to Grafana
                         if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dashboard_version):
@@ -378,36 +374,51 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 # -----------------------------------------------------------------------------------
 def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_list, functions):
 
-    error_msg = None
+    err_msg = None
     is_modified = False
     panels_list = dashboard["panels"]
     panels_counter = len(panels_list)
     if not panels_counter:
         # A report needs to have one panel
-        error_msg = "Grafana API: Report (%s) has no panels" % dashboard_name
+        err_msg = "Grafana API: Report (%s) has no panels" % dashboard_name
     else:
         if operation == 'Replace':
             if panels_counter == 1:
-                is_modified, error_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
+                is_modified, err_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
         elif operation == 'Add':
             # Find non duplicate name
             for panel in panels_list:
                 if 'title' in panel and panel['title'] == panel_name:
-                    error_msg =  "Grafana API: Duplicate panel names (%s) for dasboard: %s" % (panel_name, dashboard_name)
+                    err_msg =  "Grafana API: Duplicate panel names (%s) for dasboard: %s" % (panel_name, dashboard_name)
                     break
-            if not error_msg:
+            if not err_msg:
                 new_panel = copy.deepcopy(panels_list[0])
                 new_panel['id'] = panels_counter + 1
                 panels_list.append(new_panel)      # Duplicate the same panel
-                is_modified, error_msg = replace_panel(dashboard_name, panels_list[-1], panel_name, tables_list, functions)
+                is_modified, err_msg = replace_panel(dashboard_name, panels_list[-1], panel_name, tables_list, functions)
+        elif operation == 'Remove':
+            if panels_counter == 1:
+                err_msg = "Grafana API: Removal of a panel from a single panel dashboard is not allowed"
+            else:
+                is_deleted = False
+                for index, panel in enumerate(panels_list):
+                    if 'title' in panel and panel['title'] == panel_name:
+                        is_deleted = True
+                        del panels_list[index]
+                        break
+                if is_deleted:
+                    # Change panels IDs
+                    for index, panel in enumerate(panels_list):
+                        panel['id'] = index + 1
+                    is_modified = True
 
-    return [is_modified, error_msg]
+    return [is_modified, err_msg]
 # -----------------------------------------------------------------------------------
 # Replace the content of an existing panel
 # -----------------------------------------------------------------------------------
 def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
 
-    error_msg = None
+    err_msg = None
     is_modified = False
     if not "title" in panel or not panel["title"] or panel["title"] != panel_title:
         # Change the panel name to be as the report name
@@ -421,9 +432,9 @@ def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
         for table in tables_list:
             if "data" in base_target:
                 json_str = base_target["data"]  # This is the ANyLog Query
-                al_query, error_msg = json_api.string_to_json(json_str)
+                al_query, err_msg = json_api.string_to_json(json_str)
                 if not al_query or not isinstance(al_query, dict):
-                    error_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
+                    err_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
                     break
 
                 al_query["dbms"] = table[0]
@@ -435,9 +446,9 @@ def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
 
                 # Map back to a string
 
-                data, error_msg = format_grafana_json(al_query)
-                if error_msg:
-                    error_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+                data, err_msg = format_grafana_json(al_query)
+                if err_msg:
+                    err_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
                     break
 
                 base_target["data"] = data
@@ -447,17 +458,17 @@ def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
         if is_modified:
             panel["targets"] = updated_targets  # Add a target with the dbms and table
 
-    return [is_modified, error_msg]
+    return [is_modified, err_msg]
 # -----------------------------------------------------------------------------------
 # Format the Grafana JSON (in the additional JSON data)
 # -----------------------------------------------------------------------------------
 def format_grafana_json(al_query):
 
-    data_str, error_msg = json_api.json_to_string(al_query)
-    if error_msg:
-        error_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+    data_str, err_msg = json_api.json_to_string(al_query)
+    if err_msg:
+        err_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
     else:
-        error_msg = None
+        err_msg = None
         data_list = data_str.split('[')     # no nre line inside a list
 
         for index, entry in enumerate(data_list):
@@ -476,5 +487,5 @@ def format_grafana_json(al_query):
 
         data_formated = '['.join(data_list)
 
-    return [data_formated, error_msg]
+    return [data_formated, err_msg]
 

@@ -283,18 +283,23 @@ def deploy_report():
     # The Info from the config file
     platform_info = copy.deepcopy( platforms_tree[platform_name])
 
-    if 'title' in form_info:
-        platform_info['title'] = form_info['title']
-    platform_info['operation'] = form_info['operation']
+    operation = form_info['operation']
+    platform_info['operation'] = operation
 
-    # add info from the report 
-    platform_info['report_name'] = report_name
-    platform_info['tables_list'] = tables_list
+    if operation == 'Remove':
+        platform_info['title'] = form_info['panel']     # Take the title from the panel select list
+    else:
+        if 'title' in form_info:
+            platform_info['title'] = form_info['title'] # take the title from the input field
+
+    # add info from the report
+
     platform_info['from_date'] = from_date
     platform_info['to_date'] = to_date
+    platform_info['report_name'] = report_name
+    platform_info['tables_list'] = tables_list
     platform_info['base_report'] = "AnyLog_Base"
     platform_info['functions'] = query_functions
-
 
     report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:
