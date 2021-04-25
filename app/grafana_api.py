@@ -381,45 +381,62 @@ def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_li
     panels_list = dashboard["panels"]
     is_modified = False
 
-    for panel in panels_list:
-        if not "title" in panel or not panel["title"] or panel["title"] == "Panel Title":
-            # Change the panel name to be as the report name
-            panel["title"] = dashboard_name
-        targets = panel["targets"]      # Get the list of queries
-        updated_targets = []
-        if len(targets):
-            base_target = copy.deepcopy(targets[0])    # An example target
-            for table in tables_list:
-                if "data" in base_target:
-                    json_str =  base_target["data"]         # This is the ANyLog Query
-                    al_query, err_msg = json_api.string_to_json(json_str)
-                    if not al_query or not isinstance(al_query,dict):
-                        error_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
-                        break
+    panels_counter = len(panels_list)
+    if not panels_counter:
+        # A report needs to have one panel
+        error_msg = "Grafana API: Report (%s) has no panels" % dashboard_name
+    else:
+        if panels_counter == 1 and operation == 'Replace':
+            is_modified, err_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
 
-                    al_query["dbms"] = table[0]
-                    al_query["table"] = table[1]
-
-                    if len(functions):
-                        # If user specified SQL functions Min Max etc
-                        al_query["functions"] = functions
-
-                    # Map back to a string
-
-                    data, error_msg = format_grafana_json(al_query)
-                    if error_msg:
-                        error_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
-                        break
-
-                    base_target["data"] = data
-                    updated_targets.append(copy.deepcopy(base_target))   # Create a new entry
-                    is_modified = True
-
-            if is_modified:
-                panel["targets"] = updated_targets     # Add a target with the dbms and table
 
     return [is_modified, error_msg]
+# -----------------------------------------------------------------------------------
+# Replace the content of an existing panel
+# -----------------------------------------------------------------------------------
+def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
 
+    error_msg = None
+    is_modified = False
+    if not "title" in panel or not panel["title"] or panel["title"] != panel_title:
+        # Change the panel name to be as the report name
+        panel["title"] = panel_title
+        is_modified = True
+
+    targets = panel["targets"]  # Get the list of queries
+    updated_targets = []
+    if len(targets):
+        base_target = copy.deepcopy(targets[0])  # An example target
+        for table in tables_list:
+            if "data" in base_target:
+                json_str = base_target["data"]  # This is the ANyLog Query
+                al_query, err_msg = json_api.string_to_json(json_str)
+                if not al_query or not isinstance(al_query, dict):
+                    error_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
+                    break
+
+                al_query["dbms"] = table[0]
+                al_query["table"] = table[1]
+
+                if len(functions):
+                    # If user specified SQL functions Min Max etc
+                    al_query["functions"] = functions
+
+                # Map back to a string
+
+                data, error_msg = format_grafana_json(al_query)
+                if error_msg:
+                    error_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+                    break
+
+                base_target["data"] = data
+                updated_targets.append(copy.deepcopy(base_target))  # Create a new entry
+                is_modified = True
+
+        if is_modified:
+            panel["targets"] = updated_targets  # Add a target with the dbms and table
+
+    return [is_modified, err_msg]
 # -----------------------------------------------------------------------------------
 # Format the Grafana JSON (in the additional JSON data)
 # -----------------------------------------------------------------------------------
