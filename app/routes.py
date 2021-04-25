@@ -913,11 +913,19 @@ def policies(policy_name = ""):
     policies_list = gui_view_.get_base_info("policies")     # get the list of policies from the config file
     
     name_list = []  # Collect the names of the policies
+    line_list = []  # limits the number of columns
+    links_in_row = 3
     if policies_list and isinstance(policies_list,list):
         for policy in policies_list:
             if "name" in policy:
                 policy_name = policy["name"]
-                name_list.append(policy_name)
+                line_list.append(policy_name)
+
+                if len(line_list) == links_in_row:
+                    name_list.append(line_list)
+                    line_list = []      # Start a new line
+    if len(line_list):
+        name_list.append(line_list)
 
     select_info = get_select_menu()
     select_info['title'] = "Network Policies"

@@ -7,12 +7,14 @@
     <form action="{{url_for('policies')}}" method="POST">
     
         <table border="3" class="table policy-table">
-
-            <tr>    <!-- table row  -->
-                {% for policy_name in policies %}
-                    <td><a href="{{ url_for('policies') }}/{{policy_name}}">{{policy_name}}</a></td>
+            
+                {% for line in policies %}
+                    <tr> <!-- table row  -->
+                    {% for policy_name in line %}
+                        <td><a href="{{ url_for('policies') }}/{{policy_name}}">{{policy_name}}</a></td>
+                    {% endfor %}
+                    </tr>
                 {% endfor %}
-            </tr>
         </table>
     
     <br><br>
