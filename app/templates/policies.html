@@ -7,7 +7,7 @@
     <form action="{{url_for('policies')}}" method="POST">
     
         <table border="3" class="table policy-table">
-            
+
                 {% for line in policies %}
                     <tr> <!-- table row  -->
                     {% for policy_name in line %}

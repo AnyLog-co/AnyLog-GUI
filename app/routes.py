@@ -909,31 +909,20 @@ def policies(policy_name = ""):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-
-    policies_list = gui_view_.get_base_info("policies")     # get the list of policies from the config file
-    
-    name_list = []  # Collect the names of the policies
-    line_list = []  # limits the number of columns
-    links_in_row = 3
-    if policies_list and isinstance(policies_list,list):
-        for policy in policies_list:
-            if "name" in policy:
-                policy_name = policy["name"]
-                line_list.append(policy_name)
-
-                if len(line_list) == links_in_row:
-                    name_list.append(line_list)
-                    line_list = []      # Start a new line
-    if len(line_list):
-        name_list.append(line_list)
-
     select_info = get_select_menu()
     select_info['title'] = "Network Policies"
     select_info['form'] = Policies()
-    select_info['policies'] = name_list
+    select_info['policies'] = gui_view_.get_policies_list()  # Collect the names of the policies
+
+    if policy_name:
+        # A policy was selected
+        policy = gui_view_.get_policy_info(policy_name)
+        if policy:
+            select_info['policy_name'] = policy_name
+            return render_template('policy_add.html', **select_info)
+
 
     return render_template('policies.html', **select_info)
-
 
 # -----------------------------------------------------------------------------------
 # Logout

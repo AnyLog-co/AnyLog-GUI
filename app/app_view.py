@@ -27,6 +27,7 @@ class gui():
     def __init__(self):
         self.config_struct = None 
         self.config_error = None    # Error set if COnfig file with error in structure
+        self.policies_table = []     # The list of policies in a 2 domentional list (representing the display of the list)
     # ------------------------------------------------------------------------
     # Get Base Info from the config / JSON file
     # ------------------------------------------------------------------------
@@ -54,17 +55,53 @@ class gui():
         
         self.config_struct, self.config_error = load_json(file_name)
 
+        if self.config_struct:
+            # Load the ploicies to a structure that displays a table of policies
+            line_list = []  # limits the number of columns
+            links_in_row = 8
+            policies_list = self.get_base_info("policies")     # get the list of policies from the config file
+            if policies_list and isinstance(policies_list, list):
+                for policy in policies_list:
+                    if "name" in policy:
+                        policy_name = policy["name"]
+                        line_list.append(policy_name)
+
+                        if len(line_list) == links_in_row:
+                            self.policies_table.append(line_list)
+                            line_list = []  # Start a new line
+            if len(line_list):
+                self.policies_table.append(line_list)
+
+    # ------------------------------------------------------------------------
+    # Return The list of policies
+    # ------------------------------------------------------------------------
+    def get_policies_list(self):
+        return self.policies_table
+
+    # ------------------------------------------------------------------------
+    # Return The info of the policy
+    # ------------------------------------------------------------------------
+    def get_policy_info(self, policy_name):
+        policies_list = self.get_base_info("policies")
+        for policy in policies_list:
+            if "name" in policy and policy['name'] == policy_name:
+                return policy
+        return None
+
+    # ------------------------------------------------------------------------
+    # Return config error
+    # ------------------------------------------------------------------------
     def get_config_error(self):
         '''
         Error when config file read
         '''
-        return self.config_struct
+        return self.config_error
 
     def is_config_error(self):
         '''
         Error when config file read
         '''
-        return self.config_struct != None
+        return self.config_error != None
     # ------------------------------------------------------------------------
     # Test config file available
     # ------------------------------------------------------------------------
