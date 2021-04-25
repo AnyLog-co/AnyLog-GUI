@@ -1,11 +1,43 @@
 
+table, th, td {
+	border: 1px black solid;
+}
+
+tr:hover {
+    background-color: lightgray;
+}
+
+tr{
+      background-color: rgb(173,205,205);
+      color:black;
+}
+tr:first-child{
+    background-color: rgb(0,115,153);
+    color: white;
+}
+
+th {
+	background-color: gray;
+	color: white;
+}
 
 body {
-font-family: arial;
-background-color: rgb(185,179,175);}
+    font-family: arial;
+    background-color: rgb(185,179,175);
+}
+
 h1 {
-color: rgb(255,255,255);}
+    color: rgb(0,102,153);
+}
+
 
 .title{
-color: rgb(0,102,153);
+    color: rgb(0,102,153);
 }
+
+.header-txt{
+    font-weight: 700;
+    color: rgb(0,102,153);
+    background-color: rgb(185,179,175);
+}
+
