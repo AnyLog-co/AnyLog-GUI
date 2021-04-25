@@ -286,7 +286,7 @@ def deploy_report():
     operation = form_info['operation']
     platform_info['operation'] = operation
 
-    if operation == 'Remove':
+    if operation == 'Remove' or operation == 'Replace':
         platform_info['title'] = form_info['panel']     # Take the title from the panel select list
     else:
         if 'title' in form_info:
