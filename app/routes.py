@@ -156,13 +156,13 @@ def dynamic_report( report_name = "" ):
     # Ignore - ignores the table from this run
     extra_columns =  [('Remove','checkbox'), ('Ignore','checkbox')]
  
-    al_table = AnyLogTable("Report: %s" % report_name, list_columns, None, table_rows, extra_columns)
+    al_table = AnyLogTable(report_name, list_columns, None, table_rows, extra_columns)
 
     select_info = get_select_menu()
 
 
     select_info['table'] = al_table
-    select_info['title'] = "Report: %s" % report_name
+    select_info['title'] = report_name
 
     # select output options
     select_info['default_options_list'] = ["Min", "Max", "Avg"]    # These are flagged as selected
