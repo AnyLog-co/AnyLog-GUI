@@ -384,7 +384,16 @@ def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_li
     else:
         if operation == 'Replace':
             if panels_counter == 1:
+                panels_list[0]['id'] = 1
                 is_modified, err_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
+            else:
+                for panel in panels_list:
+                    if 'title' in panel and panel['title'] == panel_name:
+                        is_modified, err_msg = replace_panel(dashboard_name, panel, panel_name, tables_list, functions)
+                        break
+                if not err_msg:
+                    if not is_modified:
+                        err_msg = "Grafana API: Panel (%s) not available in dasboard: %s" % (panel_name, dashboard_name)
         elif operation == 'Add':
             # Find non duplicate name
             for panel in panels_list:

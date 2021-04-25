@@ -230,6 +230,11 @@ def get_panels_list(user_name, report_name):
                 token = platform_option['token']
                 panels_list = visualize.get_panels(platform_name, url, token, report_name)
 
+    for index, entry in enumerate(panels_list):
+        if entry.find(' ') != -1:
+            # replace space with underline
+            panels_list[index] = entry.replace(' ','_')
+
     return [platform_name, panels_list]
 
 # -----------------------------------------------------------------------------------
@@ -283,11 +288,18 @@ def deploy_report():
     # The Info from the config file
     platform_info = copy.deepcopy( platforms_tree[platform_name])
 
-    operation = form_info['operation']
+    if 'operation' in form_info:
+        operation = form_info['operation']
+    else:
+        operation = 'Replace'       # With new report - replces the existing panel
+
     platform_info['operation'] = operation
 
     if operation == 'Remove' or operation == 'Replace':
-        platform_info['title'] = form_info['panel']     # Take the title from the panel select list
+        if 'panel' in form_info:
+            platform_info['title'] = form_info['panel']     # Take the title from the panel select list
+        else:
+            platform_info['title'] = form_info['title']
     else:
         if 'title' in form_info:
             platform_info['title'] = form_info['title'] # take the title from the input field

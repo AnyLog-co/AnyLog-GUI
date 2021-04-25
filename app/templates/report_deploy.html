@@ -111,7 +111,10 @@
         Name Panel:&nbsp
         <input type="text" id="title" name="title" value={{report_name}}>
 
-
+    {% else %}
+        <br>
+        Name Panel:&nbsp
+        <input type="text" id="title" name="title" value={{report_name}}>
     {% endif %}
     {% if default_platform %}
         <br>
