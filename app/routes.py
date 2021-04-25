@@ -297,7 +297,7 @@ def deploy_report():
 
     if operation == 'Remove' or operation == 'Replace':
         if 'panel' in form_info:
-            platform_info['title'] = form_info['panel']     # Take the title from the panel select list
+            platform_info['title'] = form_info['panel'].replace('_',' ')     # Take the title from the panel select list
         else:
             platform_info['title'] = form_info['title']
     else:
