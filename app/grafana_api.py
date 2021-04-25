@@ -377,18 +377,29 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 # Each target[0] is duplicated for each database and table
 # -----------------------------------------------------------------------------------
 def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_list, functions):
-    error_msg = None
-    panels_list = dashboard["panels"]
-    is_modified = False
 
+    error_msg = None
+    is_modified = False
+    panels_list = dashboard["panels"]
     panels_counter = len(panels_list)
     if not panels_counter:
         # A report needs to have one panel
         error_msg = "Grafana API: Report (%s) has no panels" % dashboard_name
     else:
-        if panels_counter == 1 and operation == 'Replace':
-            is_modified, err_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
-
+        if operation == 'Replace':
+            if panels_counter == 1:
+                is_modified, error_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
+        elif operation == 'Add':
+            # Find non duplicate name
+            for panel in panels_list:
+                if 'title' in panel and panel['title'] == panel_name:
+                    error_msg =  "Grafana API: Duplicate panel names (%s) for dasboard: %s" % (panel_name, dashboard_name)
+                    break
+            if not error_msg:
+                new_panel = copy.deepcopy(panels_list[0])
+                new_panel['id'] = panels_counter + 1
+                panels_list.append(new_panel)      # Duplicate the same panel
+                is_modified, error_msg = replace_panel(dashboard_name, panels_list[-1], panel_name, tables_list, functions)
 
     return [is_modified, error_msg]
 # -----------------------------------------------------------------------------------
@@ -410,7 +421,7 @@ def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
         for table in tables_list:
             if "data" in base_target:
                 json_str = base_target["data"]  # This is the ANyLog Query
-                al_query, err_msg = json_api.string_to_json(json_str)
+                al_query, error_msg = json_api.string_to_json(json_str)
                 if not al_query or not isinstance(al_query, dict):
                     error_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
                     break
@@ -436,7 +447,7 @@ def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
         if is_modified:
             panel["targets"] = updated_targets  # Add a target with the dbms and table
 
-    return [is_modified, err_msg]
+    return [is_modified, error_msg]
 # -----------------------------------------------------------------------------------
 # Format the Grafana JSON (in the additional JSON data)
 # -----------------------------------------------------------------------------------
