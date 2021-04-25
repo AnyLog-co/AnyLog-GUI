@@ -32,6 +32,7 @@ h1 {
 }
 
 
+
 .title{
     color: rgb(0,102,153);
 }
@@ -41,4 +42,13 @@ h1 {
     color: rgb(0,102,153);
     background-color: rgb(185,179,175);
 }
+
+.policy-table td{
+
+    background-color:whitesmoke;
+    color:cornflowerblue;
+    padding: 10px;
+
+}
+
 

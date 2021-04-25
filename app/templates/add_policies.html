@@ -4,9 +4,9 @@
 
 {% block content %}
 
-    <form action="{{url_for('deploy_report')}}" method="POST">
+    <form action="{{url_for('policies')}}" method="POST">
     
-        <table border="3">
+        <table border="3" class="table policy-table">
 
             <tr>    <!-- table row  -->
                 {% for policy_name in policies %}
