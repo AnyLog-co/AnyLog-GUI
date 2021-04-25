@@ -3,11 +3,9 @@
     <!-- process: title (for tab) + company_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
     <head>
         <!-- Tab Display -->
-        {% if title %}
-        <title>AnyLog Network ({{ title }})</title>
-        {% else %}
-        <title>AnyLog Network</title>
-        {% endif %}
+
+        <title>AnyLog</title>
+
         <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     </head>
     <body>
@@ -55,6 +53,7 @@
             {% endif %}
         </div>
         <hr>
+        <h1 class="title">{{ title }}</h1>
         <!-- ERROR Messages placed in Flush -->
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
@@ -76,7 +75,6 @@
             {% endwith %}
         {% block content %}
         {% endblock %}
-
     </body>
 </html>
 

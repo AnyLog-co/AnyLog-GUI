@@ -2,8 +2,6 @@
 
 {% block content %}
 
-<h1 class="title">{{ title }}</h1>
-
 {% if selection %}
 <!-- Add the usr path to the form (if provided)  -->
 <form action="{{url_for('selected')}}/{{selection}}" method="POST">

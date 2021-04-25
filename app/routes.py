@@ -58,7 +58,7 @@ def index():
         return redirect(('/login'))        # start with Login
 
     select_info = get_select_menu()
-    select_info['title'] = "Home"
+    select_info['title'] = "AnyLog Network"
     
     return render_template('main.html', **select_info)
 # -----------------------------------------------------------------------------------
@@ -372,7 +372,7 @@ def reports():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
-    select_info['title'] = 'Orics'
+    select_info['title'] = 'Reports'
 
     return render_template('reports.html', **select_info)
 # -----------------------------------------------------------------------------------
