@@ -87,6 +87,7 @@
             "policies" : [
                 {
                     "name" : "Authentication",
+                    "key" : "basic_auth",
                     "struct" : [
                         ["User Name", "name", "str", 30, 1],
                         ["Password", "password", "str", 30, 1]

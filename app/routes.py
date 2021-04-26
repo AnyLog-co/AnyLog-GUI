@@ -911,7 +911,6 @@ def policies(policy_name = ""):
 
     select_info = get_select_menu()
     select_info['title'] = "Network Policies"
-    # select_info['form'] = Policies()
     select_info['policies'] = gui_view_.get_policies_list()  # Collect the names of the policies
 
     if policy_name:
@@ -948,13 +947,17 @@ def set_policy_form(policy_name, policy_struct):
     if not "struct" in policy_struct:
         return "Missing 'struct' entry"
 
-    policy = policy_struct['struct']
+    if not "key" in policy_struct:
+        return "Missing 'key' entry"
 
-    policy_type = path_stat.get_policy_type(policy)
-    if not policy_type:
-        return "Wrong policy structure"
+    attr_list = policy_struct['struct']     # The list of columns
 
-    policy_info = policy[policy_type]
+    class Policies(FlaskForm):
+
+        submit = SubmitField('Submit')
+
+    # Find the policy in the list
+
 
 
 
