@@ -8,7 +8,6 @@
 {% else %}
 <form action="{{url_for('selected')}}" method="POST">
 {% endif %}
-
     {% for table in tables_list %}
     <h3>{{ table.table_name }}</h3>
     <table border="1">

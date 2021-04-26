@@ -19,7 +19,6 @@ from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
-from app.forms import Policies
 
 from app.entities import Item
 from app.entities import AnyLogItem
