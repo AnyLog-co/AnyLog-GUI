@@ -932,8 +932,6 @@ def policies(policy_name = ""):
 # -----------------------------------------------------------------------------------
 def set_policy_form(policy_name, policy_struct):
 
-
-
     if not "struct" in policy_struct:
         return [None, "Missing 'struct' entry"]
 
@@ -965,43 +963,6 @@ def set_policy_form(policy_name, policy_struct):
         policy.append(policy_attr)
 
     return [policy, None]
-
-
-
-
-
-
-    def constructor(self, arg):
-        self.constructor_arg = arg
-
-    # method
-    def displayMethod(self, arg):
-        print(arg)
-
-    # class method
-    @classmethod
-    def classMethod(cls, arg):
-        print(arg)
-
-    members = {
-        # constructor
-        "__init__": constructor,
-
-        # data members
-        "string_attribute": "Geeks 4 geeks !",
-        "int_attribute": 1706256,
-
-        # member functions
-        "func_arg": displayMethod,
-        "class_func": classMethod
-    }
-
-    New_Class = type(policy_name, (object, ), members)
-
-
-    obj = New_Class("constructor argument")
-
-    return None
 
 # -----------------------------------------------------------------------------------
 # Logout

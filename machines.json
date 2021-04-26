@@ -91,13 +91,13 @@
                     "struct" : [
                                 { "name": "User Name",
                                   "key" : "name",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 },
                                 { "name": "Password",
                                   "key" : "password",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 }
@@ -109,13 +109,13 @@
                     "struct" : [
                                 { "name": "Manufacturer",
                                   "key" : "name",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 },
                                 { "name": "Address",
                                   "key" : "address",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : false
                                 },

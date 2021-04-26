@@ -6,9 +6,20 @@
 
     <form action="{{url_for('policies')}}" method="POST">
         {{ super() }}
+
         <h1>{{ policy_name }}</h1>
     
-        <br>
+        {% for attribute in policy %}
+
+            <label for={{attribute.key}}>{{attribute.name}}:</label>&nbsp
+            <input type={{attribute.type}} name={{attribute.key}}>
+            
+            <br>
+
+        {% endfor %}
+
+
+         <input type="submit" value="Submit" name="Submit">
 
     {% endblock %}
 
