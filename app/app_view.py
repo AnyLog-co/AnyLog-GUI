@@ -16,6 +16,7 @@ from json.decoder import JSONDecodeError
 
 
 from config import Config
+from app.entities import AnyLogItem
 
 
 # ------------------------------------------------------------------------
@@ -270,3 +271,40 @@ def str_to_list(data: str):
     return list_obj
 
 
+# -----------------------------------------------------------------------------------
+# Set Dynamic Policy Form
+# Example Dynamic method - https://www.geeksforgeeks.org/create-classes-dynamically-in-python/
+# -----------------------------------------------------------------------------------
+def set_policy_form(policy_name, policy_struct):
+
+    if not "struct" in policy_struct:
+        return [None, "Missing 'struct' entry"]
+
+    if not "key" in policy_struct:
+        return [None, "Missing 'key' entry"]
+
+    attr_list = policy_struct['struct']     # The list of columns
+
+    # Go over the Config file entries and define the Form
+    policy = []
+    for entry in attr_list:
+        if not 'name' in entry:
+            return [None, "Missing 'name' attribute in definition in policy %s" % policy_name]
+        attr_name = entry['name']
+        if not 'key' in entry:
+            return [None, "Missing 'name' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
+        attr_key = entry['key']
+        if not 'type' in entry:
+            return [None, "Missing 'type' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
+        attr_type = entry['type']
+
+        attrr_properties = [
+            ('name', attr_name),
+            ('key',  attr_key),
+            ('type', attr_type),
+        ]
+
+        policy_attr = AnyLogItem( attrr_properties )
+        policy.append(policy_attr)
+
+    return [policy, None]

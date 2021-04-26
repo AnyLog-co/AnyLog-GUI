@@ -917,7 +917,7 @@ def policies(policy_name = ""):
         policy = gui_view_.get_policy_info(policy_name)
         if policy:
             select_info['policy_name'] = policy_name
-            policy_attr, err_msg = set_policy_form(policy_name, policy)
+            policy_attr, err_msg = app_view.set_policy_form(policy_name, policy)
             if err_msg:
                 flash("AnyLog: Error in %s policy declarations in config file: %s" % (policy_name, err_msg), category='error')
             else:
@@ -927,42 +927,23 @@ def policies(policy_name = ""):
     return render_template('policies.html', **select_info)
 
 # -----------------------------------------------------------------------------------
-# Set Dynamic Policy Form
-# Example Dynamic method - https://www.geeksforgeeks.org/create-classes-dynamically-in-python/
+# process new policy
 # -----------------------------------------------------------------------------------
-def set_policy_form(policy_name, policy_struct):
+@app.route('/new_policy', methods={'GET','POST'})
+@app.route('/new_policy/<string:policy_name>', methods={'GET','POST'})
+def new_policy(policy_name = ""):
 
-    if not "struct" in policy_struct:
-        return [None, "Missing 'struct' entry"]
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
-    if not "key" in policy_struct:
-        return [None, "Missing 'key' entry"]
+    select_info = get_select_menu()
+    select_info['title'] = "Network Policies"
+    select_info['policies'] = gui_view_.get_policies_list()  # Collect the names of the policies
+    if not policy_name:
+        return render_template('policies.html', **select_info)
 
-    attr_list = policy_struct['struct']     # The list of columns
+    form_info = request.form
 
-    # Go over the Config file entries and define the Form
-    policy = []
-    for entry in attr_list:
-        if not 'name' in entry:
-            return [None, "Missing 'name' attribute in definition in policy %s" % policy_name]
-        attr_name = entry['name']
-        if not 'key' in entry:
-            return [None, "Missing 'name' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
-        attr_key = entry['key']
-        if not 'type' in entry:
-            return [None, "Missing 'type' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
-        attr_type = entry['type']
-
-        attrr_properties = [
-            ('name', attr_name),
-            ('key',  attr_key),
-            ('type', attr_type),
-        ]
-
-        policy_attr = AnyLogItem( attrr_properties )
-        policy.append(policy_attr)
-
-    return [policy, None]
 
 # -----------------------------------------------------------------------------------
 # Logout
