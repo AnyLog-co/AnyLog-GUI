@@ -4,7 +4,7 @@
 
     {% block content %}
 
-    <form action="{{url_for('new_policy')}}/{{report_name}}" method="POST">
+    <form action="{{url_for('policies')}}/{{policy_name}}" method="POST">
 
         {{ super() }}
 
@@ -20,8 +20,8 @@
 
         {% endfor %}
 
-
-         <input type="submit" value="Submit" name="Submit">
+        <br>
+        <input type="submit" value="Submit" name="Submit">
 
     {% endblock %}
 

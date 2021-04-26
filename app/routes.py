@@ -34,7 +34,8 @@ from requests.exceptions import HTTPError
 
 from app import app_view        # maintains the logical view of the GUI from a JSON File
 from app import path_stat       # Maintain the path of the user
-from app import visualize                # The connectors to Grafana, Power BI etc
+from app import visualize       # The connectors to Grafana, Power BI etc
+from app import anylog_api      # Connector to the network
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 
@@ -914,6 +915,12 @@ def policies(policy_name = ""):
 
     if policy_name:
         # A policy was selected
+        policy = gui_view_.get_policy_info(policy_name)
+        if len(request.form):
+            # send policy from Form
+            anylog_api.deliver_policy(policy, request.form)
+
+        # Goto the same form again to add a new policy
         select_info['policy_name'] = policy_name
         policy = gui_view_.get_policy_info(policy_name)
         if policy:
@@ -927,25 +934,6 @@ def policies(policy_name = ""):
 
     return render_template('policies.html', **select_info)
 
-# -----------------------------------------------------------------------------------
-# process new policy
-# -----------------------------------------------------------------------------------
-@app.route('/new_policy', methods={'GET','POST'})
-@app.route('/new_policy/<string:policy_name>', methods={'GET','POST'})
-def new_policy(policy_name = ""):
-
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
-
-    select_info = get_select_menu()
-    select_info['title'] = "Network Policies"
-    select_info['policies'] = gui_view_.get_policies_list()  # Collect the names of the policies
-    if not policy_name:
-        return render_template('policies.html', **select_info)
-
-    form_info = request.form
-
-    return render_template('policies.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Logout
 # -----------------------------------------------------------------------------------
