@@ -951,9 +951,27 @@ def set_policy_form(policy_name, policy_struct):
 
     attr_list = policy_struct['struct']     # The list of columns
 
-    class Policies(FlaskForm):
+    # Go over the Config file entries and define the Form
+    for entry in attr_list:
+        if not 'name' in entry:
+            return "Missing 'name' attribute in definition in policy %s" % policy_name
+        attr_name = entry['name']
+        if not 'key' in entry:
+            return "Missing 'name' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)
+        attr_key = entry['key']
+        if not 'type' in entry:
+            return "Missing 'type' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)
+        attr_type = entry['type']
 
-        submit = SubmitField('Submit')
+        attrr_properties = {
+            'name' :    attr_name,
+            'key':      attr_key,
+            'type':     attr_type,
+        }
+
+        policy = AnyLogItem( attrr_properties )
+
+       pass
 
     # Find the policy in the list
 
