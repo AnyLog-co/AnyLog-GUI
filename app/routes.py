@@ -917,10 +917,11 @@ def policies(policy_name = ""):
         policy = gui_view_.get_policy_info(policy_name)
         if policy:
             select_info['policy_name'] = policy_name
-            err_msg = set_policy_form(policy_name, policy)
+            policy_attr, err_msg = set_policy_form(policy_name, policy)
             if err_msg:
                 flash("AnyLog: Error in %s policy declarations in config file: %s" % (policy_name, err_msg), category='error')
             else:
+                select_info["policy"] = policy_attr
                 return render_template('policy_add.html', **select_info)
 
     return render_template('policies.html', **select_info)
@@ -930,6 +931,45 @@ def policies(policy_name = ""):
 # Example Dynamic method - https://www.geeksforgeeks.org/create-classes-dynamically-in-python/
 # -----------------------------------------------------------------------------------
 def set_policy_form(policy_name, policy_struct):
+
+
+
+    if not "struct" in policy_struct:
+        return [None, "Missing 'struct' entry"]
+
+    if not "key" in policy_struct:
+        return [None, "Missing 'key' entry"]
+
+    attr_list = policy_struct['struct']     # The list of columns
+
+    # Go over the Config file entries and define the Form
+    policy = []
+    for entry in attr_list:
+        if not 'name' in entry:
+            return [None, "Missing 'name' attribute in definition in policy %s" % policy_name]
+        attr_name = entry['name']
+        if not 'key' in entry:
+            return [None, "Missing 'name' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
+        attr_key = entry['key']
+        if not 'type' in entry:
+            return [None, "Missing 'type' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
+        attr_type = entry['type']
+
+        attrr_properties = [
+            ('name', attr_name),
+            ('key',  attr_key),
+            ('type', attr_type),
+        ]
+
+        policy_attr = AnyLogItem( attrr_properties )
+        policy.append(policy_attr)
+
+    return [policy, None]
+
+
+
+
+
 
     def constructor(self, arg):
         self.constructor_arg = arg
@@ -942,43 +982,6 @@ def set_policy_form(policy_name, policy_struct):
     @classmethod
     def classMethod(cls, arg):
         print(arg)
-
-    if not "struct" in policy_struct:
-        return "Missing 'struct' entry"
-
-    if not "key" in policy_struct:
-        return "Missing 'key' entry"
-
-    attr_list = policy_struct['struct']     # The list of columns
-
-    # Go over the Config file entries and define the Form
-    for entry in attr_list:
-        if not 'name' in entry:
-            return "Missing 'name' attribute in definition in policy %s" % policy_name
-        attr_name = entry['name']
-        if not 'key' in entry:
-            return "Missing 'name' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)
-        attr_key = entry['key']
-        if not 'type' in entry:
-            return "Missing 'type' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)
-        attr_type = entry['type']
-
-        attrr_properties = {
-            'name' :    attr_name,
-            'key':      attr_key,
-            'type':     attr_type,
-        }
-
-        policy = AnyLogItem( attrr_properties )
-
-       pass
-
-    # Find the policy in the list
-
-
-
-
-
 
     members = {
         # constructor
