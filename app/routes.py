@@ -919,9 +919,9 @@ def policies(policy_name = ""):
         policy = gui_view_.get_policy_info(policy_name)
         if policy:
             select_info['policy_name'] = policy_name
-            err_msg = set_policy_form(policy)
+            err_msg = set_policy_form(policy_name, policy)
             if err_msg:
-                flash(err_msg, category='error')
+                flash("AnyLog: Error in %s policy declarations in config file: %s" % (policy_name, err_msg), category='error')
             else:
                 return render_template('policy_add.html', **select_info)
 
@@ -929,8 +929,54 @@ def policies(policy_name = ""):
 
 # -----------------------------------------------------------------------------------
 # Set Dynamic Policy Form
+# Example Dynamic method - https://www.geeksforgeeks.org/create-classes-dynamically-in-python/
 # -----------------------------------------------------------------------------------
-def set_policy_form(policy):
+def set_policy_form(policy_name, policy_struct):
+
+    def constructor(self, arg):
+        self.constructor_arg = arg
+
+    # method
+    def displayMethod(self, arg):
+        print(arg)
+
+    # class method
+    @classmethod
+    def classMethod(cls, arg):
+        print(arg)
+
+    if not "struct" in policy_struct:
+        return "Missing 'struct' entry"
+
+    policy = policy_struct['struct']
+
+    policy_type = path_stat.get_policy_type(policy)
+    if not policy_type:
+        return "Wrong policy structure"
+
+    policy_info = policy[policy_type]
+
+
+
+
+
+    members = {
+        # constructor
+        "__init__": constructor,
+
+        # data members
+        "string_attribute": "Geeks 4 geeks !",
+        "int_attribute": 1706256,
+
+        # member functions
+        "func_arg": displayMethod,
+        "class_func": classMethod
+    }
+
+    New_Class = type(policy_name, (object, ), members)
+
+
+    obj = New_Class("constructor argument")
 
     return None
 
