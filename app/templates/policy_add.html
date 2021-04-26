@@ -2,16 +2,14 @@
 
 {% extends "policies.html" %}
 
-{% block content %}
+    {% block content %}
 
     <form action="{{url_for('policies')}}" method="POST">
-
-        <br>
+        {{ super() }}
         <h1>{{ policy_name }}</h1>
     
         <br>
-
-
- {% endblock %}
+        
+    {% endblock %}
 
 
