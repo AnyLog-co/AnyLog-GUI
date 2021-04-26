@@ -44,10 +44,11 @@
 
      <!-- Navigate to children  -->
     {% if children_gui %}
-        <span style="color: green">Browse:</span>
+         &nbsp
+        <span style="color: midnightblue">Browse:</span>
         
         {%- for text, url_target in children_gui -%}
-            &nbsp   
+            &nbsp
             <input type="submit" value={{text}} name=Browse>  
         {%- endfor -%}
     

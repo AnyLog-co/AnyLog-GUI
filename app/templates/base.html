@@ -64,7 +64,7 @@
         <!-- ERROR Messages placed in Flush -->
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                    <table border="2" class="error-table">
+                    <table border="2" class="table error-table">
                         <tr>    <!-- table row  -->
                             <td>
                             Errors
@@ -76,7 +76,6 @@
                             </tr>
                         {% endfor %}
                     </table>
-                    <br>
                 {% endif %}
 
             {% endwith %}

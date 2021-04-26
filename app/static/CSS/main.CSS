@@ -61,4 +61,12 @@ h1 {
 
 }
 
+.error-table tr:first-child{
+    background-color:whitesmoke;
+    color:indianred;
+}
+.error-table tr{
+    background-color:whitesmoke;
+    color:darkslateblue;
+}
 
