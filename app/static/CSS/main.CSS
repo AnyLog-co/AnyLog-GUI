@@ -74,3 +74,14 @@ h1 {
     float:left;
 }
 
+.policy_input label{
+    display: inline-block;
+    float: left;
+    clear: left;
+    width: 150px;
+    text-align: left;
+}
+.policy_input input {
+  display: inline-block;
+  float: left;
+}

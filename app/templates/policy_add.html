@@ -10,25 +10,26 @@
 
         <h1>{{ policy_name }}</h1>
 
-
-        {% for attribute in policy %}
-            <!-- Space from previous or new line  -->
-            {% if attribute.space %}
-                {% for i in range (attribute.space) %}
-                    &nbsp
-                {% endfor %}
-            {% else %}
-            <br>
-            {% endif %}
-             <!-- Get data -->
-            <label for={{attribute.key}}>{{attribute.name}}:</label>
-            <input type={{attribute.type}} name={{attribute.key}} id={{attribute.key}}>
-
-
-        {% endfor %}
+        <div>
+            <section id="policy_input" class="policy_input">
+            {% for attribute in policy %}
+                <!-- Space from previous or new line  -->
+                {% if attribute.space %}
+                    {% for i in range (attribute.space) %}
+                        &nbsp
+                    {% endfor %}
+                {% else %}
+                <br>
+                {% endif %}
+                 <!-- Get data -->
+                <label for={{attribute.key}}>{{attribute.name}}:</label>
+                <input type={{attribute.type}} name={{attribute.key}} id={{attribute.key}}>
+            {% endfor %}
+            </section>
+         </div>
 
         <br>
-         <br>
+        <br>
         <input type="submit" value="Submit" name="Submit">
 
     {% endblock %}
