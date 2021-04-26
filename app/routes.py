@@ -911,7 +911,7 @@ def policies(policy_name = ""):
 
     select_info = get_select_menu()
     select_info['title'] = "Network Policies"
-    select_info['form'] = Policies()
+    # select_info['form'] = Policies()
     select_info['policies'] = gui_view_.get_policies_list()  # Collect the names of the policies
 
     if policy_name:
@@ -919,10 +919,20 @@ def policies(policy_name = ""):
         policy = gui_view_.get_policy_info(policy_name)
         if policy:
             select_info['policy_name'] = policy_name
-            return render_template('policy_add.html', **select_info)
-
+            err_msg = set_policy_form(policy)
+            if err_msg:
+                flash(err_msg, category='error')
+            else:
+                return render_template('policy_add.html', **select_info)
 
     return render_template('policies.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Set Dynamic Policy Form
+# -----------------------------------------------------------------------------------
+def set_policy_form(policy):
+
+    return None
 
 # -----------------------------------------------------------------------------------
 # Logout
