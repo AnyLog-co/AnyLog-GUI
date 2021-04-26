@@ -89,18 +89,41 @@
                     "name" : "Authentication",
                     "key" : "basic_auth",
                     "struct" : [
-                        ["User Name", "name", "str", 30, 1],
-                        ["Password", "password", "str", 30, 1]
-                    ]
-
+                                { "name": "User Name",
+                                  "key" : "name",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Password",
+                                  "key" : "password",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : true
+                                }
+                        ]
                 },
                 {
                     "name" : "Manufacturer",
                     "key" : "manufacturer",
                     "struct" : [
-                           ["Manufacturer", "manufacturer","str", 30, 1],
-                           ["Address", "address","str", 30, 1],
-                           ["URL", "url","url", 30, 1]
+                                { "name": "Manufacturer",
+                                  "key" : "name",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Address",
+                                  "key" : "address",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                                { "name": "URL",
+                                  "key" : "url",
+                                  "type" : "str",
+                                  "size" : 60
+                                }
 
                     ]
                         
@@ -109,40 +132,81 @@
                     "name" : "Company",
                     "key" : "Company",
                     "struct" : [
-                           ["Company", "name","str", 30, 1],
-                           ["Manufacturer", "manufacturer", "str", 30, 1],
-                           ["Address", "address","str", 30, 1],
-                           ["URL", "url","url", 30, 1]
+                                { "name": "Company",
+                                  "key" : "name",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Manufacturer",
+                                  "key" : "manufacturer",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Address",
+                                  "key" : "address",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                                { "name": "URL",
+                                  "key" : "url",
+                                  "type" : "str",
+                                  "size" : 60
+                              }
                       ]
                         
                 },
 
                 {
                     "name" : "Machine",
-                    "struct" : {
-                        "Machine" : {
-                            "name" : ["Machine name", "str", 30, 1],
-                            "description" : ["Description", "str", 30, 1],
-                            "machine" : ["Machine", "str", 30, 1]
-                        }
+                    "struct" : [
+                                { "name": "Machine",
+                                  "key" : "name",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                              { "name": "Manufacturer",
+                                  "key" : "manufacturer",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                              { "name": "ID",
+                                  "key" : "machine_id",
+                                  "type" : "int",
+                                  "size" : 12
+                              }
+                        ]
+                    },
 
-                    }
+                  {
+                      "name" : "Sensor",
+                      "struct" : [
 
-                },
+                                { "name": "Sensor",
+                                  "key" : "name",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Machine",
+                                  "key" : "machine",
+                                  "type" : "str",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Serial",
+                                  "key" : "Serial",
+                                  "type" : "int",
+                                  "size" : 30,
+                                  "required" : true
+                                }
+                      ]
 
-
-                {
-                    "name" : "Sensor",
-                    "struct" : {
-                        "Sensor" : {
-                            "name" : ["Tag Name", "str", 30, 1],
-                            "description" : ["Description", "str", 30, 1],
-                            "machine" : ["Machine", "str", 30, 1]
-                        }
-                        
-                    }
-
-                }
+                  }
             ]
         }
 }
