@@ -304,6 +304,9 @@ def set_policy_form(policy_name, policy_struct):
             ('type', attr_type),
         ]
 
+        if "space" in entry and isinstance(entry["space"], int):
+            attrr_properties.append(("space",entry["space"]))  # replaces new line with spaces from previous entry
+
         policy_attr = AnyLogItem( attrr_properties )
         policy.append(policy_attr)
 

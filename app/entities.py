@@ -25,7 +25,10 @@ class Item(object):
 class AnyLogItem(object):
     def __init__(self, attr_name_val:list):
         for entry in attr_name_val:
-            exec("self.{} = '{}'".format(entry[0], entry[1]))
+            if isinstance(entry[1], str):
+                exec("self.{} = '{}'".format(entry[0], entry[1]))
+            else:
+                exec("self.{} = {}".format(entry[0], entry[1]))
 
 # -----------------------------------------------------------------------------------
 # A class to maintain an AnyLog Table table

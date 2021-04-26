@@ -99,7 +99,8 @@
                                   "key" : "password",
                                   "type" : "text",
                                   "size" : 30,
-                                  "required" : true
+                                  "required" : true,
+                                  "space"  : 2
                                 }
                         ]
                 },
