@@ -914,6 +914,7 @@ def policies(policy_name = ""):
 
     if policy_name:
         # A policy was selected
+        select_info['policy_name'] = policy_name
         policy = gui_view_.get_policy_info(policy_name)
         if policy:
             select_info['policy_name'] = policy_name
@@ -944,7 +945,7 @@ def new_policy(policy_name = ""):
 
     form_info = request.form
 
-
+    return render_template('policies.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Logout
 # -----------------------------------------------------------------------------------

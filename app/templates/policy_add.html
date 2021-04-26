@@ -9,13 +9,14 @@
         {{ super() }}
 
         <h1>{{ policy_name }}</h1>
-    
+
+
         {% for attribute in policy %}
 
-            <label for={{attribute.key}}>{{attribute.name}}:</label>&nbsp
-            <input type={{attribute.type}} name={{attribute.key}}>
+            <label for={{attribute.key}}>{{attribute.name}}:</label>
+            <input type={{attribute.type}} name={{attribute.key}} id={{attribute.key}}>
 
-            <br>
+
 
         {% endfor %}
 
