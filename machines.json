@@ -122,7 +122,7 @@
                                 },
                                 { "name": "URL",
                                   "key" : "url",
-                                  "type" : "str",
+                                  "type" : "url",
                                   "size" : 60
                                 }
 
@@ -135,25 +135,25 @@
                     "struct" : [
                                 { "name": "Company",
                                   "key" : "name",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 },
                                 { "name": "Manufacturer",
                                   "key" : "manufacturer",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 },
                                 { "name": "Address",
                                   "key" : "address",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : false
                                 },
                                 { "name": "URL",
                                   "key" : "url",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 60
                               }
                       ]
@@ -162,22 +162,23 @@
 
                 {
                     "name" : "Machine",
+                    "key" : "machine",
                     "struct" : [
                                 { "name": "Machine",
                                   "key" : "name",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 },
                               { "name": "Manufacturer",
                                   "key" : "manufacturer",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : false
                                 },
                               { "name": "ID",
                                   "key" : "machine_id",
-                                  "type" : "int",
+                                  "type" : "number",
                                   "size" : 12
                               }
                         ]
@@ -185,23 +186,30 @@
 
                   {
                       "name" : "Sensor",
+                      "key" : "sensor",
                       "struct" : [
 
                                 { "name": "Sensor",
                                   "key" : "name",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 },
                                 { "name": "Machine",
                                   "key" : "machine",
-                                  "type" : "str",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 },
                                 { "name": "Serial",
                                   "key" : "Serial",
-                                  "type" : "int",
+                                  "type" : "number",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Description",
+                                  "key" : "Description",
+                                  "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 }

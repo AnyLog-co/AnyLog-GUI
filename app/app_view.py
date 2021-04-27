@@ -18,7 +18,11 @@ from json.decoder import JSONDecodeError
 from config import Config
 from app.entities import AnyLogItem
 
-
+html_input_types_ = {
+    "text" : 1,
+    "number" : 1,
+    "url" : 1,
+}
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
 # ------------------------------------------------------------------------
@@ -277,6 +281,8 @@ def str_to_list(data: str):
 # -----------------------------------------------------------------------------------
 def set_policy_form(policy_name, policy_struct):
 
+    global html_input_types_
+
     if not "struct" in policy_struct:
         return [None, "Missing 'struct' entry"]
 
@@ -288,15 +294,17 @@ def set_policy_form(policy_name, policy_struct):
     # Go over the Config file entries and define the Form
     policy = []
     for entry in attr_list:
-        if not 'name' in entry:
+        if not 'name' in entry or not isinstance(entry['name'], str):
             return [None, "Missing 'name' attribute in definition in policy %s" % policy_name]
         attr_name = entry['name']
-        if not 'key' in entry:
+        if not 'key' in entry or not isinstance(entry['key'], str):
             return [None, "Missing 'name' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
         attr_key = entry['key']
-        if not 'type' in entry:
+        if not 'type' in entry or not isinstance(entry['type'], str):
             return [None, "Missing 'type' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
         attr_type = entry['type']
+        if attr_type not in html_input_types_:
+            return [None, "The data type '%s' in attribute '%s' of policy '%s' is not supported" % (attr_type, attr_name, policy_name)]
 
         attrr_properties = [
             ('name', attr_name),
