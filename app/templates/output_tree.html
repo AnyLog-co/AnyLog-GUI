@@ -18,9 +18,15 @@
             <li>
         {% endif %}
 
-        {% if entry.data  %}
-        {{entry.data}}
+        {% if entry.key  %}
+            {{entry.key}}  &nbsp : &nbsp
         {% endif %}
+        {% if entry.value  %}
+            <span class="key">
+            {{entry.value}}
+            </span>
+        {% endif %}
+
 
         {% if entry.end_list %}
             </li>

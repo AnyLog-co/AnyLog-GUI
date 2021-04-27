@@ -19,19 +19,12 @@ from json.decoder import JSONDecodeError
 # -----------------------------------------------------------------------------------
 class TreeEntry():
 
-    def __init__(self, start_list, end_list, with_children, data):
+    def __init__(self, start_list, end_list, with_children, key, value):
         self.start_list = start_list     # Start a new list before the print
         self.end_list = end_list          # end aa list after the print
         self.with_children = with_children    # With children attributes
-        self.data = data
-
-    def set_start(self, value):
-        self.start_list = value
-
-
-    def set_end(self, value):
-        self.end_list = value
-
+        self.key = key
+        self.value = value
 
 # -----------------------------------------------------------------------------------
 # String to JSON
@@ -101,14 +94,14 @@ def setup_print_tree( source_struct, print_struct ):
         counter = len(source_struct) - 1  # The number of entries
         index = 0
 
-        new_entry = TreeEntry(True, False, False, None)  # Start List
+        new_entry = TreeEntry(True, False, False, None, None)  # Start List
         print_struct.append(new_entry)
         for key, value in source_struct.items():
 
             if isinstance(value,list) or isinstance(value, dict):
                 start_list = not counter
                 end_list = counter == index
-                new_entry = TreeEntry(False, False, True, key)
+                new_entry = TreeEntry(False, False, True, key, None)
                 print_struct.append(new_entry)
                 setup_print_tree( value, print_struct )
             else:
@@ -116,7 +109,7 @@ def setup_print_tree( source_struct, print_struct ):
 
             index += 1
 
-        new_entry = TreeEntry(False, True, False, None) # End List
+        new_entry = TreeEntry(False, True, False, None, None) # End List
         print_struct.append(new_entry)
 
     elif isinstance(source_struct, list):
@@ -134,12 +127,7 @@ def setup_print_tree( source_struct, print_struct ):
     else:
         set_edge(None, source_struct, print_struct)
 
-    '''
-    print_struct[0].set_start(False)
-    print_struct[0].set_end(False)
-    print_struct[-1].set_start(False)
-    print_struct[-1].set_end(False)
-    '''
+
 # -----------------------------------------------------------------------------------
 # Add edge Node
 # -----------------------------------------------------------------------------------
@@ -150,7 +138,7 @@ def set_edge(key, value, print_struct):
     else:
         data = str(value)
 
-    new_entry = TreeEntry(False, False, False, data)
+    new_entry = TreeEntry(False, False, False, key, value)
     print_struct.append(new_entry)
 
 
