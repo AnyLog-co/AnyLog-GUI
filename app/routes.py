@@ -918,7 +918,11 @@ def policies(policy_name = ""):
         policy = gui_view_.get_policy_info(policy_name)
         if len(request.form):
             # send policy from Form
-            anylog_api.deliver_policy(policy, request.form)
+            target_node = get_target_node()
+
+            err_msg = anylog_api.deliver_policy(target_node, policy, request.form)
+            if err_msg:
+                flash('AnyLog Connector: %s' % err_msg, category='error')
 
         # Goto the same form again to add a new policy
         select_info['policy_name'] = policy_name

@@ -14,11 +14,15 @@ such non-permitted act to AnyLog, Inc.
 # AnyLog Connectors
 # -----------------------------------------------------------------------
 
+from app import rest_api      # Connector to the network
+from app import json_api      # Connector to the network
+
+
 # -----------------------------------------------------------------------
 # Go over the structure and the form and build the AnyLog Policy.
 # Send the policy to the network
 # -----------------------------------------------------------------------
-def deliver_policy(policy_struct, policy_info):
+def deliver_policy(target_node, policy_struct, policy_info):
     '''
     Build the AnyLog Policy from the form info
     Deliver the form to the network
@@ -39,4 +43,37 @@ def deliver_policy(policy_struct, policy_info):
         attr_val = policy_info[attr_name]
         policy_body[attr_name] = attr_val
 
+    data_str, error_msg = json_api.json_to_string(policy)
+    if data_str:
 
+        command = "blockchain add %s" % data_str
+
+        response, error_msg = al_cmd( target_node, 'post', command )
+    else:
+        response = None
+
+    return error_msg
+
+# -----------------------------------------------------------------------
+# Execute command to the network
+# -----------------------------------------------------------------------
+def al_cmd( target_node, rest_type, command ):
+    '''
+
+    :param target_node: The target node in the network
+    :param rest_type: get or post
+    :param command: the AnyLog Command
+    :return:
+    '''
+
+    al_headers = {
+        'User-Agent': 'AnyLog/1.23',
+        'command': command
+    }
+
+    if rest_type == "get":
+        response, error_msg = rest_api.do_get(target_node, al_headers)
+    else:
+        response, error_msg = rest_api.do_post(target_node, al_headers)
+
+    return [response, error_msg]
