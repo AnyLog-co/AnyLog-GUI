@@ -19,8 +19,8 @@ from json.decoder import JSONDecodeError
 # -----------------------------------------------------------------------------------
 class TreeEntry():
 
-    def __init__(self, is_last, is_key, data):
-
+    def __init__(self, is_first, is_last, is_key, data):
+        self.is_first = is_first  # True if the entry is last in the subtree
         self.is_last = is_last        # True if the entry is last in the subtree
         self.is_key = is_key          # Is a key for an attribute value
         if isinstance(data, str):
@@ -91,11 +91,12 @@ def simple_polisies_list(policies):
 # -----------------------------------------------------------------------------------
 # Print setup of JSON for output_tree.html
 # Every entry that is set in print_struct has 3 attributes
+# - Is first in the subtree
 # - Is last in the subtree
 # - is key (True) or value (False)
 # - The data (key or value)
 # -----------------------------------------------------------------------------------
-def setup_print_tree( is_last, source_struct, print_struct ):
+def setup_print_tree( is_first, is_last, source_struct, print_struct ):
     '''
     Update print_struct with a setup for output_tree.html
 
@@ -110,9 +111,15 @@ def setup_print_tree( is_last, source_struct, print_struct ):
         for key, value in source_struct.items():
 
             if index == counter:
-                new_entry = TreeEntry(True, True, key)      # last in the hierarchy
+                if not index:
+                    new_entry = TreeEntry(True, True, True, key)  # First in the hierarchy &  last in the hierarchy
+                else:
+                    new_entry = TreeEntry(False, True, True, key)      # Not first  in the hierarchy & last in the hierarchy
             else:
-                new_entry = TreeEntry(False, True, key)     # Not last in the hierarchy
+                if not index:
+                    new_entry = TreeEntry(True, False, True, key)     # First in the hierarchy & Not last in the hierarchy
+                else:
+                    new_entry = TreeEntry(False, False, True, key)  # Not First in the hierarchy & Not last in the hierarchy
 
             print_struct.append(new_entry)      # Save the key
 
@@ -123,12 +130,19 @@ def setup_print_tree( is_last, source_struct, print_struct ):
         counter = len(source_struct) - 1  # The number of entries
         for index, entry in enumerate(source_struct):
             if index == counter:
-                setup_print_tree(True, entry, print_struct)      # last in the hierarchy
+                if not index:
+                    setup_print_tree(True, True, entry, print_struct)      # First in the hierarchy & last in the hierarchy
+                else:
+                    setup_print_tree(False, True, entry, print_struct)  # First in the hierarchy & last in the hierarchy
             else:
-                setup_print_tree(False, entry, print_struct)      # last in the hierarchy
+                if not index:
+                    setup_print_tree(True, False, entry, print_struct)      # First in the hierarchy & last in the hierarchy
+                else:
+                    setup_print_tree(False, False, entry, print_struct)  # First in the hierarchy & last in the hierarchy
+
 
     else:
-        new_entry = TreeEntry(is_last, False, source_struct)  # Not last in the hierarchy
+        new_entry = TreeEntry(is_first, is_last, False, source_struct)  # Not last in the hierarchy
 
         print_struct.append(new_entry)  # last in the hierarchy
 

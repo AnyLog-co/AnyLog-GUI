@@ -8,11 +8,21 @@
 
     {% for entry in text %}
 
-        {% if attribute.space %}
+        {% if entry.is_last %}
+            <li class="last">{{entry.data}}</li>
+            </ul>
+            </li>
+        {% else %}
+            <li>{{entry.data}}
+                <ul>
+        {% endif %}
 
-    {% endif %}
+    {% endfor %}
+</ul>
 
+<br>
 
+<ul class="tree">
 
     <li>Animals
      <ul>
