@@ -22,12 +22,17 @@ class TreeEntry():
     def __init__(self, start_list, end_list, is_key, data):
         self.start_list = start_list     # Start a new list before the print
         self.end_list = end_list          # end aa list after the print
+        self.mid_list = not start_list and not end_list
         self.is_key = is_key            # Is a key for an attribute value
+        self.data = data
 
-        if isinstance(data, str):
-            self.data = "\"%s\"" % data
-        else:
-            self.data = str(data)
+    def set_start(self, value):
+        self.start_list = value
+
+
+    def set_end(self, value):
+        self.end_list = value
+
 
 # -----------------------------------------------------------------------------------
 # String to JSON
@@ -123,6 +128,11 @@ def setup_print_tree( source_struct, print_struct ):
 
     else:
         set_edge(None, source_struct, print_struct)
+
+    print_struct[0].set_start(False)
+    print_struct[0].set_end(False)
+    print_struct[-1].set_start(False)
+    print_struct[-1].set_end(False)
 
 # -----------------------------------------------------------------------------------
 # Add edge Node
