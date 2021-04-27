@@ -707,10 +707,6 @@ def selected( selection = "" ):
     # organize JSON entries to display
     data_list = []
     json_api.setup_print_tree(True,  policies, data_list)
-    data_list = []
-    for json_entry in policies:
-        json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
-        data_list.append(json_string)  #  transformed to a JSON string.
 
     select_info['text'] = data_list
     
