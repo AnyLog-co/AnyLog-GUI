@@ -706,7 +706,7 @@ def selected( selection = "" ):
            
     # organize JSON entries to display
     data_list = []
-    json_api.setup_print_tree(True, len(policies) == 1, policies, data_list)
+    json_api.setup_print_tree(policies, data_list)
 
     select_info['text'] = data_list
     
