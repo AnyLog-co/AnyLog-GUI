@@ -8,16 +8,21 @@
 
     {% for entry in text %}
 
+        {% if entry.is_first %}
+            <ul>
+        {% endif %}
+
+                <li>{{entry.data}}
+                    {% if entry.is_edge %}
+                    </li>
+                    {% endif %}}
+
         {% if entry.is_last %}
-            <li class="last">{{entry.data}}</li>
             </ul>
-            </li>
-        {% else %}
-            <li>{{entry.data}}
-                <ul>
         {% endif %}
 
     {% endfor %}
+
 </ul>
 
 <br>
