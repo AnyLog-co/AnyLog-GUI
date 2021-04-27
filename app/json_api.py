@@ -19,11 +19,10 @@ from json.decoder import JSONDecodeError
 # -----------------------------------------------------------------------------------
 class TreeEntry():
 
-    def __init__(self, start_list, end_list, is_key, data):
+    def __init__(self, start_list, end_list, with_children, data):
         self.start_list = start_list     # Start a new list before the print
         self.end_list = end_list          # end aa list after the print
-        self.mid_list = not start_list and not end_list
-        self.is_key = is_key            # Is a key for an attribute value
+        self.with_children = with_children    # With children attributes
         self.data = data
 
     def set_start(self, value):
@@ -101,18 +100,24 @@ def setup_print_tree( source_struct, print_struct ):
 
         counter = len(source_struct) - 1  # The number of entries
         index = 0
+
+        new_entry = TreeEntry(True, False, False, None)  # Start List
+        print_struct.append(new_entry)
         for key, value in source_struct.items():
 
             if isinstance(value,list) or isinstance(value, dict):
                 start_list = not counter
                 end_list = counter == index
-                new_entry = TreeEntry(start_list, end_list, True, key)
+                new_entry = TreeEntry(False, False, True, key)
                 print_struct.append(new_entry)
                 setup_print_tree( value, print_struct )
             else:
                 set_edge(key, value, print_struct )
 
             index += 1
+
+        new_entry = TreeEntry(False, True, False, None) # End List
+        print_struct.append(new_entry)
 
     elif isinstance(source_struct, list):
         counter = len(source_struct) - 1  # The number of entries
@@ -129,11 +134,12 @@ def setup_print_tree( source_struct, print_struct ):
     else:
         set_edge(None, source_struct, print_struct)
 
+    '''
     print_struct[0].set_start(False)
     print_struct[0].set_end(False)
     print_struct[-1].set_start(False)
     print_struct[-1].set_end(False)
-
+    '''
 # -----------------------------------------------------------------------------------
 # Add edge Node
 # -----------------------------------------------------------------------------------

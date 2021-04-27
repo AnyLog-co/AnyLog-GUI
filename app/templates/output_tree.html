@@ -18,13 +18,15 @@
             <li>
         {% endif %}
 
+        {% if entry.data  %}
         {{entry.data}}
+        {% endif %}
 
         {% if entry.end_list %}
             </li>
             </ul>
         {% else %}
-            {% if entry.mid_list %}
+            {% if entry.with_children %}
             {% else %}
             </li>
             {% endif %}
