@@ -48,7 +48,32 @@ def json_to_string(json_struct):
     else:
         error_msg = None
 
-
     return [data_str, error_msg]
+
+# -----------------------------------------------------------------------------------
+# Print setup of JSON for output_tree.html
+# -----------------------------------------------------------------------------------
+def setup_print_tree( source_struct, print_struct ):
+    '''
+    Updtate print_struct with a setup for output_tree.html
+
+    :param source_struct: A dictionary or a list
+    :param print_struct: A structure to send to output_tree.html
+    :return:
+    '''
+
+    counter = len(source_struct) - 1          # The number of entries
+
+    if isinstance(source_struct, dict):
+        for index, entry, value in enumerate(source_struct.items()):
+            if isinstance()
+
+
+
+
+
+
+
+
 
 

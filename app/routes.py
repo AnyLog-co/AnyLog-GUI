@@ -713,7 +713,7 @@ def selected( selection = "" ):
     
     # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
 
-    return render_template('output.html', **select_info )
+    return render_template('output_tree.html', **select_info )
 
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
