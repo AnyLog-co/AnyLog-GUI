@@ -1,0 +1,33 @@
+
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<ul class="tree">
+    <li>Animals
+     <ul>
+      <li>Birds</li>
+      <li>Mammals
+       <ul>
+        <li>Elephant</li>
+        <li class="last">Mouse</li>
+       </ul>
+      </li>
+      <li class="last">Reptiles</li>
+     </ul>
+    </li>
+    <li class="last">Plants
+     <ul>
+      <li>Flowers
+       <ul>
+        <li>Rose</li>
+        <li class="last">Tulip</li>
+       </ul>
+      </li>
+      <li class="last">Trees</li>
+     </ul>
+    </li>
+   </ul>
+
+ {% endblock %}
