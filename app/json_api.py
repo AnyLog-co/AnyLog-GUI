@@ -19,8 +19,15 @@ from json.decoder import JSONDecodeError
 # -----------------------------------------------------------------------------------
 class TreeEntry():
 
-    def __init__(self):
-        self.config_struct = None
+    def __init__(self, is_last, is_key, data):
+
+        self.is_last = is_last        # True if the entry is last in the subtree
+        self.is_key = is_key          # Is a key for an attribute value
+        if isinstance(data, str):
+            self.data = "\"%s\""% data
+        else:
+            self.data = str(data)
+
 
 
 # -----------------------------------------------------------------------------------
@@ -101,12 +108,15 @@ def setup_print_tree( is_last, source_struct, print_struct ):
         counter = len(source_struct) - 1  # The number of entries
         index = 0
         for key, value in source_struct.items():
-            if index == counter:
-                print_struct.append((True, True, "\"%s\" : " %  key))          # last in the hierarchy
-            else:
-                print_struct.append((False, True, "\"%s\" : " %  key))          # last in the hierarchy
 
-            setup_print_tree( True, value, print_struct )
+            if index == counter:
+                new_entry = TreeEntry(True, True, key)      # last in the hierarchy
+            else:
+                new_entry = TreeEntry(False, True, key)     # Not last in the hierarchy
+
+            print_struct.append(new_entry)      # Save the key
+
+            setup_print_tree( True, value, print_struct )   # Set the value
             index += 1
 
     elif isinstance(source_struct, list):
@@ -118,12 +128,9 @@ def setup_print_tree( is_last, source_struct, print_struct ):
                 setup_print_tree(False, entry, print_struct)      # last in the hierarchy
 
     else:
-        if isinstance(source_struct,str):
-            value = "\"%s\"" % source_struct
-        else:
-            value = str(source_struct)
+        new_entry = TreeEntry(is_last, False, source_struct)  # Not last in the hierarchy
 
-        print_struct.append((is_last, False, value))  # last in the hierarchy
+        print_struct.append(new_entry)  # last in the hierarchy
 
 
 
