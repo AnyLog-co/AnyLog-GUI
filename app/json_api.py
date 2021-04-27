@@ -68,26 +68,27 @@ def setup_print_tree( is_last, source_struct, print_struct ):
     :return:
     '''
 
-    counter = len(source_struct) - 1          # The number of entries
+
 
     if isinstance(source_struct, dict):
-        for index, key, value in enumerate(source_struct.items()):
+        counter = len(source_struct) - 1  # The number of entries
+        index = 0
+        for key, value in source_struct.items():
             if index == counter:
-                print_struct.append((True, True, key))          # last in the hierarchy
+                print_struct.append((True, True, "\"%s\" : " %  key))          # last in the hierarchy
             else:
-                print_struct.append((False, True, key))    # last in the hierarchy
+                print_struct.append((False, True, "\"%s\" : " %  key))          # last in the hierarchy
 
-            print_struct.append((is_last, True, key + ' : '))
-
-            setup_print_tree( value, print_struct )
+            setup_print_tree( True, value, print_struct )
+            index += 1
 
     elif isinstance(source_struct, list):
-
+        counter = len(source_struct) - 1  # The number of entries
         for index, entry in enumerate(source_struct):
             if index == counter:
-                print_struct.append((True, False, entry))      # last in the hierarchy
+                setup_print_tree(True, entry, print_struct)      # last in the hierarchy
             else:
-                print_struct.append((False, False, entry))    # last in the hierarchy
+                setup_print_tree(False, entry, print_struct)      # last in the hierarchy
 
     else:
         if isinstance(source_struct,str):

@@ -36,6 +36,7 @@ from app import app_view        # maintains the logical view of the GUI from a J
 from app import path_stat       # Maintain the path of the user
 from app import visualize       # The connectors to Grafana, Power BI etc
 from app import anylog_api      # Connector to the network
+from app import json_api        # JSON data mapper
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 
@@ -704,6 +705,8 @@ def selected( selection = "" ):
 
            
     # organize JSON entries to display
+    data_list = []
+    json_api.setup_print_tree(True,  policies, data_list)
     data_list = []
     for json_entry in policies:
         json_string = json.dumps(json_entry,indent=4, separators=(',', ': '), sort_keys=True)
