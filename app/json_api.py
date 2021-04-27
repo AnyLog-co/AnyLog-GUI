@@ -50,12 +50,18 @@ def json_to_string(json_struct):
 
     return [data_str, error_msg]
 
+
+
 # -----------------------------------------------------------------------------------
 # Print setup of JSON for output_tree.html
+# Every entry that is set in print_struct has 3 attributes
+# - Is last in the subtree
+# - is key (True) or value (False)
+# - The data (key or value)
 # -----------------------------------------------------------------------------------
-def setup_print_tree( source_struct, print_struct ):
+def setup_print_tree( is_last, source_struct, print_struct ):
     '''
-    Updtate print_struct with a setup for output_tree.html
+    Update print_struct with a setup for output_tree.html
 
     :param source_struct: A dictionary or a list
     :param print_struct: A structure to send to output_tree.html
@@ -65,8 +71,32 @@ def setup_print_tree( source_struct, print_struct ):
     counter = len(source_struct) - 1          # The number of entries
 
     if isinstance(source_struct, dict):
-        for index, entry, value in enumerate(source_struct.items()):
-            if isinstance()
+        for index, key, value in enumerate(source_struct.items()):
+            if index == counter:
+                print_struct.append((True, True, key))          # last in the hierarchy
+            else:
+                print_struct.append((False, True, key))    # last in the hierarchy
+
+            print_struct.append((is_last, True, key + ' : '))
+
+            setup_print_tree( value, print_struct )
+
+    elif isinstance(source_struct, list):
+
+        for index, entry in enumerate(source_struct):
+            if index == counter:
+                print_struct.append((True, False, entry))      # last in the hierarchy
+            else:
+                print_struct.append((False, False, entry))    # last in the hierarchy
+
+    else:
+        if isinstance(source_struct,str):
+            value = "\"%s\"" % source_struct
+        else:
+            value = str(source_struct)
+
+        print_struct.append((is_last, False, value))  # last in the hierarchy
+
 
 
 
