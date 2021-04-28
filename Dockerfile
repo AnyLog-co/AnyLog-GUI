@@ -1,6 +1,10 @@
 FROM ubuntu:18.04 
 
 ARG ANYLOG_ROOT_DIR=/app
+ENV FLASK_APP=anylog.py
+ENV FLASK_ENV=develop 
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 
 RUN apt-get -y update 
 RUN apt-get -y upgrade 
@@ -19,7 +23,6 @@ WORKDIR $ANYLOG_ROOT_DIR
 COPY . AnyLog-GUI
 
 WORKDIR AnyLog-GUI
-
 
 CMD ["flask", "run"] 
 
