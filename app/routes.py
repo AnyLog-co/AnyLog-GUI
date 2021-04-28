@@ -224,7 +224,18 @@ def dynamic_report( report_name = "" ):
 
     select_info['report_name'] = report_name
 
+    # Organize the report time selections as last selection
     select_info['time_options'] = time_selection_
+    from_date, to_date = path_stat.get_dates_selection(user_name, report_name)      # Get the last selections of dates
+    if to_date:
+        if to_date == 'now':
+            for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == from_date:
+                    select_info['previous_range'] = (entry[0], entry[1])
+        else:
+            select_info['time_selection'] = (from_date, to_date)
+
 
     return render_template('report_deploy.html',  **select_info )
 

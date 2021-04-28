@@ -68,6 +68,31 @@ def get_platform_name(user_name, report_name):
         if 'platform' in user_info['reports'][report_name]:
             platform =  user_info['reports'][report_name]['platform']
     return platform
+
+
+# -----------------------------------------------------------------------------------
+# Save the last selection for the reports dates
+# -----------------------------------------------------------------------------------
+def set_dates_selection(user_name, report_name, from_date, to_date):
+    global active_state_
+    user_info = active_state_[user_name]
+
+    if report_name in user_info['reports']:
+        user_info['reports'][report_name]['dates'] = (from_date, to_date)
+
+# -----------------------------------------------------------------------------------
+# Get the last selection for the reports dates
+# -----------------------------------------------------------------------------------
+def get_dates_selection(user_name, report_name ):
+    global active_state_
+    from_date = None
+    to_date = None
+    user_info = active_state_[user_name]
+
+    if report_name in user_info['reports']:
+        if 'dates' in user_info['reports'][report_name]:
+            from_date, to_date = user_info['reports'][report_name]['dates']
+    return [from_date, to_date]
 # -----------------------------------------------------------------------------------
 # Set the name of the visualization platform for the report
 # -----------------------------------------------------------------------------------
