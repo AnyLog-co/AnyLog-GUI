@@ -489,6 +489,9 @@ def network():
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
     al_headers = {
             'User-Agent' : 'AnyLog/1.23'
     }
@@ -509,12 +512,30 @@ def al_command():
     else:
         if response.status_code == 200:
             data = response.text
-            data = data.replace('\r','')
-            text = data.split('\n')
 
             select_info['title'] = 'Network Node Reply'
-            select_info['text'] = text
 
+            '''
+            policy = None
+            if data[0] == '{' and data[-1] == '}':
+                policy =  json_api.string_to_json(data)
+
+            elif data[0] == '[' and data[-1] == ']':
+                policy = json_api.string_to_list(data)
+
+            if policy:
+                # Print Tree Structure
+                data_list = []
+                json_api.setup_print_tree(policies, data_list)
+                select_info['text'] = data_list
+                # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
+                return render_template('output_tree.html', **select_info)
+            '''
+
+            data = data.replace('\r', '')
+            text = data.split('\n')
+
+            select_info['text'] = text
             return render_template('output.html', **select_info)
   
     
@@ -522,7 +543,7 @@ def al_command():
     select_info['form'] = CommandsForm()         # New Form
     select_info['def_dest'] = target_node
     
-    return render_template('network.html', **select_info)
+    return render_template('commands.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Install New Node

@@ -72,6 +72,16 @@ def json_to_string(json_struct):
         error_msg = None
 
     return [data_str, error_msg]
+# =======================================================================================================================
+# String to list
+# =======================================================================================================================
+def string_to_list(data: str):
+
+    try:
+        list_obj = list(eval(data))
+    except:
+        list_obj = None
+    return list_obj
 
 # -----------------------------------------------------------------------------------
 # Simple setup of a print of a list of JSON policies
