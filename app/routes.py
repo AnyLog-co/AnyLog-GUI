@@ -482,7 +482,7 @@ def network():
     form = CommandsForm()         # New Form
     
     select_info = get_select_menu()
-    select_info['title'] = 'Network Commands'
+    select_info['title'] = 'Network Operations'
     select_info['form'] = form
     select_info['def_dest'] = target_node
 
@@ -507,9 +507,9 @@ def al_command():
  
     target_node = get_target_node()
 
-
+    command = request.form["command"]
     try:
-        al_headers["command"] = request.form["command"]
+        al_headers["command"] = command
         
         response = requests.get(target_node, headers=al_headers)
     except:
@@ -519,8 +519,8 @@ def al_command():
         if response.status_code == 200:
             data = response.text
 
-            select_info['title'] = 'Network Node Reply'
-
+            select_info['title'] = 'Network Command'
+            select_info['command'] = command
 
             policy = None
             if data[0] == '{' and data[-1] == '}':
@@ -542,7 +542,7 @@ def al_command():
             text = data.split('\n')
 
             select_info['text'] = text
-            return render_template('output.html', **select_info)
+            return render_template('output_cmd.html', **select_info)
   
     
     select_info['title'] = 'Network Status'
