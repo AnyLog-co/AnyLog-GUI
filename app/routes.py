@@ -234,7 +234,8 @@ def dynamic_report( report_name = "" ):
                 if entry[1] == from_date[3:]:
                     select_info['previous_range'] = (entry[0], entry[1])
         else:
-            select_info['time_selection'] = (from_date, to_date)
+            select_info['from_date'] = from_date
+            select_info['to_date'] = to_date
 
 
     return render_template('report_deploy.html',  **select_info )
