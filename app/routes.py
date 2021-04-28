@@ -45,7 +45,27 @@ gui_view_.set_gui()
 
 query_node_ = None
 
-
+time_selection_ = [
+    ("Last 5 minutes", "-5m"),
+    ("Last 15 minutes", "-15m"),
+    ("Last 30 minutes", "-30m"),
+    ("Last hour", "-1h"),
+    ("Last 2 hour2", "-2h"),
+    ("Last 3 hours", "-3h"),
+    ("last 6 hours", "-6h"),
+    ("Last 12 hours", "-12h"),
+    ("Last 24 hours", "-1d"),
+    ("Last 2 days", "-2d"),
+    ("Last 7 days", "-7d"),
+    ("Last 14 days", "-14d"),
+    ("Last 1 month", "-1M"),
+    ("Last 2 months", "-2M"),
+    ("Last 3 months", "-3M"),
+    ("Last 6 months", "-6M"),
+    ("last 1 year", "-1y"),
+    ("last 2 years", "-2y"),
+    ("last 3 years", "-3y"),
+]
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
@@ -204,6 +224,7 @@ def dynamic_report( report_name = "" ):
 
     select_info['report_name'] = report_name
 
+    select_info['time_options'] = time_selection_
 
     return render_template('report_deploy.html',  **select_info )
 
