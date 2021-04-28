@@ -57,9 +57,14 @@
     &nbsp&nbsp&nbsp
     <label for="range">Date Range:</label>
         <select name="date_range" id="date_range">
-            <option value="">Dates selection</option>
+            {% if previous_range %}
+                 <!-- set date range selection as previous selection -->
+                <option value={{previous_range[1]}}>{{previous_range[0]}}</option>
+            {% else %}}
+                <option value="">Dates selection</option>
+            {% endif %}
             {% for option in time_options %}
-            <option value={{option[1]}}>{{option[0]}}</option>
+                <option value={{option[1]}}>{{option[0]}}</option>
             {% endfor %}
         </select>
 
@@ -80,12 +85,6 @@
         &nbsp &nbsp Select Panel:&nbsp
 
         <select name="panel" id="panel">    <!-- show list of panels  and select-->
-            {% if previous_range %}
-                 <!-- set date range selection as previous selection -->
-                <option value={{previous_range[1}}>{{previous_range[0}}</option>
-            {% else %}}
-                <option value="">Dates selection</option>
-            {% endif %}
             {% for panel in panels_list %}
                 <option value={{panel}}>{{panel}}</option>
             {% endfor %}
