@@ -171,6 +171,9 @@ def dynamic_report( report_name = "" ):
 
     # Get the list of panels to the report (if Available and suggest to replace a panel or add a panel)
     platform, panels_list = get_panels_list(user_name, report_name)
+
+    select_info['new_panel_name'] = "Panel_%u" % (len(panels_list) + 1)   # Default name for the panel
+
     if panels_list and len(panels_list):
         select_info['panels_list'] = panels_list  # Add the list of existing panels in this report
     if not platform:
@@ -221,7 +224,10 @@ def get_panels_list(user_name, report_name):
                 token = platforms_tree[platform_option]['token']
                 one_list = visualize.get_panels(platform_option, url, token, report_name)
                 if one_list and len(one_list):
-                    panels_list += one_list
+                    panels_list = one_list
+                    platform_name = platform_option
+                    path_stat.set_platform_name(user_name, report_name, platform_name)
+                    break           # Platform was found
     else:
         # Platform was selected
         if platform_name in platforms_tree:
@@ -706,7 +712,7 @@ def selected( selection = "" ):
            
     # organize JSON entries to display
     data_list = []
-    json_api.setup_print_tree(True,  policies, data_list)
+    json_api.setup_print_tree(policies, data_list)
 
     select_info['text'] = data_list
     

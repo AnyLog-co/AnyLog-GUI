@@ -19,9 +19,12 @@ from json.decoder import JSONDecodeError
 # -----------------------------------------------------------------------------------
 class TreeEntry():
 
-    def __init__(self):
-        self.config_struct = None
-
+    def __init__(self, start_list, end_list, with_children, key, value):
+        self.start_list = start_list     # Start a new list before the print
+        self.end_list = end_list          # end aa list after the print
+        self.with_children = with_children    # With children attributes
+        self.key = key
+        self.value = value
 
 # -----------------------------------------------------------------------------------
 # String to JSON
@@ -83,52 +86,60 @@ def simple_polisies_list(policies):
 
 # -----------------------------------------------------------------------------------
 # Print setup of JSON for output_tree.html
-# Every entry that is set in print_struct has 3 attributes
-# - Is last in the subtree
-# - is key (True) or value (False)
-# - The data (key or value)
 # -----------------------------------------------------------------------------------
-def setup_print_tree( is_last, source_struct, print_struct ):
-    '''
-    Update print_struct with a setup for output_tree.html
-
-    :param source_struct: A dictionary or a list
-    :param print_struct: A structure to send to output_tree.html
-    :return:
-    '''
+def setup_print_tree( source_struct, print_struct ):
 
     if isinstance(source_struct, dict):
+
         counter = len(source_struct) - 1  # The number of entries
         index = 0
-        for key, value in source_struct.items():
-            if index == counter:
-                print_struct.append((True, True, "\"%s\" : " %  key))          # last in the hierarchy
-            else:
-                print_struct.append((False, True, "\"%s\" : " %  key))          # last in the hierarchy
 
-            setup_print_tree( True, value, print_struct )
+        new_entry = TreeEntry(True, False, False, None, None)  # Start List
+        print_struct.append(new_entry)
+        for key, value in source_struct.items():
+
+            if isinstance(value,list) or isinstance(value, dict):
+                start_list = not counter
+                end_list = counter == index
+                new_entry = TreeEntry(False, False, True, key, None)
+                print_struct.append(new_entry)
+                setup_print_tree( value, print_struct )
+            else:
+                set_edge(key, value, print_struct )
+
             index += 1
+
+        new_entry = TreeEntry(False, True, False, None, None) # End List
+        print_struct.append(new_entry)
 
     elif isinstance(source_struct, list):
         counter = len(source_struct) - 1  # The number of entries
+
         for index, entry in enumerate(source_struct):
-            if index == counter:
-                setup_print_tree(True, entry, print_struct)      # last in the hierarchy
+
+            if isinstance(entry, list) or isinstance(entry, dict):
+                start_list = not counter
+                end_list = counter == index
+                setup_print_tree(entry, print_struct)
             else:
-                setup_print_tree(False, entry, print_struct)      # last in the hierarchy
+                set_edge(None, entry, print_struct)
 
     else:
-        if isinstance(source_struct,str):
-            value = "\"%s\"" % source_struct
-        else:
-            value = str(source_struct)
-
-        print_struct.append((is_last, False, value))  # last in the hierarchy
+        set_edge(None, source_struct, print_struct)
 
 
+# -----------------------------------------------------------------------------------
+# Add edge Node
+# -----------------------------------------------------------------------------------
+def set_edge(key, value, print_struct):
 
+    if key:
+        data = str(key) + " : " + str(value)
+    else:
+        data = str(value)
 
-
+    new_entry = TreeEntry(False, False, False, key, value)
+    print_struct.append(new_entry)
 
 
 

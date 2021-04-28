@@ -8,35 +8,40 @@
 
     {% for entry in text %}
 
-        {% if attribute.space %}
+        {% if entry.start_list %}
+            <ul>
+        {% endif %}
 
-    {% endif %}
+        {% if entry.end_list  %}
+            <li class="last">
+        {% else %}
+            <li>
+        {% endif %}
+
+        {% if entry.key  %}
+            {{entry.key}}  &nbsp : &nbsp
+        {% endif %}
+        {% if entry.value  %}
+            <span class="key">
+            {{entry.value}}
+            </span>
+        {% endif %}
 
 
+        {% if entry.end_list %}
+            </li>
+            </ul>
+        {% else %}
+            {% if entry.with_children %}
+            {% else %}
+            </li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
 
-    <li>Animals
-     <ul>
-      <li>Birds</li>
-      <li>Mammals
-       <ul>
-        <li>Elephant</li>
-        <li class="last">Mouse</li>
-       </ul>
-      </li>
-      <li class="last">Reptiles</li>
-     </ul>
-    </li>
-    <li class="last">Plants
-     <ul>
-      <li>Flowers
-       <ul>
-        <li>Rose</li>
-        <li class="last">Tulip</li>
-       </ul>
-      </li>
-      <li class="last">Trees</li>
-     </ul>
-    </li>
-   </ul>
+</ul>
 
- {% endblock %}
+<br>
+
+
+{% endblock %}
