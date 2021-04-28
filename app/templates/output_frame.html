@@ -1,0 +1,11 @@
+
+
+{% extends "base.html" %}
+
+{% block content %}
+
+    {% for url in urls_list %}
+    <iframe src={{url}} width="450" height="400" frameborder="10"></iframe>
+    {% endfor %}
+
+ {% endblock %}

@@ -361,7 +361,13 @@ def deploy_report():
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
         return redirect(('/dynamic_report'))
 
-    return redirect((report_url))
+    if 'Show' in form_info:         # use iframe
+        select_info = get_select_menu()
+        select_info["title"] = report_name
+        select_info["urls_list"] = [report_url]
+        return render_template('output_frame.html', **select_info)
+
+    return redirect((report_url))       # Goto Grafana
 
 # -----------------------------------------------------------------------------------
 # Get the functions of the query - min, max etc.
