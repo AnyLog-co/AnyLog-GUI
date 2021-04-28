@@ -231,7 +231,7 @@ def dynamic_report( report_name = "" ):
         if to_date == 'now':
             for entry in time_selection_:
                 # go over the entries to find the last selection made and set it as default
-                if entry[1] == from_date:
+                if entry[1] == from_date[3:]:
                     select_info['previous_range'] = (entry[0], entry[1])
         else:
             select_info['time_selection'] = (from_date, to_date)
