@@ -85,7 +85,7 @@
         <br>
 
         <!-- Select Replace, Add, Remove of a panel -->
-        <input type="radio" id=operation  name=operation  value = Replace checked>
+        <input type="radio" id=operation  name=operation  value = Replace>
         <label for=operation>Replace</label>&nbsp
 
         <input type="radio" id=operation  name=operation  value=Remove>
@@ -101,18 +101,18 @@
         <br>
         <br>
 
-        <input type="radio" id=operation  name=operation  value=Add>
+        <input type="radio" id=operation  name=operation  value=Add checked>
         <label for=operation>Add</label>&nbsp
 
         <!-- Input title for panel -->
         &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
         Name Panel:&nbsp
-        <input type="text" id="title" name="title" value={{report_name}}>
+        <input type="text" id="title" name="title" value={{new_panel_name}}>
 
     {% else %}
         <br>
         Name Panel:&nbsp
-        <input type="text" id="title" name="title" value={{report_name}}>
+        <input type="text" id="title" name="title" value={{new_panel_name}}>
     {% endif %}
     {% if default_platform %}
         <br>
