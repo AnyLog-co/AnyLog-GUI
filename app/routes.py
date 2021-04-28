@@ -521,22 +521,22 @@ def al_command():
 
             select_info['title'] = 'Network Node Reply'
 
-            '''
+
             policy = None
             if data[0] == '{' and data[-1] == '}':
-                policy =  json_api.string_to_json(data)
+                policy, error_msg =  json_api.string_to_json(data)
 
             elif data[0] == '[' and data[-1] == ']':
-                policy = json_api.string_to_list(data)
+                policy, error_msg = json_api.string_to_list(data)
 
             if policy:
                 # Print Tree Structure
                 data_list = []
-                json_api.setup_print_tree(policies, data_list)
+                json_api.setup_print_tree(policy, data_list)
                 select_info['text'] = data_list
                 # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
                 return render_template('output_tree.html', **select_info)
-            '''
+
 
             data = data.replace('\r', '')
             text = data.split('\n')

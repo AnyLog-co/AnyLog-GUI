@@ -62,7 +62,7 @@ def json_to_string(json_struct):
     except ValueError as err:
         error_msg = "Failed to map JSON to string: %s" % str(err)
         data_str = None
-    except JSONDecodeError as e:
+    except JSONDecodeError as err:
         error_msg = "Failed to map JSON to string: %s" % str(err)
         data_str = None
     except:
@@ -80,8 +80,12 @@ def string_to_list(data: str):
     try:
         list_obj = list(eval(data))
     except:
+        error_msg = "Failed to map List to string"
         list_obj = None
-    return list_obj
+    else:
+        error_msg = None
+
+    return [list_obj, error_msg]
 
 # -----------------------------------------------------------------------------------
 # Simple setup of a print of a list of JSON policies
