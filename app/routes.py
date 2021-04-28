@@ -347,6 +347,8 @@ def deploy_report():
 
     platform_info['from_date'] = from_date
     platform_info['to_date'] = to_date
+    path_stat.set_dates_selection(user_name, report_name, from_date, to_date)   # Save the selction for next report
+
     platform_info['report_name'] = report_name
     platform_info['tables_list'] = tables_list
     platform_info['base_report'] = "AnyLog_Base"
