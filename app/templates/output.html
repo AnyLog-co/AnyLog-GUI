@@ -4,11 +4,11 @@
 
 {% block content %}
 
-    <p style="color: darkblue;">
+    <div class="boxed_cmd">
 
-    {% for line in text %}
-    <pre>{{ line }}</pre>
-    {% endfor %}
+        {% for line in text %}
+        <pre>{{ line }}</pre>
+        {% endfor %}
 
-    </p>
+    </div>
  {% endblock %}
