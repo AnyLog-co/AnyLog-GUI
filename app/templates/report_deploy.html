@@ -76,7 +76,12 @@
         <br>
 
         <!-- Select Replace, Add, Remove of a panel -->
-        <input type="radio" id=operation  name=operation  value = Replace>
+        {% if panels_list %}
+             <!-- Default is Add -->
+            <input type="radio" id=operation  name=operation  value = Replace>
+        {% else %}
+            <input type="radio" id=operation  name=operation  value = Replace checked>
+        {% endif %}
         <label for=operation>Replace</label>&nbsp
 
         <input type="radio" id=operation  name=operation  value=Remove>
@@ -92,7 +97,11 @@
         <br>
         <br>
 
-        <input type="radio" id=operation  name=operation  value=Add checked>
+        {% if panels_list %}
+            <input type="radio" id=operation  name=operation  value=Add checked>
+        {% else %}
+             <input type="radio" id=operation  name=operation  value=Add>
+        {% endif %}
         <label for=operation>Add</label>&nbsp
 
         <!-- Input title for panel -->
