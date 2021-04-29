@@ -18,7 +18,7 @@ else
    echo "Failed to locate ${VIEW}. Please provide full path or make sure file is in ${ROOT_DIR}/view" 
    exit 1
 fi 
-VIEW=${ROOT_DIR}/view.json 
+VIEW=${ROOT_DIR}/views/demo.json  
 
 export FLASK_APP=${ROOT_DIR}/anylog.py 
 export FLASK_ENV=development
