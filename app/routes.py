@@ -539,9 +539,22 @@ def al_command():
 
 
             data = data.replace('\r', '')
-            text = data.split('\n')
+            text_list = data.split('\n')
 
-            select_info['text'] = text
+            # Setup the type of text to print
+            print_info = []
+            for entry in text_list:
+                if entry[:6] == "Link: ":
+                    index = entry.rfind('#')        # try to find name of help section
+                    if index != -1:
+                        section = entry[index + 1:].replace('-',' ')
+                    else:
+                        section = ""
+                    print_info.append(("url", entry[6:], section))
+                else:
+                    print_info.append(("text", entry))
+
+            select_info['text'] = print_info
             return render_template('output_cmd.html', **select_info)
   
     
