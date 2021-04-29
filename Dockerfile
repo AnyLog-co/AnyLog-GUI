@@ -1,6 +1,6 @@
 FROM ubuntu:18.04 
 
-ARG ANYLOG_ROOT_DIR=/app
+ARG ANYLOG_ROOT_DIR=/
 ENV FLASK_APP=anylog.py
 ENV FLASK_ENV=develop 
 ENV LC_ALL=C.UTF-8
@@ -22,6 +22,7 @@ RUN pip3 install uwsgi
 # move to WORKDIR + COPY codebsae 
 WORKDIR $ANYLOG_ROOT_DIR
 COPY . AnyLog-GUI
+VOLUME al-gui-volume:$ANYLOG_ROOT_DIR/AnyLog-GUI/views:rw
 
 WORKDIR AnyLog-GUI
 
