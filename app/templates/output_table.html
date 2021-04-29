@@ -4,12 +4,13 @@
 
 {% block content %}
 
+    <h3>AL > {{ command }}</h3><br><br>
 
      {% if table_title %}
-        <h3>{{ table_title }}</h3>
-    {% endif %}}
+        <h3>{{ table_title }}</h3><br>
+    {% endif %}
 
-    <table border="1">
+    <table border="1" class="table-cmd">
         <tr>    <!-- table header  -->
             {% for col_name in header %}
                 <td>{{col_name}}</td> <!-- table cell  -->

@@ -134,3 +134,13 @@ ul.tree li:last-child:before {
     padding: 15px;
     margin: 20px;
 }
+
+
+.table-cmd tr:first-child{
+    background-color:cadetblue;
+    color:whitesmoke;
+}
+.table-cmd tr{
+    background-color:lightgray;
+    color:black;
+}
