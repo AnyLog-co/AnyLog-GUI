@@ -1,0 +1,18 @@
+    "gui" : {
+            "name" : "TestNet",
+            "query_node" : "http://23.239.12.151:2049",
+            "visualization" : {
+                                "Grafana" : { "url" : "http://23.239.12.151:3000",
+                                              "token" : "eyJrIjoiMVdENDJjUVBPeXpVZ2hmUFJrSzU3azVDUFhwWkdQeVYiLCJuIjoiZ3VpIiwiaWQiOjF9",
+                                              "base"  :  ["Base-Report"],
+                                              "default" : true
+                                },
+                                "Power BI" : { "url" : "http://23.239.12.151:3000",
+                                    "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                    "base"  :  ["Base-Report"]
+                                },
+                                "Excel" : { "url" : "http://23.239.12.151:3000",
+                                    "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                    "base"  :  ["Base-Report"]
+                                }
+                            },
