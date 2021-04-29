@@ -24,7 +24,9 @@ export FLASK_APP=${ROOT_DIR}/anylog.py
 export FLASK_ENV=development
 export GUI_VIEW=${VIEW} 
 
-# flask run 
-uwsgi --socket 0.0.0.0:5000 --protocol=http -w wsgi:app
+flask run 
+#uwsgi --socket 0.0.0.0:5000 --protocol=http \
+#	--check-static ${ROOT_DIR}/app/static \
+#	--static-map2 /static=${ROOT_DIR}/app/static \
+#       	-w wsgi:app
 
-#uwsgi --wsgi-file main.py --http :5000
