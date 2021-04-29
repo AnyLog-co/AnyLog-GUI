@@ -870,17 +870,27 @@ def status_view(selection, form_info,  policies):
     '''
 
     user_name = session["username"]
-    dbms_name = form_info["dbms"]       # how dbms name is derived from the policies (based on Config file)
-    table_name = form_info["table"]     #  how table name is derived from the policies (based on Config file)
+    extract_dbms = form_info["dbms"]       # how dbms name is derived from the policies (based on Config file)
+    extract_table = form_info["table"]     #  how table name is derived from the policies (based on Config file)
 
     select_info = get_select_menu(selection=selection)
     report_name = path_stat.get_report_name(user_name)   # get the report marked as default for this user
 
     # Make a list with the following entries:
-    # ID, Name, Table Name, DBMS name
+    # Name, Table Name, DBMS name
+    projection_list = []
     for entry in policies:
-        path_stat.get_report_entries(user_name, report_name)
+        policy_name = path_stat.get_policy_value(entry, "name")
+        if policy_name:
+            dbms_name = path_stat.get_sql_name(entry, extract_dbms)
+            if dbms_name:
+                table_name = path_stat.get_sql_name(entry, extract_table)
+                if table_name:
+                    projection_list.append((policy_name, dbms_name, table_name))
 
+    if not len (projection_list):
+        flash('AnyLog: Missing metadata information in policies', category='error')
+        return redirect(url_for('tree', selection=selection))
 
     return render_template('output_frame.html', **select_info)
 
