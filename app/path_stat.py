@@ -537,17 +537,8 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
             # The Path that determined the selected edge that is added to the report
             edge_selected[policy_id]["path"] = copy.deepcopy(active_state_[user_name]['path'])
 
-            db_name = get_policy_value(json_entry, dbms_name)    # Pull the dbms name from the policy
-            if db_name:
-                db_name = reset_str_chars(db_name)  # Make a dbms name (without spaces etc.)
-            else:
-                db_name = reset_str_chars(dbms_name)  # Make a dbms name (without spaces etc.)
-
-            tb_name = get_policy_value(json_entry, table_name)    # Pull the table name from the policy
-            if tb_name:
-                tb_name = reset_str_chars(tb_name)  # Make a dbms name (without spaces etc.)
-            else:
-                tb_name = reset_str_chars(table_name)  # Make a dbms name (without spaces etc.)
+            db_name = get_sql_name(json_entry, dbms_name)    # Pull the dbms name from the policy
+            tb_name = get_sql_name(json_entry, table_name)  # Pull the dbms name from the policy
 
             edge_selected[policy_id]["dbms_name"] = db_name
             edge_selected[policy_id]["table_name"] = tb_name
@@ -565,6 +556,14 @@ def get_sql_name(json_entry, extract_key):
     :param extract_key: The key to use. For example [tag][name]
     :return: The derived value
     '''
+
+    sql_name = extract_policy_value(json_entry, extract_key)  # Pull the dbms name from the policy
+    if sql_name:
+        sql_name = reset_str_chars(sql_name)  # Make a dbms name (without spaces etc.)
+    else:
+        # The extract key is the value to return
+        sql_name = reset_str_chars(extract_key)  # Make a dbms name (without spaces etc.)
+    return sql_name
 
 # -------------------------------------------------------------------------
 # Remove special chars that conflict with naming convention
@@ -593,11 +592,23 @@ def get_policy_type(policy):
         policy_type = None
 
     return policy_type
-
 # ======================================================================================================================
-# Get a value from a policy
+# Get The policy value - determine the policy type and return the value for the key
 # ======================================================================================================================
 def get_policy_value(policy, key):
+    '''
+    For the provided policy, pull the value using the second level key
+    '''
+
+    policy_type = get_policy_type(policy)
+    if policy_type:
+        if key in policy[policy_type]:
+            return policy[policy_type][key]
+    return None
+# ======================================================================================================================
+# Get a value from a policy using a key line [tag][name] [tag][id]
+# ======================================================================================================================
+def extract_policy_value(policy, key):
     '''
     Given a JSON policy and a key, retrieve the value
     The key structure is similar to the bring command: [key 1][key 2]
