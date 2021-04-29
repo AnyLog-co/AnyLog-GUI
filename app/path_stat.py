@@ -554,6 +554,19 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
             edge_selected[policy_id]["edge"] = json_entry
 
 # -------------------------------------------------------------------------
+# Get a dbms or a table name from the JSON structure
+# -------------------------------------------------------------------------
+def get_sql_name(json_entry, extract_key):
+    '''
+    Given a policy in JSON format and a key to extract the value from the policy,
+    return the value.
+    Replace spaces with underscore, return small letters and replace SQL allowable characters
+    :param json_entry: The Policy
+    :param extract_key: The key to use. For example [tag][name]
+    :return: The derived value
+    '''
+
+# -------------------------------------------------------------------------
 # Remove special chars that conflict with naming convention
 # Database names and table names are set with alphanumeric characters
 # -------------------------------------------------------------------------

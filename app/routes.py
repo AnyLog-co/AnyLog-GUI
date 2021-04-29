@@ -789,17 +789,18 @@ def selected( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    selected_rows = request.form
+    form_info = request.form
 
     if not selection:
         # Get that selection that is in the form
-        if 'selection' in selected_rows:
-            selection = selected_rows['selection']
+        if 'selection' in form_info:
+            selection = form_info['selection']
         else:
             return redirect(url_for('index')) 
 
     policies = []
-    for key in selected_rows:    
+    for key in form_info:
+        # Pull the metadata of each policy from the network
         if key[:7] == "Select.":
             policy_id = key[7:]
             retrieved_policy = get_json_policy(policy_id)
@@ -811,15 +812,30 @@ def selected( selection = "" ):
         flash('AnyLog: Missing entry selection', category='error')
         return redirect(url_for('tree', selection=selection)) 
 
+
+    if "Status" in form_info:
+        # Show rows status (using Iframe)
+        return status_view(selection, form_info,  policies)
+
+    if "Add" in form_info:
+        # Add selected rows to report
+        user_name = session["username"]
+        dbms_name = form_info["dbms"]
+        table_name = form_info["table"]
+        for json_entry in policies:
+            # Get the location in the Config file to get the database name and table name
+            path_stat.add_entry_to_report(user_name, dbms_name, table_name, json_entry)
+        return redirect(('/dynamic_report'))            # Goto delect type of report
+
     select_info = get_select_menu(selection=selection)
 
-    if "Browse" in selected_rows:
+    if "Browse" in form_info:
         # Put the key of the parent in the tree
         if len(policies) > 1:
             flash('AnyLog: Only one entry can be selected for browsing', category='error')
             return redirect(url_for('tree', selection=selection))
 
-        child_name = selected_rows["Browse"]
+        child_name = form_info["Browse"]
         # Update the path for the currently used report
         # Place the parent info in the path as f(report)
 
@@ -828,19 +844,6 @@ def selected( selection = "" ):
         # Move with the selected child
         return redirect(url_for('tree', selection='%s@%s' % (selection, child_name)))
 
-    if "Add" in selected_rows:
-        # Add selected rows to report
-        user_name = session["username"]
-        dbms_name = selected_rows["dbms"]
-        table_name = selected_rows["table"]
-        for json_entry in policies:
-            # Get the location in the Config file to get the database name and table name
-            path_stat.add_entry_to_report(user_name, dbms_name, table_name, json_entry)
-        return redirect(('/dynamic_report'))            # Goto delect type of report
-
-    if "Status" in selected_rows:
-        # Show rows status (using Iframe)
-        return status_view(select_info, policies)
 
 
     # organize JSON entries to display
@@ -854,18 +857,29 @@ def selected( selection = "" ):
 # -----------------------------------------------------------------------------------
 # Option View - display the Status of the selected policies using Iframe
 # -----------------------------------------------------------------------------------
-def status_view(select_info, form_info, policies):
+def status_view(selection, form_info,  policies):
+    '''
+    Print 2 panels for each selected item (using iframe)
+    :param selection: the path in the navigation
+    :param user_name: the user
+    :param dbms_name: how dbms name is derived from the policies
+    :param table_name: how table name is derived from the policies
+    :param form_info: The selections made by the user
+    :param policies: The metadata of the selected rows
+    :return:
+    '''
 
     user_name = session["username"]
-    report_name = path_stat.get_report_name()   # get the report marked as default for this user
-    
-    # get the tables selected for the report
-    tables_list = []
-    report_tables = path_stat.get_report_entries(user_name, report_name)
-    for key, info in report_tables.items():
-        if "Ignore." + key in form_info:
-            continue        # Ignore this selection in the report
-        tables_list.append((info["dbms_name"], info["table_name"]))
+    dbms_name = form_info["dbms"]       # how dbms name is derived from the policies (based on Config file)
+    table_name = form_info["table"]     #  how table name is derived from the policies (based on Config file)
+
+    select_info = get_select_menu(selection=selection)
+    report_name = path_stat.get_report_name(user_name)   # get the report marked as default for this user
+
+    # Make a list with the following entries:
+    # ID, Name, Table Name, DBMS name
+    for entry in policies:
+        path_stat.get_report_entries(user_name, report_name)
 
 
     return render_template('output_frame.html', **select_info)
