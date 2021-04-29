@@ -21,7 +21,10 @@ fi
 VIEW=${ROOT_DIR}/view.json 
 
 export FLASK_APP=${ROOT_DIR}/anylog.py 
-export FLASK_ENV=production
+export FLASK_ENV=development
 export GUI_VIEW=${VIEW} 
 
-flask run
+# flask run 
+uwsgi --socket 0.0.0.0:5000 --protocol=http -w wsgi:app
+
+#uwsgi --wsgi-file main.py --http :5000
