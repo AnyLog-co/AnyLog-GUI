@@ -361,12 +361,6 @@ def deploy_report():
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
         return redirect(('/dynamic_report'))
 
-    if 'Show' in form_info:         # use iframe
-        select_info = get_select_menu()
-        select_info["title"] = report_name
-        select_info["urls_list"] = [report_url]
-        return render_template('output_frame.html', **select_info)
-
     return redirect((report_url))       # Goto Grafana
 
 # -----------------------------------------------------------------------------------
@@ -844,16 +838,27 @@ def selected( selection = "" ):
             path_stat.add_entry_to_report(user_name, dbms_name, table_name, json_entry)
         return redirect(('/dynamic_report'))            # Goto delect type of report
 
-           
+    if "Status" in selected_rows:
+        # Show rows status (using Iframe)
+        return status_view(select_info, policies)
+
+
     # organize JSON entries to display
     data_list = []
     json_api.setup_print_tree(policies, data_list)
 
     select_info['text'] = data_list
-    
-    # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
 
     return render_template('output_tree.html', **select_info )
+
+# -----------------------------------------------------------------------------------
+# Option View - display the Status of the selected policies using Iframe
+# -----------------------------------------------------------------------------------
+def status_view(select_info, policies):
+
+
+    return render_template('output_frame.html', **select_info)
+
 
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
