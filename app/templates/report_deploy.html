@@ -48,33 +48,24 @@
 
     <!-- Select Dates  -->
     <label for="start-date">Start: </label>
-    <input type="datetime-local" id="start_date" name="start_date">
+    <input type="datetime-local" id="start_date" name="start_date" value={{from_date}}>
     &nbsp&nbsp&nbsp
     <label for="end-date">End:   </label>
-    <input type="datetime-local" id="end_date" name="end_date">
+    <input type="datetime-local" id="end_date" name="end_date" value={{to_date}}>
 
     <!-- Select Date Range  -->
     &nbsp&nbsp&nbsp
     <label for="range">Date Range:</label>
         <select name="date_range" id="date_range">
-            <option value="">Dates selection</option>
-            <option value="-5m">Last 5 minutes</option>
-            <option value="-15m">Last 15 minutes</option>
-            <option value="-30m">Last 30 minutes</option>
-            <option value="-1h">Last hour</option>
-            <option value="-3h">Last 3 hours</option>
-            <option value="-6h">last 6 hours</option>
-            <option value="-12h">Last 12 hours</option>
-            <option value="-1d">Last day</option>
-            <option value="-2d">Last 2 days</option>
-            <option value="-7d">Last 7 days</option>
-            <option value="-14d">Last 14 days</option>
-            <option value="-1M">Last 1 month</option>
-            <option value="-2M">Last 2 months</option>
-            <option value="-3M">Last 3 months</option>
-            <option value="-1y">Last 1 year</option>
-            <option value="-2y">Last 2 years</option>
-            <option value="-3y">Last 3 years</option>
+            {% if previous_range %}
+                 <!-- set date range selection as previous selection -->
+                <option value={{previous_range[1]}}>{{previous_range[0]}}</option>
+            {% else %}}
+                <option value="">Dates selection</option>
+            {% endif %}
+            {% for option in time_options %}
+                <option value={{option[1]}}>{{option[0]}}</option>
+            {% endfor %}
         </select>
 
     <br><br>
@@ -85,7 +76,12 @@
         <br>
 
         <!-- Select Replace, Add, Remove of a panel -->
-        <input type="radio" id=operation  name=operation  value = Replace>
+        {% if panels_list %}
+             <!-- Default is Add -->
+            <input type="radio" id=operation  name=operation  value = Replace>
+        {% else %}
+            <input type="radio" id=operation  name=operation  value = Replace checked>
+        {% endif %}
         <label for=operation>Replace</label>&nbsp
 
         <input type="radio" id=operation  name=operation  value=Remove>
@@ -101,7 +97,11 @@
         <br>
         <br>
 
-        <input type="radio" id=operation  name=operation  value=Add checked>
+        {% if panels_list %}
+            <input type="radio" id=operation  name=operation  value=Add checked>
+        {% else %}
+             <input type="radio" id=operation  name=operation  value=Add>
+        {% endif %}
         <label for=operation>Add</label>&nbsp
 
         <!-- Input title for panel -->
@@ -136,6 +136,8 @@
     <br><br><br>
 
     <input type="submit" value="Submit" name="Submit">
+    &nbsp
+    <input type="submit" value="Show" name="Show">
 
 </form>
     

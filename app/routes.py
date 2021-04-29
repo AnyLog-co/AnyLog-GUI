@@ -45,7 +45,27 @@ gui_view_.set_gui()
 
 query_node_ = None
 
-
+time_selection_ = [
+    ("Last 5 minutes", "-5m"),
+    ("Last 15 minutes", "-15m"),
+    ("Last 30 minutes", "-30m"),
+    ("Last hour", "-1h"),
+    ("Last 2 hour2", "-2h"),
+    ("Last 3 hours", "-3h"),
+    ("last 6 hours", "-6h"),
+    ("Last 12 hours", "-12h"),
+    ("Last 24 hours", "-1d"),
+    ("Last 2 days", "-2d"),
+    ("Last 7 days", "-7d"),
+    ("Last 14 days", "-14d"),
+    ("Last 1 month", "-1M"),
+    ("Last 2 months", "-2M"),
+    ("Last 3 months", "-3M"),
+    ("Last 6 months", "-6M"),
+    ("last 1 year", "-1y"),
+    ("last 2 years", "-2y"),
+    ("last 3 years", "-3y"),
+]
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
@@ -204,6 +224,19 @@ def dynamic_report( report_name = "" ):
 
     select_info['report_name'] = report_name
 
+    # Organize the report time selections as last selection
+    select_info['time_options'] = time_selection_
+    from_date, to_date = path_stat.get_dates_selection(user_name, report_name)      # Get the last selections of dates
+    if to_date:
+        if to_date == 'now':
+            for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == from_date[3:]:
+                    select_info['previous_range'] = (entry[0], entry[1])
+        else:
+            select_info['from_date'] = from_date
+            select_info['to_date'] = to_date
+
 
     return render_template('report_deploy.html',  **select_info )
 
@@ -315,6 +348,8 @@ def deploy_report():
 
     platform_info['from_date'] = from_date
     platform_info['to_date'] = to_date
+    path_stat.set_dates_selection(user_name, report_name, from_date, to_date)   # Save the selction for next report
+
     platform_info['report_name'] = report_name
     platform_info['tables_list'] = tables_list
     platform_info['base_report'] = "AnyLog_Base"
@@ -326,7 +361,13 @@ def deploy_report():
         flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
         return redirect(('/dynamic_report'))
 
-    return redirect((report_url))
+    if 'Show' in form_info:         # use iframe
+        select_info = get_select_menu()
+        select_info["title"] = report_name
+        select_info["urls_list"] = [report_url]
+        return render_template('output_frame.html', **select_info)
+
+    return redirect((report_url))       # Goto Grafana
 
 # -----------------------------------------------------------------------------------
 # Get the functions of the query - min, max etc.
@@ -441,7 +482,7 @@ def network():
     form = CommandsForm()         # New Form
     
     select_info = get_select_menu()
-    select_info['title'] = 'Network Commands'
+    select_info['title'] = 'Network Operations'
     select_info['form'] = form
     select_info['def_dest'] = target_node
 
@@ -454,6 +495,9 @@ def network():
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
     al_headers = {
             'User-Agent' : 'AnyLog/1.23'
     }
@@ -463,9 +507,9 @@ def al_command():
  
     target_node = get_target_node()
 
-
+    command = request.form["command"]
     try:
-        al_headers["command"] = request.form["command"]
+        al_headers["command"] = command
         
         response = requests.get(target_node, headers=al_headers)
     except:
@@ -474,20 +518,38 @@ def al_command():
     else:
         if response.status_code == 200:
             data = response.text
-            data = data.replace('\r','')
+
+            select_info['title'] = 'Network Command'
+            select_info['command'] = command
+
+            policy = None
+            if data[0] == '{' and data[-1] == '}':
+                policy, error_msg =  json_api.string_to_json(data)
+
+            elif data[0] == '[' and data[-1] == ']':
+                policy, error_msg = json_api.string_to_list(data)
+
+            if policy:
+                # Print Tree Structure
+                data_list = []
+                json_api.setup_print_tree(policy, data_list)
+                select_info['text'] = data_list
+                # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
+                return render_template('output_tree.html', **select_info)
+
+
+            data = data.replace('\r', '')
             text = data.split('\n')
 
-            select_info['title'] = 'Network Node Reply'
             select_info['text'] = text
-
-            return render_template('output.html', **select_info)
+            return render_template('output_cmd.html', **select_info)
   
     
     select_info['title'] = 'Network Status'
     select_info['form'] = CommandsForm()         # New Form
     select_info['def_dest'] = target_node
     
-    return render_template('network.html', **select_info)
+    return render_template('commands.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Install New Node

@@ -22,7 +22,8 @@
                 ["Map", "http://45.79.152.190:3000/d/iZLDOXyGk/network-summary?orgId=1"],
                 ["Dashboards", "http://45.79.152.190:3000/dashboards"],
                 ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"],
-                ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
+                ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"],
+                ["Dashboards", "http://localhost:3000/dashboards"]
             ],
             "children" : {
                 "Tag" :
