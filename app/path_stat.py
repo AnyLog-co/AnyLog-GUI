@@ -68,6 +68,46 @@ def get_platform_name(user_name, report_name):
         if 'platform' in user_info['reports'][report_name]:
             platform =  user_info['reports'][report_name]['platform']
     return platform
+
+# -----------------------------------------------------------------------------------
+# Get the 'selected' report name
+# -----------------------------------------------------------------------------------
+def get_report_name(user_name):
+    '''
+    Return the default report for this user
+    '''
+    global active_state_
+    user_info = active_state_[user_name]
+
+    if 'selected' in user_info:
+        report_name = user_info['selected']
+    else:
+        report_name = None
+    return report_name
+
+# -----------------------------------------------------------------------------------
+# Save the last selection for the reports dates
+# -----------------------------------------------------------------------------------
+def set_dates_selection(user_name, report_name, from_date, to_date):
+    global active_state_
+    user_info = active_state_[user_name]
+
+    if report_name in user_info['reports']:
+        user_info['reports'][report_name]['dates'] = (from_date, to_date)
+
+# -----------------------------------------------------------------------------------
+# Get the last selection for the reports dates
+# -----------------------------------------------------------------------------------
+def get_dates_selection(user_name, report_name ):
+    global active_state_
+    from_date = None
+    to_date = None
+    user_info = active_state_[user_name]
+
+    if report_name in user_info['reports']:
+        if 'dates' in user_info['reports'][report_name]:
+            from_date, to_date = user_info['reports'][report_name]['dates']
+    return [from_date, to_date]
 # -----------------------------------------------------------------------------------
 # Set the name of the visualization platform for the report
 # -----------------------------------------------------------------------------------
@@ -512,6 +552,19 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
             edge_selected[policy_id]["dbms_name"] = db_name
             edge_selected[policy_id]["table_name"] = tb_name
             edge_selected[policy_id]["edge"] = json_entry
+
+# -------------------------------------------------------------------------
+# Get a dbms or a table name from the JSON structure
+# -------------------------------------------------------------------------
+def get_sql_name(json_entry, extract_key):
+    '''
+    Given a policy in JSON format and a key to extract the value from the policy,
+    return the value.
+    Replace spaces with underscore, return small letters and replace SQL allowable characters
+    :param json_entry: The Policy
+    :param extract_key: The key to use. For example [tag][name]
+    :return: The derived value
+    '''
 
 # -------------------------------------------------------------------------
 # Remove special chars that conflict with naming convention
