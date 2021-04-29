@@ -543,7 +543,27 @@ def al_command():
 
             # Setup the type of text to print
             print_info = []
+
+            # Setup a Table
+            for index, entry in enumerate(text_list):
+                if entry [0] == '-' and entry[-1] == '|':
+                    # setup an HTTP table
+                    break
+                if index >= 5:
+                    break       # not a table
+
+            if index < 5:
+                table_rows = []
+                for y in range (index-1, len(text_list)):
+                    if y == index:
+                        continue        # The dashed separator to the column titles
+                    row = text_list[y]
+                    columns_list = row.split('|')
+
+
+
             for entry in text_list:
+                # Setup URL Link
                 if entry[:6] == "Link: ":
                     index = entry.rfind('#')        # try to find name of help section
                     if index != -1:
