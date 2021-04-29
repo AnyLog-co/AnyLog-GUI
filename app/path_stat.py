@@ -69,6 +69,21 @@ def get_platform_name(user_name, report_name):
             platform =  user_info['reports'][report_name]['platform']
     return platform
 
+# -----------------------------------------------------------------------------------
+# Get the 'selected' report name
+# -----------------------------------------------------------------------------------
+def get_report_name(user_name):
+    '''
+    Return the default report for this user
+    '''
+    global active_state_
+    user_info = active_state_[user_name]
+
+    if 'selected' in user_info:
+        report_name = user_info['selected']
+    else:
+        report_name = None
+    return report_name
 
 # -----------------------------------------------------------------------------------
 # Save the last selection for the reports dates

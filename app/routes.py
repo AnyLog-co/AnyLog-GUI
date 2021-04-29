@@ -854,7 +854,18 @@ def selected( selection = "" ):
 # -----------------------------------------------------------------------------------
 # Option View - display the Status of the selected policies using Iframe
 # -----------------------------------------------------------------------------------
-def status_view(select_info, policies):
+def status_view(select_info, form_info, policies):
+
+    user_name = session["username"]
+    report_name = path_stat.get_report_name()   # get the report marked as default for this user
+    
+    # get the tables selected for the report
+    tables_list = []
+    report_tables = path_stat.get_report_entries(user_name, report_name)
+    for key, info in report_tables.items():
+        if "Ignore." + key in form_info:
+            continue        # Ignore this selection in the report
+        tables_list.append((info["dbms_name"], info["table_name"]))
 
 
     return render_template('output_frame.html', **select_info)
