@@ -66,6 +66,23 @@ def get_panels(grafana_url:str, token:str, dashboard_name:str):
 
     return panels_list
 
+
+# --------------------------------------------------------
+# Provide status on the list of entries at platform_info["projection_list]
+# --------------------------------------------------------
+def status_report(**platform_info):
+
+    params_required = [
+        ("url", str),
+        ("token", str),
+        ("projection_list", list),
+    ]
+
+    err_msg = test_params(params_required, platform_info)
+    if err_msg:
+        return [None, err_msg]
+
+
 # -----------------------------------------------------------------------------------
 # Deploy a report
 # With Grafana - a report is a dashboard, each dashboard has multiple panels (a visualization window), each panel has multiple targets (queries to a table)
@@ -87,17 +104,10 @@ def deploy_report(**platform_info):
         ("operation", str),
     ]
 
-    for param in params_required:
-        key = param[0]
-        if key not in platform_info:
-            # Missing param
-            err_msg = "Grafana: Missing '%s' in visualization parameters" % key
-            return [None, err_msg]
-        value = platform_info[key]
-        if not isinstance(value, param[1]):
-            # Wrong data type
-            err_msg = "Grafana: Wrong visualization data structure for '%s'" % key
-            return [None, err_msg]
+    err_msg = test_params(params_required, platform_info)
+    if err_msg:
+        return  [None, err_msg]
+
         
     grafana_url = platform_info['url']
     token =  platform_info['token']
@@ -509,3 +519,22 @@ def format_grafana_json(al_query):
 
     return [data_formated, err_msg]
 
+# -----------------------------------------------------------------------------------
+# Test if the list of needed params with the correct data types is passed to the method
+# -----------------------------------------------------------------------------------
+def test_params(params_required:list, platform_info):
+
+    err_msg = None
+    for param in params_required:
+        key = param[0]
+        if key not in platform_info:
+            # Missing param
+            err_msg = "Grafana: Missing '%s' in visualization parameters" % key
+            break
+        value = platform_info[key]
+        if not isinstance(value, param[1]):
+            # Wrong data type
+            err_msg = "Grafana: Wrong visualization data structure for '%s'" % key
+            break
+
+    return err_msg

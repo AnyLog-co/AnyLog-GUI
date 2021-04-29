@@ -892,6 +892,17 @@ def status_view(selection, form_info,  policies):
         flash('AnyLog: Missing metadata information in policies', category='error')
         return redirect(url_for('tree', selection=selection))
 
+    platforms_tree = gui_view_.get_base_info("visualization")
+    if not platforms_tree or not "Grafana" in platforms_tree:
+        flash('AnyLog: Missing Grafana definitions in config file', category='error')
+        return redirect(url_for('tree', selection=selection))
+
+    platform_info = copy.deepcopy(platforms_tree["Grafana"])
+
+    platform_info["projection_list"] = projection_list
+
+    report_url, err_msg = visualize.status_report("Grafana", **platform_info)
+
     return render_template('output_frame.html', **select_info)
 
 
