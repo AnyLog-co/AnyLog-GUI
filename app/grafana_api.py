@@ -101,7 +101,7 @@ def get_init_dashboard(platform_info, dashboard_name):
     if err_msg:
         return "Grafana API: Failed to provide the list of dashboards: %s" % err_msg
 
-    dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, "dashboard_name")
+    dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
     if err_msg:
         return "Grafana API: Failed to provide the list of dashboards"
 
@@ -153,16 +153,12 @@ def deploy_report(**platform_info):
     token =  platform_info['token']
     dashboard_name =  platform_info['report_name']
     tables_list =  platform_info['tables_list']
-    from_date = platform_info["from_date"]
-    to_date = platform_info["to_date"]
     functions = platform_info["functions"]
     operation = platform_info["operation"]      # Add panel or delete or remove a panel
     if 'title' in platform_info:
         title = platform_info['title']
     else:
         title = dashboard_name                  # Use same nme as dashboard
-
-    url = None
 
     # Get the requested dashboard or the base dashboard
     err_msg = get_init_dashboard(platform_info, dashboard_name) # Info is updated in platform_info
@@ -187,9 +183,9 @@ def deploy_report(**platform_info):
         if err_msg:
             return [None, err_msg]
 
-        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-
     else:
+
+        dashboard_id =  platform_info["dashboard_id"]
 
         if not dashboard_version:
             if "meta" in dashboard_info and "version" in dashboard_info["meta"]:
@@ -204,83 +200,41 @@ def deploy_report(**platform_info):
                 return [ None, "Grafana API: Failed to update dasboard %s" % dashboard_name ]
 
 
-        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+    url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+    url += get_url_time_range(platform_info)
+
+    return [url, None]
 
 
-    '''
-    # Get the list of dashboards
-    reply, err_msg = get_dashboards( grafana_url, token )
-    
-    if reply:
-        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
+# -----------------------------------------------------------------------------------
+# Get the time tange in the format for the URL
+# Time range is added to the URL - https://grafana.com/docs/grafana/latest/dashboards/time-range-controls/#control-the-time-range-using-a-url
+    # Example data to add:
+    # ?&from=1614585600000&to=1619938799000
+    # ?&from=now-90d&to=now
+    # ?&from=now-2M&to=now
+    # ?&from=202103011248&to=202105011248
+# -----------------------------------------------------------------------------------
+def get_url_time_range(platform_info):
+
+    from_date = platform_info["from_date"]
+    to_date = platform_info["to_date"]
+
+    if to_date[:3] == "now":
+        time_url = "?&from=%s&to=now" % from_date
     else:
-        err_msg = "Grafana API: Failed to provide the list of dashboards"
+        # Transform to  ms epoch
+        ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), \
+                                int(from_date[14:16])) \
+                       - datetime(1970, 1, 1)).total_seconds() * 1000)
+        ms_to = int( \
+            (datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
+             - datetime(1970, 1, 1)).total_seconds() * 1000)
 
-    if not err_msg:
+        time_url = "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
 
-        if not dashboard_id:
-            # deploy a new report
-            base_dashboard = platform_info['base_report']
-            dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
-            if not dashboard_id:
-                # Missing base report
-                err_msg = "Grafana API: Missing base dashboard: %s" % base_dashboard
-            else:
-                # Get the report
-                dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
-                if not err_msg:
-                    # Update the dasboard based on the tables and time to query
-                    is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
-                    if not err_msg:
-                        dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
-                        if not err_msg:
-                            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-        else:
-            # Update an existing report
-            dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_uid, dashboard_name )
+    return time_url
 
-            if not err_msg:
-                if not dashboard_version:
-                    if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
-                        dashboard_version = dashboard_info["meta"]["version"]
-                    else:
-                        dashboard_version = 1
-
-                # Update the dasboard based on the tables and time to query
-                is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
-                if not err_msg:
-                    if is_modified:
-                        # push update to Grafana
-                        if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dashboard_version):
-                            # Failed to upfate a report
-                            err_msg = "Grafana API: Failed to update dasboard %s" % dashboard_name
-
-                    if not err_msg and "url" in dashboard_info["meta"]:
-                        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-            else:
-                err_msg = "Grafana API: Unable to extract version from dasboard %s" % dashboard_name
-  
-    
-    if not err_msg:
-        # Time range is added to the URL - https://grafana.com/docs/grafana/latest/dashboards/time-range-controls/#control-the-time-range-using-a-url
-        # Example data to add:
-        # ?&from=1614585600000&to=1619938799000
-        # ?&from=now-90d&to=now
-        # ?&from=now-2M&to=now
-        # ?&from=202103011248&to=202105011248
-        if to_date[:3] == "now":
-            url += "?&from=%s&to=now" % from_date
-        else:
-            # Transform to  ms epoch
-            ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), int(from_date[14:16]) ) \
-                           - datetime(1970, 1, 1)).total_seconds() * 1000)
-            ms_to = int((datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
-                 - datetime(1970, 1, 1)).total_seconds() * 1000)
-            url += "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
-
-    return [url, err_msg]
-    
-    '''
 # -----------------------------------------------------------------------------------
 # Find a dashboard by name
 # -----------------------------------------------------------------------------------
