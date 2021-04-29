@@ -898,6 +898,7 @@ def status_view(selection, form_info,  policies):
         return redirect(url_for('tree', selection=selection))
 
     platform_info = copy.deepcopy(platforms_tree["Grafana"])
+    platform_info['base_report'] = "AnyLog_Base"
 
     platform_info["projection_list"] = projection_list
 
