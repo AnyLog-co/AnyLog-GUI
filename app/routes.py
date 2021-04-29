@@ -563,38 +563,45 @@ def print_network_reply(command, data):
     text_list = data.split('\n')
 
 
-    # Setup a Table
+    # Print a Table
     for index, entry in enumerate(text_list):
         if entry and index:
             if entry[0] == '-' and entry[-1] == '|':
-                # setup an HTTP table
+                # Identified a table
                 columns_list = entry.split('|')
                 columns_size = []
                 for column in columns_list:
-                    columns_size.append(len(column))     # An array with the size of each column
+                    if len(column):
+                        columns_size.append(len(column))     # An array with the size of each column
                 header = []
                 offset = 0
-                for column_id, size in columns_size:
+                for column_id, size in enumerate(columns_size):
                     header.append(text_list[index - 1][offset:offset + size])
-                    offset += (size + 1)                # Add the field size and the seperator (|)
+                    offset += (size + 1)                # Add the field size and the separator (|)
 
-                title = None
+                select_info['header'] = header
                 if index > 1 and len(text_list[index -2]):
-                    title = text_list[index -2]         # Get the title if available
+                    select_info['table_title'] = text_list[index -2]         # Get the title if available
                 break
         if index >= 5:
             break  # not a table
 
     if index < 5:
-        # This is a Table
-
+        # a Table setup and print
         table_rows = []
-        for y in range(index - 1, len(text_list)):
-            if y == index:
-                continue  # Skip the dashed separator to the column titles
+        for y in range(index + 1, len(text_list)): # Skip the dashed separator to the column titles
             row = text_list[y]
-            columns_list = row.split('|')
-            table_rows.append(columns_list)
+
+            columns = []
+            offset = 0
+            for column_id, size in enumerate(columns_size):
+                columns.append(row[offset:offset + size])
+                offset += (size + 1)  # Add the field size and the separator (|)
+
+            table_rows.append(columns)
+
+        select_info['rows'] = table_rows
+        return render_template('output_table.html', **select_info)
 
     # Print Text
 
@@ -615,8 +622,6 @@ def print_network_reply(command, data):
     select_info['text'] = print_info
 
     return render_template('output_cmd.html', **select_info)
-
-
 # -----------------------------------------------------------------------------------
 # Install New Node
 # -----------------------------------------------------------------------------------
