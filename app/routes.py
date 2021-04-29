@@ -564,10 +564,12 @@ def print_network_reply(command, data):
 
 
     # Print a Table
+    is_table = False
     for index, entry in enumerate(text_list):
         if entry and index:
             if entry[0] == '-' and entry[-1] == '|':
                 # Identified a table
+                is_table = True
                 columns_list = entry.split('|')
                 columns_size = []
                 for column in columns_list:
@@ -586,7 +588,7 @@ def print_network_reply(command, data):
         if index >= 5:
             break  # not a table
 
-    if index < 5:
+    if is_table:
         # a Table setup and print
         table_rows = []
         for y in range(index + 1, len(text_list)): # Skip the dashed separator to the column titles
