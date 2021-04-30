@@ -872,6 +872,7 @@ def status_view(selection, form_info,  policies):
     :param policies: The metadata of the selected rows
     :return:
     '''
+    #return  render_template('output_frame.html')
 
     user_name = session["username"]
     extract_dbms = form_info["dbms"]       # how dbms name is derived from the policies (based on Config file)
