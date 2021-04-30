@@ -378,6 +378,10 @@ def get_query_functions(form_info):
         functions.append("count")
     if "Range" in form_info:
         functions.append("range")
+
+    if not len(functions):
+        # set defaults
+        functions = ["min","max","avg"]
     return functions
 
 # -----------------------------------------------------------------------------------
@@ -868,6 +872,7 @@ def status_view(selection, form_info,  policies):
     :param policies: The metadata of the selected rows
     :return:
     '''
+    #return  render_template('output_frame.html')
 
     user_name = session["username"]
     extract_dbms = form_info["dbms"]       # how dbms name is derived from the policies (based on Config file)
@@ -880,19 +885,44 @@ def status_view(selection, form_info,  policies):
     # Name, Table Name, DBMS name
     projection_list = []
     for entry in policies:
-        policy_name = path_stat.get_policy_value(entry, "name")
-        if policy_name:
+        entry_name = path_stat.get_policy_value(entry, "name")
+        if entry_name:
             dbms_name = path_stat.get_sql_name(entry, extract_dbms)
             if dbms_name:
                 table_name = path_stat.get_sql_name(entry, extract_table)
                 if table_name:
-                    projection_list.append((policy_name, dbms_name, table_name))
+                    projection_list.append((entry_name, dbms_name, table_name))
 
     if not len (projection_list):
         flash('AnyLog: Missing metadata information in policies', category='error')
         return redirect(url_for('tree', selection=selection))
 
-    return render_template('output_frame.html', **select_info)
+    platforms_tree = gui_view_.get_base_info("visualization")
+    if not platforms_tree or not "Grafana" in platforms_tree:
+        flash('AnyLog: Missing Grafana definitions in config file', category='error')
+        return redirect(url_for('tree', selection=selection))
+
+    platform_info = copy.deepcopy(platforms_tree["Grafana"])
+    platform_info['base_report'] = "AnyLog_Base"
+
+    platform_info["projection_list"] = projection_list
+
+    query_functions = get_query_functions(form_info)
+    platform_info['functions'] = query_functions
+
+    platform_info['from_date'] = "-2M"
+    platform_info['to_date'] = "now"
+
+    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+
+    select_info = get_select_menu()
+    select_info['title'] = "Current Status"
+
+    select_info["url_list"] = url_list
+
+    return  render_template('output_frame.html', **select_info)
+
+    #return redirect((report_url))  # Goto Grafana
 
 
 # -----------------------------------------------------------------------------------

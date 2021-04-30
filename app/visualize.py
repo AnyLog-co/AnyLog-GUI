@@ -68,6 +68,20 @@ def deploy_report(platform_name, **platform_info):
 
 
 # --------------------------------------------------------
+# Provide status on the list of entries at platform_info["projection_list]
+# --------------------------------------------------------
+def status_report(platform_name, **platform_info):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+        url_list = None
+    else:
+        url_list, error_msg = connector.status_report(**platform_info)
+
+    return url_list, error_msg
+
+# --------------------------------------------------------
 # Return the platform connector
 # --------------------------------------------------------
 def  get_connector(platform):

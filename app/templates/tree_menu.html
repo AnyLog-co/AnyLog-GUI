@@ -1,0 +1,44 @@
+
+
+
+{% extends "base.html" %}
+
+{% block content %}
+ <link rel="stylesheet" href="{{ url_for('static', filename='CSS/tree_menu.css') }}">
+
+<ul class="tree_menu">
+  <!-- (A) "NORMAL" ITEMS -->
+  <li>Item A</li>
+  <li>Item B</li>
+
+  <!-- (B) SECTION -->
+  <li class="section">
+    <input type="checkbox" id="groupA"/>
+    <label for="groupA">Group A</label>
+    <ul>
+      <li>Group A Item 1</li>
+      <li>Group A Item 2</li>
+    </ul>
+  </li>
+
+  <!-- (C) SECTION WITH SUB-SECTION -->
+  <li class="section">
+    <input type="checkbox" id="groupB"/>
+    <label for="groupB">Group B</label>
+    <ul>
+      <li>Group B Item 1</li>
+      <li>Group B Item 2</li>
+      <!-- SUB-SECTION -->
+      <li class="section">
+        <input type="checkbox" id="groupC"/>
+        <label for="groupC">Group C</label>
+        <ul>
+          <li>Group C Item 1</li>
+          <li>Group C Item 2</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+{% endblock %}

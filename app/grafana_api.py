@@ -66,6 +66,61 @@ def get_panels(grafana_url:str, token:str, dashboard_name:str):
 
     return panels_list
 
+# --------------------------------------------------------
+# Provide status on the list of entries at platform_info["projection_list]
+# Example URL returned: http://127.0.0.1:3000/d/nfDMna9Gz/current_status?orgId=1&viewPanel=2&from=-2M&to=now
+# --------------------------------------------------------
+def status_report(**platform_info):
+
+    params_required = [
+        ("url", str),
+        ("token", str),
+        ("base_report", str),
+        ("functions", list),
+        ("projection_list", list),
+    ]
+
+    err_msg = test_params(params_required, platform_info)
+    if err_msg:
+        return [None, err_msg]
+
+    grafana_url = platform_info['url']
+    token =  platform_info['token']
+
+    err_msg = get_init_dashboard(platform_info, "current_status")
+    if err_msg:
+        return [None, err_msg]
+
+    dashboard_uid = platform_info['dashboard_uid']
+    dashboard_version = platform_info['dashboard_version']
+    new_dashboard = platform_info["new_dashboard"]
+
+    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, "current_status") # The Grafana dasboard requested or the base_report
+    if err_msg:
+        return [None, err_msg]
+
+    projection_list = platform_info["projection_list"]
+    functions = platform_info["functions"]
+    is_modified, err_msg = make_status_dashboard(dashboard_info["dashboard"], "current_status", projection_list, functions)
+    if err_msg:
+        return [None, err_msg]
+
+    err_msg = add_update_dashboard(new_dashboard, is_modified, platform_info, "current_status", dashboard_info)
+    if err_msg:
+        return [None, err_msg]
+
+    base_url = grafana_url.replace("localhost", "127.0.0.1")    # Otherwise Iframe does not works
+    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, "current_status")
+
+    panels_list = []
+    panels_counter = len(dashboard_info['dashboard']['panels'])
+    for i in range (panels_counter):        # Create a url for each Panel
+        panel_url = base_url + "?orgId=1&viewPanel=%u" % (i + 1)
+        panel_url += get_url_time_range(platform_info)
+        panels_list.append(panel_url)
+
+    return [panels_list, None]      # Return list of urls, one for each panel
+
 # -----------------------------------------------------------------------------------
 # Deploy a report
 # With Grafana - a report is a dashboard, each dashboard has multiple panels (a visualization window), each panel has multiple targets (queries to a table)
@@ -87,24 +142,15 @@ def deploy_report(**platform_info):
         ("operation", str),
     ]
 
-    for param in params_required:
-        key = param[0]
-        if key not in platform_info:
-            # Missing param
-            err_msg = "Grafana: Missing '%s' in visualization parameters" % key
-            return [None, err_msg]
-        value = platform_info[key]
-        if not isinstance(value, param[1]):
-            # Wrong data type
-            err_msg = "Grafana: Wrong visualization data structure for '%s'" % key
-            return [None, err_msg]
+    err_msg = test_params(params_required, platform_info)
+    if err_msg:
+        return  [None, err_msg]
+
         
     grafana_url = platform_info['url']
     token =  platform_info['token']
     dashboard_name =  platform_info['report_name']
     tables_list =  platform_info['tables_list']
-    from_date = platform_info["from_date"]
-    to_date = platform_info["to_date"]
     functions = platform_info["functions"]
     operation = platform_info["operation"]      # Add panel or delete or remove a panel
     if 'title' in platform_info:
@@ -112,77 +158,134 @@ def deploy_report(**platform_info):
     else:
         title = dashboard_name                  # Use same nme as dashboard
 
-    url = None
-    # Get the list of dashboards
-    reply, err_msg = get_dashboards( grafana_url, token )
-    
-    if reply:
-        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
+    # Get the requested dashboard or the base dashboard
+    err_msg = get_init_dashboard(platform_info, dashboard_name) # Info is updated in platform_info
+    if err_msg:
+        return [None, err_msg]
+
+    dashboard_uid = platform_info['dashboard_uid']
+    dashboard_version = platform_info['dashboard_version']
+    new_dashboard = platform_info["new_dashboard"]
+
+    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name) # The Grafana dasboard requested or the base_report
+    if err_msg:
+        return [None, err_msg]
+
+    is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
+    if err_msg:
+        return [None, err_msg]
+
+    err_msg = add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_name, dashboard_info)
+    if err_msg:
+        return [None, err_msg]
+
+
+    url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+    url += get_url_time_range(platform_info)
+
+    return [url, None]
+
+
+# -----------------------------------------------------------------------------------
+# Given a dashboard - if the dashboard is new - add the dashboard, otherwise update the dashboard
+# -----------------------------------------------------------------------------------
+def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_name, dashboard_info):
+
+    grafana_url = platform_info['url']
+    token = platform_info['token']
+    dashboard_uid = platform_info['dashboard_uid']
+    dashboard_version = platform_info['dashboard_version']
+    new_dashboard = platform_info["new_dashboard"]
+
+
+    if new_dashboard:
+        # First time that the dasboard with that name is written
+        dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
+        if err_msg:
+            return err_msg
+
     else:
-        err_msg = "Grafana API: Failed to provide the list of dashboards"
 
-    if not err_msg:
+        dashboard_id = platform_info["dashboard_id"]
 
+        if not dashboard_version:
+            if "meta" in dashboard_info and "version" in dashboard_info["meta"]:
+                dashboard_version = dashboard_info["meta"]["version"]
+            else:
+                dashboard_version = 1
+
+        if is_modified:
+            # push update to Grafana
+            if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid,
+                                    dashboard_version):
+                # Failed to upfate a report
+                return "Grafana API: Failed to update dasboard %s" % dashboard_name
+
+    return None
+# -----------------------------------------------------------------------------------
+# Get the dashboard to use
+# -----------------------------------------------------------------------------------
+def get_init_dashboard(platform_info, dashboard_name):
+    '''
+    Get the dashboard using the name, if doesn't exists, get the base dashboard
+    '''
+
+    grafana_url = platform_info['url']
+    token = platform_info['token']
+
+    reply, err_msg = get_dashboards(grafana_url, token)
+    if err_msg:
+        return "Grafana API: Failed to provide the list of dashboards: %s" % err_msg
+
+    dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
+    if err_msg:
+        return "Grafana API: Failed to provide the list of dashboards"
+
+    if dashboard_id:
+        new_dashboard = False
+    else:
+        new_dashboard = True
+        base_dashboard = platform_info['base_report']  # Get the initial report name from the config file
+        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
         if not dashboard_id:
-            # deploy a new report
-            base_dashboard = platform_info['base_report']
-            dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
-            if not dashboard_id:
-                # Missing base report
-                err_msg = "Grafana API: Missing base dasboard: %s" % base_dashboard
-            else:
-                # Get the report
-                dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
-                if not err_msg:
-                    # Update the dasboard based on the tables and time to query
-                    is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
-                    if not err_msg:
-                        dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
-                        if not err_msg:
-                            url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-        else:
-            # Update an existing report
-            dashboard_info, err_msg = get_dashboard_info( grafana_url, token, dashboard_uid, dashboard_name )
+            # Missing base report
+            return "Grafana API: Missing base dashboard: %s" % base_dashboard
 
-            if not err_msg:
-                if not dashboard_version:
-                    if "meta" in dashboard_info and "version" in  dashboard_info["meta"]:
-                        dashboard_version = dashboard_info["meta"]["version"]
-                    else:
-                        dashboard_version = 1
+    platform_info["new_dashboard"] = new_dashboard
+    platform_info["dashboard_id"] = dashboard_id
+    platform_info["dashboard_uid"] = dashboard_uid
+    platform_info["dashboard_version"] = dashboard_version
 
-                # Update the dasboard based on the tables and time to query
-                is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
-                if not err_msg:
-                    if is_modified:
-                        # push update to Grafana
-                        if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dashboard_version):
-                            # Failed to upfate a report
-                            err_msg = "Grafana API: Failed to update dasboard %s" % dashboard_name
+    return None
+# -----------------------------------------------------------------------------------
+# Get the time tange in the format for the URL
+# Time range is added to the URL - https://grafana.com/docs/grafana/latest/dashboards/time-range-controls/#control-the-time-range-using-a-url
+    # Example data to add:
+    # ?&from=1614585600000&to=1619938799000
+    # ?&from=now-90d&to=now
+    # ?&from=now-2M&to=now
+    # ?&from=202103011248&to=202105011248
+# -----------------------------------------------------------------------------------
+def get_url_time_range(platform_info):
 
-                    if not err_msg and "url" in dashboard_info["meta"]:
-                        url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-            else:
-                err_msg = "Grafana API: Unable to extract version from dasboard %s" % dashboard_name
+    from_date = platform_info["from_date"]
+    to_date = platform_info["to_date"]
 
-    if not err_msg:
-        # Time range is added to the URL - https://grafana.com/docs/grafana/latest/dashboards/time-range-controls/#control-the-time-range-using-a-url
-        # Example data to add:
-        # ?&from=1614585600000&to=1619938799000
-        # ?&from=now-90d&to=now
-        # ?&from=now-2M&to=now
-        # ?&from=202103011248&to=202105011248
-        if to_date[:3] == "now":
-            url += "?&from=%s&to=now" % from_date
-        else:
-            # Transform to  ms epoch
-            ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), int(from_date[14:16]) ) \
-                           - datetime(1970, 1, 1)).total_seconds() * 1000)
-            ms_to = int((datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
-                 - datetime(1970, 1, 1)).total_seconds() * 1000)
-            url += "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
+    if to_date[:3] == "now":
+        time_url = "?&from=%s&to=now" % from_date
+    else:
+        # Transform to  ms epoch
+        ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), \
+                                int(from_date[14:16])) \
+                       - datetime(1970, 1, 1)).total_seconds() * 1000)
+        ms_to = int( \
+            (datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
+             - datetime(1970, 1, 1)).total_seconds() * 1000)
 
-    return [url, err_msg]
+        time_url = "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
+
+    return time_url
+
 # -----------------------------------------------------------------------------------
 # Find a dashboard by name
 # -----------------------------------------------------------------------------------
@@ -377,7 +480,53 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 
     return ret_val
 
+# -----------------------------------------------------------------------------------
+# Create a dashboard to show current Status
+# -----------------------------------------------------------------------------------
+def make_status_dashboard(dashboard, dashboard_name, projection_list, functions):
+    '''
+    The status dashboard shows 2 panels for every sensor:
+    1) Last data available
+    2) Graph of last 24 hours
 
+    :param dashboard:         The previously used dashboard or the base
+    :param dashboard_name:    Some default name
+    :param projection_list:   Data selected by user:  entry_name, dbms_name, table_name
+    :param functions:         Min, Max, Avg etc
+    :return:
+    '''
+
+    panels_list = dashboard["panels"]
+    panels_counter = len(panels_list)
+    if not panels_counter:
+        # A report needs to have one panel
+        return [False, "Grafana API: Report (%s) has no panels" % dashboard_name]
+
+    # The source panel is duplicated twice for every entry in the projection
+    # Showing the last week trends and showing last values
+    source_panel = copy.deepcopy(panels_list[0])
+    panels_list = []        # Start from empty list
+    dashboard["panels"] = panels_list
+
+    panel_id = 0
+    for index, projection in enumerate(projection_list):
+        entry_name = projection[0]                      # The sensor name from the sensor policy
+        tables_list = [(projection[1], projection[2])]    # The database and table name derived from the policy
+
+        report_type = "increments"      # AnyLog query function
+        display_type = "graph"
+        for i in range(2):      # Adding 2 panels each time (increments + period) - Current status and last day graph
+            new_panel = copy.deepcopy(source_panel)
+            panel_id += 1
+            new_panel['id'] = panel_id     # Adding 2 panels each time
+            panels_list.append(new_panel)  # Duplicate the same panel
+            is_modified, err_msg = replace_panel(dashboard_name, report_type, display_type, new_panel, entry_name, tables_list, functions)
+            if err_msg:
+                break
+            report_type = "period"  # AnyLog query function
+            display_type = "gauge"
+
+    return [True, err_msg]
 # -----------------------------------------------------------------------------------
 # Update the dashboard -
 # Go over all the panels and modify the targets on each panel.
@@ -396,11 +545,11 @@ def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_li
         if operation == 'Replace':
             if panels_counter == 1:
                 panels_list[0]['id'] = 1
-                is_modified, err_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
+                is_modified, err_msg = replace_panel(dashboard_name, "increments", "graph", panels_list[0], panel_name, tables_list, functions)
             else:
                 for panel in panels_list:
                     if 'title' in panel and panel['title'] == panel_name:
-                        is_modified, err_msg = replace_panel(dashboard_name, panel, panel_name, tables_list, functions)
+                        is_modified, err_msg = replace_panel(dashboard_name, "increments", "graph", panel, panel_name, tables_list, functions)
                         break
                 if not err_msg:
                     if not is_modified:
@@ -415,7 +564,7 @@ def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_li
                 new_panel = copy.deepcopy(panels_list[0])
                 new_panel['id'] = panels_counter + 1
                 panels_list.append(new_panel)      # Duplicate the same panel
-                is_modified, err_msg = replace_panel(dashboard_name, panels_list[-1], panel_name, tables_list, functions)
+                is_modified, err_msg = replace_panel(dashboard_name, "increments", "graph", panels_list[-1], panel_name, tables_list, functions)
         elif operation == 'Remove':
             if panels_counter == 1:
                 err_msg = "Grafana API: Removal of a panel from a single panel dashboard is not allowed"
@@ -436,13 +585,28 @@ def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_li
 # -----------------------------------------------------------------------------------
 # Replace the content of an existing panel
 # -----------------------------------------------------------------------------------
-def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
+def replace_panel( dashboard_name, report_type, display_type, panel, panel_title, tables_list, functions):
+    '''
+    Set a new panel and modify the panel definitions as needed
+    :param dashboard_name:
+    :param report_type:         AnyLog type of query - Increments or Period - set in targets.data
+    :param display_type:        Grafana - gauge or graph
+    :param panel:               The JSON Panel info from Grafana
+    :param panel_title:
+    :param tables_list:         The AnyLog DBMS + Tables to apply - each pair of dbms + table is a query
+    :param functions:           The AnyLog functions: Min, Max, Avg
+    :return:
+    '''
 
     err_msg = None
     is_modified = False
     if not "title" in panel or not panel["title"] or panel["title"] != panel_title:
         # Change the panel name to be as the report name
         panel["title"] = panel_title
+        is_modified = True
+
+    if not "type" in panel or panel["type"] != display_type:
+        panel["type"] = display_type        # gauge or graph
         is_modified = True
 
     targets = panel["targets"]  # Get the list of queries
@@ -459,6 +623,8 @@ def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
 
                 al_query["dbms"] = table[0]
                 al_query["table"] = table[1]
+
+                al_query["type"] = report_type
 
                 if len(functions):
                     # If user specified SQL functions Min Max etc
@@ -509,3 +675,22 @@ def format_grafana_json(al_query):
 
     return [data_formated, err_msg]
 
+# -----------------------------------------------------------------------------------
+# Test if the list of needed params with the correct data types is passed to the method
+# -----------------------------------------------------------------------------------
+def test_params(params_required:list, platform_info):
+
+    err_msg = None
+    for param in params_required:
+        key = param[0]
+        if key not in platform_info:
+            # Missing param
+            err_msg = "Grafana: Missing '%s' in visualization parameters" % key
+            break
+        value = platform_info[key]
+        if not isinstance(value, param[1]):
+            # Wrong data type
+            err_msg = "Grafana: Wrong visualization data structure for '%s'" % key
+            break
+
+    return err_msg
