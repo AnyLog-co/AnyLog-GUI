@@ -86,43 +86,19 @@ def status_report(**platform_info):
     if err_msg:
         return [None, err_msg]
 
-# -----------------------------------------------------------------------------------
-# Get the dashboard to use
-# -----------------------------------------------------------------------------------
-def get_init_dashboard(platform_info, dashboard_name):
-    '''
-    Get the dashboard using the name, if doesn't exists, get the base dashboard
-    '''
+    dashboard_uid = platform_info['dashboard_uid']
+    dashboard_version = platform_info['dashboard_version']
+    new_dashboard = platform_info["new_dashboard"]
 
-    grafana_url = platform_info['url']
-    token = platform_info['token']
-
-    reply, err_msg = get_dashboards(grafana_url, token)
+    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name) # The Grafana dasboard requested or the base_report
     if err_msg:
-        return "Grafana API: Failed to provide the list of dashboards: %s" % err_msg
+        return [None, err_msg]
 
-    dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
+    #is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
     if err_msg:
-        return "Grafana API: Failed to provide the list of dashboards"
-
-    if dashboard_id:
-        new_dashboard = False
-    else:
-        new_dashboard = True
-        base_dashboard = platform_info['base_report']  # Get the initial report name from the config file
-        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
-        if not dashboard_id:
-            # Missing base report
-            return "Grafana API: Missing base dashboard: %s" % base_dashboard
+        return [None, err_msg]
 
 
-
-    platform_info["new_dashboard"] = new_dashboard
-    platform_info["dashboard_id"] = dashboard_id
-    platform_info["dashboard_uid"] = dashboard_uid
-    platform_info["dashboard_version"] = dashboard_version
-
-    return None
 # -----------------------------------------------------------------------------------
 # Deploy a report
 # With Grafana - a report is a dashboard, each dashboard has multiple panels (a visualization window), each panel has multiple targets (queries to a table)
@@ -169,7 +145,7 @@ def deploy_report(**platform_info):
     dashboard_version = platform_info['dashboard_version']
     new_dashboard = platform_info["new_dashboard"]
 
-    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
+    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name) # The Grafana dasboard requested or the base_report
     if err_msg:
         return [None, err_msg]
 
@@ -205,7 +181,41 @@ def deploy_report(**platform_info):
 
     return [url, None]
 
+# -----------------------------------------------------------------------------------
+# Get the dashboard to use
+# -----------------------------------------------------------------------------------
+def get_init_dashboard(platform_info, dashboard_name):
+    '''
+    Get the dashboard using the name, if doesn't exists, get the base dashboard
+    '''
 
+    grafana_url = platform_info['url']
+    token = platform_info['token']
+
+    reply, err_msg = get_dashboards(grafana_url, token)
+    if err_msg:
+        return "Grafana API: Failed to provide the list of dashboards: %s" % err_msg
+
+    dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
+    if err_msg:
+        return "Grafana API: Failed to provide the list of dashboards"
+
+    if dashboard_id:
+        new_dashboard = False
+    else:
+        new_dashboard = True
+        base_dashboard = platform_info['base_report']  # Get the initial report name from the config file
+        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
+        if not dashboard_id:
+            # Missing base report
+            return "Grafana API: Missing base dashboard: %s" % base_dashboard
+
+    platform_info["new_dashboard"] = new_dashboard
+    platform_info["dashboard_id"] = dashboard_id
+    platform_info["dashboard_uid"] = dashboard_uid
+    platform_info["dashboard_version"] = dashboard_version
+
+    return None
 # -----------------------------------------------------------------------------------
 # Get the time tange in the format for the URL
 # Time range is added to the URL - https://grafana.com/docs/grafana/latest/dashboards/time-range-controls/#control-the-time-range-using-a-url
