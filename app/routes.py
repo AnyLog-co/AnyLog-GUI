@@ -913,9 +913,16 @@ def status_view(selection, form_info,  policies):
     platform_info['from_date'] = "-2M"
     platform_info['to_date'] = "now"
 
-    report_url, err_msg = visualize.status_report("Grafana", **platform_info)
+    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
 
-    return redirect((report_url))  # Goto Grafana
+    select_info = get_select_menu()
+    select_info['title'] = "Current Status"
+
+    select_info["url_list"] = url_list
+
+    return  render_template('output_frame.html', **select_info)
+
+    #return redirect((report_url))  # Goto Grafana
 
 
 # -----------------------------------------------------------------------------------

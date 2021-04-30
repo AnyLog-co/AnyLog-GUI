@@ -68,6 +68,7 @@ def get_panels(grafana_url:str, token:str, dashboard_name:str):
 
 # --------------------------------------------------------
 # Provide status on the list of entries at platform_info["projection_list]
+# Example URL returned: http://127.0.0.1:3000/d/nfDMna9Gz/current_status?orgId=1&viewPanel=2&from=-2M&to=now
 # --------------------------------------------------------
 def status_report(**platform_info):
 
@@ -108,10 +109,15 @@ def status_report(**platform_info):
     if err_msg:
         return [None, err_msg]
 
-    url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, "current_status")
-    url += get_url_time_range(platform_info)
+    base_url = grafana_url.replace("localhost", "127.0.0.1")    # Otherwise Iframe does not works
+    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, "current_status")
+    url_graph = base_url + "?orgId=1&viewPanel=1"
+    url_graph += get_url_time_range(platform_info)
 
-    return [url, None]
+    url_gauge = base_url + "?orgId=1&viewPanel=2"
+    url_gauge += get_url_time_range(platform_info)
+
+    return [(url_graph, url_gauge), None]
 
 
 # -----------------------------------------------------------------------------------
