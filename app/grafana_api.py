@@ -104,6 +104,15 @@ def status_report(**platform_info):
     if err_msg:
         return [None, err_msg]
 
+    err_msg = add_update_dashboard(new_dashboard, is_modified, platform_info, "current_status", dashboard_info)
+    if err_msg:
+        return [None, err_msg]
+
+    url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, "current_status")
+    url += get_url_time_range(platform_info)
+
+    return [url, None]
+
 
 # -----------------------------------------------------------------------------------
 # Deploy a report
@@ -159,15 +168,38 @@ def deploy_report(**platform_info):
     if err_msg:
         return [None, err_msg]
 
+    err_msg = add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_name, dashboard_info)
+    if err_msg:
+        return [None, err_msg]
+
+
+    url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
+    url += get_url_time_range(platform_info)
+
+    return [url, None]
+
+
+# -----------------------------------------------------------------------------------
+# Given a dashboard - if the dashboard is new - add the dashboard, otherwise update the dashboard
+# -----------------------------------------------------------------------------------
+def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_name, dashboard_info):
+
+    grafana_url = platform_info['url']
+    token = platform_info['token']
+    dashboard_uid = platform_info['dashboard_uid']
+    dashboard_version = platform_info['dashboard_version']
+    new_dashboard = platform_info["new_dashboard"]
+
+
     if new_dashboard:
         # First time that the dasboard with that name is written
         dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
         if err_msg:
-            return [None, err_msg]
+            return err_msg
 
     else:
 
-        dashboard_id =  platform_info["dashboard_id"]
+        dashboard_id = platform_info["dashboard_id"]
 
         if not dashboard_version:
             if "meta" in dashboard_info and "version" in dashboard_info["meta"]:
@@ -177,16 +209,12 @@ def deploy_report(**platform_info):
 
         if is_modified:
             # push update to Grafana
-            if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dashboard_version):
+            if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid,
+                                    dashboard_version):
                 # Failed to upfate a report
-                return [ None, "Grafana API: Failed to update dasboard %s" % dashboard_name ]
+                return "Grafana API: Failed to update dasboard %s" % dashboard_name
 
-
-    url = "%s/d/%s/%s" % (grafana_url, dashboard_uid, dashboard_name)
-    url += get_url_time_range(platform_info)
-
-    return [url, None]
-
+    return None
 # -----------------------------------------------------------------------------------
 # Get the dashboard to use
 # -----------------------------------------------------------------------------------
