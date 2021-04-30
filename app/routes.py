@@ -647,19 +647,34 @@ def install():
 @app.route('/tree', methods = ['GET', 'POST'])
 @app.route('/tree/<string:path>', methods = ['GET', 'POST'])
 def metadata( path = "" ):
-    
 
-    my_list = [
-        View('Home Page', 'metadata'),
-        View('2nd Page', 'metadata')
-    ]
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    level = path.count('@') + 1
+
+    layer_list = []                       # The list of options in this layer
+
+    if level == 1:
+        select_info = get_select_menu()
+
+        children = select_info['children_gui']      # A list of pairs: tag name and the paths
+        for child in children:
+            layer_list.append( View(child[0], 'metadata') )
+
+    else:
+        gui_sub_tree = gui_view_.get_subtree( path )
+
+
     nav_bar = Navbar('metadata',
-                     *my_list
+                     *layer_list
                      )
+
+    select_info['title'] = "AnyLog Network"
 
     nav.register_element('metadata', nav_bar)
 
-    return render_template('metadata.html')
+    return render_template('metadata.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
