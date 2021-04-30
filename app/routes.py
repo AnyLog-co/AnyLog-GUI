@@ -52,9 +52,6 @@ user_connect_ = False       # Flag indicating connected to the AnyLog Node
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
 gui_view_.set_gui()
 
-nav_bar = Navbar('mdatata', View('Home Page', 'index'))
-#nav.register('metadata', nav_bar)
-
 query_node_ = None
 
 time_selection_ = [
@@ -86,6 +83,18 @@ time_selection_ = [
 @app.route('/')
 @app.route('/index')
 def index():
+
+    '''
+    my_list = [
+        View('Home Page', 'index'),
+        View('2nd Page', 'index')
+    ]
+    nav_bar = Navbar('metadata',
+                     *my_list
+                     )
+    nav.register_element('metadata', nav_bar)
+    return render_template('metadata.html')
+    '''
 
     if not user_connect_:
         return redirect(('/login'))        # start with Login
@@ -786,9 +795,7 @@ def tree( selection = "" ):
         select_info['dbms_name'] = gui_sub_tree["dbms_name"]
         select_info['table_name'] = gui_sub_tree["table_name"]
 
-    return render_template('tree_menu.html', **select_info)
-
-    # return render_template('selection_table.html',  **select_info )
+    return render_template('selection_table.html',  **select_info )
 
 # -----------------------------------------------------------------------------------
 # Process selected Items from a table
