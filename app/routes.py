@@ -378,6 +378,10 @@ def get_query_functions(form_info):
         functions.append("count")
     if "Range" in form_info:
         functions.append("range")
+
+    if not len(functions):
+        # set defaults
+        functions = ["min","max","avg"]
     return functions
 
 # -----------------------------------------------------------------------------------
@@ -901,6 +905,9 @@ def status_view(selection, form_info,  policies):
     platform_info['base_report'] = "AnyLog_Base"
 
     platform_info["projection_list"] = projection_list
+
+    query_functions = get_query_functions(form_info)
+    platform_info['functions'] = query_functions
 
     report_url, err_msg = visualize.status_report("Grafana", **platform_info)
 

@@ -75,12 +75,16 @@ def status_report(**platform_info):
         ("url", str),
         ("token", str),
         ("base_report", str),
+        ("functions", list),
         ("projection_list", list),
     ]
 
     err_msg = test_params(params_required, platform_info)
     if err_msg:
         return [None, err_msg]
+
+    grafana_url = platform_info['url']
+    token =  platform_info['token']
 
     err_msg = get_init_dashboard(platform_info, "current_status")
     if err_msg:
@@ -90,11 +94,13 @@ def status_report(**platform_info):
     dashboard_version = platform_info['dashboard_version']
     new_dashboard = platform_info["new_dashboard"]
 
-    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name) # The Grafana dasboard requested or the base_report
+    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, "current_status") # The Grafana dasboard requested or the base_report
     if err_msg:
         return [None, err_msg]
 
-    #is_modified, err_msg = modify_dashboard(dashboard_info["dashboard"], operation, dashboard_name, title, tables_list, functions)
+    projection_list = platform_info["projection_list"]
+    functions = platform_info["functions"]
+    is_modified, err_msg = make_status_dashboard(dashboard_info["dashboard"], "current_status", projection_list, functions)
     if err_msg:
         return [None, err_msg]
 
@@ -438,6 +444,30 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
     #reply = requests.post(url=url, headers=headers, data=json.dumps(updated_dashboard_data), verify=False)
 
     return ret_val
+
+# -----------------------------------------------------------------------------------
+# Create a dashboard to show current Status
+# -----------------------------------------------------------------------------------
+def make_status_dashboard(dashboard, dashboard_name, projection_list, functions):
+
+    panels_list = dashboard["panels"]
+    panels_counter = len(panels_list)
+    if not panels_counter:
+        # A report needs to have one panel
+        return "Grafana API: Report (%s) has no panels" % dashboard_name
+
+    # The source panel is duplicated twice for every entry in the projection
+    # Showing the last week trends and showing last values
+    source_panel = copy.deepcopy(panels_list[0])
+    panels_list = []        # Start from empty list
+    dashboard["panels"] = panels_list
+
+    for index, projection in enumerate(projection_list):
+        
+        new_panel = copy.deepcopy(source_panel)
+        new_panel['id'] = index * 2 + 1     # Adding 2 panels each time
+        panels_list.append(new_panel)  # Duplicate the same panel
+        is_modified, err_msg = replace_panel(dashboard_name, new_panel, panel_name, tables_list, functions)
 
 
 # -----------------------------------------------------------------------------------
