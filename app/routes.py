@@ -884,13 +884,13 @@ def status_view(selection, form_info,  policies):
     # Name, Table Name, DBMS name
     projection_list = []
     for entry in policies:
-        policy_name = path_stat.get_policy_value(entry, "name")
-        if policy_name:
+        entry_name = path_stat.get_policy_value(entry, "name")
+        if entry_name:
             dbms_name = path_stat.get_sql_name(entry, extract_dbms)
             if dbms_name:
                 table_name = path_stat.get_sql_name(entry, extract_table)
                 if table_name:
-                    projection_list.append((policy_name, dbms_name, table_name))
+                    projection_list.append((entry_name, dbms_name, table_name))
 
     if not len (projection_list):
         flash('AnyLog: Missing metadata information in policies', category='error')

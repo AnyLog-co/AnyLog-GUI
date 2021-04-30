@@ -449,12 +449,23 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 # Create a dashboard to show current Status
 # -----------------------------------------------------------------------------------
 def make_status_dashboard(dashboard, dashboard_name, projection_list, functions):
+    '''
+    The status dashboard shows 2 panels for every sensor:
+    1) Last data available
+    2) Graph of last 24 hours
+
+    :param dashboard:         The previously used dashboard or the base
+    :param dashboard_name:    Some default name
+    :param projection_list:   Data selected by user:  entry_name, dbms_name, table_name
+    :param functions:         Min, Max, Avg etc
+    :return:
+    '''
 
     panels_list = dashboard["panels"]
     panels_counter = len(panels_list)
     if not panels_counter:
         # A report needs to have one panel
-        return "Grafana API: Report (%s) has no panels" % dashboard_name
+        return [False, "Grafana API: Report (%s) has no panels" % dashboard_name]
 
     # The source panel is duplicated twice for every entry in the projection
     # Showing the last week trends and showing last values
@@ -463,13 +474,18 @@ def make_status_dashboard(dashboard, dashboard_name, projection_list, functions)
     dashboard["panels"] = panels_list
 
     for index, projection in enumerate(projection_list):
-        
-        new_panel = copy.deepcopy(source_panel)
-        new_panel['id'] = index * 2 + 1     # Adding 2 panels each time
-        panels_list.append(new_panel)  # Duplicate the same panel
-        is_modified, err_msg = replace_panel(dashboard_name, new_panel, panel_name, tables_list, functions)
+        entry_name = projection[0]                      # The sensor name from the sensor policy
+        tables_list = (projection[1], projection[2])    # The database and table name derived from the policy
 
+        for i in range(2):      # Adding 2 panels each time - Current status and last day graph
+            new_panel = copy.deepcopy(source_panel)
+            new_panel['id'] = index * 2 + 1     # Adding 2 panels each time
+            panels_list.append(new_panel)  # Duplicate the same panel
+            is_modified, err_msg = replace_panel(dashboard_name, new_panel, entry_name, tables_list, functions)
+            if err_msg:
+                break
 
+    return [True, err_msg]
 # -----------------------------------------------------------------------------------
 # Update the dashboard -
 # Go over all the panels and modify the targets on each panel.
