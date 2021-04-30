@@ -506,14 +506,18 @@ def make_status_dashboard(dashboard, dashboard_name, projection_list, functions)
         entry_name = projection[0]                      # The sensor name from the sensor policy
         tables_list = [(projection[1], projection[2])]    # The database and table name derived from the policy
 
-        for i in range(2):      # Adding 2 panels each time - Current status and last day graph
+        report_type = "increments"      # AnyLog query function
+        display_type = "graph"
+        for i in range(2):      # Adding 2 panels each time (increments + period) - Current status and last day graph
             new_panel = copy.deepcopy(source_panel)
             panel_id += 1
             new_panel['id'] = panel_id     # Adding 2 panels each time
             panels_list.append(new_panel)  # Duplicate the same panel
-            is_modified, err_msg = replace_panel(dashboard_name, new_panel, entry_name, tables_list, functions)
+            is_modified, err_msg = replace_panel(dashboard_name, report_type, display_type, new_panel, entry_name, tables_list, functions)
             if err_msg:
                 break
+            report_type = "period"  # AnyLog query function
+            display_type = "gauge"
 
     return [True, err_msg]
 # -----------------------------------------------------------------------------------
@@ -534,11 +538,11 @@ def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_li
         if operation == 'Replace':
             if panels_counter == 1:
                 panels_list[0]['id'] = 1
-                is_modified, err_msg = replace_panel(dashboard_name, panels_list[0], panel_name, tables_list, functions)
+                is_modified, err_msg = replace_panel(dashboard_name, "increments", "graph", panels_list[0], panel_name, tables_list, functions)
             else:
                 for panel in panels_list:
                     if 'title' in panel and panel['title'] == panel_name:
-                        is_modified, err_msg = replace_panel(dashboard_name, panel, panel_name, tables_list, functions)
+                        is_modified, err_msg = replace_panel(dashboard_name, "increments", "graph", panel, panel_name, tables_list, functions)
                         break
                 if not err_msg:
                     if not is_modified:
@@ -553,7 +557,7 @@ def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_li
                 new_panel = copy.deepcopy(panels_list[0])
                 new_panel['id'] = panels_counter + 1
                 panels_list.append(new_panel)      # Duplicate the same panel
-                is_modified, err_msg = replace_panel(dashboard_name, panels_list[-1], panel_name, tables_list, functions)
+                is_modified, err_msg = replace_panel(dashboard_name, "increments", "graph", panels_list[-1], panel_name, tables_list, functions)
         elif operation == 'Remove':
             if panels_counter == 1:
                 err_msg = "Grafana API: Removal of a panel from a single panel dashboard is not allowed"
@@ -574,13 +578,28 @@ def modify_dashboard(dashboard, operation, dashboard_name, panel_name, tables_li
 # -----------------------------------------------------------------------------------
 # Replace the content of an existing panel
 # -----------------------------------------------------------------------------------
-def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
+def replace_panel( dashboard_name, report_type, display_type, panel, panel_title, tables_list, functions):
+    '''
+    Set a new panel and modify the panel definitions as needed
+    :param dashboard_name:
+    :param report_type:         AnyLog type of query - Increments or Period - set in targets.data
+    :param display_type:        Grafana - gauge or graph
+    :param panel:               The JSON Panel info from Grafana
+    :param panel_title:
+    :param tables_list:         The AnyLog DBMS + Tables to apply - each pair of dbms + table is a query
+    :param functions:           The AnyLog functions: Min, Max, Avg
+    :return:
+    '''
 
     err_msg = None
     is_modified = False
     if not "title" in panel or not panel["title"] or panel["title"] != panel_title:
         # Change the panel name to be as the report name
         panel["title"] = panel_title
+        is_modified = True
+
+    if not "type" in panel or panel["type"] != display_type:
+        panel["type"] = display_type        # gauge or graph
         is_modified = True
 
     targets = panel["targets"]  # Get the list of queries
@@ -597,6 +616,8 @@ def replace_panel( dashboard_name, panel, panel_title, tables_list, functions):
 
                 al_query["dbms"] = table[0]
                 al_query["table"] = table[1]
+
+                al_query["type"] = report_type
 
                 if len(functions):
                     # If user specified SQL functions Min Max etc
