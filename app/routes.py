@@ -13,12 +13,17 @@ such non-permitted act to AnyLog, Inc.
 
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
+
+
+
 from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
+
+
 
 from app.entities import Item
 from app.entities import AnyLogItem
@@ -28,7 +33,6 @@ from app.entities import AnyLogTable
 from config import Config
 
 import copy
-import json
 import requests
 from requests.exceptions import HTTPError
 
@@ -38,10 +42,18 @@ from app import visualize       # The connectors to Grafana, Power BI etc
 from app import anylog_api      # Connector to the network
 from app import json_api        # JSON data mapper
 
+from flask_nav import Nav
+
+nav = Nav(app)
+from flask_nav.elements import Navbar, Subgroup, View, Link, Text, Separator
+
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
 gui_view_.set_gui()
+
+nav_bar = Navbar('mdatata', View('Home Page', 'index'))
+#nav.register('metadata', nav_bar)
 
 query_node_ = None
 
@@ -773,8 +785,10 @@ def tree( selection = "" ):
         select_info['add'] =  "Add"
         select_info['dbms_name'] = gui_sub_tree["dbms_name"]
         select_info['table_name'] = gui_sub_tree["table_name"]
-    
-    return render_template('selection_table.html',  **select_info )
+
+    return render_template('tree_menu.html', **select_info)
+
+    # return render_template('selection_table.html',  **select_info )
 
 # -----------------------------------------------------------------------------------
 # Process selected Items from a table

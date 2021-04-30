@@ -4,6 +4,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+ <form action="{{url_for('selected')}}" method="POST">
  <link rel="stylesheet" href="{{ url_for('static', filename='CSS/tree_menu.css') }}">
 
 <ul class="tree_menu">
