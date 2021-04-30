@@ -14,15 +14,12 @@ such non-permitted act to AnyLog, Inc.
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
 
-
-
 from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
-
 
 
 from app.entities import Item
@@ -83,18 +80,6 @@ time_selection_ = [
 @app.route('/')
 @app.route('/index')
 def index():
-
-    '''
-    my_list = [
-        View('Home Page', 'index'),
-        View('2nd Page', 'index')
-    ]
-    nav_bar = Navbar('metadata',
-                     *my_list
-                     )
-    nav.register_element('metadata', nav_bar)
-    return render_template('metadata.html')
-    '''
 
     if not user_connect_:
         return redirect(('/login'))        # start with Login
@@ -654,6 +639,27 @@ def install():
     select_info['form'] = InstallForm()
 
     return render_template('install.html', **select_info)
+
+
+# -----------------------------------------------------------------------------------
+# Navigate in the metadata
+# -----------------------------------------------------------------------------------
+@app.route('/tree', methods = ['GET', 'POST'])
+@app.route('/tree/<string:path>', methods = ['GET', 'POST'])
+def metadata( path = "" ):
+    
+
+    my_list = [
+        View('Home Page', 'metadata'),
+        View('2nd Page', 'metadata')
+    ]
+    nav_bar = Navbar('metadata',
+                     *my_list
+                     )
+
+    nav.register_element('metadata', nav_bar)
+
+    return render_template('metadata.html')
 
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
