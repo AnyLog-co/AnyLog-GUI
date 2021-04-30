@@ -75,11 +75,11 @@ def status_report(platform_name, **platform_info):
     connector = get_connector(platform_name)
     if not connector:
         error_msg = "%s not supported" % platform_name
-        url = None
+        url_list = None
     else:
-        url, error_msg = connector.status_report(**platform_info)
+        url_list, error_msg = connector.status_report(**platform_info)
 
-    return url, error_msg
+    return url_list, error_msg
 
 # --------------------------------------------------------
 # Return the platform connector

@@ -111,14 +111,15 @@ def status_report(**platform_info):
 
     base_url = grafana_url.replace("localhost", "127.0.0.1")    # Otherwise Iframe does not works
     base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, "current_status")
-    url_graph = base_url + "?orgId=1&viewPanel=1"
-    url_graph += get_url_time_range(platform_info)
 
-    url_gauge = base_url + "?orgId=1&viewPanel=2"
-    url_gauge += get_url_time_range(platform_info)
+    panels_list = []
+    panels_counter = len(dashboard_info['dashboard']['panels'])
+    for i in range (panels_counter):        # Create a url for each Panel
+        panel_url = base_url + "?orgId=1&viewPanel=%u" % (i + 1)
+        panel_url += get_url_time_range(platform_info)
+        panels_list.append(panel_url)
 
-    return [(url_graph, url_gauge), None]
-
+    return [panels_list, None]      # Return list of urls, one for each panel
 
 # -----------------------------------------------------------------------------------
 # Deploy a report
