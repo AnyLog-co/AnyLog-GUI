@@ -501,13 +501,15 @@ def make_status_dashboard(dashboard, dashboard_name, projection_list, functions)
     panels_list = []        # Start from empty list
     dashboard["panels"] = panels_list
 
+    panel_id = 0
     for index, projection in enumerate(projection_list):
         entry_name = projection[0]                      # The sensor name from the sensor policy
         tables_list = [(projection[1], projection[2])]    # The database and table name derived from the policy
 
         for i in range(2):      # Adding 2 panels each time - Current status and last day graph
             new_panel = copy.deepcopy(source_panel)
-            new_panel['id'] = index * 2 + 1     # Adding 2 panels each time
+            panel_id += 1
+            new_panel['id'] = panel_id     # Adding 2 panels each time
             panels_list.append(new_panel)  # Duplicate the same panel
             is_modified, err_msg = replace_panel(dashboard_name, new_panel, entry_name, tables_list, functions)
             if err_msg:
