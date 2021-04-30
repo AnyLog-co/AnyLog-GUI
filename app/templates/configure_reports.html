@@ -1,0 +1,28 @@
+
+{% extends "base.html" %}
+
+  
+{% block content %}
+
+    <form action="" method="post">
+        <p>
+            {{ form.report_name.label }}<br>
+            {{ form.report_name(size = 4) }}<br>
+        </p>
+        <p>
+            {{ form.rename.label }}<br>
+            {{ form.rename(size = 16) }}<br>
+        </p>
+        <p>
+            {{ form.new_report.label }}<br>
+            {{ form.new_report(size = 16) }}<br>
+        </p>
+ 
+        <p>{{ form.make_default() }} {{form.make_default.label}}</p>
+        <p>{{ form.reset() }} {{form.reset.label}}</p>
+        <p>{{ form.delete() }} {{form.delete.label}}</p>
+
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}
+

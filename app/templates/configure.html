@@ -4,8 +4,11 @@
 
 
 {% block content %}
+<form action="{{ url_for('configure') }}" method="post">
+
+</form>
     <h1>Configure</h1>
-    <form action="{{ url_for('set_config') }}" method="post">
+    
         <p>
             {{ form.company.label }}<br>
             {{ form.company(size = 32) }}<br>

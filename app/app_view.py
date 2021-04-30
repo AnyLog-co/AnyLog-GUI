@@ -12,10 +12,17 @@ such non-permitted act to AnyLog, Inc.
 from flask import url_for
 
 import json
+from json.decoder import JSONDecodeError
+
 
 from config import Config
+from app.entities import AnyLogItem
 
-
+html_input_types_ = {
+    "text" : 1,
+    "number" : 1,
+    "url" : 1,
+}
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
 # ------------------------------------------------------------------------
@@ -24,11 +31,8 @@ class gui():
 
     def __init__(self):
         self.config_struct = None 
-
-        self.base_menue = None  # ?
-
-        self.gui_level = 1      # The hirerarchical level of the navigation
-
+        self.config_error = None    # Error set if COnfig file with error in structure
+        self.policies_table = []     # The list of policies in a 2 domentional list (representing the display of the list)
     # ------------------------------------------------------------------------
     # Get Base Info from the config / JSON file
     # ------------------------------------------------------------------------
@@ -41,145 +45,139 @@ class gui():
         if self.config_struct and "gui" in self.config_struct and key in self.config_struct["gui"]:
             query_node = self.config_struct["gui"][key]
         else:
-            query_node - None
+            query_node = None
         return query_node
     # ------------------------------------------------------------------------
     # Load the JSON and set main structures
     # ------------------------------------------------------------------------
     def set_gui(self, file_name = None):
+        '''
+        Load the JSON file and adds error if file strcure is not of JSON.
+        '''
 
         if not file_name:
             file_name = Config.GUI_VIEW    # get from system variable
         
-        self.config_struct = load_json(file_name)
+        self.config_struct, self.config_error = load_json(file_name)
+
+        if self.config_struct:
+            # Load the ploicies to a structure that displays a table of policies
+            line_list = []  # limits the number of columns
+            links_in_row = 8
+            policies_list = self.get_base_info("policies")     # get the list of policies from the config file
+            if policies_list and isinstance(policies_list, list):
+                for policy in policies_list:
+                    if "name" in policy:
+                        policy_name = policy["name"]
+                        line_list.append(policy_name)
+
+                        if len(line_list) == links_in_row:
+                            self.policies_table.append(line_list)
+                            line_list = []  # Start a new line
+            if len(line_list):
+                self.policies_table.append(line_list)
 
     # ------------------------------------------------------------------------
-    # Get the dynamic menue based on the user navigation
+    # Return The list of policies
     # ------------------------------------------------------------------------
-    def get_dynamic_menue( self, gui_path ):
+    def get_policies_list(self):
+        return self.policies_table
+
+    # ------------------------------------------------------------------------
+    # Return The info of the policy
+    # ------------------------------------------------------------------------
+    def get_policy_info(self, policy_name):
+        policies_list = self.get_base_info("policies")
+        for policy in policies_list:
+            if "name" in policy and policy['name'] == policy_name:
+                return policy
+        return None
+
+    # ------------------------------------------------------------------------
+    # Return config error
+    # ------------------------------------------------------------------------
+    def get_config_error(self):
         '''
-        Get the dynamic menue as f(user navigation)
+        Error when config file read
+        '''
+        return self.config_error
+
+    def is_config_error(self):
+        '''
+        Error when config file read
+        '''
+        return self.config_error != None
+    # ------------------------------------------------------------------------
+    # Test config file available
+    # ------------------------------------------------------------------------
+    def is_with_config(self):
+        '''
+        Test if config file available
+        '''
+
+        return self.config_struct != None
+
+    # ------------------------------------------------------------------------
+    # Get the dynamic menu based on the user navigation
+    # ------------------------------------------------------------------------
+    def get_dynamic_menu( self, gui_path ):
+        '''
+        Get the dynamic menu as f(user navigation)
         gui_path - the path to the parent --> get the children
         '''
 
-        parent_menue = []       # Collection of the menue names of the parents
-        children_menue = []         # Collection of the menue names of the children
+        parent_menu = []       # Collection of the menu names of the parents
+        children_menu = []         # Collection of the menu names of the children
         if self.config_struct and "gui" in self.config_struct:
             tree = self.config_struct["gui"]
-            self.add_path_children( tree, 0, gui_path, parent_menue, children_menue )
-        return [parent_menue, children_menue]
+            if gui_path:
+                gui_keys = gui_path.split('@')
+            else:
+                gui_keys = None
+            self.add_path_children( tree, 0, gui_keys, parent_menu, children_menu )
+        return [parent_menu, children_menu]
     # ------------------------------------------------------------------------
-    # Create the dynamic menue based on the GUI path
+    # Create the dynamic menu based on the GUI path
     # ------------------------------------------------------------------------
-    def add_path_children( self, tree, level, gui_path, parent_menue, child_menue ):
+    def add_path_children( self, tree, level, gui_keys, parent_menu, child_menu ):
 
-        if not gui_path or level == len(gui_path):
-            # Add all children
-            if "children" in tree:
-                children_list = tree["children"]
-                for child in children_list:
-                    if "name" in child:
-                        url_link = url_for("tree")
-                        url_link += "/%s" % child["name"].lower()
-                        child_menue.append((child["name"], url_link))
-    # ------------------------------------------------------------------------
-    # Set Menu names and links based on the JSON file
-    # ------------------------------------------------------------------------
-    def set_menue(self, gui_level = 0):
-        '''
-        Set the navigation menue as f (traversal level)
-        '''
-
-        if self.config_struct and not self.base_menue:
-            self.base_menue = []
-            if isinstance(self.config_struct, dict):
-                if "gui" in self.config_struct and "children" in self.config_struct["gui"]:     # Root of JSON
-                    self.create_base_menue(self.config_struct["gui"]["children"])
-
-
-    # ------------------------------------------------------------------------
-    # Make the upper menue
-    # ------------------------------------------------------------------------
-    def create_base_menue(self, gui_list):
-
-        if isinstance(gui_list,list):
-            for entry in gui_list:
-                if isinstance(entry, dict):
-                    if "name" in entry:
-                        text_name = entry["name"]
-                        try:
-                            url_link = url_for(text_name.lower())
-                        except:
-                            continue
-                        self.base_menue.append((text_name, url_link))
-                        if "children" in entry:
-                           self.create_base_menue(entry["children"])
-
-    # ------------------------------------------------------------------------
-    # Return the user menue based on the JSON file
-    # ------------------------------------------------------------------------
-    def get_base_menu(self):
-        return self.base_menue
-
-
-    # ------------------------------------------------------------------------
-    # Get the Navigation Bar as f(level)
-    # ------------------------------------------------------------------------
-    def get_nav_bar(self, nav_list, gui_level):
-        '''
-        Get the Navigation Bar as f(level)
-        '''
-        if gui_level:
-            self.gui_level = gui_level      # Move backwards or stay on the previous leve
-
-        if self.config_struct:
-            if isinstance(self.config_struct, dict):
-                if "gui" in self.config_struct and "children" in self.config_struct["gui"]:     # Root of JSON
-                    json_struct = self.config_struct["gui"]["children"]     # root of JSON to use
-
-                    for i in range(self.gui_level):
-                        if i == self.gui_level - 1:
-                            # Last level - get all children
-                            for counter, entry in enumerate(json_struct):
-                                if "name" in entry:
-                                    text_name = entry["name"]       # The name to print
-                                    try:
-                                        url_link = url_for('show_list')   # the link to use
-                                    except:
-                                        continue
-                                    if (i + counter) < len(nav_list):
-                                        nav_list[i + counter] = ((text_name, url_link))
-                                    else:
-                                        nav_list.append((text_name, url_link))
-                        else:
-                            # Add the parents which were selected by the user
-                            pass
-      
-
-    # ------------------------------------------------------------------------
-    # get the JSON representing the view location
-    # ------------------------------------------------------------------------
-    def get_view_location(self, level):
+        if "children" in tree:
+            child_tree = tree["children"]
+        else:
+            child_tree = None
         
-        json_struct = None
-        if "gui" in self.config_struct:
-            json_struct = self.config_struct["gui"]
-            for i in range(level):
-                if not isinstance(json_struct, dict):
-                    json_struct = None
-                    break
-                if i == (level - 1):
-                    # get the command to get the entries
-                    break
-                else:
-                    if "children" in json_struct:
-                        json_struct = json_struct["children"]
+        if gui_keys and level:
+            parent_path = '@'.join(gui_keys[:level])
+        else:
+            parent_path = ""
+
+        if not gui_keys or level == len(gui_keys):
+            # Add all children to the child_menu list
+            if child_tree:
+                for child_name in child_tree:
+                    url_link = url_for("tree")
+                    if parent_path:
+                        url_link += "/%s@%s" % (parent_path, child_name)
                     else:
-                        json_struct = None
-                        break
+                         url_link +=  "/%s" % (child_name)
+                    child_menu.append((child_name, url_link))
+        else:
+            # Add all parents to the parent_name list
 
-        return json_struct      # The JSON location
+            parent_name = gui_keys[level]      # Get the link name from the path
+                            
+            url_link = url_for("tree")
+            if parent_path:
+                url_link +=  "/%s@%s" % (parent_path, parent_name)
+            else:
+                url_link +=  "/%s" % (parent_name)
+            parent_menu.append((parent_name, url_link))
 
+            if parent_name in child_tree:
+                # Move to next layer
+                child_tree = child_tree[parent_name]
+ 
+            self.add_path_children(child_tree, level + 1, gui_keys, parent_menu, child_menu)
     # ------------------------------------------------------------------------
     # Get the AnyLog command as f (level) from the user JSON configuration struct
     # ------------------------------------------------------------------------
@@ -208,6 +206,24 @@ class gui():
                         break
 
         return command      # the AL command - if available
+    # ------------------------------------------------------------------------
+    # Get the SUbtree by the selection path
+    # ------------------------------------------------------------------------
+    def get_subtree( self, selection ):
+        select_list = selection.split('@')
+        json_struct = self.config_struct["gui"]
+        for entry in select_list:
+            if not "children" in json_struct:
+                json_struct = None
+                break
+            json_struct = json_struct["children"]
+            if entry not in json_struct:
+                json_struct = None  # Path not found
+                break
+            json_struct = json_struct[entry]
+            
+        return json_struct
+
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
 # ------------------------------------------------------------------------
@@ -217,9 +233,15 @@ def load_json(file_name):
     try:
         f = open(file_name)
         data = json.load(f)
-    except:
+    except JSONDecodeError as e:
         data = None
-    return data
+        error_msg = "AnyLog: Config File format error - line: {} column: {} message: {}".format(e.lineno, e.colno, e.msg)
+    except:
+        error_msg = "AnyLog: Config File format error"
+        data = None
+    else:
+        error_msg = None
+    return [data, error_msg]
 
 # ------------------------------------------------------------------------
 # Get entree from the JSON tree
@@ -253,3 +275,47 @@ def str_to_list(data: str):
     return list_obj
 
 
+# -----------------------------------------------------------------------------------
+# Set Dynamic Policy Form
+# Example Dynamic method - https://www.geeksforgeeks.org/create-classes-dynamically-in-python/
+# -----------------------------------------------------------------------------------
+def set_policy_form(policy_name, policy_struct):
+
+    global html_input_types_
+
+    if not "struct" in policy_struct:
+        return [None, "Missing 'struct' entry"]
+
+    if not "key" in policy_struct:
+        return [None, "Missing 'key' entry"]
+
+    attr_list = policy_struct['struct']     # The list of columns
+
+    # Go over the Config file entries and define the Form
+    policy = []
+    for entry in attr_list:
+        if not 'name' in entry or not isinstance(entry['name'], str):
+            return [None, "Missing 'name' attribute in definition in policy %s" % policy_name]
+        attr_name = entry['name']
+        if not 'key' in entry or not isinstance(entry['key'], str):
+            return [None, "Missing 'name' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
+        attr_key = entry['key']
+        if not 'type' in entry or not isinstance(entry['type'], str):
+            return [None, "Missing 'type' attribute in definition in attribute %s of policy %s" % (attr_name, policy_name)]
+        attr_type = entry['type']
+        if attr_type not in html_input_types_:
+            return [None, "The data type '%s' in attribute '%s' of policy '%s' is not supported" % (attr_type, attr_name, policy_name)]
+
+        attrr_properties = [
+            ('name', attr_name),
+            ('key',  attr_key),
+            ('type', attr_type),
+        ]
+
+        if "space" in entry and isinstance(entry["space"], int):
+            attrr_properties.append(("space",entry["space"]))  # replaces new line with spaces from previous entry
+
+        policy_attr = AnyLogItem( attrr_properties )
+        policy.append(policy_attr)
+
+    return [policy, None]

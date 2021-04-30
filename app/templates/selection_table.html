@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if selection %}
+<!-- Add the usr path to the form (if provided)  -->
+<form action="{{url_for('selected')}}/{{selection}}" method="POST">
+{% else %}
+<form action="{{url_for('selected')}}" method="POST">
+{% endif %}
+    {% for table in tables_list %}
+    <h3>{{ table.table_name }}</h3>
+    <table border="1">
+        <tr>    <!-- table row  -->
+            {% for col_name in table.column_names %}
+                <td>{{col_name}}</td> <!-- table cell  -->
+            {% endfor %}
+            {% for extra_column in table.extr_col %}
+                <td>{{extra_column[0]}}</td> <!-- extra cell name  -->
+            {% endfor %}
+        </tr>
+        {% for row in table.rows %}
+        <tr>
+            {% for col_val in row %}
+                <td>{{ col_val }}</td>
+            {% endfor %}
+            {% for extra_column in table.extr_col %}
+                <td><input type={{extra_column[1]}} name={{extra_column[0]}}.{{row[0]}}></td> <!-- extra cell name  -->
+            {% endfor %}
+        </tr>
+        {% endfor %}
+
+    </table>
+    {% endfor %}
+    {% if submit %}
+        <!-- The "View" button  -->
+        <input type="submit" value={{submit}} name=View>
+    {% endif %}
+
+    {% if add %}
+        <!-- The "Add" button  -->
+        <input type="submit" value={{add}} name=Add>
+
+        <!-- The "Status" button  -->
+        <input type="submit" value="Status" name=Status>
+    {% endif %}
+
+     <!-- Navigate to children  -->
+    {% if children_gui %}
+         &nbsp
+        <span style="color: midnightblue">Browse:</span>
+        
+        {%- for text, url_target in children_gui -%}
+            &nbsp
+            <input type="submit" value={{text}} name=Browse>  
+        {%- endfor -%}
+    
+    {%- endif -%}
+
+    {% if dbms_name %}
+        <!-- Add DBMS Name  -->
+        <input type="hidden" value={{dbms_name}} name=dbms>
+    {% endif %}
+    {% if table_name %}
+    <!-- Add Table Name  -->
+        <input type="hidden" value={{table_name}} name=table>
+    {% endif %}
+
+</form>
+   
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form action="{{url_for('deploy_report')}}" method="POST">
+
+    <input type="hidden" value={{report_name}} name=report_name>
+
+    <table border="1">
+        <tr>    <!-- table row  -->
+            {% for col_name in table.column_names %}
+                <td>{{col_name}}</td> <!-- table cell  -->
+            {% endfor %}
+            {% for extra_column in table.extr_col %}
+                <td>{{extra_column[0]}}</td> <!-- extra cell name  -->
+            {% endfor %}
+        </tr>
+        {% for row in table.rows %}
+        <tr>
+            {% for col_val in row %}
+                <td>{{ col_val }}</td>
+            {% endfor %}
+            {% for extra_column in table.extr_col %}
+                <td><input type={{extra_column[1]}} name={{extra_column[0]}}.{{row[0]}}></td> <!-- extra cell name  -->
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <hr>
+    <hr>
+    <br>
+
+    <!-- Select Type of report - Min, Max, Avg -->
+    {% for option in default_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}} checked>
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+     <!-- Select Type of report - range, count -->
+    {% for option in more_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}}>
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+
+    <br><br>
+
+    <!-- Select Dates  -->
+    <label for="start-date">Start: </label>
+    <input type="datetime-local" id="start_date" name="start_date" value={{from_date}}>
+    &nbsp&nbsp&nbsp
+    <label for="end-date">End:   </label>
+    <input type="datetime-local" id="end_date" name="end_date" value={{to_date}}>
+
+    <!-- Select Date Range  -->
+    &nbsp&nbsp&nbsp
+    <label for="range">Date Range:</label>
+        <select name="date_range" id="date_range">
+            {% if previous_range %}
+                 <!-- set date range selection as previous selection -->
+                <option value={{previous_range[1]}}>{{previous_range[0]}}</option>
+            {% else %}}
+                <option value="">Dates selection</option>
+            {% endif %}
+            {% for option in time_options %}
+                <option value={{option[1]}}>{{option[0]}}</option>
+            {% endfor %}
+        </select>
+
+    <br><br>
+    {% if panels_list %}
+
+        <hr>
+        <hr>
+        <br>
+
+        <!-- Select Replace, Add, Remove of a panel -->
+        {% if panels_list %}
+             <!-- Default is Add -->
+            <input type="radio" id=operation  name=operation  value = Replace>
+        {% else %}
+            <input type="radio" id=operation  name=operation  value = Replace checked>
+        {% endif %}
+        <label for=operation>Replace</label>&nbsp
+
+        <input type="radio" id=operation  name=operation  value=Remove>
+        <label for=operation>Remove</label>
+
+        &nbsp &nbsp Select Panel:&nbsp
+
+        <select name="panel" id="panel">    <!-- show list of panels  and select-->
+            {% for panel in panels_list %}
+                <option value={{panel}}>{{panel}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <br>
+
+        {% if panels_list %}
+            <input type="radio" id=operation  name=operation  value=Add checked>
+        {% else %}
+             <input type="radio" id=operation  name=operation  value=Add>
+        {% endif %}
+        <label for=operation>Add</label>&nbsp
+
+        <!-- Input title for panel -->
+        &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+        Name Panel:&nbsp
+        <input type="text" id="title" name="title" value={{new_panel_name}}>
+
+    {% else %}
+        <br>
+        Name Panel:&nbsp
+        <input type="text" id="title" name="title" value={{new_panel_name}}>
+    {% endif %}
+    {% if default_platform %}
+        <br>
+        <br>
+        <hr>
+        <hr>
+        <br>
+        <!-- Select Visualization Tool  -->
+        <input type="radio" id=platform  name=platform  value = {{default_platform}} checked>
+        <label for=platform>{{default_platform}}</label>&nbsp
+        {% if default_platform %}
+            {% for option in platforms_list %}
+                <!-- Visualization Tool is set as PLATFORM.URL.TOKEN -->
+                <input type="radio" id=platform  name=platform  value={{option}}>
+                <label for=platform>{{option}}</label>&nbsp
+            {% endfor %}
+        {% endif %}
+
+    {% endif %}
+
+    <br><br><br>
+
+    <input type="submit" value="Submit" name="Submit">
+
+</form>
+    
+{% endblock %}

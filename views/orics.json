@@ -1,0 +1,221 @@
+{
+    "gui" : {
+            "name" : "Orics",
+            "query_node" : "http://45.79.152.190:2049",
+            "visualization" : { 
+                                "Grafana" : { "url" : "http://45.79.152.190:3000",
+                                              "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                              "base"  :  ["Base-Report"],
+                                              "default" : true
+                                },
+                                "Power BI" : { "url" : "http://45.79.152.190:3000",
+                                    "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                    "base"  :  ["Base-Report"]
+                                },
+                                "Excel" : { "url" : "http://45.79.152.190:3000",
+                                    "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                    "base"  :  ["Base-Report"]
+                                }
+                            },
+            "url_pages"  : [
+                ["Company", "https://orics.com/"],
+                ["Map", "http://45.79.152.190:3000/d/iZLDOXyGk/network-summary?orgId=1"],
+                ["Dashboards", "http://45.79.152.190:3000/dashboards"],
+                ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"],
+                ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
+            ],
+            "children" : {
+                "Tag" :
+                {
+                    "query" : "blockchain get tag bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
+                    "table_title" : ["ID", "Name", "Description"],
+                    "json_keys" : ["id", "name", "description"],
+                    "dbms_name" : "Orics",
+                    "table_name" : "[tag][name]"
+                },
+                "Manufacturer" :
+                {
+                    "query" : "blockchain get manufacturer where name = orics",
+
+                    "table_title" : ["ID", "Name", "URL"],
+                    "json_keys" : ["id", "name", "url"],
+                    "children" : {
+                            "Company" :
+                            {
+                                "query" : "blockchain get machine where manufacturer = orics  bring.unique.json [machine][customer] [machine][id] separator = ,",
+                                "table_title" : ["ID", "Customer"],
+                                "json_keys" : ["id", "customer"],
+                                "children" : {
+                                        "Machine" :
+                                        {
+                                            "query" : "blockchain get machine where customer = TuscanBrands bring.unique.json [machine][machine] [machine][serial] [machine][id] separator = ,",
+                                            "table_title" : ["ID", "Machine", "Serial"],
+                                            "json_keys" : ["id", "machine", "serial"],
+                        
+                                            "children" : {
+                                                        "Sensor":
+                                                        {
+                                                            "query" : "blockchain get tag where machine = [machine][id]  bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
+                                                            "table_title" : ["ID", "Name", "Description"],
+                                                            "json_keys" : ["id", "name", "description"],
+                                                            "dbms_name" : "Orics",
+                                                            "table_name" : "[tag][name]"
+                                                        }
+                                            }
+                                        },
+                                        "Robots" : 
+                                        {
+                                            "query" : "blockchain get machine where manufacturer = orics",
+                                            "children" : {
+                                                        "Sensor" :
+                                                        {
+                                                            "query" : "blockchain get tags where machine = -[id]",
+                                                            "name" : "Sensor"
+                                                        }
+                                            }
+                                        }
+                                     }
+                            }
+
+                        
+                        }
+                }    
+                
+            },
+        
+            
+            "policies" : [
+                {
+                    "name" : "Authentication",
+                    "key" : "basic_auth",
+                    "struct" : [
+                                { "name": "User Name",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Password",
+                                  "key" : "password",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true,
+                                  "space"  : 2
+                                }
+                        ]
+                },
+                {
+                    "name" : "Manufacturer",
+                    "key" : "manufacturer",
+                    "struct" : [
+                                { "name": "Manufacturer",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Address",
+                                  "key" : "address",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                                { "name": "URL",
+                                  "key" : "url",
+                                  "type" : "url",
+                                  "size" : 60
+                                }
+
+                    ]
+                        
+                },
+                {
+                    "name" : "Company",
+                    "key" : "Company",
+                    "struct" : [
+                                { "name": "Company",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Manufacturer",
+                                  "key" : "manufacturer",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Address",
+                                  "key" : "address",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                                { "name": "URL",
+                                  "key" : "url",
+                                  "type" : "text",
+                                  "size" : 60
+                              }
+                      ]
+                        
+                },
+
+                {
+                    "name" : "Machine",
+                    "key" : "machine",
+                    "struct" : [
+                                { "name": "Machine",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                              { "name": "Manufacturer",
+                                  "key" : "manufacturer",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                              { "name": "ID",
+                                  "key" : "machine_id",
+                                  "type" : "number",
+                                  "size" : 12
+                              }
+                        ]
+                    },
+
+                  {
+                      "name" : "Sensor",
+                      "key" : "sensor",
+                      "struct" : [
+
+                                { "name": "Sensor",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Machine",
+                                  "key" : "machine",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Serial",
+                                  "key" : "Serial",
+                                  "type" : "number",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Description",
+                                  "key" : "Description",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                }
+                      ]
+
+                  }
+            ]
+        }
+}

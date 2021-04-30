@@ -1,0 +1,146 @@
+
+.floatRight{
+    float:right;
+    margin-left:20px;
+    margin-right:20px;
+    height: 60px;
+    width: 60px;
+
+}
+
+table, th, td {
+	border: 1px black solid;
+}
+
+tr:hover {
+    background-color: lightgray;
+}
+
+tr{
+      background-color: rgb(173,205,205);
+      color:black;
+}
+tr:first-child{
+    background-color: rgb(0,115,153);
+    color: white;
+}
+
+th {
+	background-color: gray;
+	color: white;
+}
+
+
+body {
+    font-family: arial;
+    background-color: rgb(185,179,175);
+}
+
+h1 {
+    color: rgb(0,102,153);
+}
+
+
+
+.title{
+    color: rgb(0,102,153);
+}
+
+.header-txt{
+    font-weight: 700;
+    color: rgb(0,102,153);
+    background-color: rgb(185,179,175);
+}
+
+
+.policy-table td{
+
+    background-color:whitesmoke;
+    color:cornflowerblue;
+    padding: 10px;
+
+}
+
+.error-table tr:first-child{
+    background-color:whitesmoke;
+    color:indianred;
+}
+.error-table tr{
+    background-color:whitesmoke;
+    color:darkslateblue;
+}
+
+.float_left input{
+    float:left;
+}
+
+.policy_input label{
+    display: inline-block;
+    float: left;
+    clear: left;
+    width: 150px;
+    text-align: left;
+}
+.policy_input input {
+  display: inline-block;
+  float: left;
+}
+
+
+
+ul.tree, ul.tree ul {
+list-style: none;
+ margin: 0;
+ padding: 0;
+}
+ul.tree ul {
+ margin-left: 10px;
+}
+ul.tree li {
+ margin: 0;
+ padding: 0 7px;
+ line-height: 20px;
+ color: #369;
+ font-weight: bold;
+ border-left:1px solid rgb(100,100,100);
+
+}
+ul.tree li:last-child {
+   border-left:none;
+}
+ul.tree li:before {
+  position:relative;
+  top:-0.3em;
+  height:1em;
+  width:12px;
+  color:white;
+  border-bottom:1px solid rgb(100,100,100);
+  content:"";
+  display:inline-block;
+  left:-7px;
+}
+ul.tree li:last-child:before {
+  border-left:1px solid rgb(100,100,100);
+}
+
+.key {
+    color: black;
+}
+
+.boxed_cmd {
+    border: 15px solid lightsteelblue;
+    background-color: whitesmoke;
+    color: black;
+    padding: 15px;
+    margin: 20px;
+}
+
+
+.table-cmd tr:first-child{
+    background-color:cadetblue;
+    color:whitesmoke;
+}
+.table-cmd tr{
+    background-color:lightgray;
+    color:black;
+}
