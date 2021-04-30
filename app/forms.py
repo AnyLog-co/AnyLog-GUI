@@ -19,7 +19,7 @@ from wtforms.validators import DataRequired, Optional, ValidationError
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember_me')
+    remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
 
 class ConfigForm(FlaskForm):
@@ -29,7 +29,7 @@ class ConfigForm(FlaskForm):
     reports_ip = StringField('Reports IP', validators=[DataRequired()])
     reports_port = IntegerField('Reports Port', validators=[DataRequired()])
 
-    remember_me = BooleanField('Remember_me')
+    remember_me = BooleanField('Remember Me')
     submit = SubmitField('Save')
 
 class CommandsForm(FlaskForm):
