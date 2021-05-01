@@ -668,22 +668,20 @@ def metadata( selection = "" ):
                                     'metadata',     # The function to call
                                     selection = child[1][6:]) )     # The value for the function (the path)
 
-            nav_bar = Navbar('metadata',
-                             *layer_list
-                             )
+        nav_bar = Navbar('metadata')
 
         nav.register_element('metadata', nav_bar)
 
-        path_stat.register_element(user_name , 'layer_list', layer_list)      # Keep as f(user)
+        nav_bar.items = layer_list
+
+        path_stat.register_element(user_name , 'nav_bar', nav_bar)      # Keep as f(user)
     else:
-        layer_list = path_stat.get_element(user_name, 'layer_list')
-        layer_list.append(
-            View("123",  # The name on screen
+
+        nav_bar = path_stat.get_element(user_name, 'nav_bar')
+        nav_bar.items.append(View("123",  # The name on screen
                  'metadata',  # The function to call
                  selection = "123")
         )
-
-        nav.register_element('metadata', nav_bar)
 
         #gui_sub_tree = gui_view_.get_subtree( selection )
         #layer_list = path_stat.pull_element(user_name, 'layer_list')
