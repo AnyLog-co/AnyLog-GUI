@@ -643,38 +643,64 @@ def install():
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
+# https://flask-navigation.readthedocs.io/en/latest/
 # -----------------------------------------------------------------------------------
-@app.route('/tree', methods = ['GET', 'POST'])
-@app.route('/tree/<string:path>', methods = ['GET', 'POST'])
-def metadata( path = "" ):
+@app.route('/metadata', methods = ['GET', 'POST'])
+@app.route('/metadata/<string:selection>', methods = ['GET', 'POST'])
+def metadata( selection = "" ):
 
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    level = path.count('@') + 1
+    level = selection.count('@') + 1
+    user_name = session["username"]
 
     layer_list = []                       # The list of options in this layer
 
-    if level == 1:
-        select_info = get_select_menu()
+    select_info = get_select_menu()
+
+    if not selection:
 
         children = select_info['children_gui']      # A list of pairs: tag name and the paths
         for child in children:
-            layer_list.append( View(child[0], 'metadata') )
 
+            layer_list.append( View(child[0],       # The name on screen
+                                    'metadata',     # The function to call
+                                    selection = child[1][6:]) )     # The value for the function (the path)
+
+            nav_bar = Navbar('metadata',
+                             *layer_list
+                             )
+
+        nav.register_element('metadata', nav_bar)
+
+        path_stat.register_element(user_name , 'layer_list', layer_list)      # Keep as f(user)
     else:
-        gui_sub_tree = gui_view_.get_subtree( path )
+        layer_list = path_stat.get_element(user_name, 'layer_list')
+        layer_list.append(
+            View("123",  # The name on screen
+                 'metadata',  # The function to call
+                 selection = "123")
+        )
 
+        nav.register_element('metadata', nav_bar)
 
-    nav_bar = Navbar('metadata',
-                     *layer_list
-                     )
+        #gui_sub_tree = gui_view_.get_subtree( selection )
+        #layer_list = path_stat.pull_element(user_name, 'layer_list')
+
 
     select_info['title'] = "AnyLog Network"
 
-    nav.register_element('metadata', nav_bar)
+
 
     return render_template('metadata.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Given a path - get the children
+# -----------------------------------------------------------------------------------
+@app.route('/get_children/<path>')
+def get_children( path ):
+    return '<h1>children of %s</h1>' % path
 
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
