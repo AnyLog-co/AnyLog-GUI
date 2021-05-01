@@ -56,6 +56,30 @@ def set_new_user(user_name):
         "level" : 0,             # The current location in the path
     }
     set_new_state(user_name, "My_Report", True)
+
+
+# -----------------------------------------------------------------------------------
+# Register an element for the user
+# -----------------------------------------------------------------------------------
+def register_element(user_name, element_key, element):
+    '''
+    keep info as f(user + key)
+    '''
+    user_info = active_state_[user_name]
+    user_info[element_key] = element
+# -----------------------------------------------------------------------------------
+# Register an element for the user
+# -----------------------------------------------------------------------------------
+def get_element(user_name, element_key):
+    '''
+    keep info as f(user + key)
+    '''
+    user_info = active_state_[user_name]
+    if element_key in user_info:
+        element = user_info[element_key]
+    else:
+        element = None
+    return element
 # -----------------------------------------------------------------------------------
 # Get the name of the visualization platform
 # -----------------------------------------------------------------------------------
