@@ -668,6 +668,9 @@ def metadata( selection = "" ):
                                     'metadata',     # The function to call
                                     selection = child[1][6:]) )     # The value for the function (the path)
 
+
+
+
         nav_bar = Navbar('metadata')
 
         nav.register_element('metadata', nav_bar)
@@ -682,6 +685,17 @@ def metadata( selection = "" ):
                  'metadata',  # The function to call
                  selection = "123")
         )
+
+        nav_bar.items[0] = Subgroup("Tag",
+                                    View("123",  # The name on screen
+                                    'metadata',  # The function to call
+                                    selection="123"),
+                                    View("456",  # The name on screen
+                                         'metadata',  # The function to call
+                                         selection="123")
+                             )
+
+
 
         #gui_sub_tree = gui_view_.get_subtree( selection )
         #layer_list = path_stat.pull_element(user_name, 'layer_list')
