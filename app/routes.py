@@ -14,15 +14,12 @@ such non-permitted act to AnyLog, Inc.
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
 
-
-
 from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
-
 
 
 from app.entities import Item
@@ -51,9 +48,6 @@ user_connect_ = False       # Flag indicating connected to the AnyLog Node
 
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
 gui_view_.set_gui()
-
-nav_bar = Navbar('mdatata', View('Home Page', 'index'))
-#nav.register('metadata', nav_bar)
 
 query_node_ = None
 
@@ -646,6 +640,42 @@ def install():
 
     return render_template('install.html', **select_info)
 
+
+# -----------------------------------------------------------------------------------
+# Navigate in the metadata
+# -----------------------------------------------------------------------------------
+@app.route('/tree', methods = ['GET', 'POST'])
+@app.route('/tree/<string:path>', methods = ['GET', 'POST'])
+def metadata( path = "" ):
+
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    level = path.count('@') + 1
+
+    layer_list = []                       # The list of options in this layer
+
+    if level == 1:
+        select_info = get_select_menu()
+
+        children = select_info['children_gui']      # A list of pairs: tag name and the paths
+        for child in children:
+            layer_list.append( View(child[0], 'metadata') )
+
+    else:
+        gui_sub_tree = gui_view_.get_subtree( path )
+
+
+    nav_bar = Navbar('metadata',
+                     *layer_list
+                     )
+
+    select_info['title'] = "AnyLog Network"
+
+    nav.register_element('metadata', nav_bar)
+
+    return render_template('metadata.html', **select_info)
+
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
 # https://hackersandslackers.com/flask-routes/
@@ -786,9 +816,7 @@ def tree( selection = "" ):
         select_info['dbms_name'] = gui_sub_tree["dbms_name"]
         select_info['table_name'] = gui_sub_tree["table_name"]
 
-    return render_template('tree_menu.html', **select_info)
-
-    # return render_template('selection_table.html',  **select_info )
+    return render_template('selection_table.html',  **select_info )
 
 # -----------------------------------------------------------------------------------
 # Process selected Items from a table
