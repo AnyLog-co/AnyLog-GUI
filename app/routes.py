@@ -653,10 +653,18 @@ def metadata( selection = "" ):
 
     layer_list = []                       # The list of options in this layer
 
-    select_info = get_select_menu()
 
-    data_list = []
+    form_info = request.form
+    if not selection:
+        # User selected  View or Graph
+        for form_key, form_val in form_info.items():
+            if form_val == "View":
+                # The user selected view
+                selection = form_key
+                break
 
+    select_info = get_select_menu(selection=selection)
+    select_info['selection'] = selection
 
     if not selection:
 
@@ -674,10 +682,8 @@ def metadata( selection = "" ):
         path_stat.register_element(user_name, "root_nav", root_nav)     # Anchor the root as f(user)
 
     else:
-        form_info = request.form
         root_nav = path_stat.get_element(user_name, "root_nav")
-
-
+        gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
 
     select_info['tree_node'] = root_nav
 

@@ -6,7 +6,12 @@
 
 {% block content %}
 
-<form action="{{url_for('metadata')}}/123" method="POST">
+{% if selection %}
+<!-- Add the usr path to the form (if provided)  -->
+<form action="{{url_for('metadata')}}/{{selection}}" method="POST">
+{% else %}
+<form action="{{url_for('metadata')}}" method="POST">
+{% endif %}
 
 <ul class="tree">
 
