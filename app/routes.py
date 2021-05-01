@@ -655,7 +655,18 @@ def metadata( selection = "" ):
 
     select_info = get_select_menu()
 
+    data_list = []
+
+
     if not selection:
+
+        policy = [
+            "Tag",
+            "Machine"
+        ]
+
+        json_api.setup_print_tree(policy, data_list)
+        select_info['text'] = data_list
 
         children = select_info['children_gui']      # A list of pairs: tag name and the paths
         for child in children:
@@ -663,9 +674,17 @@ def metadata( selection = "" ):
 
     else:
 
-       pass
+        policy = [
+            {"Tag" : {
+                "123" : 123,
+                "456" : "abc"
+                }
+            },
+            "Machine"
+        ]
 
-
+        json_api.setup_print_tree(policy, data_list)
+        select_info['text'] = data_list
 
         #gui_sub_tree = gui_view_.get_subtree( selection )
         #layer_list = path_stat.pull_element(user_name, 'layer_list')
