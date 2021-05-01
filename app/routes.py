@@ -690,6 +690,9 @@ def metadata( selection = "" ):
 
         current_node.add_path_children(list_columns, list_keys, table_rows)
 
+    print_list = []
+    nav_tree.make_print_struct(root_nav, print_list)
+
     select_info['tree_node'] = root_nav
 
     select_info['title'] = "AnyLog Network"

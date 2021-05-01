@@ -104,7 +104,7 @@ def get_current_node(current_node, keys_list, offset):
     :return:
     '''
 
-    if 'children' in current_node:
+    if current_node.with_children:
         for child in current_node.children:
             if child.id:
                 # The child has an ID - test the ID
@@ -123,6 +123,19 @@ def get_current_node(current_node, keys_list, offset):
                     else:
                         return get_current_node(child, keys_list, offset + 1)
     return None
+
+
+# -----------------------------------------------------------------------------------
+# Setup a list that is printed in the list order and delivers a tree structure using metadata.html
+# -----------------------------------------------------------------------------------
+def setup_print_list( current_node, print_list ):
+
+    if current_node.with_children:
+        for child in current_node.children:
+            print_list.append(child)
+            if child.with_children:
+                setup_print_list(current_node, print_list)
+            
 
 
 
