@@ -33,11 +33,13 @@
                 {% if node.name  %}
                         <!-- View position or select position  -->
                         {% if node.details  %}
-                             <input type="submit" value="View" name={{node.key}}>   &nbsp
+                             <input type="submit" value="View" name={{node.id}}>   &nbsp
                         {% endif %}
-
-                        <a href="{{url_for('metadata')}}/{{node.key}}">{{node.name}}</a>
-
+                        {% if selection  %}
+                            <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
+                        {% else %}
+                            <a href="{{url_for('metadata')}}/{{node.name}}">{{node.name}}</a>
+                        {% endif %}
                 {% endif %}
 
                 {% if node.with_children %}
@@ -52,6 +54,7 @@
                 </ul>
         {% endif %}
     {% endfor %}
+
 </ul>
 
 {% endblock %}

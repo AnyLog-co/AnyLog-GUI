@@ -653,14 +653,16 @@ def metadata( selection = "" ):
 
     layer_list = []                       # The list of options in this layer
 
-
+    location_key = selection               # a string representing the location of the user in the tree
     form_info = request.form
-    if not selection:
+    get_policy = False
+    if len(form_info):
         # User selected  View or Graph
         for form_key, form_val in form_info.items():
             if form_val == "View":
-                # The user selected view
-                selection = form_key
+                # The user selected view - Bring the node Policy
+                location_key += '@' + form_key
+                get_policy = True       # Get the policy of the node
                 break
 
     select_info = get_select_menu(selection=selection)
@@ -683,12 +685,18 @@ def metadata( selection = "" ):
 
     else:
         root_nav = path_stat.get_element(user_name, "root_nav")
-        gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
 
-        selection_list = selection.split('@')
+        selection_list = location_key.split('@')
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
 
-        current_node.add_path_children(list_columns, list_keys, table_rows)
+        if get_policy:
+            # Get the policy by the ID
+            pass
+        else:
+            # Navigate to children
+            gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
+            # Add children to tree
+            current_node.add_path_children(list_columns, list_keys, table_rows)
 
     print_list = []
     nav_tree.setup_print_list(root_nav, print_list)
