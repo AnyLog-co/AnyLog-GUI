@@ -39,10 +39,6 @@ from app import visualize       # The connectors to Grafana, Power BI etc
 from app import anylog_api      # Connector to the network
 from app import json_api        # JSON data mapper
 
-from flask_nav import Nav
-
-nav = Nav(app)
-from flask_nav.elements import Navbar, Subgroup, View, Link, Text, Separator
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 
@@ -663,37 +659,11 @@ def metadata( selection = "" ):
 
         children = select_info['children_gui']      # A list of pairs: tag name and the paths
         for child in children:
+            pass
 
-            layer_list.append( View(child[0],       # The name on screen
-                                    'metadata',     # The function to call
-                                    selection = child[1][6:]) )     # The value for the function (the path)
-
-
-
-
-        nav_bar = Navbar('metadata')
-
-        nav.register_element('metadata', nav_bar)
-
-        nav_bar.items = layer_list
-
-        path_stat.register_element(user_name , 'nav_bar', nav_bar)      # Keep as f(user)
     else:
 
-        nav_bar = path_stat.get_element(user_name, 'nav_bar')
-        nav_bar.items.append(View("123",  # The name on screen
-                 'metadata',  # The function to call
-                 selection = "123")
-        )
-
-        nav_bar.items[0] = Subgroup("Tag",
-                                    View("123",  # The name on screen
-                                    'metadata',  # The function to call
-                                    selection="123"),
-                                    View("456",  # The name on screen
-                                         'metadata',  # The function to call
-                                         selection="123")
-                             )
+       pass
 
 
 
