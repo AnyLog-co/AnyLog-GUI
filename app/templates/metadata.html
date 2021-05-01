@@ -32,7 +32,10 @@
 
                 {% if node.name  %}
                         <!-- View position or select position  -->
-                        <input type="submit" value="View" name={{node.key}}>   &nbsp
+                        {% if node.details  %}
+                             <input type="submit" value="View" name={{node.key}}>   &nbsp
+                        {% endif %}
+
                         <a href="{{url_for('metadata')}}/{{node.key}}">{{node.name}}</a>
 
                 {% endif %}
