@@ -38,7 +38,7 @@ from app import path_stat       # Maintain the path of the user
 from app import visualize       # The connectors to Grafana, Power BI etc
 from app import anylog_api      # Connector to the network
 from app import json_api        # JSON data mapper
-
+from app import nav_tree        # Navigation Tree
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 
@@ -660,17 +660,13 @@ def metadata( selection = "" ):
 
     if not selection:
 
-        policy = [
-            "Tag",
-            "Machine"
-        ]
-
-        json_api.setup_print_tree(policy, data_list)
-        select_info['text'] = data_list
+        params = { 'is_anchor' : True }
+        root_nav = nav_tree.TreeNode( **params )
 
         children = select_info['children_gui']      # A list of pairs: tag name and the paths
         for child in children:
-            pass
+            
+            root_nav.add_child()
 
     else:
 
@@ -689,6 +685,7 @@ def metadata( selection = "" ):
         #gui_sub_tree = gui_view_.get_subtree( selection )
         #layer_list = path_stat.pull_element(user_name, 'layer_list')
 
+    select_info['text'] = data_list
 
     select_info['title'] = "AnyLog Network"
 
@@ -696,12 +693,6 @@ def metadata( selection = "" ):
 
     return render_template('metadata.html', **select_info)
 
-# -----------------------------------------------------------------------------------
-# Given a path - get the children
-# -----------------------------------------------------------------------------------
-@app.route('/get_children/<path>')
-def get_children( path ):
-    return '<h1>children of %s</h1>' % path
 
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
