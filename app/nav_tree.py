@@ -14,6 +14,12 @@ import json
 import sys
 from json.decoder import JSONDecodeError
 
+class Details():
+    def __init__(self, names, keys, values):
+        self.names = names       # The list of the attributes in the config file
+        self.keys = keys       # The list of the attributes in the JSON file
+        self.values = values      # The list of values
+
 # -----------------------------------------------------------------------------------
 # Objects to describe a tree hierarchy used in output_tree.html
 # -----------------------------------------------------------------------------------
@@ -22,14 +28,15 @@ class TreeNode():
     def __init__(self, **params):
 
         self.name = None  # The root node
-        self.is_anchor = False      # The root node
-        self.id = None              # The ID of the entry
-        self.first_child = True        # The entry is at the top of the list
-        self.last_child = None        # The entry is at the end of the list
-        self.key = None             # Key to display
-        self.value = None           # The value to display
+        self.is_anchor = False          # The root node
+        self.id = None                  # The ID of the entry
+        self.first_child = True         # The entry is at the top of the list
+        self.last_child = None          # The entry is at the end of the list
+        self.key = None                 # Key to display
+        self.value = None               # The value to display
         self.children = []
         self.with_children = False
+        self.details = None
 
         # Setup params
         for key, value in params.items():
@@ -47,12 +54,75 @@ class TreeNode():
             params['first_child'] = True       # First child
         params['last_child'] = True
 
-
         child_node = TreeNode( **params )
         self.children.append( child_node )
         self.with_children = True
 
         return child_node
+
+    # -----------------------------------------------------------------------------------
+    # Add the children resulting from a query of the parent usinf the method - get_path_info(...)
+    # -----------------------------------------------------------------------------------
+    def add_path_children(self, list_columns, list_keys, table_rows):
+        '''
+        Create children to the specifird node
+        :param list_columns:    The attribute names retrieved from the config file
+        :param list_keys:       The keys of the policies
+        :param table_rows:      The children
+        :return:
+        '''
+
+        # Find if id and name are available
+        id_offset = list_keys.index('id')
+        name_offset = list_keys.index('name')
+
+        for entry in table_rows:
+            params = {}
+
+            details = Details(list_columns, list_keys, entry)
+            params['details'] = details     # The Details class in a node
+
+            # Get the name and ID from the data
+            if id_offset >= 0:
+                params['id'] = entry[id_offset]
+
+            if name_offset >= 0:
+                params['name'] = entry[name_offset]
+
+            self.add_child( **params )
+
+
+# -----------------------------------------------------------------------------------
+# Given a node and a list of keys - return the node addressed by the keys
+# -----------------------------------------------------------------------------------
+def get_current_node(current_node, keys_list, offset):
+    '''
+    Return the node addresssed by the key
+    :param current_node:
+    :param keys_list:
+    :param offset:
+    :return:
+    '''
+
+    if 'children' in current_node:
+        for child in current_node.children:
+            if child.id:
+                # The child has an ID - test the ID
+                if child.id == keys_list[offset]:
+                    if offset == (len(keys_list) - 1):
+                        # The entire key was validated
+                        return child
+                    else:
+                        return get_current_node(child, keys_list, offset + 1)
+            elif child.name:
+                # The child has a name - test the name
+                if child.name == keys_list[offset]:
+                    if offset == (len(keys_list) - 1):
+                        # The entire key was validated
+                        return child
+                    else:
+                        return get_current_node(child, keys_list, offset + 1)
+    return None
 
 
 

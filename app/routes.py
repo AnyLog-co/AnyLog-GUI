@@ -685,6 +685,11 @@ def metadata( selection = "" ):
         root_nav = path_stat.get_element(user_name, "root_nav")
         gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
 
+        selection_list = selection.split('@')
+        current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
+
+        current_node.add_path_children(list_columns, list_keys, table_rows)
+
     select_info['tree_node'] = root_nav
 
     select_info['title'] = "AnyLog Network"
