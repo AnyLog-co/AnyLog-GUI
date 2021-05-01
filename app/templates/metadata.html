@@ -1,10 +1,57 @@
 
 
 
+
 {% extends "base.html" %}
 
 {% block content %}
 
-  {{ nav.metadata.render() }}
+{% if selection %}
+<!-- Add the usr path to the form (if provided)  -->
+<form action="{{url_for('metadata')}}/{{selection}}" method="POST">
+{% else %}
+<form action="{{url_for('metadata')}}" method="POST">
+{% endif %}
+
+<ul class="tree">
+
+    {% for child in tree_node.children %}
+
+        {% if child.first_child %}
+            <ul>
+        {% endif %}
+
+        {% if child.last_child  %}
+            <li class="last">
+        {% else %}
+            <li>
+        {% endif %}
+
+        {% if child.key  %}
+                <!-- View position or select position  -->
+                <input type="submit" value="View" name={{child.key}}>   &nbsp
+                <a href="{{url_for('metadata')}}/{{child.key}}">{{child.key}}</a>
+
+        {% endif %}
+        {% if child.value  %}
+            &nbsp : &nbsp
+            <span class="key">
+            {{child.value}}
+            </span>
+        {% endif %}
+
+
+        {% if child.last_child %}
+            </li>
+            </ul>
+        {% else %}
+            {% if child.with_children %}
+            {% else %}
+            </li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+</ul>
 
 {% endblock %}

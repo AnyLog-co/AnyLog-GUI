@@ -14,15 +14,12 @@ such non-permitted act to AnyLog, Inc.
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
 
-
-
 from app import app
 from app.forms import LoginForm
 from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
-
 
 
 from app.entities import Item
@@ -41,19 +38,12 @@ from app import path_stat       # Maintain the path of the user
 from app import visualize       # The connectors to Grafana, Power BI etc
 from app import anylog_api      # Connector to the network
 from app import json_api        # JSON data mapper
-
-from flask_nav import Nav
-
-nav = Nav(app)
-from flask_nav.elements import Navbar, Subgroup, View, Link, Text, Separator
+from app import nav_tree        # Navigation Tree
 
 user_connect_ = False       # Flag indicating connected to the AnyLog Node 
 
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
 gui_view_.set_gui()
-
-nav_bar = Navbar('mdatata', View('Home Page', 'index'))
-#nav.register('metadata', nav_bar)
 
 query_node_ = None
 
@@ -646,6 +636,64 @@ def install():
 
     return render_template('install.html', **select_info)
 
+
+# -----------------------------------------------------------------------------------
+# Navigate in the metadata
+# https://flask-navigation.readthedocs.io/en/latest/
+# -----------------------------------------------------------------------------------
+@app.route('/metadata', methods = ['GET', 'POST'])
+@app.route('/metadata/<string:selection>', methods = ['GET', 'POST'])
+def metadata( selection = "" ):
+
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    level = selection.count('@') + 1
+    user_name = session["username"]
+
+    layer_list = []                       # The list of options in this layer
+
+
+    form_info = request.form
+    if not selection:
+        # User selected  View or Graph
+        for form_key, form_val in form_info.items():
+            if form_val == "View":
+                # The user selected view
+                selection = form_key
+                break
+
+    select_info = get_select_menu(selection=selection)
+    select_info['selection'] = selection
+
+    if not selection:
+
+        params = { 'is_anchor' : True }
+        root_nav = nav_tree.TreeNode( **params )
+
+        children = select_info['children_gui']      # A list of pairs: tag name and the paths
+        for child in children:
+            params = {
+                'name' : child[0],
+                'key'  : child[1][6:]
+            }
+            root_nav.add_child( **params )
+
+        path_stat.register_element(user_name, "root_nav", root_nav)     # Anchor the root as f(user)
+
+    else:
+        root_nav = path_stat.get_element(user_name, "root_nav")
+        gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
+
+    select_info['tree_node'] = root_nav
+
+    select_info['title'] = "AnyLog Network"
+
+
+
+    return render_template('metadata.html', **select_info)
+
+
 # -----------------------------------------------------------------------------------
 # Logical tree navigation
 # https://hackersandslackers.com/flask-routes/
@@ -659,78 +707,9 @@ def tree( selection = "" ):
     global user_connect_
     global gui_view_
 
-
-    level = selection.count('@') + 1
     # Need to login before navigating
     if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
-
-    # Get the location in the Config file to set the user navigation links
-    gui_sub_tree = gui_view_.get_subtree( selection )
-
-    command = app_view.get_tree_entree(gui_sub_tree, "query")   # get the command from the Config file
-    user_name = session["username"]
-    al_command = path_stat.update_command(user_name, selection, command)   # Update the command with the parent info
-
-    if not al_command:
-        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
-        return redirect(('/index'))        # Show all user select options
-
-    # Get the columns names of the table to show
-    list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
-    if not list_columns:
-        flash("AnyLog: Missing 'list_columns' Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
-        return redirect(('/index'))        # Show all user select options
-
-   # Get the keys to pull data from the JSON reply
-    list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
-    if not list_keys:
-        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
-        return redirect(('/index'))        # Show all user select options
-       
-
-    target_node = get_target_node()
-
-
-    # Run the query against the Query Node
-
-    al_headers = {
-        'User-Agent' : 'AnyLog/1.23',
-        'command' : al_command
-        }
-
-    try:
-        response = requests.get(target_node, headers=al_headers)
-    except:
-        flash('AnyLog: No network connection', category='error')
-        user_connect_ = False
-        return redirect(('/login'))        # Redo the login
-
-
-    if response.status_code == 200:
-        data = response.text
-        data_list = app_view.str_to_list(data)
-        if not data_list:
-            flash('AnyLog: Error in data format returned from node', category='error')
-            return redirect((url_for('index')))        # Select a different path
-        if not len(data_list):
-            flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
-            return redirect((url_for('index')))        # Select a different path
-    else:
-        flash('AnyLog: No data satisfies the request', category='error')
-        return redirect(('/index'))        # Select a different path
-
-    if "bring" in al_command:
-        # Only sections of the policy retrieved - no policy type
-        # The table info is pulled from the bring command setup
-        policy_type = None
-    else:
-        # The table info is pulled from the source JSON policy
-        cmd_list = al_command.split(' ', 3)
-        if len(cmd_list) == 4 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
-            policy_type = cmd_list[2]
-        else:
-            policy_type = None
+        return redirect(('/login'))  # start with Login  if not yet provided
 
     select_info = get_select_menu(selection=selection)
 
@@ -738,38 +717,10 @@ def tree( selection = "" ):
     title = ""
     parent_menu = select_info["parent_gui"]
     for parent in parent_menu:
-        title +=  " [%s] " % parent[0]
+        title += " [%s] " % parent[0]
     select_info['title'] = title
 
-    tables_list = []    # A list to contain all the data to print - every entry represents a pth step
-    # Set the tables representing the parents:
-    path_steps = path_stat.get_path_overview(user_name, level, select_info['parent_gui'])  # Get the info of the parent steps
-
-    for parent in path_steps:
-        parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
-        tables_list.append(parent_table)
-
-    # Set table info to present in form
-    table_rows = []
-    for entry in data_list:
-        columns_list = []
-        
-        for key in list_keys:
-            # Validate values in reply
-            if policy_type and policy_type in entry and key in entry[policy_type]:
-                # Get the table data from the source Policy
-                value = entry[policy_type][key]
-            elif key in entry:
-                # Get the table data from the json resulting from the bring
-                value = entry[key]
-            else:
-                value = ""
-            columns_list.append(str(value))
-        
-        # Set a list of table entries
-        table_rows.append(columns_list)
-
-
+    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
 
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
@@ -786,9 +737,115 @@ def tree( selection = "" ):
         select_info['dbms_name'] = gui_sub_tree["dbms_name"]
         select_info['table_name'] = gui_sub_tree["table_name"]
 
-    return render_template('tree_menu.html', **select_info)
+    return render_template('selection_table.html',  **select_info )
 
-    # return render_template('selection_table.html',  **select_info )
+# -----------------------------------------------------------------------------------
+# Get the path info based on the tree navigation
+# -----------------------------------------------------------------------------------
+def get_path_info(selection, select_info):
+
+    global user_connect_
+    global gui_view_
+
+    level = selection.count('@') + 1
+
+    # Get the location in the Config file to set the user navigation links
+    gui_sub_tree = gui_view_.get_subtree(selection)
+
+    command = app_view.get_tree_entree(gui_sub_tree, "query")  # get the command from the Config file
+    user_name = session["username"]
+    al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info
+
+    if not al_command:
+        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (
+        Config.GUI_VIEW, str(selection)))
+        return redirect(('/index'))  # Show all user select options
+
+    # Get the columns names of the table to show
+    list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
+    if not list_columns:
+        flash(
+            "AnyLog: Missing 'list_columns' Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
+        return redirect(('/index'))  # Show all user select options
+
+    # Get the keys to pull data from the JSON reply
+    list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
+    if not list_keys:
+        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        return redirect(('/index'))  # Show all user select options
+
+    target_node = get_target_node()
+
+    # Run the query against the Query Node
+
+    al_headers = {
+        'User-Agent': 'AnyLog/1.23',
+        'command': al_command
+    }
+
+    try:
+        response = requests.get(target_node, headers=al_headers)
+    except:
+        flash('AnyLog: No network connection', category='error')
+        user_connect_ = False
+        return redirect(('/login'))  # Redo the login
+
+    if response.status_code == 200:
+        data = response.text
+        data_list = app_view.str_to_list(data)
+        if not data_list:
+            flash('AnyLog: Error in data format returned from node', category='error')
+            return redirect((url_for('index')))  # Select a different path
+        if not len(data_list):
+            flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
+            return redirect((url_for('index')))  # Select a different path
+    else:
+        flash('AnyLog: No data satisfies the request', category='error')
+        return redirect(('/index'))  # Select a different path
+
+    if "bring" in al_command:
+        # Only sections of the policy retrieved - no policy type
+        # The table info is pulled from the bring command setup
+        policy_type = None
+    else:
+        # The table info is pulled from the source JSON policy
+        cmd_list = al_command.split(' ', 3)
+        if len(cmd_list) == 4 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
+            policy_type = cmd_list[2]
+        else:
+            policy_type = None
+
+
+    tables_list = []  # A list to contain all the data to print - every entry represents a pth step
+    # Set the tables representing the parents:
+    path_steps = path_stat.get_path_overview(user_name, level,
+                                             select_info['parent_gui'])  # Get the info of the parent steps
+
+    for parent in path_steps:
+        parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
+        tables_list.append(parent_table)
+
+    # Set table info to present in form
+    table_rows = []
+    for entry in data_list:
+        columns_list = []
+
+        for key in list_keys:
+            # Validate values in reply
+            if policy_type and policy_type in entry and key in entry[policy_type]:
+                # Get the table data from the source Policy
+                value = entry[policy_type][key]
+            elif key in entry:
+                # Get the table data from the json resulting from the bring
+                value = entry[key]
+            else:
+                value = ""
+            columns_list.append(str(value))
+
+        # Set a list of table entries
+        table_rows.append(columns_list)
+
+    return [gui_sub_tree, tables_list, list_columns, list_keys, table_rows]
 
 # -----------------------------------------------------------------------------------
 # Process selected Items from a table
