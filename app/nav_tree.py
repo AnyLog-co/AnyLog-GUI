@@ -30,8 +30,8 @@ class TreeNode():
         self.name = None  # The root node
         self.is_anchor = False          # The root node
         self.id = None                  # The ID of the entry
-        self.first_child = True         # The entry is at the top of the list
-        self.last_child = None          # The entry is at the end of the list
+        self.first_child = False        # The entry is at the top of the list
+        self.last_child = False         # The entry is at the end of the list
         self.key = None                 # Key to display
         self.value = None               # The value to display
         self.children = []
@@ -52,9 +52,13 @@ class TreeNode():
 
         if not len(self.children):
             params['first_child'] = True       # First child
+        else:
+            self.children[-1].last_child = False    # Remove last chaild from the previously set child
+
         params['last_child'] = True
 
         child_node = TreeNode( **params )
+
         self.children.append( child_node )
         self.with_children = True
 
@@ -128,13 +132,14 @@ def get_current_node(current_node, keys_list, offset):
 # -----------------------------------------------------------------------------------
 # Setup a list that is printed in the list order and delivers a tree structure using metadata.html
 # -----------------------------------------------------------------------------------
-def setup_print_list( current_node, print_list ):
+def setup_print_list( current_node, print_list):
 
     if current_node.with_children:
         for child in current_node.children:
             print_list.append(child)
             if child.with_children:
                 setup_print_list(child, print_list)
+        print_list.append(None)     # All children onsidered - this is a flag to issue </li> and </ul>
 
 
 

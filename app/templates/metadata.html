@@ -17,41 +17,38 @@
 
     {% for node in nodes_list %}
 
-        {% if node.first_child %}
-            <ul>
-        {% endif %}
+        {% if node %}        <!--  The node is not None   -->
 
-        {% if node.last_child  %}
-            <li class="last">
+                {% if node.first_child %}
+                    <ul>        <!--  Start unordered list   -->
+                {% endif %}
+
+                <!--  List Item starts  -->
+                {% if node.last_child  %}
+                    <li class="last">
+                {% else %}
+                    <li>
+                {% endif %}
+
+                {% if node.name  %}
+                        <!-- View position or select position  -->
+                        <input type="submit" value="View" name={{node.key}}>   &nbsp
+                        <a href="{{url_for('metadata')}}/{{node.key}}">{{node.name}}</a>
+
+                {% endif %}
+
+                {% if node.with_children %}
+                    
+                {% else %}
+                    </li>
+                {% endif %}
+
         {% else %}
-            <li>
-        {% endif %}
-
-        {% if node.key  %}
-                <!-- View position or select position  -->
-                <input type="submit" value="View" name={{node.key}}>   &nbsp
-                <a href="{{url_for('metadata')}}/{{node.key}}">{{node.key}}</a>
-
-        {% endif %}
-        {% if node.value  %}
-            &nbsp : &nbsp
-            <span class="key">
-            {{node.value}}
-            </span>
-        {% endif %}
-
-
-        {% if node.last_child %}
-            </li>
-            </ul>
-        {% else %}
-            {% if node.with_children %}
-            {% else %}
-            </li>
-            {% endif %}
+             <!--  Node is None - end of list -->
+                </li>
+                </ul>
         {% endif %}
     {% endfor %}
-
 </ul>
 
 {% endblock %}
