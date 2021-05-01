@@ -665,8 +665,11 @@ def metadata( selection = "" ):
 
         children = select_info['children_gui']      # A list of pairs: tag name and the paths
         for child in children:
-            
-            root_nav.add_child()
+            params = {
+                'name' : child[0],
+                'key'  : child[1][6:]
+            }
+            root_nav.add_child( **params )
 
     else:
 

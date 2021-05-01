@@ -21,10 +21,11 @@ class TreeNode():
 
     def __init__(self, **params):
 
+        self.name = None  # The root node
         self.is_anchor = False      # The root node
         self.id = None              # The ID of the entry
-        self.top_list = True        # The entry is at the top of the list
-        self.end_list = None        # The entry is at the end of the list
+        self.first_child = True        # The entry is at the top of the list
+        self.last_child = None        # The entry is at the end of the list
         self.key = None             # Key to display
         self.value = None           # The value to display
         self.children = []
@@ -32,6 +33,25 @@ class TreeNode():
         # Setup params
         for key, value in params.items():
             setattr(self, key, value)
+
+    # -----------------------------------------------------------------------------------
+    # Add a child to the list of nodes
+    # -----------------------------------------------------------------------------------
+    def add_child(self, **params):
+        '''
+        Add a new child to thee current node, return the child
+        '''
+
+        if not len(self.children):
+            params['first_child'] = True       # First child
+        params['last_child'] = True
+
+
+        child_node = TreeNode( **params )
+        self.children.append( child_node )
+
+        return child_node
+
 
 
 
