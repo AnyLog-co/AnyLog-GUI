@@ -671,6 +671,8 @@ def metadata( selection = "" ):
             }
             root_nav.add_child( **params )
 
+        path_stat.register_element(user_name, "root_nav", root_nav)     # Anchor the root as f(user)
+
     else:
 
         policy = [
@@ -688,7 +690,7 @@ def metadata( selection = "" ):
         #gui_sub_tree = gui_view_.get_subtree( selection )
         #layer_list = path_stat.pull_element(user_name, 'layer_list')
 
-    select_info['text'] = data_list
+    select_info['tree_node'] = root_nav
 
     select_info['title'] = "AnyLog Network"
 
