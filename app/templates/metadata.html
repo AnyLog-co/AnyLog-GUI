@@ -15,37 +15,37 @@
 
 <ul class="tree">
 
-    {% for child in tree_node.children %}
+    {% for node in nodes_list %}
 
-        {% if child.first_child %}
+        {% if node.first_child %}
             <ul>
         {% endif %}
 
-        {% if child.last_child  %}
+        {% if node.last_child  %}
             <li class="last">
         {% else %}
             <li>
         {% endif %}
 
-        {% if child.key  %}
+        {% if node.key  %}
                 <!-- View position or select position  -->
-                <input type="submit" value="View" name={{child.key}}>   &nbsp
-                <a href="{{url_for('metadata')}}/{{child.key}}">{{child.key}}</a>
+                <input type="submit" value="View" name={{node.key}}>   &nbsp
+                <a href="{{url_for('metadata')}}/{{node.key}}">{{node.key}}</a>
 
         {% endif %}
-        {% if child.value  %}
+        {% if node.value  %}
             &nbsp : &nbsp
             <span class="key">
-            {{child.value}}
+            {{node.value}}
             </span>
         {% endif %}
 
 
-        {% if child.last_child %}
+        {% if node.last_child %}
             </li>
             </ul>
         {% else %}
-            {% if child.with_children %}
+            {% if node.with_children %}
             {% else %}
             </li>
             {% endif %}

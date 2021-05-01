@@ -134,8 +134,8 @@ def setup_print_list( current_node, print_list ):
         for child in current_node.children:
             print_list.append(child)
             if child.with_children:
-                setup_print_list(current_node, print_list)
-            
+                setup_print_list(child, print_list)
+
 
 
 
