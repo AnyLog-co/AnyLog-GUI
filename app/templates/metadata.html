@@ -10,33 +10,37 @@
 
 <ul class="tree">
 
-    {% for entry in text %}
+    {% for child in tree_node.children %}
 
-        {% if entry.start_list %}
+        {% if child.first_child %}
             <ul>
         {% endif %}
 
-        {% if entry.end_list  %}
+        {% if child.last_child  %}
             <li class="last">
         {% else %}
             <li>
         {% endif %}
 
-        {% if entry.key  %}
-            {{entry.key}}  &nbsp : &nbsp
+        {% if child.key  %}
+                <!-- View position or select position  -->
+                <input type="submit" value="View" name={{child.key}}>   &nbsp
+                <a href="{{url_for('metadata')}}/{{child.key}}">{{child.key}}</a>
+
         {% endif %}
-        {% if entry.value  %}
+        {% if child.value  %}
+            &nbsp : &nbsp
             <span class="key">
-            {{entry.value}}
+            {{child.value}}
             </span>
         {% endif %}
 
 
-        {% if entry.end_list %}
+        {% if child.last_child %}
             </li>
             </ul>
         {% else %}
-            {% if entry.with_children %}
+            {% if child.with_children %}
             {% else %}
             </li>
             {% endif %}

@@ -29,6 +29,7 @@ class TreeNode():
         self.key = None             # Key to display
         self.value = None           # The value to display
         self.children = []
+        self.with_children = False
 
         # Setup params
         for key, value in params.items():
@@ -49,6 +50,7 @@ class TreeNode():
 
         child_node = TreeNode( **params )
         self.children.append( child_node )
+        self.with_children = True
 
         return child_node
 

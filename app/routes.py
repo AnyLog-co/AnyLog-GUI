@@ -674,18 +674,8 @@ def metadata( selection = "" ):
         path_stat.register_element(user_name, "root_nav", root_nav)     # Anchor the root as f(user)
 
     else:
+        form_info = request.form
 
-        policy = [
-            {"Tag" : {
-                "123" : 123,
-                "456" : "abc"
-                }
-            },
-            "Machine"
-        ]
-
-        json_api.setup_print_tree(policy, data_list)
-        select_info['text'] = data_list
 
         #gui_sub_tree = gui_view_.get_subtree( selection )
         #layer_list = path_stat.pull_element(user_name, 'layer_list')
