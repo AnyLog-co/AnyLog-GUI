@@ -638,6 +638,20 @@ def install():
 
 
 # -----------------------------------------------------------------------------------
+# Issue a report based on the list of policies IDs and the method to extract the dbms name and database name
+# -----------------------------------------------------------------------------------
+def policies_to_status_report( policies_list ):
+    '''
+    Each Policy is transformed to a report showing the data status
+
+    :param policies_list: Each entry on the list includes:
+        1) DBMS Name (or method to extract the name from the policy)
+        2) Table Name (or method to extract the name from the policy)
+        3) Policy ID
+    :return:            URL of a report using a 3rd party platform (like Grafana)
+    '''
+    
+# -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
 # -----------------------------------------------------------------------------------
