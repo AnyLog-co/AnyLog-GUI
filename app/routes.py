@@ -640,7 +640,7 @@ def install():
 # -----------------------------------------------------------------------------------
 # Issue a report based on the list of policies IDs and the method to extract the dbms name and database name
 # -----------------------------------------------------------------------------------
-def policies_to_status_report( policies_list ):
+def policies_to_status_report( selection, policies_list ):
     '''
     Each Policy is transformed to a report showing the data status
 
@@ -650,7 +650,13 @@ def policies_to_status_report( policies_list ):
         3) Policy ID
     :return:            URL of a report using a 3rd party platform (like Grafana)
     '''
-    
+
+    for entry in policies_list:
+        dbms_table_id = entry.split('@')
+        if len(dbms_table_id) != 4: # needs to be: BMS + Table + Policy ID
+            flash('AnyLog: Missing definitions to deploy report: %s' % '.'.join(dbms_table_id), category='error')
+            return redirect(url_for('metadata', selection=selection))
+
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
@@ -662,15 +668,13 @@ def metadata( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    query_string = request.query_string
     if request.query_string:
         query_string = request.query_string.decode('ascii')
         if query_string[:7] == "report=":
             # User selected a report on a single edge node
-            dbms_table = query_string[7:].split('@')
-            if len(dbms_table) == 3:      # DBMS + Table + Policy ID
-                # Got the method to determine dbms name and table name
-                pass
+            dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
+            # Got the method to determine dbms name and table name
+            return policies_to_status_report(selection, [dbms_table_id])
 
     level = selection.count('@') + 1
     user_name = session["username"]
