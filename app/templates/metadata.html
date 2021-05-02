@@ -31,11 +31,15 @@
                 {% endif %}
 
                 {% if node.name  %}
-                        <!-- View position or select position  -->
+                        <!-- View Policy or Select or Navigate  -->
                         {% if node.details  %}
-                             <input type="submit" value="View" name={{node.id}}>   &nbsp
+                             <input type="submit" value="View" name={{node.id}}>
                         {% endif %}
                         {% if selection  %}
+                            {% if node.dbms_name  %}
+                                <!-- Flag to elect the edge (for a report) -->
+                                <td><input type=checkbox name=selected.{{node.dbms_name}}.{{node.table_name}}></td>
+                            {% endif %}
                             <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.name}}">{{node.name}}</a>
