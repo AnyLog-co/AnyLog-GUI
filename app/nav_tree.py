@@ -177,31 +177,32 @@ def setup_print_list( current_node, print_list):
 # -----------------------------------------------------------------------------------
 def setup_print_policy( policy, print_list):
 
-    counter = 1
-    for policy_key, policy_value in policy.items:
+    if len(policy):
+        counter = 0
+        for policy_key, policy_value in policy.items():
+            counter += 1
+            params = {}
+            params['policy_key'] = policy_key
+            if counter == 1:
+                params['first_child'] = True
+            if counter == len(policy):
+                params['last_child'] = True
 
-        params = {}
-        params['policy_key'] = policy_key
-        if counter == 1:
-            params['first_child'] = True
-        if counter == len(policy_value):
-            params['last_child'] = True
+            new_node = TreeNode(**params)
+            print_list.append(new_node)
 
-        new_node = TreeNode(**params)
-        print_list.append(new_node)
+            if isinstance(policy_value,dict):
+                setup_print_policy(policy_value, print_list)
+            elif isinstance(policy_value, list):
+                for list_entry in policy_value:
+                    if isinstance(list_entry,dict) or isinstance(list_entry,list):
+                        setup_print_policy(policy_value, print_list)
+                    else:
+                        new_node.set_policy_value(policy_value)
+            else:
+                new_node.set_policy_value(policy_value)
 
-        if isinstance(policy_value,dict):
-            setup_print_policy(policy_value, print_list)
-        elif isinstance(policy_value, list):
-            for list_entry in policy_value:
-                if isinstance(list_entry,dict) or isinstance(list_entry,list):
-                    setup_print_policy(policy_value, print_list)
-                else:
-                    new_node.set_policy_value(policy_value)
-        else:
-            new_node.set_policy_value(policy_value)
-
-
+        print_list.append(None)  # All children onsidered - this is a flag to issue </li> and </ul>
 
 
 

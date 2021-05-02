@@ -696,8 +696,8 @@ def metadata( selection = "" ):
                 current_node.add_policy(None)
             else:
                 retrieved_policy = get_json_policy(policy_id)
-                if retrieved_policy:
-                    current_node.add_policy(retrieved_policy )
+                if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
+                    current_node.add_policy(retrieved_policy[0] )
         else:
             # Navigate to children
             gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
