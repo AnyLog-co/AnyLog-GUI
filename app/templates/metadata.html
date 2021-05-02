@@ -42,7 +42,13 @@
                                 <!-- Or go directly to a report -->
                                 <a href="{{url_for('metadata')}}/{{selection}}?report={{node.dbms_name}}@{{node.table_name}}@{{node.id}}?">{{node.name}}</a>
                             {% else %}
-                                <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
+                                <!-- Not Edge -->
+                                {% if node.id  %}
+                                    <a href="{{url_for('metadata')}}/{{selection}}@{{node.id}}">{{node.name}}</a>
+                                {% else %}
+                                    <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
+                                {% endif %}
+
                             {% endif %}
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.name}}">{{node.name}}</a>

@@ -803,7 +803,14 @@ def metadata( selection = "" ):
                     current_node.add_policy(retrieved_policy[0] )
         else:
             # Navigate to children
-            gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
+
+            offset = selection.rfind('@')       # Offset to the ID of the selected link
+            if offset > 0:
+                # Remove the policy ID which is not relevant to the navigation in the Config Structure
+                key_names =  selection[:offset] # The key without the policy ID
+            else:
+                key_names = selection
+            gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(key_names, select_info)
             # Add children to tree
 
             if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
