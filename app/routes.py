@@ -648,6 +648,16 @@ def metadata( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
+    offset_start =  selection.find("?report=")
+    if offset_start != -1:
+        # User selected a report on a single edge node
+        offset_end = selection.find("?", offset_start + 1)
+        if offset_end > 0:
+            dbms_table = selection[offset_start:offset_end].split('.')
+            if len(dbms_table) == 2:
+                # Got the method to determine dbms name and table name
+                pass
+
     level = selection.count('@') + 1
     user_name = session["username"]
 
@@ -656,7 +666,7 @@ def metadata( selection = "" ):
     get_policy = False
 
     if len(form_info):
-        # Return from the navigation form
+        # Selection on the navigation form
 
         # Option 1 - User selected a report (graph)
 

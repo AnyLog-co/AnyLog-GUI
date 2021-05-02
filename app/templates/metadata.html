@@ -37,10 +37,13 @@
                         {% endif %}
                         {% if selection  %}
                             {% if node.dbms_name  %}
-                                <!-- Flag to elect the edge (for a report) -->
+                                <!-- Flag to select the edge (for a report) -->
                                 <td><input type=checkbox name=selected.{{node.dbms_name}}.{{node.table_name}}></td>
+                                <!-- Or go directly to a report -->
+                                <a href="{{url_for('metadata')}}/{{selection}}report={{node.dbms_name}}.{{node.table_name}}">{{node.name}}</a>
+                            {% else %}
+                                <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
                             {% endif %}
-                            <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.name}}">{{node.name}}</a>
                         {% endif %}
@@ -65,6 +68,13 @@
                 </ul>
         {% endif %}
     {% endfor %}
+
+    <br>
+    <hr>
+     <!-- If edge nodes that can be selected to a report -->
+        <input type="submit" value="Configure" name="Configure">    <!-- Configure report -->
+        <input type="submit" value="Save" name="Save">    <!-- Save selected edge to report -->
+        <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
 
 </ul>
 
