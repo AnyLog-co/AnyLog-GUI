@@ -663,9 +663,13 @@ def policies_to_status_report( selection, policies_list ):
             return redirect(url_for('metadata', selection=selection))
         extract_dbms = dbms_table_id[0]  # The method to extract the dbms name from the policy
         extract_table = dbms_table_id[1]  # The method to extract the table name from the policy
-        policy_id = dbms_table_id[2]
+        if dbms_table_id[2][-1] == "?":
+            # Retrieved from a query string on the URL
+            policy_id = dbms_table_id[2][:-1]
+        else:
+            policy_id = dbms_table_id[2]
         # Lookup on the blockchain to retrieve the policy
-        retrieved = get_json_policy(policy_id[:-1])    # Remove the question mark at the end of the string
+        retrieved = get_json_policy(policy_id)    # Remove the question mark at the end of the string
         if retrieved and len(retrieved) == 1:
             # Get returns a list of policies
             policy = retrieved[0]
@@ -692,7 +696,7 @@ def policies_to_status_report( selection, policies_list ):
 
     platform_info["projection_list"] = projection_list
 
-    platform_info['functions'] = ["Min", "Max", "Avg"]
+    platform_info['functions'] = ["min", "max", "avg"]
 
     platform_info['from_date'] = "-2M"
     platform_info['to_date'] = "now"
@@ -721,6 +725,7 @@ def metadata( selection = "" ):
     if request.query_string:
         query_string = request.query_string.decode('ascii')
         if query_string[:7] == "report=":
+            # Option 1 - User selected a report (graph) using a LINK over the edge node name
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
@@ -736,17 +741,33 @@ def metadata( selection = "" ):
     if len(form_info):
         # Selection on the navigation form
 
-        # Option 1 - User selected a report (graph)
-
-
-        # Option 2 - User selected  View Policy or continue Navigation
+        selected_list = []
+        configure_button = False
+        save_button = False
+        report_button = False
+        # Go over report selections
         for form_key, form_val in form_info.items():
             if form_val == "View":
+                # Option 2 - User selected to View a Policy (using a View BUTTON)
                 # The user selected view - Bring the node Policy
                 policy_id = form_key
                 location_key += '@' + policy_id
                 get_policy = True       # Get the policy of the node
                 break
+            if form_key[:9] == "selected.":
+                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
+                selected_list.append(form_key[9:])
+            elif form_key == "Report":
+                # The selected list is used for a report
+                report_button = True
+            elif form_key == "Save":
+                save_button = True
+            elif form_key == "Configure":
+                configure_button = True
+
+        if report_button:
+            return policies_to_status_report(selection, selected_list)
+
 
     select_info = get_select_menu(selection=selection)
     select_info['selection'] = selection
