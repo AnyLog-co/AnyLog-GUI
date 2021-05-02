@@ -651,11 +651,30 @@ def policies_to_status_report( selection, policies_list ):
     :return:            URL of a report using a 3rd party platform (like Grafana)
     '''
 
+    # Make a list with the following entries:
+    # Name, Table Name, DBMS name
+    projection_list = []
+
     for entry in policies_list:
         dbms_table_id = entry.split('@')
-        if len(dbms_table_id) != 4: # needs to be: BMS + Table + Policy ID
+        if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID
             flash('AnyLog: Missing definitions to deploy report: %s' % '.'.join(dbms_table_id), category='error')
             return redirect(url_for('metadata', selection=selection))
+        extract_dbms = dbms_table_id[0]  # The method to extract the dbms name from the policy
+        extract_table = dbms_table_id[1]  # The method to extract the table name from the policy
+        policy_id = dbms_table_id[2]
+        # Lookup on the blockchain to retrieve the policy
+        policy = get_json_policy(policy_id)
+        policy_name = path_stat.get_policy_value(policy, "name")
+        if policy_name:
+            dbms_name = path_stat.get_sql_name(policy, extract_dbms)
+            if dbms_name:
+                table_name = path_stat.get_sql_name(policy, extract_table)
+                if table_name:
+                    projection_list.append((policy_name, dbms_name, table_name))
+
+
+
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
