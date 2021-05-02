@@ -40,7 +40,7 @@
                                 <!-- Flag to select the edge (for a report) -->
                                 <td><input type=checkbox name=selected.{{node.dbms_name}}.{{node.table_name}}></td>
                                 <!-- Or go directly to a report -->
-                                <a href="{{url_for('metadata')}}/{{selection}}report={{node.dbms_name}}.{{node.table_name}}">{{node.name}}</a>
+                                <a href="{{url_for('metadata')}}/{{selection}}?report={{node.dbms_name}}@{{node.table_name}}?">{{node.name}}</a>
                             {% else %}
                                 <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
                             {% endif %}

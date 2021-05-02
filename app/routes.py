@@ -648,13 +648,13 @@ def metadata( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    offset_start =  selection.find("?report=")
-    if offset_start != -1:
-        # User selected a report on a single edge node
-        offset_end = selection.find("?", offset_start + 1)
-        if offset_end > 0:
-            dbms_table = selection[offset_start:offset_end].split('.')
-            if len(dbms_table) == 2:
+    query_string = request.query_string
+    if request.query_string:
+        query_string = request.query_string.decode('ascii')
+        if query_string[:7] == "report=":
+            # User selected a report on a single edge node
+            dbms_table = query_string[7:].split('@')
+            if len(dbms_table) == 3:      # DBMS + Table + Policy ID
                 # Got the method to determine dbms name and table name
                 pass
 
