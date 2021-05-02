@@ -654,6 +654,7 @@ def metadata( selection = "" ):
     location_key = selection               # a string representing the location of the user in the tree
     form_info = request.form
     get_policy = False
+
     if len(form_info):
         # Return from the navigation form
 
@@ -705,14 +706,17 @@ def metadata( selection = "" ):
             # Navigate to children
             gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
             # Add children to tree
-            current_node.add_path_children(list_columns, list_keys, table_rows)
 
             if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
                 # Push The key to pull dbms name and table name from the policy
-                # These entries can be added to a report
-                select_info['report'] = True
-                select_info['dbms_name'] = gui_sub_tree["dbms_name"]
-                select_info['table_name'] = gui_sub_tree["table_name"]
+                dbms_name = gui_sub_tree["dbms_name"]
+                table_name = gui_sub_tree["table_name"]
+            else:
+                dbms_name = None
+                table_name = None
+
+            current_node.add_children(list_columns, list_keys, table_rows, dbms_name, table_name)
+
 
     print_list = []
     nav_tree.setup_print_list(root_nav, print_list)

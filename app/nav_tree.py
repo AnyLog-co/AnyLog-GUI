@@ -40,6 +40,8 @@ class TreeNode():
         self.policy = None
         self.policy_key = None
         self.policy_value = None        # shows value if the value is not a list or a dictionary
+        self.dbms_name = None           # DBMS name or the key to pull the dbms name from the policy
+        self.table_name = None          # Table name or the key to pull the table name from the policy
 
         # Setup params
         for key, value in params.items():
@@ -70,7 +72,7 @@ class TreeNode():
     # -----------------------------------------------------------------------------------
     # Add the children resulting from a query of the parent usinf the method - get_path_info(...)
     # -----------------------------------------------------------------------------------
-    def add_path_children(self, list_columns, list_keys, table_rows):
+    def add_children(self, list_columns, list_keys, table_rows, dbms_name, table_name):
         '''
         Create children to the specifird node
         :param list_columns:    The attribute names retrieved from the config file
@@ -95,6 +97,10 @@ class TreeNode():
 
             if name_offset >= 0:
                 params['name'] = entry[name_offset]
+
+            if dbms_name:
+                params['dbms_name'] = dbms_name
+                params['table_name'] = table_name
 
             self.add_child( **params )
 
