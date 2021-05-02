@@ -99,8 +99,9 @@ class TreeNode():
                 params['name'] = entry[name_offset]
 
             if dbms_name:
-                params['dbms_name'] = dbms_name
-                params['table_name'] = table_name
+                # This is an edge node that can pull a report using the dbms and table info
+                params['dbms_name'] = dbms_name     # DBMS name or the bring (from the policy) instructions
+                params['table_name'] = table_name   # Table name or the bring (from the policy) instructions
 
             self.add_child( **params )
 

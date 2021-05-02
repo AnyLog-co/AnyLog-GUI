@@ -721,7 +721,7 @@ def metadata( selection = "" ):
     print_list = []
     nav_tree.setup_print_list(root_nav, print_list)
 
-    select_info['nodes_list'] = print_list
+    select_info['nodes_list'] = pri
 
     select_info['title'] = "AnyLog Network"
 
