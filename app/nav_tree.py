@@ -37,6 +37,9 @@ class TreeNode():
         self.children = []
         self.with_children = False
         self.details = None
+        self.policy = None
+        self.policy_key = None
+        self.policy_value = None        # shows value if the value is not a list or a dictionary
 
         # Setup params
         for key, value in params.items():
@@ -95,6 +98,25 @@ class TreeNode():
 
             self.add_child( **params )
 
+    # -----------------------------------------------------------------------------------
+    # Add a policy info to a node
+    # -----------------------------------------------------------------------------------
+    def add_policy( self, retrieved_policy ):
+       self.policy = retrieved_policy
+    # -----------------------------------------------------------------------------------
+    # Add a policy info to a node
+    # -----------------------------------------------------------------------------------
+    def is_with_policy( self ):
+       return self.policy != None
+
+    # -----------------------------------------------------------------------------------
+    # Set Policy value
+    # -----------------------------------------------------------------------------------
+    def set_policy_value(self, policy_value):
+        if isinstance(policy_value,str):
+            self.policy_value = "\"%s\"" % policy_value
+        else:
+            self.policy_value = str(policy_value)
 
 # -----------------------------------------------------------------------------------
 # Given a node and a list of keys - return the node addressed by the keys
@@ -133,13 +155,53 @@ def get_current_node(current_node, keys_list, offset):
 # Setup a list that is printed in the list order and delivers a tree structure using metadata.html
 # -----------------------------------------------------------------------------------
 def setup_print_list( current_node, print_list):
+    '''
+    Update a list that represents the order of lines printed in the navigation tree
+    :param current_node: The node to consider
+    :param print_list:  Structure to update
+    :return:
+    '''
 
     if current_node.with_children:
         for child in current_node.children:
             print_list.append(child)
+            if child.is_with_policy():
+                setup_print_policy( child.policy, print_list )
             if child.with_children:
                 setup_print_list(child, print_list)
         print_list.append(None)     # All children onsidered - this is a flag to issue </li> and </ul>
+
+
+# -----------------------------------------------------------------------------------
+# Setup a policy in the print_list structure
+# -----------------------------------------------------------------------------------
+def setup_print_policy( policy, print_list):
+
+    counter = 1
+    for policy_key, policy_value in policy.items:
+
+        params = {}
+        params['policy_key'] = policy_key
+        if counter == 1:
+            params['first_child'] = True
+        if counter == len(policy_value):
+            params['last_child'] = True
+
+        new_node = TreeNode(**params)
+        print_list.append(new_node)
+
+        if isinstance(policy_value,dict):
+            setup_print_policy(policy_value, print_list)
+        elif isinstance(policy_value, list):
+            for list_entry in policy_value:
+                if isinstance(list_entry,dict) or isinstance(list_entry,list):
+                    setup_print_policy(policy_value, print_list)
+                else:
+                    new_node.set_policy_value(policy_value)
+        else:
+            new_node.set_policy_value(policy_value)
+
+
 
 
 

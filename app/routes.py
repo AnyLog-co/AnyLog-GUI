@@ -661,7 +661,8 @@ def metadata( selection = "" ):
         for form_key, form_val in form_info.items():
             if form_val == "View":
                 # The user selected view - Bring the node Policy
-                location_key += '@' + form_key
+                policy_id = form_key
+                location_key += '@' + policy_id
                 get_policy = True       # Get the policy of the node
                 break
 
@@ -690,8 +691,13 @@ def metadata( selection = "" ):
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
 
         if get_policy:
-            # Get the policy by the ID
-            pass
+            # Get the policy by the ID (or remove if the policy was retrieved)
+            if current_node.is_with_policy():
+                current_node.add_policy(None)
+            else:
+                retrieved_policy = get_json_policy(policy_id)
+                if retrieved_policy:
+                    current_node.add_policy(retrieved_policy )
         else:
             # Navigate to children
             gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
