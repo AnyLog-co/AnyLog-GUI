@@ -37,6 +37,7 @@ from app import app_view        # maintains the logical view of the GUI from a J
 from app import path_stat       # Maintain the path of the user
 from app import visualize       # The connectors to Grafana, Power BI etc
 from app import anylog_api      # Connector to the network
+from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
 
@@ -664,16 +665,46 @@ def policies_to_status_report( selection, policies_list ):
         extract_table = dbms_table_id[1]  # The method to extract the table name from the policy
         policy_id = dbms_table_id[2]
         # Lookup on the blockchain to retrieve the policy
-        policy = get_json_policy(policy_id)
-        policy_name = path_stat.get_policy_value(policy, "name")
-        if policy_name:
-            dbms_name = path_stat.get_sql_name(policy, extract_dbms)
-            if dbms_name:
-                table_name = path_stat.get_sql_name(policy, extract_table)
-                if table_name:
-                    projection_list.append((policy_name, dbms_name, table_name))
+        retrieved = get_json_policy(policy_id[:-1])    # Remove the question mark at the end of the string
+        if retrieved and len(retrieved) == 1:
+            # Get returns a list of policies
+            policy = retrieved[0]
+            policy_name = path_stat.get_policy_value(policy, "name")
+            if policy_name:
+                dbms_name = path_stat.get_sql_name(policy, extract_dbms)
+                if dbms_name:
+                    table_name = path_stat.get_sql_name(policy, extract_table)
+                    if table_name:
+                        projection_list.append((policy_name, dbms_name, table_name))
 
 
+    if not len (projection_list):
+        flash('AnyLog: Missing metadata information in policies', category='error')
+        return redirect(url_for('tree', selection=selection))
+
+    platforms_tree = gui_view_.get_base_info("visualization")
+    if not platforms_tree or not "Grafana" in platforms_tree:
+        flash('AnyLog: Missing Grafana definitions in config file', category='error')
+        return redirect(url_for('tree', selection=selection))
+
+    platform_info = copy.deepcopy(platforms_tree["Grafana"])
+    platform_info['base_report'] = "AnyLog_Base"
+
+    platform_info["projection_list"] = projection_list
+
+    platform_info['functions'] = ["Min", "Max", "Avg"]
+
+    platform_info['from_date'] = "-2M"
+    platform_info['to_date'] = "now"
+
+    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+
+    select_info = get_select_menu()
+    select_info['title'] = "Current Status"
+
+    select_info["url_list"] = url_list
+
+    return  render_template('output_frame.html', **select_info)
 
 
 # -----------------------------------------------------------------------------------
@@ -1076,18 +1107,10 @@ def status_view(selection, form_info,  policies):
 
     return  render_template('output_frame.html', **select_info)
 
-    #return redirect((report_url))  # Goto Grafana
-
-
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
 # -----------------------------------------------------------------------------------
 def get_json_policy( id ):
-
-        # Need to login before navigating
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
-
 
     # Run the query against the Query Node
     if not id or not isinstance(id, str):
@@ -1095,11 +1118,14 @@ def get_json_policy( id ):
         return redirect(('/index'))        # Select a different path
 
     al_cmd = "blockchain get * where id = %s" % id
-    data = exec_al_cmd( al_cmd )
-    json_list = app_view.str_to_list(data)
-    if not json_list:
+    data, error_msg = exec_al_cmd( al_cmd )
+
+    if error_msg:
         flash('AnyLog: Error in data format returned for policy: %s' % id, category='error')
-        return redirect(('/index'))        # Select a different path
+        flash('AnyLog: Error: %s' % error_msg, category='error')
+        json_list = None
+    else:
+        json_list = app_view.str_to_list(data)
 
     return json_list
 
@@ -1136,11 +1162,6 @@ def exec_al_cmd( al_cmd ):
     '''
     Run the query against the Query Node
     '''
-    global user_connect_
-
-    # Need to login before navigating
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
 
     target_node = get_target_node()
 
@@ -1150,30 +1171,15 @@ def exec_al_cmd( al_cmd ):
         'command' : al_cmd
         }
 
-    
-    try:
-        response = requests.get(target_node, headers=al_headers)
-    except HTTPError as http_err:
-        error_msg = "REST GET HTTP Error: %s" % str(http_err)
-        rest_err = True
-    except Exception as err:
-        error_msg = "REST GET Error: %s" % str(err)
-        rest_err = True
-    else:
-        rest_err = False
-       
-    if rest_err:
-        flash('AnyLog: %s' % error_msg, category='error')
-        user_connect_ = False
-        return redirect(('/login'))        # Redo the login
+    response, error_msg = rest_api.do_get(target_node, al_headers)
 
-
-    if response.status_code == 200:
+    if response and response.status_code == 200:
         data = response.text
     else:
-        flash('AnyLog: No data satisfies the request', category='error')
-        return redirect(('/index'))        # Select a different path
-    return data
+        if not error_msg:
+            # No data reply
+            error_msg = "AnyLog REST command %s returned error code %u" % response.status_code
+    return [data, error_msg]
 
 # -----------------------------------------------------------------------------------
 # Get the menu data based on the configuration file
