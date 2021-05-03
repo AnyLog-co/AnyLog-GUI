@@ -59,6 +59,16 @@ class TreeNode():
         return self.parent
 
     # -----------------------------------------------------------------------------------
+    # The first node in the tree is the Anchor - a node that has all the first layers as a children
+    # A root is a first child to the Anchor
+    # -----------------------------------------------------------------------------------
+    def is_root(self):
+        '''
+        :return: True if the node is the first child to the Anchor 
+        '''
+        return self.parent.is_anchor
+
+    # -----------------------------------------------------------------------------------
     # An option node is a node representing option on the Config File for navigation
     # -----------------------------------------------------------------------------------
     def is_option_node(self):
@@ -114,7 +124,7 @@ class TreeNode():
         if 'children' in options_tree:
             children = options_tree['children']
             for entry in children:
-                self.add_child(name='option', option=entry)
+                self.add_child(name=entry, option=entry)
 
     # -----------------------------------------------------------------------------------
     # Add the children resulting from a query to the network

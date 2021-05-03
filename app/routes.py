@@ -814,7 +814,7 @@ def metadata( selection = "" ):
             gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
 
 
-            if current_node.is_option_node():        # User selected a query to the data
+            if current_node.is_option_node() or current_node.is_root():        # User selected a query to the data
                 # Executes a query to select data from the network and set the data as as the children
                 reply = get_path_info(gui_key, select_info, current_node)
                 if reply:
@@ -828,7 +828,7 @@ def metadata( selection = "" ):
                         dbms_name = None
                         table_name = None
 
-                    current_node.add_children(list_columns, list_keys, table_rows, dbms_name, table_name)
+                    current_node.add_data_children(list_columns, list_keys, table_rows, dbms_name, table_name)
 
             else:
                 # Get the options from the config file and set the options as children
