@@ -87,7 +87,7 @@ class TreeNode():
             for key in gui_options:
                 # Every option maintains a metadata option representing a type of a child
                 # The options reprent a select under the data in the GUI
-                child.add_child( option=key )  # For every granchild - Add all options from the config file
+                child.add_child( name='option', option=key )  # For every granchild - Add all options from the config file
 
 
     # -----------------------------------------------------------------------------------

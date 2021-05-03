@@ -754,6 +754,10 @@ def metadata( selection = "" ):
                 location_key += '@' + policy_id
                 get_policy = True       # Get the policy of the node
                 break
+            if form_key[:7] == "option.":
+                # User selected an option representing a metadata navigation (the type of the children to retrieve)
+                selection += '@' + form_key[7:]
+                break
             if form_key[:9] == "selected.":
                 # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
                 selected_list.append(form_key[9:])
