@@ -27,6 +27,7 @@ class TreeNode():
 
     def __init__(self, **params):
 
+
         self.name = None  # The root node
         self.is_anchor = False          # The root node
         self.id = None                  # The ID of the entry
@@ -45,6 +46,7 @@ class TreeNode():
         self.option = None              # If node maintains a metadata option representing a type of a child
         self.parent = None              # Parent node
 
+
         # Setup params
         for key, value in params.items():
             setattr(self, key, value)
@@ -55,6 +57,16 @@ class TreeNode():
         return parent node
         '''
         return self.parent
+
+    # -----------------------------------------------------------------------------------
+    # An option node is a node representing option on the Config File for navigation
+    # -----------------------------------------------------------------------------------
+    def is_option_node(self):
+        '''
+        Test if the node represents navigation option
+        '''
+
+        return self.option != None
 
     # -----------------------------------------------------------------------------------
     # The details is a structure that maintains the information from the config file which

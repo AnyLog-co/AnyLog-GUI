@@ -751,12 +751,12 @@ def metadata( selection = "" ):
                 # Option 2 - User selected to View a Policy (using a View BUTTON)
                 # The user selected view - Bring the node Policy
                 policy_id = form_key
-                location_key += '@' + policy_id
+                location_key += ('@' + policy_id)
                 get_policy = True       # Get the policy of the node
                 break
             if form_key[:7] == "option.":
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
-                selection += '@' + form_key[7:]
+                location_key += ('@' + form_key[7:])
                 break
             if form_key[:9] == "selected.":
                 # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
@@ -770,11 +770,11 @@ def metadata( selection = "" ):
                 configure_button = True
 
         if report_button:
-            return policies_to_status_report(selection, selected_list)
+            return policies_to_status_report(location_key, selected_list)
 
 
-    select_info = get_select_menu(selection=selection)
-    select_info['selection'] = selection
+    select_info = get_select_menu(selection=location_key)
+    select_info['selection'] = location_key
 
     if not selection:
 
@@ -811,13 +811,28 @@ def metadata( selection = "" ):
         else:
             # Collect the children
 
-            if selection[-1] == '#':
+            gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
+
+            if current_node.is_option_node():        # User selected a query to the data
                 # Executes a query to select data from the network and set the data as as the children
-                pass
+                reply = get_path_info(gui_key, select_info, current_node)
+                if reply:
+                    # Add children to tree
+                    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
+                    if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+                        # Push The key to pull dbms name and table name from the policy
+                        dbms_name = gui_sub_tree["dbms_name"]
+                        table_name = gui_sub_tree["table_name"]
+                    else:
+                        dbms_name = None
+                        table_name = None
+
+                    current_node.add_children(list_columns, list_keys, table_rows, dbms_name, table_name)
+
             else:
                 # Get the options from the config file and set the options as children
-                gui_key = app_view.get_gui_key(selection)   # Transform selection with data to selction of GUI keys
-                gui_sub_tree = gui_view_.get_subtree(gui_key)
+                gui_sub_tree = gui_view_.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
                 current_node.add_option_children(gui_sub_tree)
 
@@ -970,7 +985,9 @@ def get_path_info(selection, select_info, current_node):
     if error_msg:
         flash(error_msg, category='error')
         return None
+
     data_list = app_view.str_to_list(data)
+
     if not data_list:
         flash('AnyLog: Error in data format returned from node', category='error')
         return None
@@ -991,8 +1008,6 @@ def get_path_info(selection, select_info, current_node):
         else:
             policy_type = None
 
-
-
     # Set the tables representing the parents:
     if current_node:
         # Use tree Navigation
@@ -1008,25 +1023,25 @@ def get_path_info(selection, select_info, current_node):
             parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
             tables_list.append(parent_table)
 
-        # Set table info to present in form
-        table_rows = []
-        for entry in data_list:
-            columns_list = []
+    # Set table info to present in form
+    table_rows = []
+    for entry in data_list:
+        columns_list = []
 
-            for key in list_keys:
-                # Validate values in reply
-                if policy_type and policy_type in entry and key in entry[policy_type]:
-                    # Get the table data from the source Policy
-                    value = entry[policy_type][key]
-                elif key in entry:
-                    # Get the table data from the json resulting from the bring
-                    value = entry[key]
-                else:
-                    value = ""
-                columns_list.append(str(value))
+        for key in list_keys:
+            # Validate values in reply
+            if policy_type and policy_type in entry and key in entry[policy_type]:
+                # Get the table data from the source Policy
+                value = entry[policy_type][key]
+            elif key in entry:
+                # Get the table data from the json resulting from the bring
+                value = entry[key]
+            else:
+                value = ""
+            columns_list.append(str(value))
 
-            # Set a list of table entries
-            table_rows.append(columns_list)
+        # Set a list of table entries
+        table_rows.append(columns_list)
 
     return [gui_sub_tree, tables_list, list_columns, list_keys, table_rows]
 
