@@ -43,6 +43,7 @@ class TreeNode():
         self.dbms_name = None           # DBMS name or the key to pull the dbms name from the policy
         self.table_name = None          # Table name or the key to pull the table name from the policy
         self.option = None              # If node maintains a metadata option representing a type of a child
+        self.parent = None              # Parent node
 
         # Setup params
         for key, value in params.items():
@@ -62,6 +63,8 @@ class TreeNode():
             self.children[-1].last_child = False    # Remove last chaild from the previously set child
 
         params['last_child'] = True
+
+        params['parent'] = self                     # Set a link from a child to the parent
 
         child_node = TreeNode( **params )
 
@@ -233,6 +236,91 @@ def setup_print_policy( policy, print_list):
         print_list.append(None)  # All children onsidered - this is a flag to issue </li> and </ul>
 
 
+# -----------------------------------------------------------------------------------
+# Update AL command to retrieve info with info from the parent
+#
+# -----------------------------------------------------------------------------------
+def update_command(user_name, selection, command):
+    '''
+    If the bring command references the parent, bring the info from the parents.
+    selection - describes the parents path.
+    Example:
+        "blockchain get tag where machine = [machine][id]  bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,"
+        --> [machine][id] is taken from the parents usinf the path described in the selection variable
+    '''
+    cmd_words = command.split()
+    value = None
+    if len(cmd_words) > 7:
+        if cmd_words[3] == "where" and cmd_words[5] == '=':
+            for index, word in enumerate(cmd_words[6:]):
+                if word == 'bring' or word.startswith("bring."):
+                    break  # End of WHERE part
+                value = None
+                if word[0] == '[' and word[-1] == ']':
+                    keys_list = word[1:].split('[')  # The list of keys to use to retrieve from the JSON
+                    if len(keys_list) > 1:  # at least 2 keys (the first is the policy type)
+                        parent_type = keys_list[0][:-1]
+                        parent_policy = get_policy(user_name, selection,
+                                                   parent_type)  # Get the policy of the parent from the path
+                        if parent_policy:
+                            if parent_type in parent_policy:
+                                # pull the attribute value
+                                value = parent_policy
+                                for entry in keys_list:
+                                    if isinstance(value, dict):
+                                        key = entry[:-1]  # Remove closing brakets
+                                        if key in value:
+                                            value = value[key]
+                                        else:
+                                            value = None
+                                            break
+                                    else:
+                                        value = None
+                                        break
+                if value:
+                    cmd_words[6 + index] = value  # Replace with value from parent
+                else:
+                    break
+    if value:
+        # command text was replaced with values from parents
+        updated_cmd = ' '.join(cmd_words)
+    else:
+        updated_cmd = command
 
+    return updated_cmd
 
+# -----------------------------------------------------------------------------------
+# Get user Path overview
+# -----------------------------------------------------------------------------------
+def get_path_overview(user_name, level, parent_menu):
+    '''
+    Return the step name and the name from the data instance at this layer
+    '''
+    global active_state_
 
+    user_info = active_state_[user_name]
+
+    path_info = user_info["path"]  # the report maintains the path info
+    path_steps = []
+    path_level = user_info["level"]
+    # Set the path to the data location
+    for index in range(level - 1):
+        step_name = parent_menu[index][0]
+        if index < len(path_info):
+            if path_info[index]["data"]:
+                step_data = path_info[index]["data"]
+                step_keys = path_info[index]["keys"]
+                step_title = path_info[index]["title"]
+                policy_type = get_policy_type(step_data)
+                if policy_type:
+                    policy = step_data[policy_type]     # Get the data from the JSON structure
+                    columns_val = []
+                    for key in step_keys:
+                        if key in policy:
+                            value = str(policy[key])
+                        else:
+                            value = ""
+                        columns_val.append(value)
+                    path_steps.append( (step_name, step_title, step_keys, [columns_val]) )
+
+    return path_steps

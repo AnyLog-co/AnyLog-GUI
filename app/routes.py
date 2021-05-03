@@ -814,7 +814,7 @@ def metadata( selection = "" ):
                 key_names =  selection[:offset] # The key without the policy ID
             else:
                 key_names = selection
-            gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(key_names, select_info, root_nav)
+            gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(key_names, select_info, current_node)
             # Add children to tree
 
             if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
@@ -872,7 +872,7 @@ def tree( selection = "" ):
         title += " [%s] " % parent[0]
     select_info['title'] = title
 
-    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info, path_stat)
+    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info, None)
 
     extra_columns =  [('Select','checkbox')]
     al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
@@ -898,9 +898,18 @@ def tree( selection = "" ):
 #       OR
 #       b) nav_tree - a tree structure that maintains the entire tree navigation
 #
-# Bothe structures identify the node selected and pull the children nodes
+# Both structures identify the node selected and pull the children nodes
 # -----------------------------------------------------------------------------------
-def get_path_info(selection, select_info, tree_structure):
+def get_path_info(selection, select_info, current_node):
+
+    '''
+    Get the children nodes from the current location
+
+    :param selection:   The ket to the current location
+    :param select_info:
+    :param current_node: In the case of TREE NAVIGATION - the current node, otherwise NULL
+    :return:
+    '''
 
     global user_connect_
     global gui_view_
@@ -912,7 +921,12 @@ def get_path_info(selection, select_info, tree_structure):
 
     command = app_view.get_tree_entree(gui_sub_tree, "query")  # get the command from the Config file
     user_name = session["username"]
-    al_command = tree_structure.update_command(user_name, selection, command)  # Update the command with the parent info
+    if current_node:
+        # Use tree Navigation
+        al_command = path_stat.update_command(current_node, selection, command)  # Update the command with the parent info
+    else:
+        # Use of Path Navigation
+        al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info
 
     if not al_command:
         flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (
@@ -976,7 +990,13 @@ def get_path_info(selection, select_info, tree_structure):
 
     tables_list = []  # A list to contain all the data to print - every entry represents a pth step
     # Set the tables representing the parents:
-    path_steps = tree_structure.get_path_overview(user_name, level,
+    if current_node:
+        # Use tree Navigation
+        path_steps = nav_tree.get_path_overview(user_name, level,
+                                             select_info['parent_gui'])  # Get the info of the parent steps
+    else:
+        # Use Path Navigation
+        path_steps = path_stat.get_path_overview(user_name, level,
                                              select_info['parent_gui'])  # Get the info of the parent steps
 
     for parent in path_steps:
