@@ -145,6 +145,18 @@ def set_platform_name(user_name, report_name, platform):
 
 # -----------------------------------------------------------------------------------
 # Get user Path overview
+# Example reply:
+'''
+    Name              Names of Info Fields       Names of policies keys            Values from Queries (based on policies keys)   
+ (from Config)            (from Config)             (From Config)
+ 
+[('Manufacturer', ['ID', 'Name', 'URL'],       ['id', 'name', 'url'],       [['9990b1b7d5ed51508cdca8f53d6a6621', 'Orics', 'http://orics.com/']]),
+ ('Company',      ['ID', 'Customer'],          ['id', 'customer'],          [['0d255db48d048f80e32953a836b27495', 'TuscanBrands']
+                                                                             ['0d597850005688024900ab432245563e', 'Costco']])
+ ]
+ 
+ Note - last layer provides all children 
+'''
 # -----------------------------------------------------------------------------------
 def get_path_overview(user_name, level, parent_menu):
     '''
