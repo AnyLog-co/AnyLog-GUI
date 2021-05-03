@@ -459,7 +459,7 @@ def update_command(user_name, selection, command):
                     keys_list = word[1:].split('[')         # The list of keys to use to retrieve from the JSON
                     if len(keys_list) > 1:             # at least 2 keys (the first is the policy type)
                         parent_type = keys_list[0][:-1]
-                        parent_policy = get_policy(user_name, selection, parent_type)   # Get the policy of the parent from the path
+                        parent_policy = get_policy(user_name, selection)   # Get the policy of the parent from the path
                         if parent_policy:
                             if parent_type in parent_policy:
                                 # pull the attribute value
@@ -507,7 +507,7 @@ def get_report_info(user_name, report_name):
 # -----------------------------------------------------------------------------------
 # Get a policy from the path
 # -----------------------------------------------------------------------------------
-def get_policy(user_name, selection, policy_type):
+def get_policy(user_name, selection):
 
     global active_state_
     

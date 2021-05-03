@@ -931,7 +931,7 @@ def get_path_info(selection, select_info, current_node):
     user_name = session["username"]
     if current_node:
         # Use tree Navigation
-        al_command = path_stat.update_command(current_node, selection, command)  # Update the command with the parent info
+        al_command = nav_tree.update_command(current_node, selection, command)  # Update the command with the parent info
     else:
         # Use of Path Navigation
         al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info

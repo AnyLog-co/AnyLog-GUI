@@ -240,7 +240,7 @@ def setup_print_policy( policy, print_list):
 # Update AL command to retrieve info with info from the parent
 #
 # -----------------------------------------------------------------------------------
-def update_command(user_name, selection, command):
+def update_command(current_node, selection, command):
     '''
     If the bring command references the parent, bring the info from the parents.
     selection - describes the parents path.
@@ -260,8 +260,7 @@ def update_command(user_name, selection, command):
                     keys_list = word[1:].split('[')  # The list of keys to use to retrieve from the JSON
                     if len(keys_list) > 1:  # at least 2 keys (the first is the policy type)
                         parent_type = keys_list[0][:-1]
-                        parent_policy = get_policy(user_name, selection,
-                                                   parent_type)  # Get the policy of the parent from the path
+                        parent_policy = current_node.get_parent()
                         if parent_policy:
                             if parent_type in parent_policy:
                                 # pull the attribute value
