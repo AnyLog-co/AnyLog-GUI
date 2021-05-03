@@ -912,6 +912,11 @@ def get_path_info(selection, select_info, current_node):
     :param select_info:
     :param current_node: In the case of TREE NAVIGATION - the current node, otherwise NULL
     :return:
+            gui_sub_tree:       The location (subtree) in the config file
+            tables_list:        Only for Path Navigation - a list with the parents info
+            list_columns:       The Column names (form the config file) - of the last level
+            list_keys:          The keys of the JSON policy (from the config file) - of the last level
+            table_rows:         A list with the data rows of the last level
     '''
 
     global user_connect_
@@ -979,20 +984,21 @@ def get_path_info(selection, select_info, current_node):
             policy_type = None
 
 
-    tables_list = []  # A list to contain all the data to print - every entry represents a pth step
+
     # Set the tables representing the parents:
     if current_node:
         # Use tree Navigation
-        path_steps = nav_tree.get_path_overview(user_name, level,
-                                             select_info['parent_gui'])  # Get the info of the parent steps
+        tables_list = None
+        path_steps = nav_tree.get_step_from_tree(current_node, select_info['parent_gui'])  # Get the info of the current step
     else:
         # Use Path Navigation
         path_steps = path_stat.get_path_overview(user_name, level,
                                              select_info['parent_gui'])  # Get the info of the parent steps
 
-    for parent in path_steps:
-        parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
-        tables_list.append(parent_table)
+        tables_list = []  # A list to contain all the data to print - every entry represents a pth step
+        for parent in path_steps:
+            parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
+            tables_list.append(parent_table)
 
     # Set table info to present in form
     table_rows = []

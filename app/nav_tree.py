@@ -302,7 +302,7 @@ def update_command(user_name, selection, command):
 ]
 '''
 # -----------------------------------------------------------------------------------
-def get_path_overview(user_name, level, parent_menu):
+def get_step_from_tree(level, parent_menu):
     '''
     Return the step name and the name from the data instance at this layer
     '''
