@@ -319,3 +319,20 @@ def set_policy_form(policy_name, policy_struct):
         policy.append(policy_attr)
 
     return [policy, None]
+
+# -----------------------------------------------------------------------------------
+# Transform a selection that includes data to a selection that includes the keys
+# for the CONFIG file navigation
+# Example: manufacturer#128#@company  -->  manufacturer@company
+# -----------------------------------------------------------------------------------
+def get_gui_key(selection):
+
+    keys_list = selection.split('@')    # Split by the GUI key
+
+    for index, key in enumerate(keys_list):
+
+        offset = key.find('#')      # Find the location of the data key
+        if offset > 0:
+            keys_list[index] = key[:offset]
+
+    return '@'.join(keys_list)

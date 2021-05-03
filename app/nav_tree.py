@@ -91,29 +91,23 @@ class TreeNode():
         return child_node
 
     # -----------------------------------------------------------------------------------
-    # Add the metadata options which are the next selection in the hierarchy
+    # Add children based on the next hierarchy layer in the config file
     # -----------------------------------------------------------------------------------
-    def add_select_grandchilds(self, gui_options):
+    def add_option_children(self, options_tree):
         '''
-        For each one of the children of the current node, add a child (a grandchild to the current).
-        Each grandchild represents a navigation option in the hierarchy, based on the setup in the config file.
-
-        gui_options - the dictionary with the navigation options
+        Navigating in a tree to a next layer. Represent the options for navigation as a children
+        :param options_tree:    # The subtree in the config file
         '''
 
-        children = self.children
-
-        for child in children:
-            for key in gui_options:
-                # Every option maintains a metadata option representing a type of a child
-                # The options reprent a select under the data in the GUI
-                child.add_child( name='option', option=key )  # For every granchild - Add all options from the config file
-
+        if 'children' in options_tree:
+            children = options_tree['children']
+            for entry in children:
+                self.add_child(name='option', option=entry)
 
     # -----------------------------------------------------------------------------------
-    # Add the children resulting from a query of the parent usinf the method - get_path_info(...)
+    # Add the children resulting from a query to the network
     # -----------------------------------------------------------------------------------
-    def add_children(self, list_columns, list_keys, table_rows, dbms_name, table_name):
+    def add_data_children(self, list_columns, list_keys, table_rows, dbms_name, table_name):
         '''
         Create children to the specifird node
         :param list_columns:    The attribute names retrieved from the config file

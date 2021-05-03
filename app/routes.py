@@ -795,9 +795,12 @@ def metadata( selection = "" ):
         root_nav = path_stat.get_element(user_name, "root_nav")
 
         selection_list = location_key.split('@')
+
+        # Navigate in the tree to find location of Node
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
 
         if get_policy:
+            # User requested ti VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
             if current_node.is_with_policy():
                 current_node.add_policy(None)
@@ -806,14 +809,19 @@ def metadata( selection = "" ):
                 if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
                     current_node.add_policy(retrieved_policy[0] )
         else:
-            # Navigate to children
+            # Collect the children
 
-            offset = selection.rfind('@')       # Offset to the ID of the selected link
-            if offset > 0:
-                # Remove the policy ID which is not relevant to the navigation in the Config Structure
-                key_names =  selection[:offset] # The key without the policy ID
+            if selection[-1] == '#':
+                # Executes a query to select data from the network and set the data as as the children
+                pass
             else:
-                key_names = selection
+                # Get the options from the config file and set the options as children
+                gui_key = app_view.get_gui_key(selection)   # Transform selection with data to selction of GUI keys
+                gui_sub_tree = gui_view_.get_subtree(gui_key)
+
+                current_node.add_option_children(gui_sub_tree)
+
+            '''
             reply = get_path_info(key_names, select_info, current_node)
             if reply:
 
@@ -833,7 +841,7 @@ def metadata( selection = "" ):
                 if 'children' in gui_sub_tree and len (gui_sub_tree['children']):
                     # the Config file shows children to the data
                     current_node.add_select_grandchilds(gui_sub_tree['children'])
-
+                '''
 
     print_list = []
     nav_tree.setup_print_list(root_nav, print_list)
@@ -989,7 +997,7 @@ def get_path_info(selection, select_info, current_node):
     if current_node:
         # Use tree Navigation
         tables_list = None
-        path_steps = nav_tree.get_step_from_tree(current_node, select_info['parent_gui'])  # Get the info of the current step
+        table_rows = nav_tree.get_step_from_tree(current_node, select_info['parent_gui'])  # Get the info of the current step
     else:
         # Use Path Navigation
         path_steps = path_stat.get_path_overview(user_name, level,
@@ -1000,25 +1008,25 @@ def get_path_info(selection, select_info, current_node):
             parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
             tables_list.append(parent_table)
 
-    # Set table info to present in form
-    table_rows = []
-    for entry in data_list:
-        columns_list = []
+        # Set table info to present in form
+        table_rows = []
+        for entry in data_list:
+            columns_list = []
 
-        for key in list_keys:
-            # Validate values in reply
-            if policy_type and policy_type in entry and key in entry[policy_type]:
-                # Get the table data from the source Policy
-                value = entry[policy_type][key]
-            elif key in entry:
-                # Get the table data from the json resulting from the bring
-                value = entry[key]
-            else:
-                value = ""
-            columns_list.append(str(value))
+            for key in list_keys:
+                # Validate values in reply
+                if policy_type and policy_type in entry and key in entry[policy_type]:
+                    # Get the table data from the source Policy
+                    value = entry[policy_type][key]
+                elif key in entry:
+                    # Get the table data from the json resulting from the bring
+                    value = entry[key]
+                else:
+                    value = ""
+                columns_list.append(str(value))
 
-        # Set a list of table entries
-        table_rows.append(columns_list)
+            # Set a list of table entries
+            table_rows.append(columns_list)
 
     return [gui_sub_tree, tables_list, list_columns, list_keys, table_rows]
 
