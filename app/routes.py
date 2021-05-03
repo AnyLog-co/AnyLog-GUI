@@ -814,24 +814,25 @@ def metadata( selection = "" ):
                 key_names =  selection[:offset] # The key without the policy ID
             else:
                 key_names = selection
-            gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(key_names, select_info, current_node)
-            # Add children to tree
+            reply = get_path_info(key_names, select_info, current_node)
+            if reply:
 
-            if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
-                # Push The key to pull dbms name and table name from the policy
-                dbms_name = gui_sub_tree["dbms_name"]
-                table_name = gui_sub_tree["table_name"]
-            else:
-                dbms_name = None
-                table_name = None
+                gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
+                # Add children to tree
 
-            current_node.add_children(list_columns, list_keys, table_rows, dbms_name, table_name)
+                if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+                    # Push The key to pull dbms name and table name from the policy
+                    dbms_name = gui_sub_tree["dbms_name"]
+                    table_name = gui_sub_tree["table_name"]
+                else:
+                    dbms_name = None
+                    table_name = None
 
-            if 'children' in gui_sub_tree and len (gui_sub_tree['children']):
-                # the Config file shows children to the data
-                current_node.add_select_grandchilds(gui_sub_tree['children'])
+                current_node.add_children(list_columns, list_keys, table_rows, dbms_name, table_name)
 
-
+                if 'children' in gui_sub_tree and len (gui_sub_tree['children']):
+                    # the Config file shows children to the data
+                    current_node.add_select_grandchilds(gui_sub_tree['children'])
 
 
     print_list = []
@@ -872,22 +873,24 @@ def tree( selection = "" ):
         title += " [%s] " % parent[0]
     select_info['title'] = title
 
-    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info, None)
+    reply = get_path_info(selection, select_info, None)
+    if reply:
+        gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
 
-    extra_columns =  [('Select','checkbox')]
-    al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
+        extra_columns =  [('Select','checkbox')]
+        al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
 
-    tables_list.append(al_table)    # Add the children
+        tables_list.append(al_table)    # Add the children
 
-    select_info['selection'] = selection
-    select_info['tables_list'] = tables_list
-    select_info['submit'] =  "View"
+        select_info['selection'] = selection
+        select_info['tables_list'] = tables_list
+        select_info['submit'] =  "View"
 
-    if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
-        # These entries can be added to a report
-        select_info['add'] =  "Add"
-        select_info['dbms_name'] = gui_sub_tree["dbms_name"]
-        select_info['table_name'] = gui_sub_tree["table_name"]
+        if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+            # These entries can be added to a report
+            select_info['add'] =  "Add"
+            select_info['dbms_name'] = gui_sub_tree["dbms_name"]
+            select_info['table_name'] = gui_sub_tree["table_name"]
 
     return render_template('selection_table.html',  **select_info )
 
@@ -950,30 +953,18 @@ def get_path_info(selection, select_info, current_node):
 
     # Run the query against the Query Node
 
-    al_headers = {
-        'User-Agent': 'AnyLog/1.23',
-        'command': al_command
-    }
+    data, error_msg = exec_al_cmd( al_command )
+    if error_msg:
+        flash(error_msg, category='error')
+        return None
+    data_list = app_view.str_to_list(data)
+    if not data_list:
+        flash('AnyLog: Error in data format returned from node', category='error')
+        return None
+    if not len(data_list):
+        flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
+        return None
 
-    try:
-        response = requests.get(target_node, headers=al_headers)
-    except:
-        flash('AnyLog: No network connection', category='error')
-        user_connect_ = False
-        return redirect(('/login'))  # Redo the login
-
-    if response.status_code == 200:
-        data = response.text
-        data_list = app_view.str_to_list(data)
-        if not data_list:
-            flash('AnyLog: Error in data format returned from node', category='error')
-            return redirect((url_for('index')))  # Select a different path
-        if not len(data_list):
-            flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
-            return redirect((url_for('index')))  # Select a different path
-    else:
-        flash('AnyLog: No data satisfies the request', category='error')
-        return redirect(('/index'))  # Select a different path
 
     if "bring" in al_command:
         # Only sections of the policy retrieved - no policy type
@@ -1242,7 +1233,7 @@ def exec_al_cmd( al_cmd ):
     else:
         if not error_msg:
             # No data reply
-            error_msg = "AnyLog REST command %s returned error code %u" % response.status_code
+            error_msg = "AnyLog: REST command %s returned error code %u" % response.status_code
     return [data, error_msg]
 
 # -----------------------------------------------------------------------------------
