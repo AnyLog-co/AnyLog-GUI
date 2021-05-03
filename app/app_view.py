@@ -84,6 +84,20 @@ class gui():
         return self.policies_table
 
     # ------------------------------------------------------------------------
+    # Return the list of the nodes types at the first layer of the navigation
+    # ------------------------------------------------------------------------
+    def get_gui_root(self):
+        '''
+        # Get the list of the children at layer 1 from the config file
+        :return: The first children from the tree root
+        '''
+        gui_root = None
+        if self.config_struct and "gui" in self.config_struct:
+            tree = self.config_struct["gui"]
+            if 'children' in tree:
+                gui_root = tree['children']
+        return gui_root
+    # ------------------------------------------------------------------------
     # Return The info of the policy
     # ------------------------------------------------------------------------
     def get_policy_info(self, policy_name):

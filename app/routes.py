@@ -751,7 +751,9 @@ def metadata( selection = "" ):
                 # Option 2 - User selected to View a Policy (using a View BUTTON)
                 # The user selected view - Bring the node Policy
                 policy_id = form_key
-                location_key += ('@' + policy_id)
+                if policy_id not in location_key:
+                    # validate that the user did nor select "View" on the same entry multiple times
+                    location_key += ('#' + policy_id)
                 get_policy = True       # Get the policy of the node
                 break
             if form_key[:7] == "option.":
@@ -773,33 +775,30 @@ def metadata( selection = "" ):
             return policies_to_status_report(location_key, selected_list)
 
 
-    select_info = get_select_menu(selection=location_key)
-    select_info['selection'] = location_key
-
     if not selection:
 
         params = { 'is_anchor' : True }
         root_nav = nav_tree.TreeNode( **params )
 
-        children = select_info['children_gui']      # A list of pairs: tag name and the paths
+        children = gui_view_.get_gui_root() # Get the list of the children at layer 1 from the config file
         for child in children:
             params = {
-                'name' : child[0],
-                'key'  : child[1][6:]
+                'name' : child,
+                'key'  : child
             }
             root_nav.add_child( **params )
 
         path_stat.register_element(user_name, "root_nav", root_nav)     # Anchor the root as f(user)
 
+        select_info = get_select_menu(selection=location_key)
+
     else:
         root_nav = path_stat.get_element(user_name, "root_nav")
 
-        selection_list = location_key.split('@')
+        selection_list = location_key.replace('#','@').split('@')
 
         # Navigate in the tree to find location of Node
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
-
-        current_node.reset_children()       # Delete children from older navigation
 
         if get_policy:
             # User requested ti VIEW the policy of a tree entry
@@ -810,12 +809,20 @@ def metadata( selection = "" ):
                 retrieved_policy = get_json_policy(policy_id)
                 if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
                     current_node.add_policy(retrieved_policy[0] )
+            select_info = get_select_menu(selection=location_key)
         else:
+            current_node.reset_children()  # Delete children from older navigation
+
             # Collect the children
 
             gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
             # Get the options from the config file and set the options as children
+
+            select_info = get_select_menu(selection=gui_key)
+
             gui_sub_tree = gui_view_.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+
 
             if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
                 # Executes a query to select data from the network and set the data as as the children
@@ -861,6 +868,12 @@ def metadata( selection = "" ):
 
     print_list = []
     nav_tree.setup_print_list(root_nav, print_list)
+
+
+
+
+    select_info['selection'] = location_key
+
 
     select_info['nodes_list'] = print_list
 
