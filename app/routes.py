@@ -799,6 +799,8 @@ def metadata( selection = "" ):
         # Navigate in the tree to find location of Node
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
 
+        current_node.reset_children()       # Delete children from older navigation
+
         if get_policy:
             # User requested ti VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)

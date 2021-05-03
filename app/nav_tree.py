@@ -66,6 +66,12 @@ class TreeNode():
         return self.parent
 
     # -----------------------------------------------------------------------------------
+    # Delete all children of the current node
+    # -----------------------------------------------------------------------------------
+    def reset_children(self):
+        self.children = []
+
+    # -----------------------------------------------------------------------------------
     # The first node in the tree is the Anchor - a node that has all the first layers as a children
     # A root is a first child to the Anchor
     # -----------------------------------------------------------------------------------
