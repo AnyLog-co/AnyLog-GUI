@@ -46,7 +46,12 @@
                                 {% if node.id  %}
                                     <a href="{{url_for('metadata')}}/{{selection}}@{{node.id}}">{{node.name}}</a>
                                 {% else %}
-                                    <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
+                                        {% if node.option  %}
+                                            <!-- A node representing navigation selection based on the config file -->
+                                            <input type="submit" value={{node.option}} name=option.{{node.option}}>
+                                        {% else %}
+                                            <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
+                                        {% endif %}
                                 {% endif %}
 
                             {% endif %}

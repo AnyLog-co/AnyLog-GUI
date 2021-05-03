@@ -42,6 +42,7 @@ class TreeNode():
         self.policy_value = None        # shows value if the value is not a list or a dictionary
         self.dbms_name = None           # DBMS name or the key to pull the dbms name from the policy
         self.table_name = None          # Table name or the key to pull the table name from the policy
+        self.option = None              # If node maintains a metadata option representing a type of a child
 
         # Setup params
         for key, value in params.items():
@@ -68,6 +69,26 @@ class TreeNode():
         self.with_children = True
 
         return child_node
+
+    # -----------------------------------------------------------------------------------
+    # Add the metadata options which are the next selection in the hierarchy
+    # -----------------------------------------------------------------------------------
+    def add_select_grandchilds(self, gui_options):
+        '''
+        For each one of the children of the current node, add a child (a grandchild to the current).
+        Each grandchild represents a navigation option in the hierarchy, based on the setup in the config file.
+
+        gui_options - the dictionary with the navigation options
+        '''
+
+        children = self.children
+
+        for child in children:
+            for key in gui_options:
+                # Every option maintains a metadata option representing a type of a child
+                # The options reprent a select under the data in the GUI
+                child.add_child( option=key )  # For every granchild - Add all options from the config file
+
 
     # -----------------------------------------------------------------------------------
     # Add the children resulting from a query of the parent usinf the method - get_path_info(...)

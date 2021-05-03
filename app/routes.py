@@ -823,6 +823,12 @@ def metadata( selection = "" ):
 
             current_node.add_children(list_columns, list_keys, table_rows, dbms_name, table_name)
 
+            if 'children' in gui_sub_tree and len (gui_sub_tree['children']):
+                # the Config file shows children to the data
+                current_node.add_select_grandchilds(gui_sub_tree['children'])
+
+
+
 
     print_list = []
     nav_tree.setup_print_list(root_nav, print_list)
