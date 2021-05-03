@@ -336,3 +336,9 @@ def get_gui_key(selection):
             keys_list[index] = key[:offset]
 
     return '@'.join(keys_list)
+
+# -----------------------------------------------------------------------------------
+# The GUI determines an edge if the position on the config file has no children
+# -----------------------------------------------------------------------------------
+def is_edge_node( gui_sub_tree ):
+    return not 'children' in gui_sub_tree

@@ -52,6 +52,13 @@ class TreeNode():
             setattr(self, key, value)
 
 
+
+    def get_name(self):
+        '''
+        return  node name
+        '''
+        return self.name
+
     def get_parent(self):
         '''
         return parent node
@@ -64,7 +71,7 @@ class TreeNode():
     # -----------------------------------------------------------------------------------
     def is_root(self):
         '''
-        :return: True if the node is the first child to the Anchor 
+        :return: True if the node is the first child to the Anchor
         '''
         return self.parent.is_anchor
 
@@ -139,8 +146,31 @@ class TreeNode():
         '''
 
         # Find if id and name are available
-        id_offset = list_keys.index('id')
-        name_offset = list_keys.index('name')
+        if 'id' in list_keys:
+            id_offset = list_keys.index('id')
+        else:
+            id_offset = -1
+
+        if 'name' in list_keys:
+            name_offset = list_keys.index('name')
+        else:
+            name_offset = -1
+            if self.option:
+                if self.option in  list_columns:
+                    # Get the name based on the option name
+                    name_offset = list_columns.index(self.option )
+            if name_offset == -1:
+                # Take the first field which is not the ID
+                for index, entry in enumerate(list_keys):
+                    if index != id_offset:
+                        name_offset = index # Best Guess
+                        break
+
+
+                parent_name = self.parent.get_name()
+                if parent_name in list_columns:
+                    name_offset = list_columns.index(parent_name)
+
 
         for entry in table_rows:
             params = {}
