@@ -49,6 +49,23 @@ class TreeNode():
         for key, value in params.items():
             setattr(self, key, value)
 
+
+    def get_parent(self):
+        '''
+        return parent node
+        '''
+        return self.parent
+
+    # -----------------------------------------------------------------------------------
+    # The details is a structure that maintains the information from the config file which
+    # is associated with the node.
+    # -----------------------------------------------------------------------------------
+    def get_details(self):
+        '''
+        return parent node
+        '''
+        return self.details
+
     # -----------------------------------------------------------------------------------
     # Add a child to the list of nodes
     # -----------------------------------------------------------------------------------
@@ -293,43 +310,31 @@ def update_command(current_node, selection, command):
 # Example Reply
 '''
     Name              Names of Info Fields       Names of policies keys            Values from Queries (based on policies keys)   
- (from Config)            (from Config)             (From Config)
-
-[('Manufacturer', ['ID', 'Name', 'URL'],       ['id', 'name', 'url'],       [['9990b1b7d5ed51508cdca8f53d6a6621', 'Orics', 'http://orics.com/']]),
+ 
  ('Company',      ['ID', 'Customer'],          ['id', 'customer'],          [['0d255db48d048f80e32953a836b27495', 'TuscanBrands']
                                                                              ['0d597850005688024900ab432245563e', 'Costco']])
 ]
 '''
 # -----------------------------------------------------------------------------------
-def get_step_from_tree(level, parent_menu):
+def get_step_from_tree(current_node, parent_menu):
     '''
     Return the step name and the name from the data instance at this layer
     '''
-    global active_state_
 
-    user_info = active_state_[user_name]
-
-    path_info = user_info["path"]  # the report maintains the path info
     path_steps = []
-    path_level = user_info["level"]
-    # Set the path to the data location
-    for index in range(level - 1):
-        step_name = parent_menu[index][0]
-        if index < len(path_info):
-            if path_info[index]["data"]:
-                step_data = path_info[index]["data"]
-                step_keys = path_info[index]["keys"]
-                step_title = path_info[index]["title"]
-                policy_type = get_policy_type(step_data)
-                if policy_type:
-                    policy = step_data[policy_type]     # Get the data from the JSON structure
-                    columns_val = []
-                    for key in step_keys:
-                        if key in policy:
-                            value = str(policy[key])
-                        else:
-                            value = ""
-                        columns_val.append(value)
-                    path_steps.append( (step_name, step_title, step_keys, [columns_val]) )
+
+    # The details is a structure that maintains the information from the config file which
+    # is associated with the node.
+    details = current_node.get_details()
+    if details:
+        step_title = details.names
+        step_keys = details.keys
+        step_values = details.values
+    else:
+        step_title = None
+        step_keys = None
+        step_values = None
+
+    path_steps.append( (current_node.name, step_title, step_keys, step_values) )
 
     return path_steps
