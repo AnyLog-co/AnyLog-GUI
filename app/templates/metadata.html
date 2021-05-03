@@ -55,10 +55,9 @@
                         {% endif %}
                 {% elif node.policy_key %}
                          <!-- View a policy (key and value)  -->
-                        <font color = "black">{{node.policy_key}}</font>
+                        <span id="json" class="key">{{node.policy_key}}</span>
                         {% if node.policy_value  %}
-                            &nbsp <font color = "black">:</font>  &nbsp
-                            <font color = "green">{{node.policy_value}}</font>
+                            <span id="json" class="value"> : {{node.policy_value}}</span>
                         {% endif %}
                 {% endif %}
 

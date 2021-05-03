@@ -127,6 +127,15 @@ ul.tree li:last-child:before {
     color: black;
 }
 
+
+#json.key {
+    color: darkgreen;
+}
+#json.value {
+    color: black;
+    text-align: left;
+}
+
 .boxed_cmd {
     border: 15px solid lightsteelblue;
     background-color: whitesmoke;
