@@ -345,7 +345,7 @@ def get_gui_key(selection):
 
     for index, key in enumerate(keys_list):
 
-        offset = key.find('#')      # Find the location of the data key
+        offset = key.find('+')      # Find the location of the data key
         if offset > 0:
             keys_list[index] = key[:offset]
 

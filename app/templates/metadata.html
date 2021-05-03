@@ -44,7 +44,7 @@
                             {% else %}
                                 <!-- Not Edge -->
                                 {% if node.id  %}
-                                    <a href="{{url_for('metadata')}}/{{selection}}#{{node.id}}">{{node.name}}</a>
+                                    <a href="{{url_for('metadata')}}/{{selection}}+{{node.id}}">{{node.name}}</a>
                                 {% else %}
                                         {% if node.option  %}
                                             <!-- A node representing navigation selection based on the config file -->

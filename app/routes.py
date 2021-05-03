@@ -753,7 +753,7 @@ def metadata( selection = "" ):
                 policy_id = form_key
                 if policy_id not in location_key:
                     # validate that the user did nor select "View" on the same entry multiple times
-                    location_key += ('#' + policy_id)
+                    location_key += ('+' + policy_id)
                 get_policy = True       # Get the policy of the node
                 break
             if form_key[:7] == "option.":
@@ -795,7 +795,7 @@ def metadata( selection = "" ):
     else:
         root_nav = path_stat.get_element(user_name, "root_nav")
 
-        selection_list = location_key.replace('#','@').split('@')
+        selection_list = location_key.replace('+','@').split('@')
 
         # Navigate in the tree to find location of Node
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
