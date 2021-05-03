@@ -710,6 +710,29 @@ def policies_to_status_report( selection, policies_list ):
 
     return  render_template('output_frame.html', **select_info)
 
+# -----------------------------------------------------------------------------------
+# User can select upper closer to the root or select the same entry multiple times - fix the key
+# -----------------------------------------------------------------------------------
+def process_selection( selection ):
+
+    # ge the last selection
+    offset_data = selection.rfind('+') # The last selection of data (Id of policies)
+    offset_metadata = selection.rfind('@') # The last selection of metadata (objects on the config file)
+
+    if offset_data > offset_metadata:
+        # Last selection is of data
+        last_selection = selection[offset_data:]
+    elif offset_metadata > offset_data:
+        # Last selection is of metadata
+        last_selection = selection[offset_metadata:]
+    else:
+        last_selection = None
+
+    if last_selection and last_selection in selection[: len(selection) - len(last_selection)]:
+        selection_key = selection[: len(selection) - len(last_selection)]   # remove the duplicate selection
+    else:
+        selection_key = selection
+    return selection_key
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -731,10 +754,9 @@ def metadata( selection = "" ):
             # Got the method to determine dbms name and table name
             return policies_to_status_report(selection, [dbms_table_id])
 
-    level = selection.count('@') + 1
     user_name = session["username"]
 
-    location_key = selection               # a string representing the location of the user in the tree
+    location_key = process_selection( selection )              # a string representing the location of the user in the tree
     form_info = request.form
     get_policy = False
 
