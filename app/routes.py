@@ -37,6 +37,7 @@ from app import app_view        # maintains the logical view of the GUI from a J
 from app import path_stat       # Maintain the path of the user
 from app import visualize       # The connectors to Grafana, Power BI etc
 from app import anylog_api      # Connector to the network
+from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
 
@@ -638,6 +639,110 @@ def install():
 
 
 # -----------------------------------------------------------------------------------
+# Issue a report based on the list of policies IDs and the method to extract the dbms name and database name
+# -----------------------------------------------------------------------------------
+def policies_to_status_report( selection, policies_list ):
+    '''
+    Each Policy is transformed to a report showing the data status
+
+    :param policies_list: Each entry on the list includes:
+        1) DBMS Name (or method to extract the name from the policy)
+        2) Table Name (or method to extract the name from the policy)
+        3) Policy ID
+    :return:            URL of a report using a 3rd party platform (like Grafana)
+    '''
+
+    # Make a list with the following entries:
+    # Name, Table Name, DBMS name
+    projection_list = []
+
+    for entry in policies_list:
+        dbms_table_id = entry.split('@')
+        if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID
+            flash('AnyLog: Missing definitions to deploy report: %s' % '.'.join(dbms_table_id), category='error')
+            return redirect(url_for('metadata', selection=selection))
+        extract_dbms = dbms_table_id[0]  # The method to extract the dbms name from the policy
+        extract_table = dbms_table_id[1]  # The method to extract the table name from the policy
+        if dbms_table_id[2][-1] == "?":
+            # Retrieved from a query string on the URL
+            policy_id = dbms_table_id[2][:-1]
+        else:
+            policy_id = dbms_table_id[2]
+        # Lookup on the blockchain to retrieve the policy
+        retrieved = get_json_policy(policy_id)    # Remove the question mark at the end of the string
+        if retrieved and len(retrieved) == 1:
+            # Get returns a list of policies
+            policy = retrieved[0]
+            policy_name = path_stat.get_policy_value(policy, "name")
+            if policy_name:
+                dbms_name = path_stat.get_sql_name(policy, extract_dbms)
+                if dbms_name:
+                    table_name = path_stat.get_sql_name(policy, extract_table)
+                    if table_name:
+                        projection_list.append((policy_name, dbms_name, table_name))
+
+
+    if not len (projection_list):
+        flash('AnyLog: Missing metadata information in policies', category='error')
+        return redirect(url_for('tree', selection=selection))
+
+    platforms_tree = gui_view_.get_base_info("visualization")
+    if not platforms_tree or not "Grafana" in platforms_tree:
+        flash('AnyLog: Missing Grafana definitions in config file', category='error')
+        return redirect(url_for('tree', selection=selection))
+
+    platform_info = copy.deepcopy(platforms_tree["Grafana"])
+    platform_info['base_report'] = "AnyLog_Base"
+
+    platform_info["projection_list"] = projection_list
+
+    platform_info['functions'] = ["min", "max", "avg"]
+
+    platform_info['from_date'] = "-2M"
+    platform_info['to_date'] = "now"
+
+    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+
+    select_info = get_select_menu()
+    select_info['title'] = "Current Status"
+
+    select_info["url_list"] = url_list
+
+    return  render_template('output_frame.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# User can select upper closer to the root or select the same entry multiple times - fix the key
+# -----------------------------------------------------------------------------------
+def process_selection( selection ):
+
+    # ge the last selection
+    offset_metadata = selection.rfind('@') # The last selection of metadata (objects on the config file)
+    offset_data = selection.rfind('+')
+    if offset_data > offset_metadata:
+        # last selection is data
+        # find the first data key of the last level
+        offset_last_level = selection.find('+', offset_metadata)
+        selection_key = selection[:offset_last_level] + selection[offset_data:]
+    else:
+        selection_key = selection
+
+    '''
+
+    if offset_metadata > 0:
+        # Last selection is of metadata
+        last_selection = selection[offset_metadata:]
+        if last_selection and last_selection in selection[: len(selection) - len(last_selection)]:
+            selection_key = selection[: len(selection) - len(last_selection)]  # remove the duplicate selection
+        else:
+            selection_key = selection
+    else:
+        selection_key = selection
+        
+    '''
+
+    return selection_key
+
+# -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
 # -----------------------------------------------------------------------------------
@@ -648,44 +753,145 @@ def metadata( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    level = selection.count('@') + 1
+    if request.query_string:
+        query_string = request.query_string.decode('ascii')
+        if query_string[:7] == "report=":
+            # Option 1 - User selected a report (graph) using a LINK over the edge node name
+            # User selected a report on a single edge node
+            dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
+            # Got the method to determine dbms name and table name
+            return policies_to_status_report(selection, [dbms_table_id])
+
     user_name = session["username"]
 
-    layer_list = []                       # The list of options in this layer
-
+    location_key = process_selection( selection )   # a string representing the location of the user in the tree
 
     form_info = request.form
-    if not selection:
-        # User selected  View or Graph
+    get_policy = False
+
+    if len(form_info):
+        # Selection on the navigation form
+
+        selected_list = []
+        configure_button = False
+        save_button = False
+        report_button = False
+        # Go over report selections
         for form_key, form_val in form_info.items():
             if form_val == "View":
-                # The user selected view
-                selection = form_key
+                # Option 2 - User selected to View a Policy (using a View BUTTON)
+                # The user selected view - Bring the node Policy
+                policy_id = form_key
+                if policy_id not in location_key:
+                    # validate that the user did nor select "View" on the same entry multiple times
+                    location_key += ('+' + policy_id)
+                get_policy = True       # Get the policy of the node
                 break
+            if form_key[:7] == "option.":
+                # User selected an option representing a metadata navigation (the type of the children to retrieve)
+                location_key += ('@' + form_key[7:])
+                break
+            if form_key[:9] == "selected.":
+                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
+                selected_list.append(form_key[9:])
+            elif form_key == "Report":
+                # The selected list is used for a report
+                report_button = True
+            elif form_key == "Save":
+                save_button = True
+            elif form_key == "Configure":
+                configure_button = True
 
-    select_info = get_select_menu(selection=selection)
-    select_info['selection'] = selection
+        if report_button:
+            return policies_to_status_report(location_key, selected_list)
+
 
     if not selection:
 
         params = { 'is_anchor' : True }
         root_nav = nav_tree.TreeNode( **params )
 
-        children = select_info['children_gui']      # A list of pairs: tag name and the paths
+        children = gui_view_.get_gui_root() # Get the list of the children at layer 1 from the config file
         for child in children:
             params = {
-                'name' : child[0],
-                'key'  : child[1][6:]
+                'name' : child,
+                'key'  : child,
+                'path' : child,
             }
             root_nav.add_child( **params )
 
         path_stat.register_element(user_name, "root_nav", root_nav)     # Anchor the root as f(user)
 
+        select_info = get_select_menu(selection=location_key)
+
     else:
         root_nav = path_stat.get_element(user_name, "root_nav")
-        gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
 
-    select_info['tree_node'] = root_nav
+        selection_list = location_key.replace('+','@').split('@')
+
+        # Navigate in the tree to find location of Node
+        current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
+
+        gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
+        if get_policy:
+            # User requested ti VIEW the policy of a tree entry
+            # Get the policy by the ID (or remove if the policy was retrieved)
+            if current_node.is_option_node():
+                # move to the data node
+                policy_node = current_node.get_parent()
+            else:
+                policy_node = current_node
+            if policy_node.is_with_policy():
+                policy_node.add_policy(None)
+            else:
+                retrieved_policy = get_json_policy(policy_id)
+                if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
+                    policy_node.add_policy(retrieved_policy[0] )
+            select_info = get_select_menu(selection=gui_key)
+        else:
+            current_node.reset_children()  # Delete children from older navigation
+
+            # Collect the children
+
+
+            # Get the options from the config file and set the options as children
+
+            select_info = get_select_menu(selection=gui_key)
+
+            gui_sub_tree = gui_view_.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+            if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
+                # Executes a query to select data from the network and set the data as as the children
+                reply = get_path_info(gui_key, select_info, current_node)
+                if reply:
+                    # Add children to tree
+                    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
+                    if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+                        # Push The key to pull dbms name and table name from the policy
+                        dbms_name = gui_sub_tree["dbms_name"]
+                        table_name = gui_sub_tree["table_name"]
+                    else:
+                        dbms_name = None
+                        table_name = None
+
+                    current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
+
+            else:
+
+                current_node.add_option_children(gui_sub_tree, location_key)
+
+
+    print_list = []
+    nav_tree.setup_print_list(root_nav, print_list)
+
+
+
+
+    select_info['selection'] = location_key
+
+
+    select_info['nodes_list'] = print_list
 
     select_info['title'] = "AnyLog Network"
 
@@ -720,29 +926,51 @@ def tree( selection = "" ):
         title += " [%s] " % parent[0]
     select_info['title'] = title
 
-    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = get_path_info(selection, select_info)
+    reply = get_path_info(selection, select_info, None)
+    if reply:
+        gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
 
-    extra_columns =  [('Select','checkbox')]
-    al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
+        extra_columns =  [('Select','checkbox')]
+        al_table = AnyLogTable(select_info['parent_gui'][-1][0], list_columns, list_keys, table_rows, extra_columns)
 
-    tables_list.append(al_table)    # Add the children
+        tables_list.append(al_table)    # Add the children
 
-    select_info['selection'] = selection
-    select_info['tables_list'] = tables_list
-    select_info['submit'] =  "View"
+        select_info['selection'] = selection
+        select_info['tables_list'] = tables_list
+        select_info['submit'] =  "View"
 
-    if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
-        # These entries can be added to a report
-        select_info['add'] =  "Add"
-        select_info['dbms_name'] = gui_sub_tree["dbms_name"]
-        select_info['table_name'] = gui_sub_tree["table_name"]
+        if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+            # These entries can be added to a report
+            select_info['add'] =  "Add"
+            select_info['dbms_name'] = gui_sub_tree["dbms_name"]
+            select_info['table_name'] = gui_sub_tree["table_name"]
 
     return render_template('selection_table.html',  **select_info )
 
 # -----------------------------------------------------------------------------------
 # Get the path info based on the tree navigation
+# There are 2 structure options to use with Tree structure:
+#       a) path_stat - maintains the path from the root to the node selected
+#       OR
+#       b) nav_tree - a tree structure that maintains the entire tree navigation
+#
+# Both structures identify the node selected and pull the children nodes
 # -----------------------------------------------------------------------------------
-def get_path_info(selection, select_info):
+def get_path_info(selection, select_info, current_node):
+
+    '''
+    Get the children nodes from the current location
+
+    :param selection:   The ket to the current location
+    :param select_info:
+    :param current_node: In the case of TREE NAVIGATION - the current node, otherwise NULL
+    :return:
+            gui_sub_tree:       The location (subtree) in the config file
+            tables_list:        Only for Path Navigation - a list with the parents info
+            list_columns:       The Column names (form the config file) - of the last level
+            list_keys:          The keys of the JSON policy (from the config file) - of the last level
+            table_rows:         A list with the data rows of the last level
+    '''
 
     global user_connect_
     global gui_view_
@@ -754,54 +982,47 @@ def get_path_info(selection, select_info):
 
     command = app_view.get_tree_entree(gui_sub_tree, "query")  # get the command from the Config file
     user_name = session["username"]
-    al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info
+    if current_node:
+        # Use tree Navigation
+        al_command = nav_tree.update_command(current_node, selection, command)  # Update the command with the parent info
+    else:
+        # Use of Path Navigation
+        al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info
 
     if not al_command:
-        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (
-        Config.GUI_VIEW, str(selection)))
-        return redirect(('/index'))  # Show all user select options
+        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (str(selection)))
+        return None  # Show all user select options
 
     # Get the columns names of the table to show
     list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
     if not list_columns:
-        flash(
-            "AnyLog: Missing 'list_columns' Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
-        return redirect(('/index'))  # Show all user select options
+        flash("AnyLog: Missing column names in config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
+        return None
 
     # Get the keys to pull data from the JSON reply
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     if not list_keys:
         flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
-        return redirect(('/index'))  # Show all user select options
+        return None # Show all user select options
 
     target_node = get_target_node()
 
     # Run the query against the Query Node
 
-    al_headers = {
-        'User-Agent': 'AnyLog/1.23',
-        'command': al_command
-    }
+    data, error_msg = exec_al_cmd( al_command )
+    if error_msg:
+        flash(error_msg, category='error')
+        return None
 
-    try:
-        response = requests.get(target_node, headers=al_headers)
-    except:
-        flash('AnyLog: No network connection', category='error')
-        user_connect_ = False
-        return redirect(('/login'))  # Redo the login
+    data_list = app_view.str_to_list(data)
 
-    if response.status_code == 200:
-        data = response.text
-        data_list = app_view.str_to_list(data)
-        if not data_list:
-            flash('AnyLog: Error in data format returned from node', category='error')
-            return redirect((url_for('index')))  # Select a different path
-        if not len(data_list):
-            flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
-            return redirect((url_for('index')))  # Select a different path
-    else:
-        flash('AnyLog: No data satisfies the request', category='error')
-        return redirect(('/index'))  # Select a different path
+    if not data_list:
+        flash('AnyLog: Error in data format returned from node', category='error')
+        return None
+    if not len(data_list):
+        flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
+        return None
+
 
     if "bring" in al_command:
         # Only sections of the policy retrieved - no policy type
@@ -815,15 +1036,20 @@ def get_path_info(selection, select_info):
         else:
             policy_type = None
 
-
-    tables_list = []  # A list to contain all the data to print - every entry represents a pth step
     # Set the tables representing the parents:
-    path_steps = path_stat.get_path_overview(user_name, level,
+    if current_node:
+        # Use tree Navigation
+        tables_list = None
+        table_rows = nav_tree.get_step_from_tree(current_node, select_info['parent_gui'])  # Get the info of the current step
+    else:
+        # Use Path Navigation
+        path_steps = path_stat.get_path_overview(user_name, level,
                                              select_info['parent_gui'])  # Get the info of the parent steps
 
-    for parent in path_steps:
-        parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
-        tables_list.append(parent_table)
+        tables_list = []  # A list to contain all the data to print - every entry represents a pth step
+        for parent in path_steps:
+            parent_table = AnyLogTable(parent[0], parent[1], parent[2], parent[3], [])
+            tables_list.append(parent_table)
 
     # Set table info to present in form
     table_rows = []
@@ -993,18 +1219,10 @@ def status_view(selection, form_info,  policies):
 
     return  render_template('output_frame.html', **select_info)
 
-    #return redirect((report_url))  # Goto Grafana
-
-
 # -----------------------------------------------------------------------------------
 # Show AnyLog Policy by ID
 # -----------------------------------------------------------------------------------
 def get_json_policy( id ):
-
-        # Need to login before navigating
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
-
 
     # Run the query against the Query Node
     if not id or not isinstance(id, str):
@@ -1012,11 +1230,14 @@ def get_json_policy( id ):
         return redirect(('/index'))        # Select a different path
 
     al_cmd = "blockchain get * where id = %s" % id
-    data = exec_al_cmd( al_cmd )
-    json_list = app_view.str_to_list(data)
-    if not json_list:
+    data, error_msg = exec_al_cmd( al_cmd )
+
+    if error_msg:
         flash('AnyLog: Error in data format returned for policy: %s' % id, category='error')
-        return redirect(('/index'))        # Select a different path
+        flash('AnyLog: Error: %s' % error_msg, category='error')
+        json_list = None
+    else:
+        json_list = app_view.str_to_list(data)
 
     return json_list
 
@@ -1053,11 +1274,6 @@ def exec_al_cmd( al_cmd ):
     '''
     Run the query against the Query Node
     '''
-    global user_connect_
-
-    # Need to login before navigating
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
 
     target_node = get_target_node()
 
@@ -1067,30 +1283,15 @@ def exec_al_cmd( al_cmd ):
         'command' : al_cmd
         }
 
-    
-    try:
-        response = requests.get(target_node, headers=al_headers)
-    except HTTPError as http_err:
-        error_msg = "REST GET HTTP Error: %s" % str(http_err)
-        rest_err = True
-    except Exception as err:
-        error_msg = "REST GET Error: %s" % str(err)
-        rest_err = True
-    else:
-        rest_err = False
-       
-    if rest_err:
-        flash('AnyLog: %s' % error_msg, category='error')
-        user_connect_ = False
-        return redirect(('/login'))        # Redo the login
+    response, error_msg = rest_api.do_get(target_node, al_headers)
 
-
-    if response.status_code == 200:
+    if response and response.status_code == 200:
         data = response.text
     else:
-        flash('AnyLog: No data satisfies the request', category='error')
-        return redirect(('/index'))        # Select a different path
-    return data
+        if not error_msg:
+            # No data reply
+            error_msg = "AnyLog: REST command %s returned error code %u" % response.status_code
+    return [data, error_msg]
 
 # -----------------------------------------------------------------------------------
 # Get the menu data based on the configuration file
