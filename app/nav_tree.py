@@ -125,6 +125,20 @@ class TreeNode():
 
         return child_node
 
+
+    # -----------------------------------------------------------------------------------
+    # Data entries maintain details with info from the policy
+    # Given a key - Get the policy value
+    # -----------------------------------------------------------------------------------
+    def get_value_by_key(self, policy_key):
+
+        if self.details and policy_key in self.details.keys:
+            index = self.details.keys.index(policy_key)     # Location in the keys list
+            value = self.details.values[index]              # Get the data associated with the key
+        else:
+            value = None
+        return value
+
     # -----------------------------------------------------------------------------------
     # Add children based on the next hierarchy layer in the config file
     # -----------------------------------------------------------------------------------
@@ -327,22 +341,18 @@ def update_command(current_node, selection, command):
                     keys_list = word[1:].split('[')  # The list of keys to use to retrieve from the JSON
                     if len(keys_list) > 1:  # at least 2 keys (the first is the policy type)
                         parent_type = keys_list[0][:-1]
-                        parent_policy = current_node.get_parent()
-                        if parent_policy:
-                            if parent_type in parent_policy:
-                                # pull the attribute value
-                                value = parent_policy
-                                for entry in keys_list:
-                                    if isinstance(value, dict):
-                                        key = entry[:-1]  # Remove closing brakets
-                                        if key in value:
-                                            value = value[key]
-                                        else:
-                                            value = None
-                                            break
-                                    else:
-                                        value = None
-                                        break
+                        parent_node = current_node.get_parent()
+                        if parent_node:
+                            parent_policy = parent_node.get_details()
+                            # info derived from the policy (organized in Details() object)
+                            if parent_policy:
+                                value = ""
+                                for policy_key in keys_list[1:]:
+                                    # Craete the value for the command
+                                    if policy_key in parent_policy.keys:
+                                        index = parent_policy.keys.index(policy_key)
+                                        value += parent_policy.data[index]
+
                 if value:
                     cmd_words[6 + index] = value  # Replace with value from parent
                 else:
