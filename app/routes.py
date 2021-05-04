@@ -663,7 +663,7 @@ def policies_to_status_report( selection, policies_list ):
         dbms_table_id = entry.split('@')
         if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID
             flash('AnyLog: Missing definitions to deploy report: %s' % '.'.join(dbms_table_id), category='error')
-            return redirect(url_for('metadata', selection=selection))
+            return None
         extract_dbms = dbms_table_id[0]  # The method to extract the dbms name from the policy
         extract_table = dbms_table_id[1]  # The method to extract the table name from the policy
         if dbms_table_id[2][-1] == "?":
@@ -687,12 +687,12 @@ def policies_to_status_report( selection, policies_list ):
 
     if not len (projection_list):
         flash('AnyLog: Missing metadata information in policies', category='error')
-        return redirect(url_for('tree', selection=selection))
+        return None
 
     platforms_tree = gui_view_.get_base_info("visualization")
     if not platforms_tree or not "Grafana" in platforms_tree:
         flash('AnyLog: Missing Grafana definitions in config file', category='error')
-        return redirect(url_for('tree', selection=selection))
+        return None
 
     platform_info = copy.deepcopy(platforms_tree["Grafana"])
     platform_info['base_report'] = "AnyLog_Base"
@@ -705,6 +705,9 @@ def policies_to_status_report( selection, policies_list ):
     platform_info['to_date'] = "now"
 
     url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+    if err_msg:
+        flash(err_msg, category='error')
+        return None
 
     select_info = get_select_menu()
     select_info['title'] = "Current Status"
