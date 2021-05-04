@@ -33,7 +33,8 @@
                 {% if node.name  %}
                         <!-- View Policy or Select or Navigate  -->
                         {% if node.details  %}
-                             <input type="submit" value="View" name={{node.id}} class="button_view">
+                            <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
+                            <input type="submit" value="View" name={{node.path}} class="button_view">
                         {% endif %}
                         {% if selection  %}
                             {% if node.dbms_name  %}
@@ -44,11 +45,12 @@
                             {% else %}
                                 <!-- Not Edge -->
                                 {% if node.id  %}
-                                    <a href="{{url_for('metadata')}}/{{selection}}+{{node.id}}">{{node.name}}</a>
+                                    <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
                                 {% else %}
                                         {% if node.option  %}
                                             <!-- A node representing navigation selection based on the config file -->
-                                            <input type="submit" value={{node.option}} name=option.{{node.option}}>
+                                            <!-- Moving from metadata (option from config) to data node -->
+                                            <input type="submit" value={{node.option}} name=option.{{node.path}}>
                                         {% else %}
                                             <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
                                         {% endif %}
@@ -67,7 +69,7 @@
                 {% endif %}
 
                 {% if node.with_children %}
-                    
+
                 {% else %}
                     </li>
                 {% endif %}
