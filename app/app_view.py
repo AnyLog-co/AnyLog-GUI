@@ -187,11 +187,11 @@ class gui():
                 url_link +=  "/%s" % (parent_name)
             parent_menu.append((parent_name, url_link))
 
-            if parent_name in child_tree:
+            if child_tree and parent_name in child_tree:
                 # Move to next layer
                 child_tree = child_tree[parent_name]
  
-            self.add_path_children(child_tree, level + 1, gui_keys, parent_menu, child_menu)
+                self.add_path_children(child_tree, level + 1, gui_keys, parent_menu, child_menu)
     # ------------------------------------------------------------------------
     # Get the AnyLog command as f (level) from the user JSON configuration struct
     # ------------------------------------------------------------------------

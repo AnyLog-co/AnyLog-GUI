@@ -727,6 +727,10 @@ def metadata( selection = "" ):
     if not user_connect_:
         return redirect(('/login'))        # start with Login  if not yet provided
 
+    user_name = session["username"]
+
+    location_key = selection
+
     if request.query_string:
         query_string = request.query_string.decode('ascii')
         if query_string[:7] == "report=":
@@ -737,12 +741,10 @@ def metadata( selection = "" ):
             html = policies_to_status_report(selection, [dbms_table_id])
             if not html:
                 # Got an error
-                metadata(selection)     # Redo without the query string
+                select_info = get_select_menu(selection=location_key)
+                return call_navigation_page(user_name, select_info, location_key, None)
             return html
 
-    user_name = session["username"]
-
-    location_key = selection
 
     form_info = request.form
     get_policy = False
@@ -786,7 +788,8 @@ def metadata( selection = "" ):
             html = policies_to_status_report(location_key, selected_list)
             if not html:
                 # Got an error
-                metadata(selection)     # Redo without the query string
+                select_info = get_select_menu(selection=location_key)
+                return call_navigation_page(user_name, select_info, location_key, None)
             return html
 
 
@@ -869,7 +872,18 @@ def metadata( selection = "" ):
                 current_node.add_option_children(gui_sub_tree, location_key)
 
 
+    return call_navigation_page(user_name, select_info, location_key, current_node)
+
+
+# -----------------------------------------------------------------------------------
+# Call the navigation page - metadata.html
+# -----------------------------------------------------------------------------------
+def call_navigation_page(user_name, select_info, location_key, current_node):
+
     print_list = []
+
+    root_nav = path_stat.get_element(user_name, "root_nav")
+
     nav_tree.setup_print_list(root_nav, print_list)
 
     if current_node:
@@ -877,17 +891,11 @@ def metadata( selection = "" ):
         # Reset is done in nav_tree.setup_print_list
         current_node.set_scroll_location()
 
-
-
-
     select_info['selection'] = location_key
-
 
     select_info['nodes_list'] = print_list
 
     select_info['title'] = "AnyLog Network"
-
-
 
     return render_template('metadata.html', **select_info)
 
