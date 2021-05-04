@@ -4,7 +4,7 @@
             "query_node" : "http://23.239.12.151:2049",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://23.239.12.151:3000",
-                                              "token" : "eyJrIjoiMVdENDJjUVBPeXpVZ2hmUFJrSzU3azVDUFhwWkdQeVYiLCJuIjoiZ3VpIiwiaWQiOjF9",
+                                              "token" : "eyJrIjoiZ25kTTFHY3gxTXBXV2JlTGE3dzdQajNVN0V0Y3o4WmkiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 },
