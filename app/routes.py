@@ -711,38 +711,6 @@ def policies_to_status_report( selection, policies_list ):
     return  render_template('output_frame.html', **select_info)
 
 # -----------------------------------------------------------------------------------
-# User can select upper closer to the root or select the same entry multiple times - fix the key
-# -----------------------------------------------------------------------------------
-def process_selection( selection ):
-
-    # ge the last selection
-    offset_metadata = selection.rfind('@') # The last selection of metadata (objects on the config file)
-    offset_data = selection.rfind('+')
-    if offset_data > offset_metadata:
-        # last selection is data
-        # find the first data key of the last level
-        offset_last_level = selection.find('+', offset_metadata)
-        selection_key = selection[:offset_last_level] + selection[offset_data:]
-    else:
-        selection_key = selection
-
-    '''
-
-    if offset_metadata > 0:
-        # Last selection is of metadata
-        last_selection = selection[offset_metadata:]
-        if last_selection and last_selection in selection[: len(selection) - len(last_selection)]:
-            selection_key = selection[: len(selection) - len(last_selection)]  # remove the duplicate selection
-        else:
-            selection_key = selection
-    else:
-        selection_key = selection
-        
-    '''
-
-    return selection_key
-
-# -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
 # -----------------------------------------------------------------------------------
@@ -764,7 +732,7 @@ def metadata( selection = "" ):
 
     user_name = session["username"]
 
-    location_key = process_selection( selection )   # a string representing the location of the user in the tree
+    location_key = selection
 
     form_info = request.form
     get_policy = False
@@ -781,15 +749,17 @@ def metadata( selection = "" ):
             if form_val == "View":
                 # Option 2 - User selected to View a Policy (using a View BUTTON)
                 # The user selected view - Bring the node Policy
-                policy_id = form_key
-                if policy_id not in location_key:
-                    # validate that the user did nor select "View" on the same entry multiple times
-                    location_key += ('+' + policy_id)
-                get_policy = True       # Get the policy of the node
+                offset = form_key.rfind('+')
+                if offset > 0:
+                    # Get the policy ID of the last layer
+                    policy_id = form_key[offset + 1:]
+                    location_key = form_key
+                    get_policy = True       # Get the policy of the node
                 break
             if form_key[:7] == "option.":
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
-                location_key += ('@' + form_key[7:])
+                # Move from metadata to data
+                location_key = form_key[7:]     # Remove the "option." prefix
                 break
             if form_key[:9] == "selected.":
                 # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
