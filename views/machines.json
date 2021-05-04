@@ -4,7 +4,7 @@
             "query_node" : "http://10.0.0.78:7849",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://localhost:3000",
-                                              "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                              "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF91",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 },
