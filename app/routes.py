@@ -663,7 +663,7 @@ def policies_to_status_report( selection, policies_list ):
         dbms_table_id = entry.split('@')
         if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID
             flash('AnyLog: Missing definitions to deploy report: %s' % '.'.join(dbms_table_id), category='error')
-            return redirect(url_for('metadata', selection=selection))
+            return None
         extract_dbms = dbms_table_id[0]  # The method to extract the dbms name from the policy
         extract_table = dbms_table_id[1]  # The method to extract the table name from the policy
         if dbms_table_id[2][-1] == "?":
@@ -687,12 +687,12 @@ def policies_to_status_report( selection, policies_list ):
 
     if not len (projection_list):
         flash('AnyLog: Missing metadata information in policies', category='error')
-        return redirect(url_for('tree', selection=selection))
+        return None
 
     platforms_tree = gui_view_.get_base_info("visualization")
     if not platforms_tree or not "Grafana" in platforms_tree:
         flash('AnyLog: Missing Grafana definitions in config file', category='error')
-        return redirect(url_for('tree', selection=selection))
+        return None
 
     platform_info = copy.deepcopy(platforms_tree["Grafana"])
     platform_info['base_report'] = "AnyLog_Base"
@@ -705,6 +705,9 @@ def policies_to_status_report( selection, policies_list ):
     platform_info['to_date'] = "now"
 
     url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+    if err_msg:
+        flash(err_msg, category='error')
+        return None
 
     select_info = get_select_menu()
     select_info['title'] = "Current Status"
@@ -731,7 +734,11 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            return policies_to_status_report(selection, [dbms_table_id])
+            html = policies_to_status_report(selection, [dbms_table_id])
+            if not html:
+                # Got an error
+                metadata(selection)     # Redo without the query string
+            return html
 
     user_name = session["username"]
 
@@ -776,7 +783,11 @@ def metadata( selection = "" ):
                 configure_button = True
 
         if report_button:
-            return policies_to_status_report(location_key, selected_list)
+            html = policies_to_status_report(location_key, selected_list)
+            if not html:
+                # Got an error
+                metadata(selection)     # Redo without the query string
+            return html
 
 
     if not selection:
@@ -1192,6 +1203,9 @@ def status_view(selection, form_info,  policies):
     platform_info['to_date'] = "now"
 
     url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+
+    if err_msg:
+        return err_msg
 
     select_info = get_select_menu()
     select_info['title'] = "Current Status"
