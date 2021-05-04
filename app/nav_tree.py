@@ -349,9 +349,9 @@ def update_command(current_node, selection, command):
                                 value = ""
                                 for policy_key in keys_list[1:]:
                                     # Craete the value for the command
-                                    if policy_key in parent_policy.keys:
-                                        index = parent_policy.keys.index(policy_key)
-                                        value += parent_policy.data[index]
+                                    if policy_key[:-1] in parent_policy.keys:
+                                        index = parent_policy.keys.index(policy_key[:-1])
+                                        value += parent_policy.values[index]
 
                 if value:
                     cmd_words[6 + index] = value  # Replace with value from parent
