@@ -136,6 +136,20 @@ ul.tree li:last-child:before {
     text-align: left;
 }
 
+.button_view {
+    background-color: #91f191; /* Green */
+    border-color: #3e3737;
+    border-width: 1px;
+    color: #453f3f;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    width: 70px;
+    height: 20px;
+}
+
+
 .boxed_cmd {
     border: 15px solid lightsteelblue;
     background-color: whitesmoke;
