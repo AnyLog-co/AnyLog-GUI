@@ -137,10 +137,10 @@ ul.tree li:last-child:before {
 }
 
 .button_view {
-    background-color: #9bc49b; /* Green */
+    background-color: #7279ac; /* Green */
     border-color: #3e3737;
     border-width: 1px;
-    color: #453f3f;
+    color: whitesmoke;
     text-align: center;
     text-decoration: none;
     display: inline-block;
