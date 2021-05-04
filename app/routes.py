@@ -794,6 +794,8 @@ def metadata( selection = "" ):
 
         select_info = get_select_menu(selection=location_key)
 
+        current_node = None
+
     else:
         root_nav = path_stat.get_element(user_name, "root_nav")
 
@@ -807,6 +809,7 @@ def metadata( selection = "" ):
         if get_policy:
             # User requested ti VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
+
             if current_node.is_option_node():
                 # move to the data node
                 policy_node = current_node.get_parent()
@@ -854,6 +857,11 @@ def metadata( selection = "" ):
 
     print_list = []
     nav_tree.setup_print_list(root_nav, print_list)
+
+    if current_node:
+        # Place a flag to indicate the position n the page  when page is loaded
+        # Reset is done in nav_tree.setup_print_list
+        current_node.set_scroll_location()
 
 
 
