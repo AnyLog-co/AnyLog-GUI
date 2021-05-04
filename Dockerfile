@@ -15,9 +15,9 @@ RUN apt-get -y install python3-flask
 RUN apt-get -y install nginx 
 
 RUN pip3 install --upgrade setuptools pip
-RUN pip3 install flask flask_table flask_wtf
+RUN pip3 install flask flask_nav flask_table flask_wtf
 RUN pip3 install requests
-RUN pip3 install uwsgi 
+RUN pip3 install uwsgi
  
 # move to WORKDIR + COPY codebsae 
 WORKDIR $ANYLOG_ROOT_DIR

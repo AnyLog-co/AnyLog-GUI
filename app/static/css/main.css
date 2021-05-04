@@ -127,6 +127,29 @@ ul.tree li:last-child:before {
     color: black;
 }
 
+
+#json.key {
+    color: darkgreen;
+}
+#json.value {
+    color: black;
+    text-align: left;
+}
+
+.button_view {
+    background-color: #7279ac; /* Green */
+    border-color: #3e3737;
+    border-width: 1px;
+    color: whitesmoke;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    width: 40px;
+    height: 20px;
+}
+
+
 .boxed_cmd {
     border: 15px solid lightsteelblue;
     background-color: whitesmoke;

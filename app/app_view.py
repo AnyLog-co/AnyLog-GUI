@@ -84,6 +84,20 @@ class gui():
         return self.policies_table
 
     # ------------------------------------------------------------------------
+    # Return the list of the nodes types at the first layer of the navigation
+    # ------------------------------------------------------------------------
+    def get_gui_root(self):
+        '''
+        # Get the list of the children at layer 1 from the config file
+        :return: The first children from the tree root
+        '''
+        gui_root = None
+        if self.config_struct and "gui" in self.config_struct:
+            tree = self.config_struct["gui"]
+            if 'children' in tree:
+                gui_root = tree['children']
+        return gui_root
+    # ------------------------------------------------------------------------
     # Return The info of the policy
     # ------------------------------------------------------------------------
     def get_policy_info(self, policy_name):
@@ -173,11 +187,11 @@ class gui():
                 url_link +=  "/%s" % (parent_name)
             parent_menu.append((parent_name, url_link))
 
-            if parent_name in child_tree:
+            if child_tree and parent_name in child_tree:
                 # Move to next layer
                 child_tree = child_tree[parent_name]
  
-            self.add_path_children(child_tree, level + 1, gui_keys, parent_menu, child_menu)
+                self.add_path_children(child_tree, level + 1, gui_keys, parent_menu, child_menu)
     # ------------------------------------------------------------------------
     # Get the AnyLog command as f (level) from the user JSON configuration struct
     # ------------------------------------------------------------------------
@@ -319,3 +333,26 @@ def set_policy_form(policy_name, policy_struct):
         policy.append(policy_attr)
 
     return [policy, None]
+
+# -----------------------------------------------------------------------------------
+# Transform a selection that includes data to a selection that includes the keys
+# for the CONFIG file navigation
+# Example: manufacturer#128#@company  -->  manufacturer@company
+# -----------------------------------------------------------------------------------
+def get_gui_key(selection):
+
+    keys_list = selection.split('@')    # Split by the GUI key
+
+    for index, key in enumerate(keys_list):
+
+        offset = key.find('+')      # Find the location of the data key
+        if offset > 0:
+            keys_list[index] = key[:offset]
+
+    return '@'.join(keys_list)
+
+# -----------------------------------------------------------------------------------
+# The GUI determines an edge if the position on the config file has no children
+# -----------------------------------------------------------------------------------
+def is_edge_node( gui_sub_tree ):
+    return not 'children' in gui_sub_tree
