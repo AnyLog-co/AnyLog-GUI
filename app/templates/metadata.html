@@ -7,6 +7,7 @@
 {% block content %}
 
 {% if selection %}
+
 <!-- Add the usr path to the form (if provided)  -->
 <form action="{{url_for('metadata')}}/{{selection}}" method="POST">
 {% else %}
@@ -28,6 +29,11 @@
                     <li class="last">
                 {% else %}
                     <li>
+                {% endif %}
+
+                {% if node.scroll_location %}
+                            <!-- The position of the scroll when page is loaded  -->
+                            <a name="start_location"></a>
                 {% endif %}
 
                 {% if node.name  %}
@@ -89,5 +95,8 @@
         <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
 
 </ul>
+
+<!-- Change scroll location from the top of the screen to last node touched-->
+<script> window.location.hash="start_location"; </script>
 
 {% endblock %}
