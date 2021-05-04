@@ -731,7 +731,11 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            return policies_to_status_report(selection, [dbms_table_id])
+            html = policies_to_status_report(selection, [dbms_table_id])
+            if not html:
+                # Got an error
+                metadata(selection)     # Redo without the query string
+            return html
 
     user_name = session["username"]
 
@@ -776,7 +780,11 @@ def metadata( selection = "" ):
                 configure_button = True
 
         if report_button:
-            return policies_to_status_report(location_key, selected_list)
+            html = policies_to_status_report(location_key, selected_list)
+            if not html:
+                # Got an error
+                metadata(selection)     # Redo without the query string
+            return html
 
 
     if not selection:
@@ -1192,6 +1200,9 @@ def status_view(selection, form_info,  policies):
     platform_info['to_date'] = "now"
 
     url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+
+    if err_msg:
+        return err_msg
 
     select_info = get_select_menu()
     select_info['title'] = "Current Status"
