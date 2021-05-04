@@ -259,6 +259,8 @@ def get_panels_list(user_name, report_name):
                 url = platforms_tree[platform_option]['url']
                 token = platforms_tree[platform_option]['token']
                 one_list, err_msg = visualize.get_panels(platform_option, url, token, report_name)
+                if err_msg:
+                    flash(err_msg, category='error')
                 if one_list and len(one_list):
                     panels_list = one_list
                     platform_name = platform_option
@@ -272,7 +274,8 @@ def get_panels_list(user_name, report_name):
                 url = platform_option['url']
                 token = platform_option['token']
                 panels_list, err_msg = visualize.get_panels(platform_name, url, token, report_name)
-
+                if err_msg:
+                    flash(err_msg, category='error')
     for index, entry in enumerate(panels_list):
         if entry.find(' ') != -1:
             # replace space with underline
