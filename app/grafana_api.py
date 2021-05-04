@@ -240,7 +240,7 @@ def get_init_dashboard(platform_info, dashboard_name):
 
     dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
     if err_msg:
-        return err_msg + "\nUsing: %s" % grafana_url
+        return err_msg + " Using: %s" % grafana_url
 
     if dashboard_id:
         new_dashboard = False
@@ -249,10 +249,10 @@ def get_init_dashboard(platform_info, dashboard_name):
         base_dashboard = platform_info['base_report']  # Get the initial report name from the config file
         dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
         if err_msg:
-            return err_msg + "\nUsing: %s" % grafana_url
+            return err_msg + " Using: %s" % grafana_url
         if not dashboard_id:
             # Missing base report
-            return "Grafana API: Missing base dashboard: %s\nUsing: %s" % (base_dashboard, grafana_url)
+            return "Grafana API: Missing base dashboard: %s Using: %s" % (base_dashboard, grafana_url)
 
     platform_info["new_dashboard"] = new_dashboard
     platform_info["dashboard_id"] = dashboard_id
@@ -420,6 +420,10 @@ def get_dashboards( grafana_url, token ):
     }
 
     response, err_msg = rest_api.do_get(url, headers)
+
+    if not err_msg:
+        if response.status_code != 200:
+            err_msg = "Failed HTTP request: Headers: %s *** URL: %s" % (str(headers), url)
 
     return [response, err_msg]
 
