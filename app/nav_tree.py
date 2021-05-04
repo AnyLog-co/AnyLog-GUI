@@ -67,6 +67,12 @@ class TreeNode():
         return self.parent
 
     # -----------------------------------------------------------------------------------
+    # Indicate that when a page is loaded - set the scroll location on this node
+    # -----------------------------------------------------------------------------------
+    def set_scroll_location(self):
+        self.scroll_location = True
+
+    # -----------------------------------------------------------------------------------
     # Delete all children of the current node
     # -----------------------------------------------------------------------------------
     def reset_children(self):

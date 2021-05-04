@@ -807,6 +807,9 @@ def metadata( selection = "" ):
         if get_policy:
             # User requested ti VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
+
+            current_node.set_scroll_location()      # Place a flag to indicate the position n the page  when page is loaded
+
             if current_node.is_option_node():
                 # move to the data node
                 policy_node = current_node.get_parent()
