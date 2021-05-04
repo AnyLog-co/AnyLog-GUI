@@ -716,22 +716,19 @@ def policies_to_status_report( selection, policies_list ):
 def process_selection( selection ):
 
     # ge the last selection
-    offset_data = selection.rfind('+') # The last selection of data (Id of policies)
     offset_metadata = selection.rfind('@') # The last selection of metadata (objects on the config file)
 
-    if offset_data > offset_metadata:
-        # Last selection is of data
-        last_selection = selection[offset_data:]
-    elif offset_metadata > offset_data:
+
+    if offset_metadata > 0:
         # Last selection is of metadata
         last_selection = selection[offset_metadata:]
-    else:
-        last_selection = None
-
-    if last_selection and last_selection in selection[: len(selection) - len(last_selection)]:
-        selection_key = selection[: len(selection) - len(last_selection)]   # remove the duplicate selection
+        if last_selection and last_selection in selection[: len(selection) - len(last_selection)]:
+            selection_key = selection[: len(selection) - len(last_selection)]  # remove the duplicate selection
+        else:
+            selection_key = selection
     else:
         selection_key = selection
+
     return selection_key
 
 # -----------------------------------------------------------------------------------
@@ -843,8 +840,6 @@ def metadata( selection = "" ):
             select_info = get_select_menu(selection=gui_key)
 
             gui_sub_tree = gui_view_.get_subtree(gui_key)  # Get the subtree representing the location on the config file
-
-
 
             if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
                 # Executes a query to select data from the network and set the data as as the children
@@ -996,22 +991,20 @@ def get_path_info(selection, select_info, current_node):
         al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info
 
     if not al_command:
-        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (
-        Config.GUI_VIEW, str(selection)))
-        return redirect(('/index'))  # Show all user select options
+        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (str(selection)))
+        return None  # Show all user select options
 
     # Get the columns names of the table to show
     list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
     if not list_columns:
-        flash(
-            "AnyLog: Missing 'list_columns' Config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
-        return redirect(('/index'))  # Show all user select options
+        flash("AnyLog: Missing column names in config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
+        return None
 
     # Get the keys to pull data from the JSON reply
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     if not list_keys:
         flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
-        return redirect(('/index'))  # Show all user select options
+        return None # Show all user select options
 
     target_node = get_target_node()
 

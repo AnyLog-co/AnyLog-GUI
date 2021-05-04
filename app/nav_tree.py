@@ -249,8 +249,6 @@ def get_current_node(current_node, keys_list, offset):
                     else:
                         return get_current_node(child, keys_list, offset + 1)
     return None
-
-
 # -----------------------------------------------------------------------------------
 # Setup a list that is printed in the list order and delivers a tree structure using metadata.html
 # -----------------------------------------------------------------------------------
