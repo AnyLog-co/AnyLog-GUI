@@ -717,7 +717,16 @@ def process_selection( selection ):
 
     # ge the last selection
     offset_metadata = selection.rfind('@') # The last selection of metadata (objects on the config file)
+    offset_data = selection.rfind('+')
+    if offset_data > offset_metadata:
+        # last selection is data
+        # find the first data key of the last level
+        offset_last_level = selection.find('+', offset_metadata)
+        selection_key = selection[:offset_last_level] + selection[offset_data:]
+    else:
+        selection_key = selection
 
+    '''
 
     if offset_metadata > 0:
         # Last selection is of metadata
@@ -728,6 +737,8 @@ def process_selection( selection ):
             selection_key = selection
     else:
         selection_key = selection
+        
+    '''
 
     return selection_key
 
@@ -753,7 +764,8 @@ def metadata( selection = "" ):
 
     user_name = session["username"]
 
-    location_key = process_selection( selection )              # a string representing the location of the user in the tree
+    location_key = process_selection( selection )   # a string representing the location of the user in the tree
+
     form_info = request.form
     get_policy = False
 
@@ -819,22 +831,29 @@ def metadata( selection = "" ):
         # Navigate in the tree to find location of Node
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
 
+        gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
         if get_policy:
             # User requested ti VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
-            if current_node.is_with_policy():
-                current_node.add_policy(None)
+            if current_node.is_option_node():
+                # move to the data node
+                policy_node = current_node.get_parent()
+            else:
+                policy_node = current_node
+            if policy_node.is_with_policy():
+                policy_node.add_policy(None)
             else:
                 retrieved_policy = get_json_policy(policy_id)
                 if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
-                    current_node.add_policy(retrieved_policy[0] )
-            select_info = get_select_menu(selection=location_key)
+                    policy_node.add_policy(retrieved_policy[0] )
+            select_info = get_select_menu(selection=gui_key)
         else:
             current_node.reset_children()  # Delete children from older navigation
 
             # Collect the children
 
-            gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
             # Get the options from the config file and set the options as children
 
             select_info = get_select_menu(selection=gui_key)

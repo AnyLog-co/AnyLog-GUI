@@ -137,7 +137,7 @@ ul.tree li:last-child:before {
 }
 
 .button_view {
-    background-color: #91f191; /* Green */
+    background-color: #9bc49b; /* Green */
     border-color: #3e3737;
     border-width: 1px;
     color: #453f3f;
@@ -145,7 +145,7 @@ ul.tree li:last-child:before {
     text-decoration: none;
     display: inline-block;
     font-size: 12px;
-    width: 70px;
+    width: 40px;
     height: 20px;
 }
 
