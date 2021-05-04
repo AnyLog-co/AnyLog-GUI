@@ -45,6 +45,7 @@ class TreeNode():
         self.table_name = None          # Table name or the key to pull the table name from the policy
         self.option = None              # If node maintains a metadata option representing a type of a child
         self.parent = None              # Parent node
+        self.path = None                # The complete path representing the node
 
 
         # Setup params
@@ -142,21 +143,22 @@ class TreeNode():
     # -----------------------------------------------------------------------------------
     # Add children based on the next hierarchy layer in the config file
     # -----------------------------------------------------------------------------------
-    def add_option_children(self, options_tree):
+    def add_option_children(self, options_tree, location_key):
         '''
         Navigating in a tree to a next layer. Represent the options for navigation as a children
-        :param options_tree:    # The subtree in the config file
+        :param options_tree:    The subtree in the config file
+               location_key:    The path identifying the parent
         '''
 
         if 'children' in options_tree:
             children = options_tree['children']
             for entry in children:
-                self.add_child(name=entry, option=entry)
+                self.add_child(name=entry, option=entry, path=location_key+'@'+entry)
 
     # -----------------------------------------------------------------------------------
     # Add the children resulting from a query to the network
     # -----------------------------------------------------------------------------------
-    def add_data_children(self, list_columns, list_keys, table_rows, dbms_name, table_name):
+    def add_data_children(self, location_key, list_columns, list_keys, table_rows, dbms_name, table_name):
         '''
         Create children to the specifird node
         :param list_columns:    The attribute names retrieved from the config file
@@ -199,11 +201,18 @@ class TreeNode():
             params['details'] = details     # The Details class in a node
 
             # Get the name and ID from the data
+            path = location_key
             if id_offset >= 0:
                 params['id'] = entry[id_offset]
+                path += ('+' + entry[id_offset])
 
             if name_offset >= 0:
                 params['name'] = entry[name_offset]
+                if id_offset == -1:
+                    # No ID for this entry
+                    path += ('+' + entry[name_offset])
+
+            params['path'] = path       # ID of the node
 
             if dbms_name:
                 # This is an edge node that can pull a report using the dbms and table info

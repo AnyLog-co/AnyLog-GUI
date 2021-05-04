@@ -815,7 +815,8 @@ def metadata( selection = "" ):
         for child in children:
             params = {
                 'name' : child,
-                'key'  : child
+                'key'  : child,
+                'path' : child,
             }
             root_nav.add_child( **params )
 
@@ -874,33 +875,12 @@ def metadata( selection = "" ):
                         dbms_name = None
                         table_name = None
 
-                    current_node.add_data_children(list_columns, list_keys, table_rows, dbms_name, table_name)
+                    current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
 
             else:
 
-                current_node.add_option_children(gui_sub_tree)
+                current_node.add_option_children(gui_sub_tree, location_key)
 
-            '''
-            reply = get_path_info(key_names, select_info, current_node)
-            if reply:
-
-                gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
-                # Add children to tree
-
-                if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
-                    # Push The key to pull dbms name and table name from the policy
-                    dbms_name = gui_sub_tree["dbms_name"]
-                    table_name = gui_sub_tree["table_name"]
-                else:
-                    dbms_name = None
-                    table_name = None
-
-                current_node.add_children(list_columns, list_keys, table_rows, dbms_name, table_name)
-
-                if 'children' in gui_sub_tree and len (gui_sub_tree['children']):
-                    # the Config file shows children to the data
-                    current_node.add_select_grandchilds(gui_sub_tree['children'])
-                '''
 
     print_list = []
     nav_tree.setup_print_list(root_nav, print_list)
