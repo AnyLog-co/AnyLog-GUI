@@ -42,10 +42,11 @@ def get_panels(platform_name, url:str, token:str, report_name:str):
     connector = get_connector(platform_name)
     if not connector:
         panels_list = None
+        error_msg = "%s not supported" % platform_name
     else:
-        panels_list = connector.get_panels(url, token, report_name)
+        panels_list, error_msg = connector.get_panels(url, token, report_name)
 
-    return panels_list
+    return [panels_list, error_msg]
 # --------------------------------------------------------
 # Deploy to create or update an exising report in the platform
 # --------------------------------------------------------
