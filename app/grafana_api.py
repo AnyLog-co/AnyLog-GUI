@@ -55,14 +55,15 @@ def get_panels(grafana_url:str, token:str, dashboard_name:str):
     reply, err_msg = get_dashboards(grafana_url, token)
     if not err_msg:
         dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
-        if dashboard_id:
-            dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
-            if dashboard_info:
-                if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
-                    panels = dashboard_info['dashboard']['panels']
-                    for entry in panels:
-                        if 'title' in entry:
-                            panels_list.append(entry['title'])
+        if not err_msg:
+            if dashboard_id:
+                dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
+                if dashboard_info:
+                    if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
+                        panels = dashboard_info['dashboard']['panels']
+                        for entry in panels:
+                            if 'title' in entry:
+                                panels_list.append(entry['title'])
 
     return [panels_list, err_msg]
 
@@ -239,7 +240,7 @@ def get_init_dashboard(platform_info, dashboard_name):
 
     dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
     if err_msg:
-        return "Grafana API: Failed to provide the list of dashboards"
+        return err_msg
 
     if dashboard_id:
         new_dashboard = False
@@ -301,7 +302,7 @@ def get_existing_dashboaard( dasborads_reply, dashboard_name ):
         try:
             dashboards = dasborads_reply.json()
         except:
-            err_msg = "Grafana API: Unable to parse data retrieved from request to dashboards"
+            err_msg = "Grafana API: Unable to parse data retrieved from request to dashboard: %s" % dashboard_name
         else:
             err_msg = None
 
@@ -317,8 +318,7 @@ def get_existing_dashboaard( dasborads_reply, dashboard_name ):
                         if "version" in entry:
                             report_version = entry["version"]
     else:
-        err_msg = "Grafana API: received HTTP request error no. %u from Grafama" % dasborads_reply.status_code
-
+        err_msg = "Grafana API: Pulling dashboard '%s' received HTTP request error no. %u" % (dashboard_name, dasborads_reply.status_code)
 
     return [report_id, report_uid, report_version, err_msg]
 # -----------------------------------------------------------------------------------
