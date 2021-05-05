@@ -720,7 +720,38 @@ def policies_to_status_report( selection, policies_list ):
 # -----------------------------------------------------------------------------------
 @app.route('/conf_nav_report', methods = ['GET', 'POST'])
 def conf_nav_report():
-    pass
+
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    user_name = session["username"]
+    select_info = get_select_menu()
+
+    select_info['title'] = "Configure Report"
+
+    # select output options
+    select_info['default_options_list'] = ["Min", "Max", "Avg"]    # These are flagged as selected
+    select_info['more_options_list'] = ["Range", "Count"]
+
+
+    # Organize the report time selections as last selection
+    select_info['time_options'] = time_selection_
+    from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")      # Get the last selections of dates
+    if not to_date:
+        to_date = 'now'
+        from_date = "now-2M"
+    if to_date:
+        if to_date == 'now':
+            for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == from_date[3:]:
+                    select_info['previous_range'] = (entry[0], entry[1])
+        else:
+            select_info['from_date'] = from_date
+            select_info['to_date'] = to_date
+
+
+    return render_template('base_conf_report.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata

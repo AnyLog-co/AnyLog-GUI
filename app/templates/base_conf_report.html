@@ -2,9 +2,11 @@
 
 {% block content %}
 
-<form action="{{url_for('deploy_report')}}" method="POST">
+<form action="{{url_for('conf_nav_report')}}" method="POST">
 
-
+    <br>
+    Graph
+    <br>
     <!-- Select Type of report - Min, Max, Avg -->
     {% for option in default_options_list %}
         <!-- Select functionality  -->
@@ -19,7 +21,29 @@
         <label for={{option}}>{{option}}</label>&nbsp
     {% endfor %}
 
-    <br><br>
+    <br>
+    <hr>
+    <br>
+
+    Gauge
+
+    <br>
+    <!-- Select Type of report - Min, Max, Avg -->
+    {% for option in default_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}} checked>
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+
+     <!-- Select Type of report - range, count -->
+    {% for option in more_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}}>
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+
+
+    <br><hr><br>
 
     <!-- Select Dates  -->
     <label for="start-date">Start: </label>
@@ -44,7 +68,8 @@
         </select>
 
 
-    <input type="submit" value="Submit" name="Submit">
+    <br><br>
+    <input type="submit" value="Apply" name="Submit">
 
 </form>
     
