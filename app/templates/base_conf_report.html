@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form action="{{url_for('deploy_report')}}" method="POST">
+
+
+    <!-- Select Type of report - Min, Max, Avg -->
+    {% for option in default_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}} checked>
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+
+     <!-- Select Type of report - range, count -->
+    {% for option in more_options_list %}
+        <!-- Select functionality  -->
+        <input type="checkbox" id={{option}} name={{option}}>
+        <label for={{option}}>{{option}}</label>&nbsp
+    {% endfor %}
+
+    <br><br>
+
+    <!-- Select Dates  -->
+    <label for="start-date">Start: </label>
+    <input type="datetime-local" id="start_date" name="start_date" value={{from_date}}>
+    &nbsp&nbsp&nbsp
+    <label for="end-date">End:   </label>
+    <input type="datetime-local" id="end_date" name="end_date" value={{to_date}}>
+
+    <!-- Select Date Range  -->
+    &nbsp&nbsp&nbsp
+    <label for="range">Date Range:</label>
+        <select name="date_range" id="date_range">
+            {% if previous_range %}
+                 <!-- set date range selection as previous selection -->
+                <option value={{previous_range[1]}}>{{previous_range[0]}}</option>
+            {% else %}}
+                <option value="">Dates selection</option>
+            {% endif %}
+            {% for option in time_options %}
+                <option value={{option[1]}}>{{option[0]}}</option>
+            {% endfor %}
+        </select>
+
+
+    <input type="submit" value="Submit" name="Submit">
+
+</form>
+    
+{% endblock %}

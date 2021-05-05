@@ -39,6 +39,17 @@ class CommandsForm(FlaskForm):
   
     submit = SubmitField('Submit')
 
+
+class ConfDynamicReport(FlaskForm):
+    report_name = SelectField('Select Report', default="")
+    new_report = StringField('New Report', default="")
+    rename = StringField('Rename Report', default="")
+    make_default = BooleanField('Set as Default', default=False)
+    reset = BooleanField('Reset Report', default=False)
+    delete = BooleanField('Delete Report', default=False)
+    submit = SubmitField('Apply Changes')
+
+
 class InstallForm(FlaskForm):
     # Basic SCP/SSH connection information
     """
@@ -139,14 +150,6 @@ class InstallForm(FlaskForm):
     #is_master = BooleanField('Master')
     deploy = SubmitField('Deploy')
 
-class ConfDynamicReport(FlaskForm):
-    report_name = SelectField('Select Report', default="")
-    new_report = StringField('New Report', default="")
-    rename = StringField('Rename Report', default="")
-    make_default = BooleanField('Set as Default', default=False)
-    reset = BooleanField('Reset Report', default=False)
-    delete = BooleanField('Delete Report', default=False)
-    submit = SubmitField('Apply Changes')
 
 
 

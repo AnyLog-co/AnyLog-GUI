@@ -715,6 +715,12 @@ def policies_to_status_report( selection, policies_list ):
     select_info["url_list"] = url_list
 
     return  render_template('output_frame.html', **select_info)
+# -----------------------------------------------------------------------------------
+# Configure the Navigation Report - the report created from metadata.html
+# -----------------------------------------------------------------------------------
+@app.route('/conf_nav_report', methods = ['GET', 'POST'])
+def conf_nav_report():
+    pass
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -729,14 +735,7 @@ def metadata( selection = "" ):
 
     user_name = session["username"]
 
-    if selection:
-        offset = selection.rfind('#')       # Offset to #start_location in the URL
-        if offset != -1:
-            location_key = selection[:offset]       # Remove the scroll location added by the JS in metadata.html
-        else:
-            location_key = selection
-    else:
-        location_key = selection
+    location_key = selection
 
     if request.query_string:
         query_string = request.query_string.decode('ascii')
@@ -789,7 +788,9 @@ def metadata( selection = "" ):
             elif form_key == "Save":
                 save_button = True
             elif form_key == "Configure":
-                configure_button = True
+                # Configure the dynamic report
+                return redirect(url_for('conf_nav_report'))
+
 
         if report_button:
             html = policies_to_status_report(location_key, selected_list)
