@@ -10,6 +10,7 @@ to be broadly interpreted) you or your such affiliates shall unconditionally ass
 such non-permitted act to AnyLog, Inc.
 '''
 
+import os
 
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
@@ -467,9 +468,27 @@ def configure():
 
     form_info = request.form.to_dict()
 
+    form = ConfigForm()
+
+    # Get the list of the config files
+    config_dir = Config.CONFIG_FOLDER
+    try:
+        file_list = os.listdir(config_dir)
+    except:
+        flash('AnyLog: No config files in: %s' % config_dir)
+        file_list = []
+
+    # Keep the .json files
+    config_files = []
+    for entry in file_list:
+        if entry.endswith(".json"):
+            config_files.append(entry[:-5])
+
+    form.conf_file_name.choices = config_files  # set list with report names
+    
 
     select_info = get_select_menu( caller = "configure")
-    select_info["form"] = ConfigForm()
+    select_info["form"] = form
     select_info["title"] = 'Configure Network Connection'
 
 

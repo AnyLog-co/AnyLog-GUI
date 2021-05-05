@@ -24,6 +24,7 @@ class LoginForm(FlaskForm):
 
 class ConfigForm(FlaskForm):
 
+    conf_file_name = SelectField('Select File', default="")
     node_ip = StringField('Node IP')
     node_port = IntegerField('Node Port')
     remember_me = BooleanField('Remember Me')
