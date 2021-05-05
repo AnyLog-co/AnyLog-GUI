@@ -1,0 +1,3 @@
+orics anylog-gui-admin: eyJrIjoiblFwZ0NoS21XVXlrWjRmMkN0SjdzMGhVSVpadDFGWnQiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==
+curl -H "Authorization: Bearer eyJrIjoiblFwZ0NoS21XVXlrWjRmMkN0SjdzMGhVSVpadDFGWnQiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==" http://45.79.152.190:3000/api/dashboards/home
+
