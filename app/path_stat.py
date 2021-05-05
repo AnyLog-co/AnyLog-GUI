@@ -90,9 +90,13 @@ def get_element(user_name, element_key):
     '''
     keep info as f(user + key)
     '''
-    user_info = active_state_[user_name]
-    if element_key in user_info:
-        element = user_info[element_key]
+
+    if user_name in active_state_:
+        user_info = active_state_[user_name]
+        if element_key in user_info:
+            element = user_info[element_key]
+        else:
+            element = None
     else:
         element = None
     return element

@@ -114,13 +114,20 @@ def login():
     and move to main page to determine GUI to use
     '''
 
-    select_info = get_select_menu( caller = "login" )
 
     form = LoginForm()
 
     if form.validate_on_submit():
 
         user_name = request.form['username']
+        # Register Useer
+        path_stat.set_new_user(user_name)
+
+        # Load Config
+        gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
+        gui_view.set_gui()
+        path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
+
         target_node = get_target_node()
 
         al_headers = {
@@ -138,26 +145,21 @@ def login():
                 flash('AnyLog: Netowk node failed to authenticate {}'.format(form.username.data))
                 return redirect(('/login'))  # Redo the login
 
-        path_stat.set_new_user(user_name)
+
         session['username'] = user_name
         path_stat.set_user_connnected(user_name)
 
+
+
         return redirect(('/index'))     # Go to main page
 
-    user_name = get_user_by_session()
-    if not user_name:
-        return redirect(('/login'))  # Redo the login
+
 
     # Load the default CONFIG file
 
-    gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
-    gui_view.set_gui()
 
-    path_stat.register_element(user_name, "gui_view", gui_view)     # Register the Config file
-
-    title_str = 'Sign In'
-
-    select_info['title'] = title_str
+    select_info = get_select_menu( caller = "login" )
+    select_info['title'] = 'Sign In'
     select_info['form'] = form
 
     return render_template('login.html', **select_info)
@@ -1371,39 +1373,37 @@ def get_select_menu(selection = "", caller = ""):
     select_info = {}
 
     gui_view = get_gui_view()
-    if not gui_view.is_with_config():
-        # Faild to recognize the JSON Config File
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        if caller == "configure" or caller == "login":
-            # The config file is not available - ignore get_select_menu
-            return select_info  # return empty dictionary
+    if gui_view:
 
-        form = ConfigForm()
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+        if not gui_view.is_with_config():
+            # Faild to recognize the JSON Config File
+            flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+            if caller == "configure" or caller == "login":
+                # The config file is not available - ignore get_select_menu
+                return select_info  # return empty dictionary
 
-    company_name = gui_view.get_base_info("name")                 # The user name
-    user_menu = gui_view.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menu, children_menu = gui_view.get_dynamic_menu(selection)     # web pages based on the navigation
+            form = ConfigForm()
+            return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
-    # get the loggin name a name from the conf file
-    if 'username' in session:
-        user_name = session['username']
-    else:
-        user_name = gui_view.get_base_info("name") or "AnyLog"
+        company_name = gui_view.get_base_info("name")                 # The user name
+        user_menu = gui_view.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menu, children_menu = gui_view.get_dynamic_menu(selection)     # web pages based on the navigation
 
-    report_name = path_stat.get_report_selected(user_name)
+        if company_name:
+            select_info['company_name'] = company_name
+        if user_menu and len(user_menu):
+            select_info['user_gui'] = user_menu
+        if parent_menu and len(parent_menu):
+            select_info['parent_gui'] = parent_menu
+        if children_menu and len(children_menu):
+            select_info['children_gui'] = children_menu
 
-    if company_name:
-        select_info['company_name'] =company_name
-    if user_menu and len(user_menu):
-        select_info['user_gui'] = user_menu
-    if parent_menu and len(parent_menu):
-        select_info['parent_gui'] = parent_menu
-    if children_menu and len(children_menu):
-        select_info['children_gui'] = children_menu
-    if report_name:
-        select_info['report_name'] = report_name
-
+        # get the loggin name a name from the conf file
+        if 'username' in session:
+            user_name = session['username']
+        else:
+            user_name = gui_view.get_base_info("name") or "AnyLog"
+        select_info['report_name'] = path_stat.get_report_selected(user_name)
 
     return select_info
 # -----------------------------------------------------------------------------------
