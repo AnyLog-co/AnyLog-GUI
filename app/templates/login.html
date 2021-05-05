@@ -20,9 +20,11 @@
             <br><br><br>
         </div>
 
-        <form action="" method ="post" novalidate class="centerd_boxed">
+
+        <div class="set_in_center">
+            <form action="" method ="post" novalidate class="boxed_login">
             {{ form.hidden_tag() }}
-            <div  >
+            <div>
                 <p>
                     {{ form.username.label }}<br>
                     {{ form.username(size = 32) }}<br>
@@ -44,6 +46,6 @@
 
 
         </form>
-
+     </div>
 </body>
 </html>
