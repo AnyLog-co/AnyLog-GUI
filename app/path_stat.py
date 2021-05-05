@@ -145,6 +145,18 @@ def set_platform_name(user_name, report_name, platform):
 
 # -----------------------------------------------------------------------------------
 # Get user Path overview
+# Example reply:
+'''
+    Name              Names of Info Fields       Names of policies keys            Values from Queries (based on policies keys)   
+ (from Config)            (from Config)             (From Config)
+ 
+[('Manufacturer', ['ID', 'Name', 'URL'],       ['id', 'name', 'url'],       [['9990b1b7d5ed51508cdca8f53d6a6621', 'Orics', 'http://orics.com/']]),
+ ('Company',      ['ID', 'Customer'],          ['id', 'customer'],          [['0d255db48d048f80e32953a836b27495', 'TuscanBrands']
+                                                                             ['0d597850005688024900ab432245563e', 'Costco']])
+ ]
+ 
+ Note - last layer provides all children 
+'''
 # -----------------------------------------------------------------------------------
 def get_path_overview(user_name, level, parent_menu):
     '''
@@ -447,7 +459,7 @@ def update_command(user_name, selection, command):
                     keys_list = word[1:].split('[')         # The list of keys to use to retrieve from the JSON
                     if len(keys_list) > 1:             # at least 2 keys (the first is the policy type)
                         parent_type = keys_list[0][:-1]
-                        parent_policy = get_policy(user_name, selection, parent_type)   # Get the policy of the parent from the path
+                        parent_policy = get_policy(user_name, selection)   # Get the policy of the parent from the path
                         if parent_policy:
                             if parent_type in parent_policy:
                                 # pull the attribute value
@@ -495,7 +507,7 @@ def get_report_info(user_name, report_name):
 # -----------------------------------------------------------------------------------
 # Get a policy from the path
 # -----------------------------------------------------------------------------------
-def get_policy(user_name, selection, policy_type):
+def get_policy(user_name, selection):
 
     global active_state_
     

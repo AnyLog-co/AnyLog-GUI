@@ -53,18 +53,19 @@ def get_panels(grafana_url:str, token:str, dashboard_name:str):
 
     panels_list = []
     reply, err_msg = get_dashboards(grafana_url, token)
-    if reply:
+    if not err_msg:
         dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
-        if dashboard_id:
-            dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
-            if dashboard_info:
-                if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
-                    panels = dashboard_info['dashboard']['panels']
-                    for entry in panels:
-                        if 'title' in entry:
-                            panels_list.append(entry['title'])
+        if not err_msg:
+            if dashboard_id:
+                dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
+                if dashboard_info:
+                    if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
+                        panels = dashboard_info['dashboard']['panels']
+                        for entry in panels:
+                            if 'title' in entry:
+                                panels_list.append(entry['title'])
 
-    return panels_list
+    return [panels_list, err_msg]
 
 # --------------------------------------------------------
 # Provide status on the list of entries at platform_info["projection_list]
@@ -239,7 +240,7 @@ def get_init_dashboard(platform_info, dashboard_name):
 
     dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
     if err_msg:
-        return "Grafana API: Failed to provide the list of dashboards"
+        return err_msg + " Using: %s" % grafana_url
 
     if dashboard_id:
         new_dashboard = False
@@ -247,9 +248,11 @@ def get_init_dashboard(platform_info, dashboard_name):
         new_dashboard = True
         base_dashboard = platform_info['base_report']  # Get the initial report name from the config file
         dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
+        if err_msg:
+            return err_msg + " Using: %s" % grafana_url
         if not dashboard_id:
             # Missing base report
-            return "Grafana API: Missing base dashboard: %s" % base_dashboard
+            return "Grafana API: Missing base dashboard: %s Using: %s" % (base_dashboard, grafana_url)
 
     platform_info["new_dashboard"] = new_dashboard
     platform_info["dashboard_id"] = dashboard_id
@@ -299,7 +302,7 @@ def get_existing_dashboaard( dasborads_reply, dashboard_name ):
         try:
             dashboards = dasborads_reply.json()
         except:
-            err_msg = "Grafana API: Unable to parse data retrieved from request to dashboards"
+            err_msg = "Grafana API: Unable to parse data retrieved from request to dashboard: %s" % dashboard_name
         else:
             err_msg = None
 
@@ -314,7 +317,8 @@ def get_existing_dashboaard( dasborads_reply, dashboard_name ):
                         report_uid = entry["uid"]
                         if "version" in entry:
                             report_version = entry["version"]
-
+    else:
+        err_msg = "Grafana API: Pulling dashboard '%s' received HTTP request error no. %u" % (dashboard_name, dasborads_reply.status_code)
 
     return [report_id, report_uid, report_version, err_msg]
 # -----------------------------------------------------------------------------------
@@ -416,6 +420,16 @@ def get_dashboards( grafana_url, token ):
     }
 
     response, err_msg = rest_api.do_get(url, headers)
+
+    if not err_msg:
+        if response.status_code != 200:
+            info = ""
+            if hasattr(response, 'reason'):
+                info = response.reason
+            if hasattr(response, 'text'):
+                info += ' [' + response.text + ']'
+
+            err_msg = "HTTP GET returned code %u - (%s) URL: %s" % (response.status_code, info, url)
 
     return [response, err_msg]
 

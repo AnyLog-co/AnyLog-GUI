@@ -7,6 +7,7 @@
 {% block content %}
 
 {% if selection %}
+
 <!-- Add the usr path to the form (if provided)  -->
 <form action="{{url_for('metadata')}}/{{selection}}" method="POST">
 {% else %}
@@ -15,43 +16,87 @@
 
 <ul class="tree">
 
-    {% for child in tree_node.children %}
+    {% for node in nodes_list %}
 
-        {% if child.first_child %}
-            <ul>
-        {% endif %}
+        {% if node %}        <!--  The node is not None   -->
 
-        {% if child.last_child  %}
-            <li class="last">
+                {% if node.first_child %}
+                    <ul>        <!--  Start unordered list   -->
+                {% endif %}
+
+                <!--  List Item starts  -->
+                {% if node.last_child  %}
+                    <li class="last">
+                {% else %}
+                    <li>
+                {% endif %}
+
+                {% if node.scroll_location %}
+                            <!-- The position of the scroll when page is loaded  -->
+                            <a name="start_location"></a>
+                {% endif %}
+
+                {% if node.name  %}
+                        <!-- View Policy or Select or Navigate  -->
+                        {% if node.details  %}
+                            <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
+                            <input type="submit" value="View" name={{node.path}} class="button_view">
+                        {% endif %}
+                        {% if selection  %}
+                            {% if node.dbms_name  %}
+                                <!-- Flag to select the edge (to Save for a future report or immediate report) -->
+                                <td><input type=checkbox name=selected.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
+                                <!-- Or go directly to a report -->
+                                <a href="{{url_for('metadata')}}/{{selection}}?report={{node.dbms_name}}@{{node.table_name}}@{{node.id}}?">{{node.name}}</a>
+                            {% else %}
+                                <!-- Not Edge -->
+                                {% if node.id  %}
+                                    <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
+                                {% else %}
+                                        {% if node.option  %}
+                                            <!-- A node representing navigation selection based on the config file -->
+                                            <!-- Moving from metadata (option from config) to data node -->
+                                            <input type="submit" value={{node.option}} name=option.{{node.path}}>
+                                        {% else %}
+                                            <a href="{{url_for('metadata')}}/{{selection}}@{{node.name}}">{{node.name}}</a>
+                                        {% endif %}
+                                {% endif %}
+
+                            {% endif %}
+                        {% else %}
+                            <a href="{{url_for('metadata')}}/{{node.name}}">{{node.name}}</a>
+                        {% endif %}
+                {% elif node.policy_key %}
+                         <!-- View a policy (key and value)  -->
+                        <span id="json" class="key">{{node.policy_key}}</span>
+                        {% if node.policy_value  %}
+                            <span id="json" class="value"> : {{node.policy_value}}</span>
+                        {% endif %}
+                {% endif %}
+
+                {% if node.with_children %}
+
+                {% else %}
+                    </li>
+                {% endif %}
+
         {% else %}
-            <li>
-        {% endif %}
-
-        {% if child.key  %}
-                <!-- View position or select position  -->
-                <input type="submit" value="View" name={{child.key}}>   &nbsp
-                <a href="{{url_for('metadata')}}/{{child.key}}">{{child.key}}</a>
-
-        {% endif %}
-        {% if child.value  %}
-            &nbsp : &nbsp
-            <span class="key">
-            {{child.value}}
-            </span>
-        {% endif %}
-
-
-        {% if child.last_child %}
-            </li>
-            </ul>
-        {% else %}
-            {% if child.with_children %}
-            {% else %}
-            </li>
-            {% endif %}
+             <!--  Node is None - end of list -->
+                </li>
+                </ul>
         {% endif %}
     {% endfor %}
 
+    <br>
+    <hr>
+     <!-- If edge nodes that can be selected to a report -->
+        <input type="submit" value="Configure" name="Configure">    <!-- Configure report -->
+        <input type="submit" value="Save" name="Save">    <!-- Save selected edge to report -->
+        <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
+
 </ul>
+
+<!-- Change scroll location from the top of the screen to last node touched-->
+<script> window.location.hash="start_location"; </script>
 
 {% endblock %}
