@@ -480,18 +480,21 @@ def configure():
 
     # Keep the .json files
     config_files = []
-    for entry in file_list:
+    default = 0
+    for index, entry in enumerate(file_list):
         if entry.endswith(".json"):
-            config_files.append(entry[:-5])
+            value = entry[:-5]
+            if value == Config.CONFIG_FILE[:-5]:   # Look for the default file name without the ".json"
+                default = index
+            config_files.append((index, entry[:-5]))
 
     form.conf_file_name.choices = config_files  # set list with report names
-    
+    form.conf_file_name.default =  default
+    form.process()
 
     select_info = get_select_menu( caller = "configure")
     select_info["form"] = form
     select_info["title"] = 'Configure Network Connection'
-
-
 
     gui_view = path_stat.get_element(user_name,"gui_view")
 
