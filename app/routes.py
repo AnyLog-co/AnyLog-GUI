@@ -70,6 +70,10 @@ time_selection_ = [
     ("last 3 years", "-3y"),
 ]
 # -----------------------------------------------------------------------------------
+# Is user connected
+# -----------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
 # Example Table: https://progbook.org/shop5.html
@@ -94,7 +98,6 @@ def login():
     Input login name & password, connecet to a node in the network
     and move to main page to determine GUI to use
     '''
-    global user_connect_
 
     select_info = get_select_menu( caller = "login" )
 
@@ -102,6 +105,7 @@ def login():
 
     if form.validate_on_submit():
 
+        user_name = request.form['username']
         target_node = get_target_node()
 
         al_headers = {
@@ -113,20 +117,15 @@ def login():
             response = requests.get(target_node, headers=al_headers)
         except:
             flash('AnyLog: No network connection', category='error')
-            user_connect_ = False
+            return redirect(('/login'))  # Redo the login
         else:
-            if response.status_code == 200:
-                user_connect_ = True
-            else:
-                user_connect_ = False
+            if response.status_code != 200:
                 flash('AnyLog: Netowk node failed to authenticate {}'.format(form.username.data))
-        
-        if not user_connect_:
-            return redirect(('/login'))        # Redo the login
+                return redirect(('/login'))  # Redo the login
 
-        user_name = request.form['username']
+        path_stat.set_new_user(user_name)
         session['username'] = user_name
-        path_stat.set_new_user( user_name )
+        path_stat.set_user_connnected(user_name)
 
         return redirect(('/index'))     # Go to main page
 
