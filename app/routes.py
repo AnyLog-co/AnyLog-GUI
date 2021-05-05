@@ -41,9 +41,6 @@ from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
 
-gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
-gui_view_.set_gui()
-
 query_node_ = None
 
 time_selection_ = [
@@ -70,14 +67,16 @@ time_selection_ = [
 # -----------------------------------------------------------------------------------
 # Is user connected
 # -----------------------------------------------------------------------------------
-def is_with_session():
+def get_user_by_session():
 
     if 'username' in session:       # Session is a Flask object organizing the session and is setg in login
         user_name = session['username']     # Example in https://pythonbasics.org/flask-sessions/
-        if path_stat.is_user_connnected( user_name ):
-            return True
+        if user_name and not path_stat.is_user_connnected( user_name ):
+            user_name  = None
+    else:
+        user_name = None
 
-    return False
+    return user_name
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
@@ -87,7 +86,7 @@ def is_with_session():
 @app.route('/index')
 def index():
 
-    if not is_with_session():
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login
 
     select_info = get_select_menu()
@@ -134,11 +133,17 @@ def login():
 
         return redirect(('/index'))     # Go to main page
 
-    if not is_with_session():
+    if not get_user_by_session():
         return redirect(('/login'))  # Redo the login
 
-    title_str = 'Sign In'
+    # Load the default CONFIG file
 
+    gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
+    gui_view.set_gui()
+
+    path_stat.set_gui()
+
+    title_str = 'Sign In'
 
     select_info['title'] = title_str
     select_info['form'] = form
@@ -157,10 +162,9 @@ def dynamic_report( report_name = "" ):
     View the report being used
     Called from - base.html
     '''
-    if not is_with_session():
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session['username']
 
     select_info = get_select_menu()
     if not report_name:
@@ -290,10 +294,9 @@ def get_panels_list(user_name, report_name):
 @app.route('/deploy_report', methods={'GET','POST'})
 def deploy_report():
 
-    if not is_with_session():
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session['username']
 
     form_info = request.form
 
@@ -421,7 +424,7 @@ def get_time_range(form_info):
 # -----------------------------------------------------------------------------------
 @app.route('/reports')
 def reports():
-    if not is_with_session():
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
@@ -478,7 +481,7 @@ def configure():
 # -----------------------------------------------------------------------------------
 @app.route('/network')
 def network():
-    if not is_with_session():
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
 
@@ -500,7 +503,7 @@ def network():
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
-    if not is_with_session():
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     al_headers = {
@@ -722,10 +725,10 @@ def policies_to_status_report( selection, policies_list ):
 @app.route('/conf_nav_report', methods = ['GET', 'POST'])
 def conf_nav_report():
 
-    if not is_with_session():
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name = session["username"]
     select_info = get_select_menu()
 
     select_info['title'] = "Configure Report"
@@ -764,10 +767,9 @@ def conf_nav_report():
 @app.route('/metadata/<string:selection>', methods = ['GET', 'POST'])
 def metadata( selection = "" ):
 
-    if not is_with_session():
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session["username"]
 
     location_key = selection
 
@@ -955,7 +957,7 @@ def tree( selection = "" ):
     global gui_view_
 
     # Need to login before navigating
-    if not is_with_session():
+    if not get_user_by_session():
         return redirect(('/login'))  # start with Login  if not yet provided
 
     select_info = get_select_menu(selection=selection)
@@ -1126,7 +1128,7 @@ def selected( selection = "" ):
     global query_node_
     global gui_view_
 
-    if not is_with_session():
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     form_info = request.form
@@ -1397,10 +1399,10 @@ def configure_reports():
     '''
     View the report being used
     '''
-    if not is_with_session():
-        return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name = session['username']
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
     form = ConfDynamicReport()
 
@@ -1430,7 +1432,7 @@ def configure_reports():
 def policies(policy_name = ""):
    
 
-    if not is_with_session():
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
