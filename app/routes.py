@@ -730,8 +730,10 @@ def conf_nav_report():
     select_info['title'] = "Configure Report"
 
     # select output options
-    select_info['default_options_list'] = ["Min", "Max", "Avg"]    # These are flagged as selected
-    select_info['more_options_list'] = ["Range", "Count"]
+    select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
+    select_info['graph_additional'] = ["Range", "Count"]
+    select_info['gauge_default'] = ["Avg"]    # These are flagged as selected
+    select_info['gauge_additional'] = ["Min", "Max", "Range", "Count"]
 
 
     # Organize the report time selections as last selection

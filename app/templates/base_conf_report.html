@@ -8,14 +8,14 @@
     Graph
     <br>
     <!-- Select Type of report - Min, Max, Avg -->
-    {% for option in default_options_list %}
+    {% for option in graph_default %}
         <!-- Select functionality  -->
         <input type="checkbox" id={{option}} name={{option}} checked>
         <label for={{option}}>{{option}}</label>&nbsp
     {% endfor %}
 
      <!-- Select Type of report - range, count -->
-    {% for option in more_options_list %}
+    {% for option in graph_additional %}
         <!-- Select functionality  -->
         <input type="checkbox" id={{option}} name={{option}}>
         <label for={{option}}>{{option}}</label>&nbsp
@@ -29,14 +29,14 @@
 
     <br>
     <!-- Select Type of report - Min, Max, Avg -->
-    {% for option in default_options_list %}
+    {% for option in gauge_default %}
         <!-- Select functionality  -->
         <input type="checkbox" id={{option}} name={{option}} checked>
         <label for={{option}}>{{option}}</label>&nbsp
     {% endfor %}
 
      <!-- Select Type of report - range, count -->
-    {% for option in more_options_list %}
+    {% for option in gauge_additional %}
         <!-- Select functionality  -->
         <input type="checkbox" id={{option}} name={{option}}>
         <label for={{option}}>{{option}}</label>&nbsp
