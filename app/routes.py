@@ -41,8 +41,6 @@ from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
 
-user_connect_ = False       # Flag indicating connected to the AnyLog Node 
-
 gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
 gui_view_.set_gui()
 
@@ -72,7 +70,14 @@ time_selection_ = [
 # -----------------------------------------------------------------------------------
 # Is user connected
 # -----------------------------------------------------------------------------------
+def is_with_session():
 
+    if 'username' in session:       # Session is a Flask object organizing the session and is setg in login
+        user_name = session['username']     # Example in https://pythonbasics.org/flask-sessions/
+        if path_stat.is_user_connnected( user_name ):
+            return True
+
+    return False
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
@@ -82,7 +87,7 @@ time_selection_ = [
 @app.route('/index')
 def index():
 
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login
 
     select_info = get_select_menu()
@@ -129,15 +134,12 @@ def login():
 
         return redirect(('/index'))     # Go to main page
 
+    if not is_with_session():
+        return redirect(('/login'))  # Redo the login
 
     title_str = 'Sign In'
 
-    if 'username' in session:
-        user_name = session['username']
-        if not path_stat.is_with_user( user_name ):
-            path_stat.set_new_user( user_name )
 
-   
     select_info['title'] = title_str
     select_info['form'] = form
 
@@ -155,7 +157,7 @@ def dynamic_report( report_name = "" ):
     View the report being used
     Called from - base.html
     '''
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     user_name = session['username']
@@ -288,7 +290,7 @@ def get_panels_list(user_name, report_name):
 @app.route('/deploy_report', methods={'GET','POST'})
 def deploy_report():
 
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     user_name = session['username']
@@ -419,7 +421,7 @@ def get_time_range(form_info):
 # -----------------------------------------------------------------------------------
 @app.route('/reports')
 def reports():
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
@@ -476,7 +478,7 @@ def configure():
 # -----------------------------------------------------------------------------------
 @app.route('/network')
 def network():
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
 
@@ -498,7 +500,7 @@ def network():
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     al_headers = {
@@ -720,7 +722,7 @@ def policies_to_status_report( selection, policies_list ):
 @app.route('/conf_nav_report', methods = ['GET', 'POST'])
 def conf_nav_report():
 
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     user_name = session["username"]
@@ -762,7 +764,7 @@ def conf_nav_report():
 @app.route('/metadata/<string:selection>', methods = ['GET', 'POST'])
 def metadata( selection = "" ):
 
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     user_name = session["username"]
@@ -950,11 +952,10 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
 @app.route('/tree/<string:selection>')
 def tree( selection = "" ):
     global query_node_
-    global user_connect_
     global gui_view_
 
     # Need to login before navigating
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))  # start with Login  if not yet provided
 
     select_info = get_select_menu(selection=selection)
@@ -1012,7 +1013,6 @@ def get_path_info(selection, select_info, current_node):
             table_rows:         A list with the data rows of the last level
     '''
 
-    global user_connect_
     global gui_view_
 
     level = selection.count('@') + 1
@@ -1124,10 +1124,9 @@ def selected( selection = "" ):
     Called from selection_table.html
     '''
     global query_node_
-    global user_connect_
     global gui_view_
 
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     form_info = request.form
@@ -1398,7 +1397,7 @@ def configure_reports():
     '''
     View the report being used
     '''
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     user_name = session['username']
@@ -1431,7 +1430,7 @@ def configure_reports():
 def policies(policy_name = ""):
    
 
-    if not user_connect_:
+    if not is_with_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
