@@ -715,6 +715,45 @@ def policies_to_status_report( selection, policies_list ):
     select_info["url_list"] = url_list
 
     return  render_template('output_frame.html', **select_info)
+# -----------------------------------------------------------------------------------
+# Configure the Navigation Report - the report created from metadata.html
+# -----------------------------------------------------------------------------------
+@app.route('/conf_nav_report', methods = ['GET', 'POST'])
+def conf_nav_report():
+
+    if not user_connect_:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    user_name = session["username"]
+    select_info = get_select_menu()
+
+    select_info['title'] = "Configure Report"
+
+    # select output options
+    select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
+    select_info['graph_additional'] = ["Range", "Count"]
+    select_info['gauge_default'] = ["Avg"]    # These are flagged as selected
+    select_info['gauge_additional'] = ["Min", "Max", "Range", "Count"]
+
+
+    # Organize the report time selections as last selection
+    select_info['time_options'] = time_selection_
+    from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")      # Get the last selections of dates
+    if not to_date:
+        to_date = 'now'
+        from_date = "now-2M"
+    if to_date:
+        if to_date == 'now':
+            for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == from_date[3:]:
+                    select_info['previous_range'] = (entry[0], entry[1])
+        else:
+            select_info['from_date'] = from_date
+            select_info['to_date'] = to_date
+
+
+    return render_template('base_conf_report.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -738,7 +777,7 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            html = policies_to_status_report(selection, [dbms_table_id])
+            html = policies_to_status_report(location_key, [dbms_table_id])
             if not html:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
@@ -782,7 +821,9 @@ def metadata( selection = "" ):
             elif form_key == "Save":
                 save_button = True
             elif form_key == "Configure":
-                configure_button = True
+                # Configure the dynamic report
+                return redirect(url_for('conf_nav_report'))
+
 
         if report_button:
             html = policies_to_status_report(location_key, selected_list)
@@ -840,36 +881,36 @@ def metadata( selection = "" ):
                     policy_node.add_policy(retrieved_policy[0] )
             select_info = get_select_menu(selection=gui_key)
         else:
-            current_node.reset_children()  # Delete children from older navigation
-
-            # Collect the children
-
-
-            # Get the options from the config file and set the options as children
-
             select_info = get_select_menu(selection=gui_key)
 
-            gui_sub_tree = gui_view_.get_subtree(gui_key)  # Get the subtree representing the location on the config file
-
-            if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
-                # Executes a query to select data from the network and set the data as as the children
-                reply = get_path_info(gui_key, select_info, current_node)
-                if reply:
-                    # Add children to tree
-                    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
-                    if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
-                        # Push The key to pull dbms name and table name from the policy
-                        dbms_name = gui_sub_tree["dbms_name"]
-                        table_name = gui_sub_tree["table_name"]
-                    else:
-                        dbms_name = None
-                        table_name = None
-
-                    current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
-
+            if current_node.is_with_children():
+                current_node.reset_children()  # Delete children from older navigation
             else:
+                # Collect the children
 
-                current_node.add_option_children(gui_sub_tree, location_key)
+                # Get the options from the config file and set the options as children
+
+                gui_sub_tree = gui_view_.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+                if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
+                    # Executes a query to select data from the network and set the data as as the children
+                    reply = get_path_info(gui_key, select_info, current_node)
+                    if reply:
+                        # Add children to tree
+                        gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
+                        if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+                            # Push The key to pull dbms name and table name from the policy
+                            dbms_name = gui_sub_tree["dbms_name"]
+                            table_name = gui_sub_tree["table_name"]
+                        else:
+                            dbms_name = None
+                            table_name = None
+
+                        current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
+
+                else:
+
+                    current_node.add_option_children(gui_sub_tree, location_key)
 
 
     return call_navigation_page(user_name, select_info, location_key, current_node)

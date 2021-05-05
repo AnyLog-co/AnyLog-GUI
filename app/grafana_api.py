@@ -423,7 +423,13 @@ def get_dashboards( grafana_url, token ):
 
     if not err_msg:
         if response.status_code != 200:
-            err_msg = "Failed HTTP request: Headers: %s *** URL: %s" % (str(headers), url)
+            info = ""
+            if hasattr(response, 'reason'):
+                info = response.reason
+            if hasattr(response, 'text'):
+                info += ' [' + response.text + ']'
+
+            err_msg = "HTTP GET returned code %u - (%s) URL: %s" % (response.status_code, info, url)
 
     return [response, err_msg]
 
