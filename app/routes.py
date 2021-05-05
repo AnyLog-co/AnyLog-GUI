@@ -10,6 +10,7 @@ to be broadly interpreted) you or your such affiliates shall unconditionally ass
 such non-permitted act to AnyLog, Inc.
 '''
 
+import os
 
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
@@ -465,8 +466,34 @@ def configure():
         return redirect(('/login'))        # start with Login  if not yet provided
 
 
+    form_info = request.form.to_dict()
+
+    form = ConfigForm()
+
+    # Get the list of the config files
+    config_dir = Config.CONFIG_FOLDER
+    try:
+        file_list = os.listdir(config_dir)
+    except:
+        flash('AnyLog: No config files in: %s' % config_dir)
+        file_list = []
+
+    # Keep the .json files
+    config_files = []
+    default = 0
+    for index, entry in enumerate(file_list):
+        if entry.endswith(".json"):
+            value = entry[:-5]
+            if value == Config.CONFIG_FILE[:-5]:   # Look for the default file name without the ".json"
+                default = index
+            config_files.append((index, entry[:-5]))
+
+    form.conf_file_name.choices = config_files  # set list with report names
+    form.conf_file_name.default =  default
+    form.process()
+
     select_info = get_select_menu( caller = "configure")
-    select_info["form"] = ConfigForm()
+    select_info["form"] = form
     select_info["title"] = 'Configure Network Connection'
 
     gui_view = path_stat.get_element(user_name,"gui_view")
@@ -496,8 +523,6 @@ def configure():
         conf["reports_port"] = request.form["reports_ip"]
   
 
-    select_info["title"] = 'Configure Network Connection'
-    select_info["form"] = ConfigForm()         # New Form
 
     return render_template('configure.html', **select_info )
 # -----------------------------------------------------------------------------------

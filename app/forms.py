@@ -13,7 +13,7 @@ such non-permitted act to AnyLog, Inc.
 # https://exploreflask.com/en/latest/forms.html
 import getpass
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField, FileField
 from wtforms.validators import DataRequired, Optional, ValidationError
 
 class LoginForm(FlaskForm):
@@ -23,10 +23,12 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class ConfigForm(FlaskForm):
-    node_ip = StringField('Node IP', validators=[DataRequired()])
-    node_port = IntegerField('Node Port', validators=[DataRequired()])
+
+    conf_file_name = SelectField('Select File', default="")
+    node_ip = StringField('Node IP')
+    node_port = IntegerField('Node Port')
     remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Save')
+    submit = SubmitField('Submit')
 
 class CommandsForm(FlaskForm):
 
