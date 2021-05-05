@@ -9,14 +9,9 @@
 </form>
     <h1>Configure</h1>
     
+        <p><input type="file" name="file"></p>
+
         <p>
-            {{ form.company.label }}<br>
-            {{ form.company(size = 32) }}<br>
-            {% for error in form.company.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-       <p>
             {{ form.node_ip.label }}<br>
             {{ form.node_ip(size = 32) }}<br>
             {% for error in form.node_ip.errors %}
@@ -30,20 +25,7 @@
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
-        <p>
-            {{ form.reports_ip.label }}<br>
-            {{ form.reports_ip(size = 32) }}<br>
-            {% for error in form.reports_ip.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.reports_port.label }}<br>
-            {{ form.reports_port(size = 4) }}<br>
-            {% for error in form.reports_port.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
+
 
         <p>{{ form.remember_me() }} {{form.remember_me.label}}</p>
         <p>{{ form.submit() }}</p>
