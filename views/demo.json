@@ -1,6 +1,6 @@
 {
     "gui" : {
-            "name" : "Orics",
+            "name" : "Demo",
             "query_node" : "http://23.239.12.151:2049",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://23.239.12.151:3000",
@@ -25,28 +25,30 @@
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
-                "Tag" :
-                {
-                    "query" : "blockchain get device bring.unique.json [device][name] [device][serial] [device][manufacturer] separator = ,",
-                    "table_title" : ["Serial", "Name", "Manufacturer"],
-                    "json_keys" : ["serial", "name", "manufacturer"],
-                    "dbms_name" : "litsanleandro",
-                    "table_name" : "[device][name]"
-                },
-                "Manufacturer" :
-                {
-                    "query" : "blockchain get company bring.unique.json [company][id] [company][name] [company][address] separator = ,",
-                    "table_title" : ["ID", "Name", "Address"],
-                    "json_keys" : ["id", "name", "address"],
-                    "children" : {
-                        "Tag" :
+		"Company": {
+	            "query": "blockchain get company bring.unique.json [company][name] separator = ,", 
+		    "table_title": ["Name"],
+		    "json_keys": ["name"],
+		    "dbms_name": "litsanleandro",
+		    "table_name": "[company][name]",
+		    "children": {
+                        "Device" :
                         {
                             "query" : "blockchain get device where company = [company][id] bring.unique.json [device][name] [device][serial] separator = ,",
                             "table_title" : ["Serial", "Name"],
                             "json_keys" : ["serial", "name"]
                         }        
 	            }
-	        }
+
+		},
+                "Device" :
+                {
+                    "query" : "blockchain get device bring.unique.json [device][name] [device][serial] [device][manufacturer] separator = ,",
+                    "table_title" : ["Serial", "Name", "Manufacturer"],
+                    "json_keys" : ["serial", "name", "manufacturer"],
+                    "dbms_name" : "litsanleandro",
+                    "table_name" : "[device][name]"
+                }
 	    },
             "policies" : [
                 {
