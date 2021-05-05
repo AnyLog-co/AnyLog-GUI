@@ -25,32 +25,28 @@
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
-		"Company": {
-	            "query": "blockchain get company bring.unique.json [company][id] [company][name] [company][address] separator = ,", 
-		    "table_title": ["ID", "Name", "Address"],
-		    "json_keys": ["id", "name", "address"],
-		    "dbms_name": "litsanleandro",
-		    "table_name": "[company][name]",
-		    "children": {
-                        "Device" :
-                        {
-                            "query" : "blockchain get device where company = [company][id] combring.unique.json [device][name] [device][serial] [device][manufacturer] separator = ,",
-                            "table_title" : ["Serial", "Name", "Manufacturer"],
-			    "json_keys": ["serial", "name", "manufacturer"],
-			    "dbms_name": "litsanleandro",
-			    "table_name": "[device][name]"
-                        }        
-	            }
-
-		},
-                "Device" :
+                "Tag" :
                 {
                     "query" : "blockchain get device bring.unique.json [device][name] [device][serial] [device][manufacturer] separator = ,",
                     "table_title" : ["Serial", "Name", "Manufacturer"],
                     "json_keys" : ["serial", "name", "manufacturer"],
                     "dbms_name" : "litsanleandro",
                     "table_name" : "[device][name]"
-                }
+                },
+                "Manufacturer" :
+                {
+                    "query" : "blockchain get company bring.unique.json [company][id] [company][name] [company][address] separator = ,",
+                    "table_title" : ["ID", "Name", "Address"],
+                    "json_keys" : ["id", "name", "address"],
+                    "children" : {
+                        "Tag" :
+                        {
+                            "query" : "blockchain get device where company = [company][id] bring.unique.json [device][name] [device][serial] separator = ,",
+                            "table_title" : ["Serial", "Name"],
+                            "json_keys" : ["serial", "name"]
+                        }        
+	            }
+	        }
 	    },
             "policies" : [
                 {
@@ -73,16 +69,10 @@
                         ]
                 },
                 {
-                    "name" : "Company",
-                    "key" : "Company",
+                    "name" : "Manufacturer",
+                    "key" : "manufacturer",
                     "struct" : [
-			        {
-				  "name": "ID", 
-				  "key": "id", 
-				  "type": "text",
-				  "size": 30
-				},
-                                { "name": "Company",
+                                { "name": "Manufacturer",
                                   "key" : "name",
                                   "type" : "text",
                                   "size" : 30,
@@ -93,34 +83,100 @@
                                   "type" : "text",
                                   "size" : 30,
                                   "required" : false
+                                },
+                                { "name": "URL",
+                                  "key" : "url",
+                                  "type" : "url",
+                                  "size" : 60
                                 }
-                      ]
+
+                    ]
                         
                 },
                 {
-                    "name" : "Device",
-                    "key" : "device",
+                    "name" : "Company",
+                    "key" : "Company",
                     "struct" : [
-                                { "name": "Device",
+                                { "name": "Company",
                                   "key" : "name",
                                   "type" : "text",
                                   "size" : 30,
                                   "required" : true
                                 },
-                              { "name": "Serial",
-                                  "key" : "serial",
+                                { "name": "Manufacturer",
+                                  "key" : "manufacturer",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Address",
+                                  "key" : "address",
                                   "type" : "text",
                                   "size" : 30,
                                   "required" : false
+                                },
+                                { "name": "URL",
+                                  "key" : "url",
+                                  "type" : "text",
+                                  "size" : 60
+                              }
+                      ]
+                        
+                },
+
+                {
+                    "name" : "Machine",
+                    "key" : "machine",
+                    "struct" : [
+                                { "name": "Machine",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
                                 },
                               { "name": "Manufacturer",
                                   "key" : "manufacturer",
                                   "type" : "text",
                                   "size" : 30,
-				  "required": true
+                                  "required" : false
+                                },
+                              { "name": "ID",
+                                  "key" : "machine_id",
+                                  "type" : "number",
+                                  "size" : 12
                               }
                         ]
-                    }
+                    },
+
+                  {
+                      "name" : "Sensor",
+                      "key" : "sensor",
+                      "struct" : [
+
+                                { "name": "Sensor",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Machine",
+                                  "key" : "machine",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Serial",
+                                  "key" : "Serial",
+                                  "type" : "number",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Description",
+                                  "key" : "Description",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                }
                       ]
 
                   }
