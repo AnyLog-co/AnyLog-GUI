@@ -156,15 +156,18 @@ ul.tree li:last-child:before {
     color: black;
     padding: 15px;
     margin: 20px;
+    float:right;
 }
 
 .centerd_boxed{
 
-  width: 50%;
+    width: 30%;
     padding: 20px;
     background: #f2f2f2;
     float: left;
     box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 
