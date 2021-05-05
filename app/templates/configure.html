@@ -4,16 +4,17 @@
 
 
 {% block content %}
-<form action="{{ url_for('configure') }}" method="post">
+
 
 </form>
-    <h1>Configure</h1>
-    
-        <p><input type="file" name="file"></p>
+	<form action="{{url_for('configure')}}" method="POST">
+
+        <p><input type="file" name="config_file" accept="json"></p>
 
         <p>
             {{ form.node_ip.label }}<br>
             {{ form.node_ip(size = 32) }}<br>
+
             {% for error in form.node_ip.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
@@ -21,6 +22,7 @@
         <p>
             {{ form.node_port.label }}<br>
             {{ form.node_port(size = 4) }}<br>
+
             {% for error in form.node_port.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
@@ -30,4 +32,5 @@
         <p>{{ form.remember_me() }} {{form.remember_me.label}}</p>
         <p>{{ form.submit() }}</p>
     </form>
+
 {% endblock %}

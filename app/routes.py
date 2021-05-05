@@ -465,9 +465,14 @@ def configure():
         return redirect(('/login'))        # start with Login  if not yet provided
 
 
+    form_info = request.form.to_dict()
+
+
     select_info = get_select_menu( caller = "configure")
     select_info["form"] = ConfigForm()
     select_info["title"] = 'Configure Network Connection'
+
+
 
     gui_view = path_stat.get_element(user_name,"gui_view")
 
@@ -496,8 +501,6 @@ def configure():
         conf["reports_port"] = request.form["reports_ip"]
   
 
-    select_info["title"] = 'Configure Network Connection'
-    select_info["form"] = ConfigForm()         # New Form
 
     return render_template('configure.html', **select_info )
 # -----------------------------------------------------------------------------------
