@@ -83,7 +83,7 @@ def main()->dict:
     geo_locations = get_locations()
     data = {'master': {}, 'operator': {}, 'publisher': {}, 'query': {}} 
     conn = input('Connection Info (IP:Port): ') 
-    blockchain_locations = get_blockchain_locations('23.239.12.151:2049')
+    blockchain_locations = get_blockchain_locations()
     for node in blockchain_locations: 
         for name in blockchain_locations[node]: 
             lat, lon = blockchain_locations[node][name].split(', ') 
