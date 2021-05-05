@@ -729,7 +729,14 @@ def metadata( selection = "" ):
 
     user_name = session["username"]
 
-    location_key = selection
+    if selection:
+        offset = selection.rfind('#')       # Offset to #start_location in the URL
+        if offset != -1:
+            location_key = selection[:offset]       # Remove the scroll location added by the JS in metadata.html
+        else:
+            location_key = selection
+    else:
+        location_key = selection
 
     if request.query_string:
         query_string = request.query_string.decode('ascii')
@@ -738,7 +745,7 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            html = policies_to_status_report(selection, [dbms_table_id])
+            html = policies_to_status_report(location_key, [dbms_table_id])
             if not html:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
