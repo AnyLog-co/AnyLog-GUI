@@ -67,6 +67,12 @@ class TreeNode():
         '''
         return self.parent
 
+    def is_with_children(self):
+        '''
+        return True if node has children
+        '''
+        return self.with_children
+
     # -----------------------------------------------------------------------------------
     # Indicate that when a page is loaded - set the scroll location on this node
     # -----------------------------------------------------------------------------------
@@ -78,6 +84,7 @@ class TreeNode():
     # -----------------------------------------------------------------------------------
     def reset_children(self):
         self.children = []
+        self.with_children = False
 
     # -----------------------------------------------------------------------------------
     # The first node in the tree is the Anchor - a node that has all the first layers as a children
