@@ -29,14 +29,14 @@
                     "query" : "blockchain get device where company=2fd47b63bb9993967de7ca2cac60d557 bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
                     "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
                     "json_keys" : ["id", "serial", "name", "manufacturer"],
-                    "dbms_name" : "lsl-demo",
+                    "dbms_name" : "litsanleandro",
                     "table_name" : "[device][name]"
                 },
                 "IOTech": {
                     "query" : "blockchain get device where company=4e28d2778ddfe7ad6b0dc7b566e8d782 bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
                     "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
                     "json_keys" : ["id", "serial", "name", "manufacturer"],
-                    "dbms_name" : "lsl-demo",
+                    "dbms_name" : "edgex",
                     "table_name" : "[device][name]"
                 }
 	    },
