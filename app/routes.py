@@ -800,6 +800,7 @@ def policies_to_status_report( selection, policies_list ):
     return  render_template('output_frame.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Configure the Navigation Report - the report created from metadata.html
+# Calls - base_conf_report
 # -----------------------------------------------------------------------------------
 @app.route('/conf_nav_report', methods = ['GET', 'POST'])
 def conf_nav_report():
@@ -812,7 +813,9 @@ def conf_nav_report():
 
     select_info['title'] = "Configure Report"
 
-    # select output options
+    # define config params
+    #panel_config = PanelConfig()
+    
     select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
     select_info['graph_additional'] = ["Range", "Count"]
     select_info['gauge_default'] = ["Avg"]    # These are flagged as selected

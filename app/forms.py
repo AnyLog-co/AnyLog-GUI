@@ -36,6 +36,16 @@ class CommandsForm(FlaskForm):
   
     submit = SubmitField('Submit')
 
+class PanelConfig():
+
+    def __init__(self, name, selected, not_selected, default_range, default_from, default_to):
+        self.name = name        # The name of the panel
+        self.chek_box_selected = selected      # Each entry represents selected checkboxes for a panel
+        self.chek_box = not_selected           # Each entry represent checkboxes for a panel
+        self.default_time_range = default_range  # i.e. now-2M
+        self.default_from = default_from
+        self.default_to = default_to
+
 
 class ConfDynamicReport(FlaskForm):
     report_name = SelectField('Select Report', default="")
