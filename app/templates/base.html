@@ -63,7 +63,7 @@
         <hr>
         <h1 class="title">{{ title }}</h1>
         <!-- ERROR Messages placed in Flush -->
-            {% with messages = get_flashed_messages() %}
+            {% with messages = get_flashed_messages(category_filter=["error"]) %}
                 {% if messages %}
                     <table border="2" class="table error-table">
                         <tr>    <!-- table row  -->
@@ -79,8 +79,26 @@
                     </table>
                     <br>
                 {% endif %}
-
             {% endwith %}
+             <!-- Other Messages placed in Flush -->
+            {% with messages = get_flashed_messages(category_filter=["message"]) %}
+                {% if messages %}
+                    <table border="2" class="table message-table">
+                        <tr>    <!-- table row  -->
+                            <td>
+                            Messages
+                            </td>
+                        </tr>
+                        {% for message in messages %}
+                            <tr>
+                                <td>{{ message }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    <br>
+                {% endif %}
+            {% endwith %}
+
         {% block content %}
         {% endblock %}
     </body>
