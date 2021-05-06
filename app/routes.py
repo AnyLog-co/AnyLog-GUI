@@ -129,36 +129,15 @@ def login():
 
         # Load the default CONFIG file
 
-        gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
-        err_msg = gui_view.set_gui()
-        if err_msg:
-            flash(err_msg, category='error')
-            return  redirect(url_for('login'))  # No config file - reconfigure
+        redirect_reply = load_config_file("login", user_name, Config.GUI_VIEW)
+        if redirect_reply:
+            return redirect_reply
 
-        path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
-
-        # Get query node from the loaded config file
-        target_node = gui_view.get_base_info("query_node")
-        if not target_node:
-            flash("AnyLog: Missing Query Node in config file", category='error')
-            return redirect(url_for('login'))  # No config file - reconfigure
-
-        path_stat.register_element(user_name, "target_node", target_node)
-
-        al_headers = {
-            'command' : 'get status',
-            'User-Agent' : 'AnyLog/1.23'
-            }
-
-        try:
-            response = requests.get(target_node, headers=al_headers)
-        except:
+        data, error_msg = exec_al_cmd("get status")
+        if error_msg:
             flash('AnyLog: No network connection', category='error')
+            flash(error_msg, category='error')
             return redirect(('/login'))  # Redo the login
-        else:
-            if response.status_code != 200:
-                flash('AnyLog: Network node failed to authenticate {}'.format(form.username.data))
-                return redirect(('/login'))  # Redo the login
 
 
         session['username'] = user_name
@@ -166,13 +145,40 @@ def login():
 
         return redirect(('/index'))     # Go to main page
 
-
-
     select_info = get_select_menu( caller = "login" )
     select_info['title'] = 'Sign In'
     select_info['form'] = form
 
     return render_template('login.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Load config file - register the config file and the target node
+# -----------------------------------------------------------------------------------
+def load_config_file( caller, user_name, config_file):
+
+    if not config_file:
+        flash("AnyLog: Missing config file name with system variable: GUI_VIEW", category='error')
+        return redirect(url_for('caller'))  # No config file - reconfigure
+    path_stat.register_element(user_name, "config_file", config_file)  # Register the Config file
+
+    gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
+    err_msg = gui_view.set_gui(config_file)
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(url_for('caller'))  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
+
+    # Get query node from the loaded config file
+    target_node = gui_view.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing Query Node in config file", category='error')
+        return redirect(url_for('caller'))  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "target_node", target_node)
+
+    return None     # No redirect
+
 
 # -----------------------------------------------------------------------------------
 # View the report structure being dynamically build by navigation
@@ -477,6 +483,14 @@ def configure():
 
     form_info = request.form.to_dict()
 
+    if (len(form_info)):
+        if "conf_file_name" in form_info:
+            new_file = form_info["conf_file_name"] + ".json"
+            config_file = Config.CONFIG_FOLDER + new_file         # New config file
+            redirect_reply = load_config_file("configire", user_name, config_file)
+            if redirect_reply:
+                return redirect_reply
+
     form = ConfigForm()
 
     # Get the list of the config files
@@ -494,8 +508,8 @@ def configure():
         if entry.endswith(".json"):
             value = entry[:-5]
             if value == Config.CONFIG_FILE[:-5]:   # Look for the default file name without the ".json"
-                default = index
-            config_files.append((index, entry[:-5]))
+                default = value
+            config_files.append(value)
 
     form.conf_file_name.choices = config_files  # set list with report names
     form.conf_file_name.default =  default
@@ -507,10 +521,6 @@ def configure():
 
     gui_view = path_stat.get_element(user_name,"gui_view")
 
-    if not gui_view.is_with_config():
-        # Faild to recognize the JSON Config File
-        if gui_view.is_config_error():
-            flash(gui_view.get_config_error())
 
     # Test connectors to the Visualization platforms
     platforms = gui_view.get_base_info("visualization")
@@ -522,15 +532,6 @@ def configure():
                     flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
             else:
                 flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW))
-
-    if request.method == 'POST':
-        # Need to be completed
-        conf = {}
-        conf["node_ip"] = request.form["node_ip"]
-        conf["node_port"] = request.form["node_port"]
-        conf["reports_ip"] = request.form["reports_ip"]
-        conf["reports_port"] = request.form["reports_ip"]
-  
 
 
     return render_template('configure.html', **select_info )
@@ -1391,6 +1392,7 @@ def exec_al_cmd( al_cmd ):
     if response and response.status_code == 200:
         data = response.text
     else:
+        data = None
         if not error_msg:
             # No data reply
             error_msg = "AnyLog: REST command %s returned error code %u" % response.status_code
