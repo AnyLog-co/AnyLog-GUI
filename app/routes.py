@@ -1349,6 +1349,11 @@ def get_json_policy( id ):
         flash('AnyLog: Error in Policy ID', category='error')
         return redirect(('/index'))        # Select a different path
 
+    if id.find(' ') != -1:
+        if id[0] != "\"":
+            id = "\"" + id
+        if id[-1] != "\"":
+            id = id + "\""
     al_cmd = "blockchain get * where id = %s" % id
     data, error_msg = exec_al_cmd( al_cmd )
 
