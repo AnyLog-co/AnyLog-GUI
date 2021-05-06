@@ -498,13 +498,16 @@ def configure():
         if "node_ip" in form_info and "node_port" in form_info:
             node_ip = form_info["node_ip"]
             node_port = form_info["node_port"]
-            target_node = node_ip + ":" + node_port
-            path_stat.register_element(user_name, "target_node", target_node)
-            data, error_msg = exec_al_cmd("get status")
-            if error_msg:
-                flash('AnyLog: No network connection', category='error')
-                flash(error_msg, category='error')
-                return redirect(url_for('configure'))  # Redo the login
+            if node_ip and node_port:
+                target_node = node_ip + ":" + node_port
+                path_stat.register_element(user_name, "target_node", target_node)
+                data, error_msg = exec_al_cmd("get status")
+                if error_msg:
+                    flash('AnyLog: No network connection', category='error')
+                    flash(error_msg, category='error')
+                    return redirect(url_for('configure'))  # Redo the login
+            elif node_ip or node_port:
+                flash('AnyLog: IP and port values were not properly provided', category='error')
 
 
     form = ConfigForm()
@@ -543,7 +546,7 @@ def configure():
             if isinstance(platforms[entry], dict) and "url" in platforms[entry] and "token" in platforms[entry]:
                 ret_val, err_msg = visualize.test_connection( entry, platforms[entry]["url"], platforms[entry]["token"] )  # Platform name + connect_string
                 if not ret_val:
-                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg), category='error')
+                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry, err_msg), category='error')
             else:
                 flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW), category='error')
 
@@ -1409,7 +1412,7 @@ def exec_al_cmd( al_cmd ):
         data = None
         if not error_msg:
             # No data reply
-            error_msg = "AnyLog: REST command %s returned error code %u" % response.status_code
+            error_msg = "AnyLog: REST command %s returned error code %u" % (al_cmd, response.status_code)
 
     return [data, error_msg]
 
