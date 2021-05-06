@@ -87,8 +87,12 @@ def get_user_by_session():
 # Get GUI_VIEW - pull the user name from the session and bring the GUI_VIEW struct from path_stat
 # -----------------------------------------------------------------------------------
 def get_gui_view():
-    user_name = session['username']
-    return path_stat.get_element(user_name, "gui_view")
+    if 'username' in session:
+        user_name = session['username']
+        gui_view = path_stat.get_element(user_name, "gui_view")
+    else:
+        gui_view = None
+    return gui_view
 # -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
