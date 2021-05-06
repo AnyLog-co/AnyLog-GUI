@@ -645,6 +645,7 @@ def replace_panel( dashboard_name, report_type, display_type, panel, panel_title
                     break
             else:
                 # Make source data representing 'Additional JSON Data' on the panel
+                al_query = {}
                 al_query['value_column'] = 'value'
                 al_query['timestamp_column'] = 'timestamp'
                 if not len(functions):
