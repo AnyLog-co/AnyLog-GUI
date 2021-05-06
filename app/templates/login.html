@@ -1,27 +1,51 @@
+<html>
+
+    <!-- process: title (for tab) + company_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
+    <head>
+        <!-- Tab Display -->
+
+        <title>AnyLog</title>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    </head>
+   <body>
+        <img src="{{ url_for('static', filename='css/anylog-logo.png') }}" class="floatRight">
 
 
-{% extends "base.html" %}
+        <div class="header">
+            <br><br>
+            <div style="text-align: center">
+                       <h1 class="title">AnyLog Network</h1>
+            </div>
+            <br><br><br>
+        </div>
 
 
-{% block content %}
 
-    <form action="" method ="post" novalidate>
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.username.label }}<br>
-            {{ form.username(size = 32) }}<br>
-            {% for error in form.username.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password(size = 32) }}<br>
-            {% for error in form.password.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.remember_me() }} {{form.remember_me.label}}</p>
-        <p>{{ form.submit() }}</p>
-    </form>
-{% endblock %}
+            <form action="" method ="post" novalidate class="boxed_login">
+            {{ form.hidden_tag() }}
+            <div>
+                <p>
+                    {{ form.username.label }}<br>
+                    {{ form.username(size = 32) }}<br>
+                    {% for error in form.username.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                </p>
+                <p>
+                    {{ form.password.label }}<br>
+                    {{ form.password(size = 32) }}<br>
+                    {% for error in form.password.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                </p>
+            </div>
+            <br><br>
+            <p>{{ form.remember_me() }} {{form.remember_me.label}}</p>
+            <p>{{ form.submit() }}</p>
+
+
+        </form>
+
+</body>
+</html>
