@@ -129,21 +129,19 @@ def login():
 
         # Load the default CONFIG file
 
-        redirect_reply = load_config_file("login", user_name, Config.GUI_VIEW)
-        if redirect_reply:
-            return redirect_reply
+        if load_config_file("login", user_name, Config.GUI_VIEW):
 
-        data, error_msg = exec_al_cmd("get status")
-        if error_msg:
-            flash('AnyLog: No network connection', category='error')
-            flash(error_msg, category='error')
-            return redirect(('/login'))  # Redo the login
+            data, error_msg = exec_al_cmd("get status")
+            if error_msg:
+                flash('AnyLog: No network connection', category='error')
+                flash(error_msg, category='error')
+                return redirect(('/login'))  # Redo the login
 
 
-        session['username'] = user_name
-        path_stat.set_user_connnected(user_name)
+            session['username'] = user_name
+            path_stat.set_user_connnected(user_name)
 
-        return redirect(('/index'))     # Go to main page
+            return redirect(('/index'))     # Go to main page
 
     select_info = get_select_menu( caller = "login" )
     select_info['title'] = 'Sign In'
@@ -157,15 +155,16 @@ def login():
 def load_config_file( caller, user_name, config_file):
 
     if not config_file:
-        flash("AnyLog: Missing config file name with system variable: GUI_VIEW", category='error')
-        return redirect(url_for('caller'))  # No config file - reconfigure
+        flash("AnyLog: Missing or wrong system variables: CONFIG_FOLDER and CONFIG_FILE", category='error')
+        return False  # No config file - reconfigure
+
     path_stat.register_element(user_name, "config_file", config_file)  # Register the Config file
 
     gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
     err_msg = gui_view.set_gui(config_file)
     if err_msg:
         flash(err_msg, category='error')
-        return redirect(url_for('caller'))  # No config file - reconfigure
+        return False  # No config file - reconfigure
 
     path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
 
@@ -173,11 +172,11 @@ def load_config_file( caller, user_name, config_file):
     target_node = gui_view.get_base_info("query_node")
     if not target_node:
         flash("AnyLog: Missing Query Node in config file", category='error')
-        return redirect(url_for('caller'))  # No config file - reconfigure
+        return False  # No config file - reconfigure
 
     path_stat.register_element(user_name, "target_node", target_node)
 
-    return None     # No redirect
+    return True     # No redirect
 
 
 # -----------------------------------------------------------------------------------
@@ -489,9 +488,10 @@ def configure():
         if "conf_file_name" in form_info:
             new_file = form_info["conf_file_name"] + ".json"
             config_file = Config.CONFIG_FOLDER + new_file         # New config file
-            redirect_reply = load_config_file("configire", user_name, config_file)
-            if redirect_reply:
-                return redirect_reply
+            if not load_config_file("configire", user_name, config_file):
+                flash('AnyLog: failed to load config file: %s' % new_file, category='error')
+                return redirect(url_for('configure'))  # Redo the login
+
             flash('AnyLog: New config file: %s' % new_file, category='message')
 
         # Change target node
