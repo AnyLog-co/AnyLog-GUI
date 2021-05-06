@@ -5,6 +5,11 @@
 <form action="{{url_for('conf_nav_report')}}" method="POST">
 
     <br>
+    {%  for option in selected_options %}
+
+
+    {% endfor %}
+    <br>
     Graph
     <br>
     <!-- Select Type of report - Min, Max, Avg -->

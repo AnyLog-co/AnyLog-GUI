@@ -21,7 +21,8 @@ from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
-
+from app.forms import DashboardConfig       # Base config of a user defined report to include multiple panels
+from app.forms import PanelConfig           # Base config of a user defined panel
 
 from app.entities import Item
 from app.entities import AnyLogItem
@@ -800,6 +801,7 @@ def policies_to_status_report( selection, policies_list ):
     return  render_template('output_frame.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Configure the Navigation Report - the report created from metadata.html
+# Calls - base_conf_report
 # -----------------------------------------------------------------------------------
 @app.route('/conf_nav_report', methods = ['GET', 'POST'])
 def conf_nav_report():
@@ -812,7 +814,17 @@ def conf_nav_report():
 
     select_info['title'] = "Configure Report"
 
-    # select output options
+    # define config params
+
+    dashboard_conf = DashboardConfig()
+
+    panel_config = PanelConfig( "Graph", "Graph", ["Avg", "Min", "Max"], ["Range", "Count"])
+    dashboard_conf.add_panel(panel_config)
+    panel_config = PanelConfig( "Gauge", "Gauge", ["Avg"], ["Min", "Max", "Range", "Count"])
+    dashboard_conf.add_panel(panel_config)
+    select_info['dashboard'] = dashboard_conf
+
+
     select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
     select_info['graph_additional'] = ["Range", "Count"]
     select_info['gauge_default'] = ["Avg"]    # These are flagged as selected
