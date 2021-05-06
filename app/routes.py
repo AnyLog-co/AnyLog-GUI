@@ -129,36 +129,15 @@ def login():
 
         # Load the default CONFIG file
 
-        gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
-        err_msg = gui_view.set_gui()
-        if err_msg:
-            flash(err_msg, category='error')
-            return  redirect(url_for('login'))  # No config file - reconfigure
+        redirect_reply = load_config_file("login", user_name, Config.GUI_VIEW)
+        if redirect_reply:
+            return redirect_reply
 
-        path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
-
-        # Get query node from the loaded config file
-        target_node = gui_view.get_base_info("query_node")
-        if not target_node:
-            flash("AnyLog: Missing Query Node in config file", category='error')
-            return redirect(url_for('login'))  # No config file - reconfigure
-
-        path_stat.register_element(user_name, "target_node", target_node)
-
-        al_headers = {
-            'command' : 'get status',
-            'User-Agent' : 'AnyLog/1.23'
-            }
-
-        try:
-            response = requests.get(target_node, headers=al_headers)
-        except:
+        data, error_msg = exec_al_cmd("get status")
+        if error_msg:
             flash('AnyLog: No network connection', category='error')
+            flash(error_msg, category='error')
             return redirect(('/login'))  # Redo the login
-        else:
-            if response.status_code != 200:
-                flash('AnyLog: Network node failed to authenticate {}'.format(form.username.data))
-                return redirect(('/login'))  # Redo the login
 
 
         session['username'] = user_name
@@ -166,13 +145,40 @@ def login():
 
         return redirect(('/index'))     # Go to main page
 
-
-
     select_info = get_select_menu( caller = "login" )
     select_info['title'] = 'Sign In'
     select_info['form'] = form
 
     return render_template('login.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Load config file - register the config file and the target node
+# -----------------------------------------------------------------------------------
+def load_config_file( caller, user_name, config_file):
+
+    if not config_file:
+        flash("AnyLog: Missing config file name with system variable: GUI_VIEW", category='error')
+        return redirect(url_for('caller'))  # No config file - reconfigure
+    path_stat.register_element(user_name, "config_file", config_file)  # Register the Config file
+
+    gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
+    err_msg = gui_view.set_gui(config_file)
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(url_for('caller'))  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
+
+    # Get query node from the loaded config file
+    target_node = gui_view.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing Query Node in config file", category='error')
+        return redirect(url_for('caller'))  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "target_node", target_node)
+
+    return None     # No redirect
+
 
 # -----------------------------------------------------------------------------------
 # View the report structure being dynamically build by navigation
@@ -196,7 +202,7 @@ def dynamic_report( report_name = "" ):
 
     report_data = path_stat.get_report_info(user_name, report_name)
     if not report_data or not len(report_data["entries"]):
-        flash("AnyLog: Report '%s' has no selections" % report_name)
+        flash("AnyLog: Report '%s' has no selections" % report_name, category='error')
         return redirect(url_for('index')) 
 
     list_columns = ["ID", "DBMS", "Table"]
@@ -241,14 +247,14 @@ def dynamic_report( report_name = "" ):
                 platforms.append(entry)
         if not default_platform:
             if not len(platforms):
-                flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW)
+                flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW, category='error')
                 return redirect(url_for('index'))
             if len(platforms) == 1:
                 # Only one platform
                 default_platform = platforms[0]
                 platforms = None
             else:
-                flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW)
+                flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW, category='error')
                 return redirect(url_for('index'))
 
         select_info['default_platform'] = default_platform      # Default like: Grafana
@@ -395,7 +401,7 @@ def deploy_report():
     report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:
         # Failed to update the report
-        flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
+        flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg), category='error')
         return redirect(('/dynamic_report'))
 
     return redirect((report_url))       # Goto Grafana
@@ -477,6 +483,30 @@ def configure():
 
     form_info = request.form.to_dict()
 
+    if (len(form_info)):
+
+        # Change config file
+        if "conf_file_name" in form_info:
+            new_file = form_info["conf_file_name"] + ".json"
+            config_file = Config.CONFIG_FOLDER + new_file         # New config file
+            redirect_reply = load_config_file("configire", user_name, config_file)
+            if redirect_reply:
+                return redirect_reply
+            flash('AnyLog: New config file: %s' % new_file, category='message')
+
+        # Change target node
+        if "node_ip" in form_info and "node_port" in form_info:
+            node_ip = form_info["node_ip"]
+            node_port = form_info["node_port"]
+            target_node = node_ip + ":" + node_port
+            path_stat.register_element(user_name, "target_node", target_node)
+            data, error_msg = exec_al_cmd("get status")
+            if error_msg:
+                flash('AnyLog: No network connection', category='error')
+                flash(error_msg, category='error')
+                return redirect(url_for('configure'))  # Redo the login
+
+
     form = ConfigForm()
 
     # Get the list of the config files
@@ -484,22 +514,20 @@ def configure():
     try:
         file_list = os.listdir(config_dir)
     except:
-        flash('AnyLog: No config files in: %s' % config_dir)
+        flash('AnyLog: No config files in: %s' % config_dir, category='error')
         file_list = []
 
     # Keep the .json files
     config_files = []
-    default = 0
-    for index, entry in enumerate(file_list):
-        if entry.endswith(".json"):
+    for entry in file_list:
+        if len(entry) > 5 and entry[-5:] == ".json":
             value = entry[:-5]
-            if value == Config.CONFIG_FILE[:-5]:   # Look for the default file name without the ".json"
-                default = index
-            config_files.append((index, entry[:-5]))
+            config_files.append(value)
 
-    form.conf_file_name.choices = config_files  # set list with report names
-    form.conf_file_name.default =  default
-    form.process()
+    if len(config_files):
+        form.conf_file_name.choices = config_files  # set list with report names
+    else:
+        flash('AnyLog: No config files in: %s' % config_dir, category='error')
 
     select_info = get_select_menu( caller = "configure")
     select_info["form"] = form
@@ -507,10 +535,6 @@ def configure():
 
     gui_view = path_stat.get_element(user_name,"gui_view")
 
-    if not gui_view.is_with_config():
-        # Faild to recognize the JSON Config File
-        if gui_view.is_config_error():
-            flash(gui_view.get_config_error())
 
     # Test connectors to the Visualization platforms
     platforms = gui_view.get_base_info("visualization")
@@ -519,18 +543,9 @@ def configure():
             if isinstance(platforms[entry], dict) and "url" in platforms[entry] and "token" in platforms[entry]:
                 ret_val, err_msg = visualize.test_connection( entry, platforms[entry]["url"], platforms[entry]["token"] )  # Platform name + connect_string
                 if not ret_val:
-                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
+                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg), category='error')
             else:
-                flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW))
-
-    if request.method == 'POST':
-        # Need to be completed
-        conf = {}
-        conf["node_ip"] = request.form["node_ip"]
-        conf["node_port"] = request.form["node_port"]
-        conf["reports_ip"] = request.form["reports_ip"]
-        conf["reports_port"] = request.form["reports_ip"]
-  
+                flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW), category='error')
 
 
     return render_template('configure.html', **select_info )
@@ -581,14 +596,14 @@ def al_command():
         
         response = requests.get(target_node, headers=al_headers)
     except:
-        flash('AnyLog: Network connection failed')
+        flash('AnyLog: Network connection failed', category='error')
         return redirect(('/network'))     # Go to main page
     else:
         reply = response.text
         if response.status_code == 200:
             return print_network_reply(command, reply)
         else:
-            flash("AnyLog Network: Command Reply: '%s'" % (reply))
+            flash("AnyLog Network: Command Reply: '%s'" % (reply), category='error')
 
     
     select_info['title'] = 'Network Status'
@@ -1093,19 +1108,19 @@ def get_path_info(selection, select_info, current_node):
         al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info
 
     if not al_command:
-        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (str(selection)))
+        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (str(selection)), category='error')
         return None  # Show all user select options
 
     # Get the columns names of the table to show
     list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
     if not list_columns:
-        flash("AnyLog: Missing column names in config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
+        flash("AnyLog: Missing column names in config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)), category='error')
         return None
 
     # Get the keys to pull data from the JSON reply
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     if not list_keys:
-        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level), category='error')
         return None # Show all user select options
 
     # Run the query against the Query Node
@@ -1391,6 +1406,7 @@ def exec_al_cmd( al_cmd ):
     if response and response.status_code == 200:
         data = response.text
     else:
+        data = None
         if not error_msg:
             # No data reply
             error_msg = "AnyLog: REST command %s returned error code %u" % response.status_code
@@ -1410,7 +1426,7 @@ def get_select_menu(selection = "", caller = ""):
 
         if not gui_view.is_with_config():
             # Faild to recognize the JSON Config File
-            flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
+            flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW, category='error')
             if caller == "configure" or caller == "login":
                 # The config file is not available - ignore get_select_menu
                 return select_info  # return empty dictionary

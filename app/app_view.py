@@ -47,20 +47,15 @@ class gui():
         else:
             query_node = None
         return query_node
+
     # ------------------------------------------------------------------------
     # Load the JSON and set main structures
     # ------------------------------------------------------------------------
-    def set_gui(self, file_name = None):
+    def set_gui(self, file_name ):
         '''
         Load the JSON file and adds error if file strcure is not of JSON.
         '''
 
-        if not file_name:
-            file_name = Config.GUI_VIEW    # get from system variable
-
-        if not file_name:
-            return "AnyLog: Missing config file name with system variable: GUI_VIEW"
-        
         self.config_struct, self.config_error = load_json(file_name)
 
         if self.config_struct:
@@ -80,8 +75,7 @@ class gui():
             if len(line_list):
                 self.policies_table.append(line_list)
 
-        return None
-
+        return self.config_error
     # ------------------------------------------------------------------------
     # Return The list of policies
     # ------------------------------------------------------------------------
@@ -256,7 +250,7 @@ def load_json(file_name):
         data = None
         error_msg = "AnyLog: Config File format error - line: {} column: {} message: {}".format(e.lineno, e.colno, e.msg)
     except:
-        error_msg = "AnyLog: Config File format error"
+        error_msg = "AnyLog: Failed to load file: %s" % file_name
         data = None
     else:
         error_msg = None
