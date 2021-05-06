@@ -46,7 +46,7 @@
                     "query" : "blockchain get device bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
                     "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
                     "json_keys" : ["id", "serial", "name", "manufacturer"],
-                    "dbms_name" : "litsanleandro",
+                    "dbms_name" : "lsl-demo",
                     "table_name" : "[device][name]"
                 }
 	    },
