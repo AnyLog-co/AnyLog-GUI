@@ -166,13 +166,12 @@ ul.tree li:last-child:before {
     background: #f2f2f2;
     float: left;
     box-sizing: border-box;
-}
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* change the center from the upper left corner to middle of box */
+    transform: translate(-50%, -50%);
 
-.set_in_center{
-    display: block;
-     width: 40%;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 
