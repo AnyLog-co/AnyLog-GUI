@@ -124,6 +124,8 @@ def login():
     if form.validate_on_submit():
 
         user_name = request.form['username']
+        session['username'] = user_name
+
         # Register Useer
         path_stat.set_new_user(user_name)
 
@@ -137,8 +139,6 @@ def login():
                 flash(error_msg, category='error')
                 return redirect(('/login'))  # Redo the login
 
-
-            session['username'] = user_name
             path_stat.set_user_connnected(user_name)
 
             return redirect(('/index'))     # Go to main page
