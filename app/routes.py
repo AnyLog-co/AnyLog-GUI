@@ -42,7 +42,6 @@ from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
 
-query_node_ = None
 
 time_selection_ = [
     ("Last 5 minutes", "-5m"),
@@ -541,11 +540,11 @@ def configure():
 @app.route('/network')
 def network():
 
-    if not get_user_by_session():
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-
-    target_node = get_target_node()
+    target_node = path_stat.get_element(user_name,"target_node")
     
     form = CommandsForm()         # New Form
     
@@ -563,7 +562,8 @@ def network():
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
-    if not get_user_by_session():
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
     al_headers = {
@@ -573,7 +573,7 @@ def al_command():
 
     select_info = get_select_menu()
  
-    target_node = get_target_node()
+    target_node = path_stat.get_element(user_name,"target_node")
 
     command = request.form["command"]
     try:
@@ -1015,7 +1015,6 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
 @app.route('/tree')
 @app.route('/tree/<string:selection>')
 def tree( selection = "" ):
-    global query_node_
 
     # Need to login before navigating
     if not get_user_by_session():
@@ -1109,8 +1108,6 @@ def get_path_info(selection, select_info, current_node):
         flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
         return None # Show all user select options
 
-    target_node = get_target_node()
-
     # Run the query against the Query Node
 
     data, error_msg = exec_al_cmd( al_command )
@@ -1187,7 +1184,6 @@ def selected( selection = "" ):
     '''
     Called from selection_table.html
     '''
-    global query_node_
 
     if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
@@ -1381,8 +1377,9 @@ def exec_al_cmd( al_cmd ):
     Run the query against the Query Node
     '''
 
-    target_node = get_target_node()
+    user_name = session["username"]
 
+    target_node = path_stat.get_element(user_name, "target_node")
 
     al_headers = {
         'User-Agent' : 'AnyLog/1.23',
@@ -1397,6 +1394,7 @@ def exec_al_cmd( al_cmd ):
         if not error_msg:
             # No data reply
             error_msg = "AnyLog: REST command %s returned error code %u" % response.status_code
+
     return [data, error_msg]
 
 # -----------------------------------------------------------------------------------
@@ -1441,17 +1439,6 @@ def get_select_menu(selection = "", caller = ""):
         select_info['report_name'] = path_stat.get_report_selected(user_name)
 
     return select_info
-# -----------------------------------------------------------------------------------
-# Get the target node from the Config Form or the Config File
-# -----------------------------------------------------------------------------------
-def get_target_node():
-
-    gui_view = get_gui_view()
-    target_node = gui_view.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node info in config file")
-        redirect(url_for('login'))
-    return target_node
 
 # -----------------------------------------------------------------------------------
 # Configure the dynamic reports
@@ -1509,7 +1496,7 @@ def policies(policy_name = ""):
         policy = gui_view.get_policy_info(policy_name)
         if len(request.form):
             # send policy from Form
-            target_node = get_target_node()
+            target_node = path_stat.get_element(user_name,"target_node")
 
             err_msg = anylog_api.deliver_policy(target_node, policy, request.form)
             if err_msg:
