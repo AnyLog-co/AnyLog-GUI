@@ -34,9 +34,9 @@
 		    "children": {
                         "Device" :
                         {
-                            "query" : "blockchain get device where company = [company][id] combring.unique.json [device][name] [device][serial] [device][manufacturer] separator = ,",
-                            "table_title" : ["Serial", "Name", "Manufacturer"],
-			    "json_keys": ["serial", "name", "manufacturer"],
+                            "query" : "blockchain get device where company = [company][id] bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
+                            "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
+			    "json_keys": ["id", "serial", "name", "manufacturer"],
 			    "dbms_name": "litsanleandro",
 			    "table_name": "[device][name]"
                         }        
@@ -45,9 +45,9 @@
 		},
                 "Device" :
                 {
-                    "query" : "blockchain get device bring.unique.json [device][name] [device][serial] [device][manufacturer] separator = ,",
-                    "table_title" : ["Serial", "Name", "Manufacturer"],
-                    "json_keys" : ["serial", "name", "manufacturer"],
+                    "query" : "blockchain get device bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
+                    "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
+                    "json_keys" : ["id", "serial", "name", "manufacturer"],
                     "dbms_name" : "litsanleandro",
                     "table_name" : "[device][name]"
                 }
