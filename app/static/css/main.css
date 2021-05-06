@@ -61,6 +61,15 @@ h1 {
 
 }
 
+.message-table tr:first-child{
+    background-color:whitesmoke;
+    color:green;
+}
+.message-table tr{
+    background-color:whitesmoke;
+    color:darkslateblue;
+}
+
 .error-table tr:first-child{
     background-color:whitesmoke;
     color:indianred;
