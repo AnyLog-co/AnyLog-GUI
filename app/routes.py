@@ -128,7 +128,8 @@ def login():
         # Register Useer
         path_stat.set_new_user(user_name)
 
-        # Load Config
+        # Load the default CONFIG file
+
         gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
         err_msg = gui_view.set_gui()
         if err_msg:
@@ -137,7 +138,13 @@ def login():
 
         path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
 
-        target_node = get_target_node()
+        # Get query node from the loaded config file
+        target_node = gui_view.get_base_info("query_node")
+        if not target_node:
+            flash("AnyLog: Missing Query Node in config file", category='error')
+            return redirect(url_for('login'))  # No config file - reconfigure
+
+        path_stat.register_element(user_name, "target_node", target_node)
 
         al_headers = {
             'command' : 'get status',
@@ -151,20 +158,15 @@ def login():
             return redirect(('/login'))  # Redo the login
         else:
             if response.status_code != 200:
-                flash('AnyLog: Netowk node failed to authenticate {}'.format(form.username.data))
+                flash('AnyLog: Network node failed to authenticate {}'.format(form.username.data))
                 return redirect(('/login'))  # Redo the login
 
 
         session['username'] = user_name
         path_stat.set_user_connnected(user_name)
 
-
-
         return redirect(('/index'))     # Go to main page
 
-
-
-    # Load the default CONFIG file
 
 
     select_info = get_select_menu( caller = "login" )
@@ -1445,10 +1447,10 @@ def get_select_menu(selection = "", caller = ""):
 def get_target_node():
 
     gui_view = get_gui_view()
-    target_node = query_node_ or gui_view.get_base_info("query_node")
+    target_node = gui_view.get_base_info("query_node")
     if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
+        flash("AnyLog: Missing query node info in config file")
+        redirect(url_for('login'))
     return target_node
 
 # -----------------------------------------------------------------------------------
