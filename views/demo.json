@@ -29,8 +29,6 @@
 	            "query": "blockchain get company bring.unique.json [company][id] [company][name] [company][address] separator = ,", 
 		    "table_title": ["ID", "Name", "Address"],
 		    "json_keys": ["id", "name", "address"],
-		    "dbms_name": "litsanleandro",
-		    "table_name": "[company][name]",
 		    "children": {
                         "Device" :
                         {
