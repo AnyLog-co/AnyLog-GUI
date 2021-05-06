@@ -4,7 +4,7 @@
             "query_node" : "http://23.239.12.151:2049",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://23.239.12.151:3000",
-                                              "token" : "eyJrIjoiMVdENDJjUVBPeXpVZ2hmUFJrSzU3azVDUFhwWkdQeVYiLCJuIjoiZ3VpIiwiaWQiOjF9",
+                                              "token" : "eyJrIjoiZzFTbTF4Tm5XNEM2ZDc1Z3oxUWxJNzdCdk9NRVl5Y3QiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 },
@@ -34,9 +34,9 @@
 		    "children": {
                         "Device" :
                         {
-                            "query" : "blockchain get device where company = [company][id] combring.unique.json [device][name] [device][serial] [device][manufacturer] separator = ,",
-                            "table_title" : ["Serial", "Name", "Manufacturer"],
-			    "json_keys": ["serial", "name", "manufacturer"],
+                            "query" : "blockchain get device where company = [company][id] bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
+                            "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
+			    "json_keys": ["id", "serial", "name", "manufacturer"],
 			    "dbms_name": "litsanleandro",
 			    "table_name": "[device][name]"
                         }        
@@ -45,9 +45,9 @@
 		},
                 "Device" :
                 {
-                    "query" : "blockchain get device bring.unique.json [device][name] [device][serial] [device][manufacturer] separator = ,",
-                    "table_title" : ["Serial", "Name", "Manufacturer"],
-                    "json_keys" : ["serial", "name", "manufacturer"],
+                    "query" : "blockchain get device bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
+                    "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
+                    "json_keys" : ["id", "serial", "name", "manufacturer"],
                     "dbms_name" : "litsanleandro",
                     "table_name" : "[device][name]"
                 }
@@ -121,9 +121,7 @@
                               }
                         ]
                     }
-                      ]
-
-                  }
-            ]
-        }
+	    ]
+    }
 }
+

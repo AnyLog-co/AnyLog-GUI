@@ -40,7 +40,7 @@
                         <!-- View Policy or Select or Navigate  -->
                         {% if node.details  %}
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
-                            <input type="submit" value="View" name={{node.path}} class="button_view">
+                            <input type="submit" value="View" name="{{node.path}}" class="button_view">
                         {% endif %}
                         {% if selection  %}
                             {% if node.dbms_name  %}

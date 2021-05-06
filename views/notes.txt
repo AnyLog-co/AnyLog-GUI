@@ -1,3 +1,6 @@
 orics anylog-gui-admin: eyJrIjoiblFwZ0NoS21XVXlrWjRmMkN0SjdzMGhVSVpadDFGWnQiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==
 curl -H "Authorization: Bearer eyJrIjoiblFwZ0NoS21XVXlrWjRmMkN0SjdzMGhVSVpadDFGWnQiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==" http://45.79.152.190:3000/api/dashboards/home
 
+demo anylog-gui-admin: eyJrIjoiZzFTbTF4Tm5XNEM2ZDc1Z3oxUWxJNzdCdk9NRVl5Y3QiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==
+curl -H "Authorization: Bearer eyJrIjoiZzFTbTF4Tm5XNEM2ZDc1Z3oxUWxJNzdCdk9NRVl5Y3QiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==" http://23.239.12.151:3000/api/dashboards/home
+

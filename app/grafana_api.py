@@ -623,7 +623,16 @@ def replace_panel( dashboard_name, report_type, display_type, panel, panel_title
         panel["type"] = display_type        # gauge or graph
         is_modified = True
 
-    targets = panel["targets"]  # Get the list of queries
+    if "targets" in panel:
+        targets = panel["targets"]  # Get the list of queries
+    else:
+        # Make Grafana source Panel
+        targets = []
+        source_panel = {}
+        source_panel['refId'] = 'A'
+        source_panel['target'] = ''
+        source_panel['type'] = 'timeseries'
+        targets.append(source_panel)
     updated_targets = []
     if len(targets):
         base_target = copy.deepcopy(targets[0])  # An example target
@@ -634,26 +643,33 @@ def replace_panel( dashboard_name, report_type, display_type, panel, panel_title
                 if not al_query or not isinstance(al_query, dict):
                     err_msg = "Grafana API: Report (%s) does not contain 'Additional JSON Data' definitions" % dashboard_name
                     break
+            else:
+                # Make source data representing 'Additional JSON Data' on the panel
+                al_query = {}
+                al_query['value_column'] = 'value'
+                al_query['timestamp_column'] = 'timestamp'
+                if not len(functions):
+                    al_query['functions'] = ["min","max","avg"]
 
-                al_query["dbms"] = table[0]
-                al_query["table"] = table[1]
+            al_query["dbms"] = table[0]
+            al_query["table"] = table[1]
 
-                al_query["type"] = report_type
+            al_query["type"] = report_type
 
-                if len(functions):
-                    # If user specified SQL functions Min Max etc
-                    al_query["functions"] = functions
+            if len(functions):
+                # If user specified SQL functions Min Max etc
+                al_query["functions"] = functions
 
-                # Map back to a string
+            # Map back to a string
 
-                data, err_msg = format_grafana_json(al_query)
-                if err_msg:
-                    err_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
-                    break
+            data, err_msg = format_grafana_json(al_query)
+            if err_msg:
+                err_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+                break
 
-                base_target["data"] = data
-                updated_targets.append(copy.deepcopy(base_target))  # Create a new entry
-                is_modified = True
+            base_target["data"] = data
+            updated_targets.append(copy.deepcopy(base_target))  # Create a new entry
+            is_modified = True
 
         if is_modified:
             panel["targets"] = updated_targets  # Add a target with the dbms and table
