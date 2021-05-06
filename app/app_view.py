@@ -57,6 +57,9 @@ class gui():
 
         if not file_name:
             file_name = Config.GUI_VIEW    # get from system variable
+
+        if not file_name:
+            return "AnyLog: Missing config file name with system variable: GUI_VIEW"
         
         self.config_struct, self.config_error = load_json(file_name)
 
@@ -76,6 +79,8 @@ class gui():
                             line_list = []  # Start a new line
             if len(line_list):
                 self.policies_table.append(line_list)
+
+        return None
 
     # ------------------------------------------------------------------------
     # Return The list of policies

@@ -130,7 +130,11 @@ def login():
 
         # Load Config
         gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
-        gui_view.set_gui()
+        err_msg = gui_view.set_gui()
+        if err_msg:
+            flash(err_msg, category='error')
+            return  redirect(url_for('login'))  # No config file - reconfigure
+
         path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
 
         target_node = get_target_node()
