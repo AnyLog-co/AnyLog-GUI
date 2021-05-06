@@ -25,25 +25,15 @@
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
-		"Company": {
-	            "query": "blockchain get company bring.unique.json [company][id] [company][name] [company][address] separator = ,", 
-		    "table_title": ["ID", "Name", "Address"],
-		    "json_keys": ["id", "name", "address"],
-		    "children": {
-                        "Device" :
-                        {
-                            "query" : "blockchain get device where company = [company][id] bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
-                            "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
-			    "json_keys": ["id", "serial", "name", "manufacturer"],
-			    "dbms_name": "litsanleandro",
-			    "table_name": "[device][name]"
-                        }        
-	            }
-
-		},
-                "Device" :
-                {
-                    "query" : "blockchain get device bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
+		"Lite San Leandro": {
+                    "query" : "blockchain get device where company=2fd47b63bb9993967de7ca2cac60d557 bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
+                    "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
+                    "json_keys" : ["id", "serial", "name", "manufacturer"],
+                    "dbms_name" : "lsl-demo",
+                    "table_name" : "[device][name]"
+                },
+                "IOTech": {
+                    "query" : "blockchain get device where company=4e28d2778ddfe7ad6b0dc7b566e8d782 bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
                     "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
                     "json_keys" : ["id", "serial", "name", "manufacturer"],
                     "dbms_name" : "lsl-demo",
