@@ -815,7 +815,7 @@ def conf_nav_report():
 
     # define config params
     #panel_config = PanelConfig()
-    
+
     select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
     select_info['graph_additional'] = ["Range", "Count"]
     select_info['gauge_default'] = ["Avg"]    # These are flagged as selected
