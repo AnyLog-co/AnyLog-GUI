@@ -25,31 +25,19 @@
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
-		"Company": {
-	            "query": "blockchain get company bring.unique.json [company][id] [company][name] [company][address] separator = ,", 
-		    "table_title": ["ID", "Name", "Address"],
-		    "json_keys": ["id", "name", "address"],
-		    "dbms_name": "litsanleandro",
-		    "table_name": "[company][name]",
-		    "children": {
-                        "Device" :
-                        {
-                            "query" : "blockchain get device where company = [company][id] bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
-                            "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
-			    "json_keys": ["id", "serial", "name", "manufacturer"],
-			    "dbms_name": "litsanleandro",
-			    "table_name": "[device][name]"
-                        }        
-	            }
-
-		},
-                "Device" :
-                {
-                    "query" : "blockchain get device bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
+		"Lite San Leandro": {
+                    "query" : "blockchain get device where company=2fd47b63bb9993967de7ca2cac60d557 bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
                     "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
                     "json_keys" : ["id", "serial", "name", "manufacturer"],
-                    "dbms_name" : "litsanleandro",
-                    "table_name" : "[device][name]"
+		    "dbms_name": "litsanleandro", 
+                    "table_name" : "ping_sensor"
+                },
+                "IOTech": {
+                    "query" : "blockchain get table where dbms=edgex bring.unique.json [table][id] [table][name] separator = ,",
+                    "table_title" : ["ID", "Name"],
+                    "json_keys" : ["id", "name"],
+                    "dbms_name" : "edgex",
+                    "table_name" : "[table][name]"
                 }
 	    },
             "policies" : [
