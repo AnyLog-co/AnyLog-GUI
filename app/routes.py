@@ -23,6 +23,7 @@ from app.forms import InstallForm
 from app.forms import ConfDynamicReport
 from app.forms import DashboardConfig       # Base config of a user defined report to include multiple panels
 from app.forms import PanelConfig           # Base config of a user defined panel
+from app.forms import TimeConfig            # Time/date selection for a report a panel
 
 from app.entities import Item
 from app.entities import AnyLogItem
@@ -822,17 +823,10 @@ def conf_nav_report():
     dashboard_conf.add_panel(panel_config)
     panel_config = PanelConfig( "Gauge", "Gauge", ["Avg"], ["Min", "Max", "Range", "Count"])
     dashboard_conf.add_panel(panel_config)
-    select_info['dashboard'] = dashboard_conf
-
-
-    select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
-    select_info['graph_additional'] = ["Range", "Count"]
-    select_info['gauge_default'] = ["Avg"]    # These are flagged as selected
-    select_info['gauge_additional'] = ["Min", "Max", "Range", "Count"]
 
 
     # Organize the report time selections as last selection
-    select_info['time_options'] = time_selection_
+
     from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")      # Get the last selections of dates
     if not to_date:
         to_date = 'now'
@@ -842,11 +836,15 @@ def conf_nav_report():
             for entry in time_selection_:
                 # go over the entries to find the last selection made and set it as default
                 if entry[1] == from_date[3:]:
-                    select_info['previous_range'] = (entry[0], entry[1])
-        else:
-            select_info['from_date'] = from_date
-            select_info['to_date'] = to_date
+                    text_selected = entry[0]
+                    time_selected = entry[1]
+                    break
 
+    time_config = TimeConfig(time_selection_, text_selected, time_selected, from_date, to_date)
+
+    dashboard_conf.set_time(time_config)    # Apply time selections options to the report
+
+    select_info['dashboard'] = dashboard_conf
 
     return render_template('base_conf_report.html', **select_info)
 

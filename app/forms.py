@@ -39,8 +39,10 @@ class CommandsForm(FlaskForm):
 
 # Time configuration for a panel or a report
 class TimeConfig():
-    def __init__(self, default_range, default_from, default_to):
-        self.default_time_range = default_range  # i.e. now-2M
+    def __init__(self, time_options, text_selected, time_selected, default_from, default_to):
+        self.time_options = time_options
+        self.text_selected = text_selected  # Last 2 months
+        self.text_selected = time_selected # i.e. now-2M
         self.default_from = default_from
         self.default_to = default_to
 
@@ -62,6 +64,9 @@ class DashboardConfig():
 
     def add_panel(self, new_panel):
         self.panels.append(new_panel)
+    def set_time(self, time_config):
+        self.time_config = time_config  # Time selection for the dashboard
+
 
 
 class ConfDynamicReport(FlaskForm):
