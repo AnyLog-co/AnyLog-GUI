@@ -31,7 +31,7 @@ class AnyLogItem(object):
                 exec("self.{} = {}".format(entry[0], entry[1]))
 
 # -----------------------------------------------------------------------------------
-# A class to maintain an AnyLog Table table
+# A class to maintain an AnyLog Table definitions
 # -----------------------------------------------------------------------------------
 class AnyLogTable(object):
     '''
@@ -50,3 +50,84 @@ class AnyLogTable(object):
         self.column_keys = column_keys
         self.rows = rows
         self.extr_col = extr_col
+
+
+# -----------------------------------------------------------------------------------
+# AnyLog date time definitions for a dashboard or a panel
+# -----------------------------------------------------------------------------------
+class AnyLogDateTime():
+    def __init__(self):
+        self.start_date_time = None
+        self.end_date_time = None
+        self.range_date_time = None      # i.e. -2M
+
+    def get_start(self):
+        return self.start_date_time
+    def get_end(self):
+        return self.end_date_time
+    def get_range(self):
+        return self.range_date_time
+
+    def set_date_time(self, key, value):
+        if key == "start":
+            self.start_date_time = value
+        elif key == "end":
+            self.end_date_time = value
+        else:
+            self.range_date_time = value
+
+
+# -----------------------------------------------------------------------------------
+# AnyLog Panel Definitions
+# -----------------------------------------------------------------------------------
+class AnyLogPanel():
+    def __init__(self):
+        self.id = None
+        self.functions = [] # A list of functions
+
+# -----------------------------------------------------------------------------------
+# AnyLog Dashboard Definitions
+# -----------------------------------------------------------------------------------
+class AnyLogDashboard():
+    def __init__(self):
+        self.panels = []        # List of panels
+        self.date_time = AnyLogDateTime()
+
+    # -----------------------------------------------------------------------------------
+    # Add a new panel
+    # -----------------------------------------------------------------------------------
+    def add_panel(self,panel):
+        self.panels.append(panel)
+
+    # -----------------------------------------------------------------------------------
+    # Set report date and time
+    # -----------------------------------------------------------------------------------
+    def set_date_time(self,key, value):
+        '''
+        key values are "start", "end" or range"
+        '''
+        self.date_time.set_date_time(key, value)
+
+    # -----------------------------------------------------------------------------------
+    # Add a function to a panel and create new panel if no panel with the needed ID
+    # -----------------------------------------------------------------------------------
+    def add_function(self, panel_id, function):
+        '''
+        Find the panel in the array.
+        If no such panel, create a panel.
+        Add a function to the dashboard
+        '''
+        panel_to_set = None
+        for panel in self.panels:
+            if panel.id == panel_id:
+                panel_to_set = panel
+                break
+
+        if not panel_to_set:
+            panel_to_set = AnyLogPanel()    # Set a new panel
+            panel_to_set.id = panel_id
+            self.add_panel(panel_to_set)
+
+        panel_to_set.functions.append(function)
+
+

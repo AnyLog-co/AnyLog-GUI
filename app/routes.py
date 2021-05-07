@@ -29,6 +29,8 @@ from app.entities import Item
 from app.entities import AnyLogItem
 
 from app.entities import AnyLogTable
+from app.entities import AnyLogDashboard
+from app.entities import AnyLogPanel
 
 from config import Config
 
@@ -813,7 +815,7 @@ def conf_nav_report():
 
     form_info = request.form
     if len(form_info):
-        pass
+        get_base_report_config(form_info)        # get the report form
 
 
     select_info = get_select_menu()
@@ -852,6 +854,30 @@ def conf_nav_report():
     select_info['dashboard'] = dashboard_conf
 
     return render_template('base_conf_report.html', **select_info)
+# -----------------------------------------------------------------------------------
+# Get the report config info from the form
+# -----------------------------------------------------------------------------------
+def get_base_report_config(form_info):
+
+    dashboard = AnyLogDashboard()       # An object to include all dashboards declared on the form
+
+    for key, value in form_info.items():
+
+        if key[:9] == "checkbox.":
+            checkbox = key.split('.')   # get the panel id and the function (Min, Max etc)
+            if len(checkbox) == 3:
+                panel_id = checkbox[1]
+                function = checkbox[2]
+                dashboard.update_panel(panel_id, function)  # add function to the dashboard (and create a panel in the dashboard if needed)
+
+        elif key == "start_date":
+            dashboard.set_date_time("start", value)
+
+        elif key == "end_date":
+            dashboard.set_date_time("end", value)
+
+        elif key == "date_range":
+            dashboard.set_date_time("range", value)
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
