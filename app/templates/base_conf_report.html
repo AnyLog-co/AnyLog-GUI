@@ -34,17 +34,17 @@
 
         <label for="start-date">Start: </label>
         {%  if dashboard.time_config.default_from %}
-            <input type="datetime-local" id="start_date" name="start_date" value={{dashboard.time_config.default_from}}>
+            <input type="datetime-local" id="date_start" name="date_start" value={{dashboard.time_config.default_from}}>
         {%  else %}
-            <input type="datetime-local" id="start_date" name="start_date">
+            <input type="datetime-local" id="date_start" name="date_start">
         {%  endif %}
 
         &nbsp&nbsp&nbsp
         <label for="end-date">End:   </label>
         {%  if dashboard.time_config.default_to %}
-            <input type="datetime-local" id="end_date" name="end_date" value={{dashboard.time_config.default_to}}>
+            <input type="datetime-local" id="date_end" name="date_end" value={{dashboard.time_config.default_to}}>
         {%  else %}
-            <input type="datetime-local" id="end_date" name="end_date">
+            <input type="datetime-local" id="date_end" name="date_end">
         {%  endif %}
 
 

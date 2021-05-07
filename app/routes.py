@@ -815,7 +815,8 @@ def conf_nav_report():
 
     form_info = request.form
     if len(form_info):
-        get_base_report_config(form_info)        # get the report form
+        dashboard = get_base_report_config(form_info)        # get the report form
+        path_stat.register_element(user_name, "nav_report_conf", dashboard)
 
 
     select_info = get_select_menu()
@@ -868,16 +869,12 @@ def get_base_report_config(form_info):
             if len(checkbox) == 3:
                 panel_id = checkbox[1]
                 function = checkbox[2]
-                dashboard.update_panel(panel_id, function)  # add function to the dashboard (and create a panel in the dashboard if needed)
+                dashboard.add_function(panel_id, function)  # add function to the dashboard (and create a panel in the dashboard if needed)
 
-        elif key == "start_date":
-            dashboard.set_date_time("start", value)
+        elif key[:5] == "date_":
+            dashboard.set_date_time(key[5:], value) # Set date start, date end, date range
 
-        elif key == "end_date":
-            dashboard.set_date_time("end", value)
-
-        elif key == "date_range":
-            dashboard.set_date_time("range", value)
+    return dashboard
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
