@@ -5,10 +5,27 @@
 <form action="{{url_for('conf_nav_report')}}" method="POST">
 
     <br>
-    {%  for option in selected_options %}
+    {%  for panel in dashboard.panels %}
+        <br>
+        panel.name
+        <br>
+
+       <!-- Selected checkboxes of report - Min, Max, Avg -->
+        {% for check_box in panel.chek_box_selected %}
+            <!-- Select functionality  -->
+            <input type="checkbox" id={{check_box}} name={{check_box}} checked>
+            <label for={{check_box}}>{{check_box}}</label>&nbsp
+        {% endfor %}
+       <!-- Not selected checkboxes of report - Min, Max, Avg -->
+        {% for check_box in panel.chek_box %}
+            <!-- Select functionality  -->
+            <input type="checkbox" id={{check_box}} name={{check_box}} checked>
+            <label for={{check_box}}>{{check_box}}</label>&nbsp
+        {% endfor %}
 
 
     {% endfor %}
+
     <br>
     Graph
     <br>
