@@ -1505,6 +1505,31 @@ def get_select_menu(selection = "", caller = ""):
 
     return select_info
 
+
+# -----------------------------------------------------------------------------------
+# Manage the reports
+# -----------------------------------------------------------------------------------
+@app.route('/manage_reports/', methods={'GET','POST'})
+def manage_reports():
+
+    user_name = get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))  # start with Login  if not yet provided
+
+    select_info = get_select_menu()
+    select_info['title'] = "Manage Reports"
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree["Grafana"]['url']
+    token = platforms_tree["Grafana"]['token']
+    network_name = gui_view.get_network_name()
+
+
+    url_list, err_msg = visualize.get_reports("Grafana", url, token, "AnyLog" + network_name)   # Get the list of reports associated with
+
+
+    return render_template('manage_reports.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Configure the dynamic reports
 # -----------------------------------------------------------------------------------

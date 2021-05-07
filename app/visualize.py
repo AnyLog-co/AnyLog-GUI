@@ -32,6 +32,24 @@ def visualize(platform, report_name, tables):
 
 
 # --------------------------------------------------------
+# Get the list of Reports (Dashboards) for the named report
+# --------------------------------------------------------
+def get_reports(platform_name, url, token, directory):
+    '''
+     The list of reports for the named platform and directory
+     '''
+
+    connector = get_connector(platform_name)
+    if not connector:
+        reports_list = None
+        error_msg = "%s not supported" % platform_name
+    else:
+        reports_list, error_msg = connector.get_reports(url, token, directory)
+
+
+    return [reports_list, error_msg]
+
+# --------------------------------------------------------
 # Get the list of panels for the named report
 # --------------------------------------------------------
 def get_panels(platform_name, url:str, token:str, report_name:str):
