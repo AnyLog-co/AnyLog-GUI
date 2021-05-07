@@ -26,11 +26,6 @@ def test_connection(platform, connect_string, token):
         ret_val, error_msg = connector.test_connection(connect_string, token)
     return [ret_val, error_msg]
 
-
-def visualize(platform, report_name, tables):
-    pass
-
-
 # --------------------------------------------------------
 # Get the list of Reports (Dashboards) for the named report
 # --------------------------------------------------------

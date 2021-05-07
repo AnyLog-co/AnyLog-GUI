@@ -47,23 +47,69 @@ def test_connection( grafana_url:str, token:str ):
     return [ret_val, err_msg]
 
 # -----------------------------------------------------------------------------------
+# Get the list of Dashboards (reports) for the given directory
+# For each dashboard - pull the panels
+# Return a list of all the panels per each dashboard
+# -----------------------------------------------------------------------------------
+def get_reports(url:str, token:str, directory:str):
+    '''
+    Return the list of urls to the panels of the dashboards in the directory
+    '''
+
+    directory_name = directory.lower()
+
+    # Get the list of grafana folders
+    folder_id = -1
+    folders, err_msg = get_folders(url, token)
+    for entry in folders:
+        if "title" in entry and "id" in entry:
+            if entry["title"].lower() == directory_name :
+                folder_id = entry["id"]
+                break
+
+    if folder_id != -1:
+
+        dashboards, err_msg = get_dashboards(url, folder_id, token)
+
+        panels = {}
+        if not err_msg:
+            for entry in dashboards:
+                # every entry is a report
+                if "type" in entry and entry["type"] == 'dash-db':
+                    # this is a dashboard entry
+                    if "title" in entry:
+                        # reports exists
+                        dashboard_name = entry['title']
+                        dashboard_id = entry["id"]
+                        dashboard_uid = entry["uid"]
+                        if "version" in entry:
+                            report_version = entry["version"]
+                        dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
+                        if dashboard_info:
+                            if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
+                                panels = dashboard_info['dashboard']['panels']
+
+
+    return [panels, err_msg]
+
+# -----------------------------------------------------------------------------------
 # Get the list of panels for the dashboard name
 # -----------------------------------------------------------------------------------
 def get_panels(grafana_url:str, token:str, dashboard_name:str):
 
     panels_list = []
-    reply, err_msg = get_dashboards(grafana_url, token)
+    reply, err_msg = get_dashboards(grafana_url, "", token)
     if not err_msg:
-        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
-        if not err_msg:
-            if dashboard_id:
-                dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
-                if dashboard_info:
-                    if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
-                        panels = dashboard_info['dashboard']['panels']
-                        for entry in panels:
-                            if 'title' in entry:
-                                panels_list.append(entry['title'])
+        dashboard_id, dashboard_uid, dashboard_version = get_existing_dashboaard(reply, dashboard_name)
+
+        if dashboard_id:
+            dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name)
+            if dashboard_info:
+                if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
+                    panels = dashboard_info['dashboard']['panels']
+                    for entry in panels:
+                        if 'title' in entry:
+                            panels_list.append(entry['title'])
 
     return [panels_list, err_msg]
 
@@ -234,22 +280,20 @@ def get_init_dashboard(platform_info, dashboard_name):
     grafana_url = platform_info['url']
     token = platform_info['token']
 
-    reply, err_msg = get_dashboards(grafana_url, token)
+    reply, err_msg = get_dashboards(grafana_url, "", token)
     if err_msg:
         return "Grafana API: Failed to provide the list of dashboards: %s" % err_msg
 
-    dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, dashboard_name)
-    if err_msg:
-        return err_msg + " Using: %s" % grafana_url
+    dashboard_id, dashboard_uid, dashboard_version = get_existing_dashboaard(reply, dashboard_name)
+
 
     if dashboard_id:
         new_dashboard = False
     else:
         new_dashboard = True
         base_dashboard = platform_info['base_report']  # Get the initial report name from the config file
-        dashboard_id, dashboard_uid, dashboard_version, err_msg = get_existing_dashboaard(reply, base_dashboard)
-        if err_msg:
-            return err_msg + " Using: %s" % grafana_url
+        dashboard_id, dashboard_uid, dashboard_version = get_existing_dashboaard(reply, base_dashboard)
+
         if not dashboard_id:
             # Missing base report
             return "Grafana API: Missing base dashboard: %s Using: %s" % (base_dashboard, grafana_url)
@@ -292,35 +336,26 @@ def get_url_time_range(platform_info):
 # -----------------------------------------------------------------------------------
 # Find a dashboard by name
 # -----------------------------------------------------------------------------------
-def get_existing_dashboaard( dasborads_reply, dashboard_name ):
+def get_existing_dashboaard( dashboards, dashboard_name ):
 
     report_id = 0
     report_uid = ""
     report_version = 0
-    if dasborads_reply.status_code == 200:
-        # List of all dashboards is available
-        try:
-            dashboards = dasborads_reply.json()
-        except:
-            err_msg = "Grafana API: Unable to parse data retrieved from request to dashboard: %s" % dashboard_name
-        else:
-            err_msg = None
 
-            # test if the report is in the list
-            for entry in dashboards:
-                # every entry is a report
-                if "type" in entry and entry["type"] == 'dash-db':
-                    # this is a dashboard entry
-                    if "title" in entry and entry["title"] == dashboard_name:
-                        # reports exists
-                        report_id = entry["id"]
-                        report_uid = entry["uid"]
-                        if "version" in entry:
-                            report_version = entry["version"]
-    else:
-        err_msg = "Grafana API: Pulling dashboard '%s' received HTTP request error no. %u" % (dashboard_name, dasborads_reply.status_code)
+    # test if the report is in the list
+    for entry in dashboards:
+        # every entry is a report
+        if "type" in entry and entry["type"] == 'dash-db':
+            # this is a dashboard entry
+            if "title" in entry and entry["title"] == dashboard_name:
+                # reports exists
+                report_id = entry["id"]
+                report_uid = entry["uid"]
+                if "version" in entry:
+                    report_version = entry["version"]
 
-    return [report_id, report_uid, report_version, err_msg]
+
+    return [report_id, report_uid, report_version]
 # -----------------------------------------------------------------------------------
 # Get a report
 # If the report is new - add the report
@@ -402,27 +437,69 @@ def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard)
 
     
     return [dashboard_uid, err_msg]
+
+
 # -----------------------------------------------------------------------------------
-# Get dasboards IDs
+# Get the list of Folders
+# -----------------------------------------------------------------------------------
+def get_folders(grafana_url, token):
+    '''
+    Return a list with all the dashboards
+    '''
+
+    dashboards, err_msg = grafana_get("Get Dashboards", grafana_url, "/api/folders", token)
+
+    return [dashboards, err_msg]
+
+
+# -----------------------------------------------------------------------------------
+# Get dashboards IDs
 # There is no method to list dashboards, - do an empty search request and get dashboards from the results.
+# Details - https://grafana.com/docs/grafana/latest/http_api/folder_dashboard_search/
 # -----------------------------------------------------------------------------------
-def get_dashboards( grafana_url, token ):
+def get_dashboards( grafana_url, folder_id, token ):
 
     '''
-    Return a list with all the dasboards
+    Return a list with all the dashboards
     '''
 
-    url = grafana_url + "/api/search?query=%"
+    if folder_id:
+        query = "/api/search?folderIds=%u&query=%s" % (folder_id, '%')
+    else:
+        query = "/api/search?query=%"
+
+    dashboards, err_msg = grafana_get("Get Dashboards", grafana_url, query, token)
+
+    return [dashboards, err_msg]
+
+# -----------------------------------------------------------------------------------
+# Grafana Get Call, transform the reply to JSON
+# -----------------------------------------------------------------------------------
+def grafana_get(get_type, grafana_url, query, token):
+
     headers = {
         "Authorization":"Bearer %s" % token,
         "Content-Type":"application/json",
         "Accept": "application/json"
     }
 
+    url = grafana_url + query
+
     response, err_msg = rest_api.do_get(url, headers)
 
+    json_info = None
     if not err_msg:
-        if response.status_code != 200:
+        if response.status_code == 200:
+            # List of all dashboards is available
+            try:
+                json_info = response.json()
+            except:
+                errno, value = sys.exc_info()[:2]
+                err_msg = "Grafana API: Unable to parse Grafana reply for '%s' (Errno: %s, %s) using URL: %s" % (get_type, str(errno), str(value), url)
+            else:
+                err_msg = None
+
+        else:
             info = ""
             if hasattr(response, 'reason'):
                 info = response.reason
@@ -431,8 +508,7 @@ def get_dashboards( grafana_url, token ):
 
             err_msg = "HTTP GET returned code %u - (%s) URL: %s" % (response.status_code, info, url)
 
-    return [response, err_msg]
-
+    return [json_info, err_msg]
 # -----------------------------------------------------------------------------------
 # Delete a dashboard
 # -----------------------------------------------------------------------------------
