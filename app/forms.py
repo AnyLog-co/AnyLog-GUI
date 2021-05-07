@@ -42,7 +42,7 @@ class TimeConfig():
     def __init__(self, time_options, text_selected, time_selected, default_from, default_to):
         self.time_options = time_options
         self.text_selected = text_selected  # Last 2 months
-        self.text_selected = time_selected # i.e. now-2M
+        self.time_selected = time_selected # i.e. now-2M
         self.default_from = default_from
         self.default_to = default_to
 
