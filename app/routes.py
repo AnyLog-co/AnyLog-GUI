@@ -811,6 +811,11 @@ def conf_nav_report():
     if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
+    form_info = request.form
+    if len(form_info):
+        pass
+
+
     select_info = get_select_menu()
 
     select_info['title'] = "Configure Report"
