@@ -25,12 +25,20 @@
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
-		"Lite San Leandro": {
-                    "query" : "blockchain get device where company=2fd47b63bb9993967de7ca2cac60d557 bring.unique.json [device][id] [device][name] [device][serial] [device][manufacturer] separator = ,",
-                    "table_title" : ["ID", "Serial", "Name", "Manufacturer"],
-                    "json_keys" : ["id", "serial", "name", "manufacturer"],
-		    "dbms_name": "litsanleandro", 
-                    "table_name" : "ping_sensor"
+		"Lit San Leandro": {
+                    "query" : "blockchain get table where dbms=litsanleandro bring.unique.json [table][id] [table][name] [table][dbms] separator = ,",
+                    "table_title" : ["ID", "Name", "DB Name"],
+                    "json_keys" : ["id", "name", "dbms"],
+		    "children": {
+		        "Device": {
+			    "query": "blockchain get device where company = 2fd47b63bb9993967de7ca2cac60d557", 
+			    "table_title": ["ID", "Name"],
+			    "json_keys": ["id", "name"],
+			    "dbms_name": "litsanleandro",
+			    "table_name": "[table][name]",
+			    "condition": "device_name='[device][name]'" 
+		        }
+		    }
                 },
                 "IOTech": {
                     "query" : "blockchain get table where dbms=edgex bring.unique.json [table][id] [table][name] separator = ,",
