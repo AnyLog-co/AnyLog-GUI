@@ -1526,8 +1526,10 @@ def manage_reports():
     network_name = gui_view.get_network_name()
 
 
-    url_list, err_msg = visualize.get_reports("Grafana", url, token, "AnyLog_" + network_name)   # Get the list of reports associated with
+    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, "AnyLog_" + network_name)   # Get the list of reports associated with
 
+    if not err_msg:
+        select_info['panels_urls'] = panels_urls
 
     return render_template('manage_reports.html', **select_info)
 # -----------------------------------------------------------------------------------

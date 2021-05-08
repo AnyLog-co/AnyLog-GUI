@@ -87,11 +87,26 @@ def get_reports(url:str, token:str, directory:str):
                         dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
                         if dashboard_info:
                             if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
-                                panels = dashboard_info['dashboard']['panels']
-
+                                panels_urls = get_panels_urls(url, dashboard_info, dashboard_uid)
+                                panels[dashboard_name] = panels_urls
 
     return [panels, err_msg]
 
+# -----------------------------------------------------------------------------------
+# Get panels URLs of a particular dashboard - the urls are based on the dashboard url and the panel ID.
+# -----------------------------------------------------------------------------------
+def get_panels_urls(grafana_url, dashboard_info, dashboard_uid):
+    base_url = grafana_url.replace("localhost", "127.0.0.1")  # Otherwise Iframe does not works
+    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, "current_status")
+
+    panels_list = []
+    for panel in dashboard_info['dashboard']['panels']:
+        id = panel['id']
+        panel_url = base_url + "?orgId=1&viewPanel=%u" % (id)
+        panel_url += get_url_time_range(None)
+        panels_list.append(panel_url)
+
+    return panels_list  # Return list of urls, one for each panel
 # -----------------------------------------------------------------------------------
 # Get the list of panels for the dashboard name
 # -----------------------------------------------------------------------------------
@@ -167,6 +182,7 @@ def status_report(**platform_info):
         panels_list.append(panel_url)
 
     return [panels_list, None]      # Return list of urls, one for each panel
+
 
 # -----------------------------------------------------------------------------------
 # Deploy a report
@@ -315,21 +331,25 @@ def get_init_dashboard(platform_info, dashboard_name):
 # -----------------------------------------------------------------------------------
 def get_url_time_range(platform_info):
 
-    from_date = platform_info["from_date"]
-    to_date = platform_info["to_date"]
-
-    if to_date[:3] == "now":
-        time_url = "?&from=%s&to=now" % from_date
+    if not platform_info:
+        time_url = "?&from=%s&to=now" % "-2M"   # Arbitrary default
     else:
-        # Transform to  ms epoch
-        ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), \
-                                int(from_date[14:16])) \
-                       - datetime(1970, 1, 1)).total_seconds() * 1000)
-        ms_to = int( \
-            (datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
-             - datetime(1970, 1, 1)).total_seconds() * 1000)
 
-        time_url = "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
+        from_date = platform_info["from_date"]
+        to_date = platform_info["to_date"]
+
+        if to_date[:3] == "now":
+            time_url = "?&from=%s&to=now" % from_date
+        else:
+            # Transform to  ms epoch
+            ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), \
+                                    int(from_date[14:16])) \
+                           - datetime(1970, 1, 1)).total_seconds() * 1000)
+            ms_to = int( \
+                (datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
+                 - datetime(1970, 1, 1)).total_seconds() * 1000)
+
+            time_url = "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
 
     return time_url
 
