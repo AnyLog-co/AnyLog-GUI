@@ -170,6 +170,8 @@ def status_report(**platform_info):
 
     is_modified, err_msg = create_dashboard(dashboard_info["dashboard"], "current_status", platform_info)
 
+    copy_dash = copy.deepcopy(dashboard_info)
+
     is_modified, err_msg = make_status_dashboard(dashboard_info["dashboard"], "current_status", projection_list, functions)
     if err_msg:
         return [None, err_msg]
