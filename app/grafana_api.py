@@ -628,40 +628,22 @@ def create_dashboard(dashboard, dashboard_name, platform_info):
     dashboard["panels"] = panels_list
 
     panel_id = 0
+    is_modified = False
+    err_msg = None
     for new_panel_defs in  new_dashboard_defs.panels:
         # Go over all new panels definitions
         new_panel_name = new_panel_defs.panel_name
         new_projection_list = new_panel_defs.projection_list
-        new_report_type = new_panel_defs.report_type         # "Graph" or "Gauge"
-        new_projection_list = new_panel_defs.projection_list
+        new_panel_type = new_panel_defs.panel_type         # "Graph" or "Gauge"
 
         new_panel = copy.deepcopy(source_panel)         # Get source panel
         panel_id += 1
         new_panel['id'] = panel_id                      # Set the panel ID
         panels_list.append(new_panel)                   # Connect the panel to the dashboard
 
-        is_modified, err_msg = update_panel(dashboard_name, new_panel, new_panel_name, new_report_type, new_projection_list)
+        is_modified, err_msg = update_panel(dashboard_name, new_panel, new_panel_name, new_panel_type, new_projection_list)
 
-
-    panel_id = 0
-    for index, projection in enumerate(projection_list):
-        entry_name = projection[0]                      # The sensor name from the sensor policy
-        tables_list = [(projection[1], projection[2])]    # The database and table name derived from the policy
-
-        report_type = "increments"      # AnyLog query function
-        display_type = "graph"
-        for i in range(2):      # Adding 2 panels each time (increments + period) - Current status and last day graph
-            new_panel = copy.deepcopy(source_panel)
-            panel_id += 1
-            new_panel['id'] = panel_id     # Adding 2 panels each time
-            panels_list.append(new_panel)  # Duplicate the same panel
-            is_modified, err_msg = replace_panel(dashboard_name, report_type, display_type, new_panel, entry_name, tables_list, functions)
-            if err_msg:
-                break
-            report_type = "period"  # AnyLog query function
-            display_type = "gauge"
-
-    return [True, err_msg]
+    return [is_modified, err_msg]
 
 # -----------------------------------------------------------------------------------
 # Replace the content of an existing panel
@@ -687,30 +669,26 @@ def update_panel( dashboard_name, panel, panel_title, display_type, projection_l
         panel["type"] = display_type        # gauge or graph
         is_modified = True
 
-    if "targets" in panel:
-        targets = panel["targets"]  # Get the list of queries
-    else:
-        # Make Grafana source Panel
-        targets = []
-        source_panel = {}
-        source_panel['refId'] = 'A'
-        source_panel['target'] = ''
-        source_panel['type'] = 'timeseries'
-        targets.append(source_panel)
+
+    # Make Grafana source Panel
+
 
     updated_targets = []
     for projection in projection_list:
         # Define the queries for the panel
-        base_target = copy.deepcopy(targets[0])  # An example target
+        new_target = {}
+        new_target['refId'] = 'A'
+        new_target['target'] = ''
+        new_target['type'] = 'timeseries'
 
         # Make source data representing 'Additional JSON Data' on the panel
         al_query = {}
-        al_query['value_column'] = projection_list.value_column
-        al_query['timestamp_column'] = projection_list.timestamp_column
-        al_query['functions'] = projection_list.functions
-        al_query["dbms"] = projection_list.dbms_name
-        al_query["table"] = projection_list.table_name
-        al_query["type"] = projection_list.query         # "increments" or "period
+        al_query['value_column'] = projection.value_column
+        al_query['timestamp_column'] = projection.timestamp_column
+        al_query['functions'] = projection.functions
+        al_query["dbms"] = projection.dbms_name
+        al_query["table"] = projection.table_name
+        al_query["type"] = projection.query         # "increments" or "period
         # Map back to a string
 
         data, err_msg = format_grafana_json(al_query)
@@ -718,8 +696,9 @@ def update_panel( dashboard_name, panel, panel_title, display_type, projection_l
             err_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
             break
 
-        base_target["data"] = data
-        updated_targets.append(copy.deepcopy(base_target))  # Create a new entry
+        new_target["data"] = data
+
+        updated_targets.append(new_target)
         is_modified = True
 
     if is_modified:

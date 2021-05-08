@@ -11,6 +11,7 @@ such non-permitted act to AnyLog, Inc.
 '''
 from flask_table import Table, Col, LinkCol
 
+import copy
 
 class Item(object):
     def __init__(self, name, description = None):
@@ -116,7 +117,7 @@ class AnyLogProjection():
 class AnyLogPanel():
     def __init__(self):
         self.panel_name = None              # A unique name
-        self.report_type = "Graph"         # The type of display ("Graph" is the default)
+        self.panel_type = "Graph"         # The type of display ("Graph" is the default)
         self.projection_list = []
         self.default_functions = [] # A list of default functions if not specified for each projection
 
@@ -126,7 +127,7 @@ class AnyLogPanel():
     def add_projection(self, policy_name, dbms_name, table_name, functions, query, where_cond):
 
         if not functions:
-            functions = self.default_functions = []
+            functions = self.default_functions
         if not query:
             query = "increments"
 
@@ -140,6 +141,7 @@ class AnyLogDashboard():
     def __init__(self):
         self.reset()
         self.date_time = AnyLogDateTime()
+        self.default_functions = {}
 
     def reset(self):
         self.panels = []        # List of panels
@@ -149,25 +151,25 @@ class AnyLogDashboard():
     # -----------------------------------------------------------------------------------
     # Add a projection list to the panel
     # -----------------------------------------------------------------------------------
-    def add_projection_list(self, panel_name, policy_name, dbms_name, table_name, functions, query, where_cond):
+    def add_projection_list(self, panel_name, panel_type, policy_name, dbms_name, table_name, functions, query, where_cond):
+
+        if not functions:
+            # Take the default for the type of panel
+            if panel_type.lower() in self.default_functions:
+                functions = copy.deepcopy(self.default_functions[panel_type.lower()])
+
 
         panel = self.get_set_panel(panel_name)
+        panel.panel_type = panel_type
         panel.add_projection(policy_name, dbms_name, table_name, functions, query, where_cond)
 
     # -----------------------------------------------------------------------------------
     # Default setup = graph + Gauge
     # -----------------------------------------------------------------------------------
     def set_default(self):
-        panel = AnyLogPanel()
-        panel.panel_name = "Graph"          # A unique name
-        panel.default_functions.append(["min","max","avg"])
-        self.add_panel(panel)
 
-        panel = AnyLogPanel()
-        panel.panel_name = "Gauge"
-        panel.report_type = "Gauge"
-        panel.default_functions.append(["avg"])
-        self.add_panel(panel)
+        self.default_functions["graph" ] = ["min","max","avg"]
+        self.default_functions["gauge"] = ["avg"]
 
         self.set_date_time("range", "-2M")      # Last 2 Months
 
