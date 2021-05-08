@@ -98,31 +98,36 @@ Dashboard ---> Panels --->  Projection ---> Functions
 # AnyLog Projection Definitions
 # -----------------------------------------------------------------------------------
 class AnyLogProjection():
-    def __init__(self, policy_name, dbms_name, table_name, functions):
+    def __init__(self, policy_name, dbms_name, table_name, functions, query, where_cond):
         self.policy_name = policy_name
         self.dbms_name = dbms_name
         self.table_name = table_name
-        self.functions = functions         # The functions to process on the table
+        self.functions = functions          # The functions to process on the table
+        self.query = query           # The query to execute default is increments
+        self.where_cond = where_cond
 
 # -----------------------------------------------------------------------------------
 # AnyLog Panel Definitions
 # -----------------------------------------------------------------------------------
 class AnyLogPanel():
     def __init__(self):
-        self.id = None              # A unique name
-        self.type = "Graph"         # The type of display ("Graph" is the default)
+        self.panel_name = None              # A unique name
+        self.report_type = "Graph"         # The type of display ("Graph" is the default)
         self.projection_list = []
         self.default_functions = [] # A list of default functions if not specified for each projection
 
     # -----------------------------------------------------------------------------------
     # Add a new projection to the panel
     # -----------------------------------------------------------------------------------
-    def add_projection(self, policy_name, dbms_name, table_name, functions = None):
+    def add_projection(self, policy_name, dbms_name, table_name, functions, query, where_cond):
 
         if not functions:
             functions = self.default_functions = []
+        if not query:
+            query = "increments"
 
-        self.projection_list.append(AnyLogProjection(policy_name, dbms_name, table_name, functions))
+
+        self.projection_list.append(AnyLogProjection(policy_name, dbms_name, table_name, functions, query, where_cond))
 
 # -----------------------------------------------------------------------------------
 # AnyLog Dashboard Definitions
@@ -140,23 +145,23 @@ class AnyLogDashboard():
     # -----------------------------------------------------------------------------------
     # Add a projection list to the panel
     # -----------------------------------------------------------------------------------
-    def add_projection_list(self, panel_id, policy_name, dbms_name, table_name, functions = None):
+    def add_projection_list(self, panel_name, policy_name, dbms_name, table_name, functions, query, where_cond):
 
-        panel = self.get_set_panel(panel_id)
-        panel.add_projection(policy_name, dbms_name, table_name, functions)
+        panel = self.get_set_panel(panel_name)
+        panel.add_projection(policy_name, dbms_name, table_name, functions, query, where_cond)
 
     # -----------------------------------------------------------------------------------
     # Default setup = graph + Gauge
     # -----------------------------------------------------------------------------------
     def set_default(self):
         panel = AnyLogPanel()
-        panel.id = "Graph"          # A unique name
+        panel.panel_name = "Graph"          # A unique name
         panel.default_functions.append(["min","max","avg"])
         self.add_panel(panel)
 
         panel = AnyLogPanel()
-        panel.id = "Gauge"
-        panel.type = "Gauge"
+        panel.panel_name = "Gauge"
+        panel.report_type = "Gauge"
         panel.default_functions.append(["avg"])
         self.add_panel(panel)
 
@@ -182,31 +187,31 @@ class AnyLogDashboard():
     # Add a default function to a panel and create new panel if no panel with the needed ID
     # The default function is set for a projection without functions definitions
     # -----------------------------------------------------------------------------------
-    def add_default_function(self, panel_id, function):
+    def add_default_function(self, panel_name, function):
         '''
         Find the panel in the array.
         If no such panel, create a panel.
         Add a function to the dashboard
         '''
 
-        panel_to_set = self.get_set_panel(panel_id)
+        panel_to_set = self.get_set_panel(panel_name)
 
         panel_to_set.default_functions.append(function)
 
     # -----------------------------------------------------------------------------------
     # Get or set a panel - if a panel exists return the panel, else add a new panel
     # -----------------------------------------------------------------------------------
-    def get_set_panel(self, panel_id):
+    def get_set_panel(self, panel_name):
 
         returned_panel = None
         for panel in self.panels:
-            if panel.id == panel_id:
+            if panel.panel_name == panel_name:
                 returned_panel = panel
                 break
 
         if not returned_panel:
             returned_panel = AnyLogPanel()    # Set a new panel
-            returned_panel.id = panel_id
+            returned_panel.panel_name = panel_name
             self.add_panel(returned_panel)
 
         return returned_panel

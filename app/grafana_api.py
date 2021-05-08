@@ -167,6 +167,9 @@ def status_report(**platform_info):
 
     projection_list = platform_info["projection_list"]
     functions = platform_info["functions"]
+
+    is_modified, err_msg = create_dashboard(dashboard_info["dashboard"], "current_status", platform_info)
+
     is_modified, err_msg = make_status_dashboard(dashboard_info["dashboard"], "current_status", projection_list, functions)
     if err_msg:
         return [None, err_msg]
@@ -596,32 +599,49 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 
 
 # -----------------------------------------------------------------------------------
-# Make a dashboard based on a source dashboard  and
+# Make a dashboard based on a source dashboard and params set in platform_info
 # -----------------------------------------------------------------------------------
-def create_dashboard(dashboard, dashboard_name, projection_list, functions):
+def create_dashboard(dashboard, dashboard_name, platform_info):
     '''
     The status dashboard shows 2 panels for every sensor:
     1) Last data available
     2) Graph of last 24 hours
 
     :param dashboard:         The previously used dashboard or the base
-    :param dashboard_name:    Some default name
-    :param projection_list:   Data selected by user:  entry_name, dbms_name, table_name
-    :param functions:         Min, Max, Avg etc
-    :return:
+    :param dashboard_name:    A name for the dashboard
+    :param platform_info:     The definitions of the new dashboard
     '''
 
     panels_list = dashboard["panels"]
     panels_counter = len(panels_list)
     if not panels_counter:
         # A report needs to have one panel
-        return [False, "Grafana API: Report (%s) has no panels" % dashboard_name]
+        return [False, "Grafana API: Source dashbord (%s) has no panels" % dashboard_name]
+
+    new_dashboard_defs = platform_info["dashboard"]     # The definitions of a new dashboard
+
 
     # The source panel is duplicated twice for every entry in the projection
     # Showing the last week trends and showing last values
     source_panel = copy.deepcopy(panels_list[0])
     panels_list = []        # Start from empty list
     dashboard["panels"] = panels_list
+
+    panel_id = 0
+    for new_panel_defs in  new_dashboard_defs.panels:
+        # Go over all new panels definitions
+        new_name = new_panel_defs.panel_name
+        new_projection_list = new_panel_defs.projection_list
+        new_query_type = new_panel_defs.report_type         # "Graph" or "Gauge"
+        new_projection_list = new_panel_defs.projection_list
+
+        new_panel = copy.deepcopy(source_panel)         # Get source panel
+        panel_id += 1
+        new_panel['id'] = panel_id                      # Set the panel ID
+        panels_list.append(new_panel)                   # Connect the panel to the dashboard
+
+        is_modified, err_msg = update_panel(dashboard_name, new_query_type, new_query_type, new_panel, new_projection_list)
+
 
     panel_id = 0
     for index, projection in enumerate(projection_list):
