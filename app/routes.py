@@ -134,6 +134,7 @@ def login():
         path_stat.set_new_user(user_name)
 
         dashboard = AnyLogDashboard()  # The default dashboard for this user
+        dashboard.set_default()
         path_stat.register_element(user_name, "default_dashboard", dashboard)
 
         # Load the default CONFIG file
@@ -749,6 +750,7 @@ def policies_to_status_report( user_name, policies_list ):
     # Name, Table Name, DBMS name
     projection_list = []
 
+    dashboard = path_stat.get_element(user_name, "default_dashboard")  # An object with panels definitions
     for entry in policies_list:
         dbms_table_id = entry.split('@')
         if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID
@@ -779,6 +781,10 @@ def policies_to_status_report( user_name, policies_list ):
         flash('AnyLog: Missing metadata information in policies', category='error')
         return None
 
+    # Add the projection list to each of the 2 default panels (Graph and Gauge)
+    dashboard.add_projection_list("Graph", projection_list)
+    dashboard.add_projection_list("Gauge", projection_list)
+
     gui_view = get_gui_view()
     platforms_tree = gui_view.get_base_info("visualization")
     if not platforms_tree or not "Grafana" in platforms_tree:
@@ -795,7 +801,7 @@ def policies_to_status_report( user_name, policies_list ):
     platform_info['from_date'] = "-2M"
     platform_info['to_date'] = "now"
 
-    dashboard = path_stat.get_element(user_name, "default_dashboard")  # An object to include all dashboards declared on the form
+
 
     platform_info["dashboard"] = dashboard
 

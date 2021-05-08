@@ -594,6 +594,56 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 
     return ret_val
 
+
+# -----------------------------------------------------------------------------------
+# Make a dashboard based on a source dashboard  and
+# -----------------------------------------------------------------------------------
+def create_dashboard(dashboard, dashboard_name, projection_list, functions):
+    '''
+    The status dashboard shows 2 panels for every sensor:
+    1) Last data available
+    2) Graph of last 24 hours
+
+    :param dashboard:         The previously used dashboard or the base
+    :param dashboard_name:    Some default name
+    :param projection_list:   Data selected by user:  entry_name, dbms_name, table_name
+    :param functions:         Min, Max, Avg etc
+    :return:
+    '''
+
+    panels_list = dashboard["panels"]
+    panels_counter = len(panels_list)
+    if not panels_counter:
+        # A report needs to have one panel
+        return [False, "Grafana API: Report (%s) has no panels" % dashboard_name]
+
+    # The source panel is duplicated twice for every entry in the projection
+    # Showing the last week trends and showing last values
+    source_panel = copy.deepcopy(panels_list[0])
+    panels_list = []        # Start from empty list
+    dashboard["panels"] = panels_list
+
+    panel_id = 0
+    for index, projection in enumerate(projection_list):
+        entry_name = projection[0]                      # The sensor name from the sensor policy
+        tables_list = [(projection[1], projection[2])]    # The database and table name derived from the policy
+
+        report_type = "increments"      # AnyLog query function
+        display_type = "graph"
+        for i in range(2):      # Adding 2 panels each time (increments + period) - Current status and last day graph
+            new_panel = copy.deepcopy(source_panel)
+            panel_id += 1
+            new_panel['id'] = panel_id     # Adding 2 panels each time
+            panels_list.append(new_panel)  # Duplicate the same panel
+            is_modified, err_msg = replace_panel(dashboard_name, report_type, display_type, new_panel, entry_name, tables_list, functions)
+            if err_msg:
+                break
+            report_type = "period"  # AnyLog query function
+            display_type = "gauge"
+
+    return [True, err_msg]
+
+
 # -----------------------------------------------------------------------------------
 # Create a dashboard to show current Status
 # -----------------------------------------------------------------------------------

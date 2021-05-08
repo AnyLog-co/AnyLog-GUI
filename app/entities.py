@@ -78,20 +78,74 @@ class AnyLogDateTime():
 
 
 # -----------------------------------------------------------------------------------
+'''
+The Dashboard setup
+
+Dashboard ---> Panels --->  Projection ---> Functions
+
+- functions is a list withe the function to process on the table
+- projection defines the table
+- panel includes multiple tables that are graphed together
+- dashboard contains a report
+ 
+'''
+# -----------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------
+# AnyLog Projection Definitions
+# -----------------------------------------------------------------------------------
+class AnyLogProjection():
+    def __init__(self, policy_name, dbms_name, table_name, functions):
+        self.policy_name = policy_name
+        self.dbms_name = dbms_name
+        self.table_name = table_name
+        self.functions = functions         # The functions to process on the table
+
+# -----------------------------------------------------------------------------------
 # AnyLog Panel Definitions
 # -----------------------------------------------------------------------------------
 class AnyLogPanel():
     def __init__(self):
-        self.id = None
-        self.functions = [] # A list of functions
+        self.id = None              # A unique name
+        self.type = "Graph"         # The type of display ("Graph" is the default)
+        self.projection_list = []
+        self.default_functions = [] # A list of default functions if not specified for each projection
+
+    # -----------------------------------------------------------------------------------
+    # Add a new projection to the panel
+    # -----------------------------------------------------------------------------------
+    def add_projection(self, policy_name, dbms_name, table_name, functions = None):
+
+        if not functions:
+            functions = self.default_functions = []
+
+        self.projection_list.append(AnyLogProjection(policy_name, dbms_name, table_name, functions))
 
 # -----------------------------------------------------------------------------------
 # AnyLog Dashboard Definitions
 # -----------------------------------------------------------------------------------
 class AnyLogDashboard():
     def __init__(self):
+
         self.panels = []        # List of panels
         self.date_time = AnyLogDateTime()
+
+    # -----------------------------------------------------------------------------------
+    # Default setup = graph + Gauge
+    # -----------------------------------------------------------------------------------
+    def set_default(self):
+        panel = AnyLogPanel()
+        panel.id = "Graph"          # A unique name
+        panel.functions.append(["min","max","avg"])
+        self.add_panel(panel)
+
+        panel = AnyLogPanel()
+        panel.id = "Gauge"
+        panel.type = "Gauge"
+        panel.functions.append(["avg"])
+        self.add_panel(panel)
+
+        self.set_date_time("range", "-2M")      # Last 2 Months
 
     # -----------------------------------------------------------------------------------
     # Add a new panel
