@@ -169,7 +169,7 @@ class AnyLogDashboard():
     def set_default(self):
 
         self.default_functions["graph" ] = ["min","max","avg"]
-        self.default_functions["gauge"] = ["avg"]
+        self.default_functions["gauge"] = ["min","max","avg"]
 
         self.set_date_time("range", "-2M")      # Last 2 Months
 

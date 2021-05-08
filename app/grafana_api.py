@@ -158,23 +158,13 @@ def status_report(**platform_info):
         return [None, err_msg]
 
     dashboard_uid = platform_info['dashboard_uid']
-    dashboard_version = platform_info['dashboard_version']
     new_dashboard = platform_info["new_dashboard"]
 
     dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, "current_status") # The Grafana dasboard requested or the base_report
     if err_msg:
         return [None, err_msg]
 
-    projection_list = platform_info["projection_list"]
-    functions = platform_info["functions"]
-
     is_modified, err_msg = create_dashboard(dashboard_info["dashboard"], "current_status", platform_info)
-
-    '''
-    copy_dash = copy.deepcopy(dashboard_info)
-
-    is_modified, err_msg = make_status_dashboard(dashboard_info["dashboard"], "current_status", projection_list, functions)
-    '''
 
     if err_msg:
         return [None, err_msg]
@@ -183,18 +173,10 @@ def status_report(**platform_info):
     if err_msg:
         return [None, err_msg]
 
-    base_url = grafana_url.replace("localhost", "127.0.0.1")    # Otherwise Iframe does not works
-    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, "current_status")
+    panels_urls = get_panels_urls(grafana_url, dashboard_info, dashboard_uid, "current_status")
 
-    panels_list = []
-    panels_counter = len(dashboard_info['dashboard']['panels'])
-    for i in range (panels_counter):        # Create a url for each Panel
-        panel_url = base_url + "?orgId=1&viewPanel=%u" % (i + 1)
-        panel_url += get_url_time_range(platform_info)
-        panels_list.append(panel_url)
 
-    return [panels_list, None]      # Return list of urls, one for each panel
-
+    return [panels_urls, None]  # Return list of urls, one for each panel
 
 # -----------------------------------------------------------------------------------
 # Deploy a report
@@ -711,53 +693,6 @@ def update_panel( dashboard_name, panel, panel_title, display_type, projection_l
 
 
     return [is_modified, err_msg]
-# -----------------------------------------------------------------------------------
-# Create a dashboard to show current Status
-# -----------------------------------------------------------------------------------
-def make_status_dashboard(dashboard, dashboard_name, projection_list, functions):
-    '''
-    The status dashboard shows 2 panels for every sensor:
-    1) Last data available
-    2) Graph of last 24 hours
-
-    :param dashboard:         The previously used dashboard or the base
-    :param dashboard_name:    Some default name
-    :param projection_list:   Data selected by user:  entry_name, dbms_name, table_name
-    :param functions:         Min, Max, Avg etc
-    :return:
-    '''
-
-    panels_list = dashboard["panels"]
-    panels_counter = len(panels_list)
-    if not panels_counter:
-        # A report needs to have one panel
-        return [False, "Grafana API: Report (%s) has no panels" % dashboard_name]
-
-    # The source panel is duplicated twice for every entry in the projection
-    # Showing the last week trends and showing last values
-    source_panel = copy.deepcopy(panels_list[0])
-    panels_list = []        # Start from empty list
-    dashboard["panels"] = panels_list
-
-    panel_id = 0
-    for index, projection in enumerate(projection_list):
-        entry_name = projection[0]                      # The sensor name from the sensor policy
-        tables_list = [(projection[1], projection[2])]    # The database and table name derived from the policy
-
-        report_type = "increments"      # AnyLog query function
-        display_type = "graph"
-        for i in range(2):      # Adding 2 panels each time (increments + period) - Current status and last day graph
-            new_panel = copy.deepcopy(source_panel)
-            panel_id += 1
-            new_panel['id'] = panel_id     # Adding 2 panels each time
-            panels_list.append(new_panel)  # Duplicate the same panel
-            is_modified, err_msg = replace_panel(dashboard_name, report_type, display_type, new_panel, entry_name, tables_list, functions)
-            if err_msg:
-                break
-            report_type = "period"  # AnyLog query function
-            display_type = "gauge"
-
-    return [True, err_msg]
 # -----------------------------------------------------------------------------------
 # Update the dashboard -
 # Go over all the panels and modify the targets on each panel.
