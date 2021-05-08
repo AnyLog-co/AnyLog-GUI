@@ -7,11 +7,17 @@
     <form action="" method="post">
 
         {% if panels_urls %}
+             <!-- panels_urls is a dictionary, the key is the report name and the value is a list with the urls of the panels -->
             {% for report in panels_urls %}
-                {{ report }} --
-                {{panels_urls[report][0]}}
-                <!-- can use =: width="450" frameborder="10" -->
-                <iframe src={{panels_urls[report][0]}} width=35% height="400" frameborder="15"></iframe>
+                <br>
+                {{ report }}
+                <br>
+                    {% for url in panels_urls[report] %}
+
+                        <!-- can use =: width="450" frameborder="10" -->
+                        <iframe src={{ url }} width=35% height="400" frameborder="15"></iframe>
+                    {% endfor %}
+                 <br>
             {% endfor %}
         {% endif %}
 
