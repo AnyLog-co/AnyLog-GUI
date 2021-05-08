@@ -106,6 +106,10 @@ class AnyLogProjection():
         self.query = query           # The query to execute default is increments
         self.where_cond = where_cond
 
+        self.timestamp_column = 'timestamp'     # Default time column name
+        self.value_column = 'value'             # Default value column name
+
+
 # -----------------------------------------------------------------------------------
 # AnyLog Panel Definitions
 # -----------------------------------------------------------------------------------

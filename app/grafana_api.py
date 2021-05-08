@@ -630,9 +630,9 @@ def create_dashboard(dashboard, dashboard_name, platform_info):
     panel_id = 0
     for new_panel_defs in  new_dashboard_defs.panels:
         # Go over all new panels definitions
-        new_name = new_panel_defs.panel_name
+        new_panel_name = new_panel_defs.panel_name
         new_projection_list = new_panel_defs.projection_list
-        new_query_type = new_panel_defs.report_type         # "Graph" or "Gauge"
+        new_report_type = new_panel_defs.report_type         # "Graph" or "Gauge"
         new_projection_list = new_panel_defs.projection_list
 
         new_panel = copy.deepcopy(source_panel)         # Get source panel
@@ -640,7 +640,7 @@ def create_dashboard(dashboard, dashboard_name, platform_info):
         new_panel['id'] = panel_id                      # Set the panel ID
         panels_list.append(new_panel)                   # Connect the panel to the dashboard
 
-        is_modified, err_msg = update_panel(dashboard_name, new_query_type, new_query_type, new_panel, new_projection_list)
+        is_modified, err_msg = update_panel(dashboard_name, new_panel, new_panel_name, new_report_type, new_projection_list)
 
 
     panel_id = 0
@@ -663,7 +663,70 @@ def create_dashboard(dashboard, dashboard_name, platform_info):
 
     return [True, err_msg]
 
+# -----------------------------------------------------------------------------------
+# Replace the content of an existing panel
+# -----------------------------------------------------------------------------------
+def update_panel( dashboard_name, panel, panel_title, display_type, projection_list):
+    '''
+    Set a new panel and modify the panel definitions as needed
+    :param dashboard_name:
+    :param panel:               The JSON Panel info from Grafana
+    :param panel_title:
+    :param display_type:        Grafana - gauge or graph
+    :param projection_list:     Tables, query per tables, query functions
+    '''
 
+    err_msg = None
+    is_modified = False
+    if not "title" in panel or not panel["title"] or panel["title"] != panel_title:
+        # Change the panel name to be as the report name
+        panel["title"] = panel_title
+        is_modified = True
+
+    if not "type" in panel or panel["type"] != display_type:
+        panel["type"] = display_type        # gauge or graph
+        is_modified = True
+
+    if "targets" in panel:
+        targets = panel["targets"]  # Get the list of queries
+    else:
+        # Make Grafana source Panel
+        targets = []
+        source_panel = {}
+        source_panel['refId'] = 'A'
+        source_panel['target'] = ''
+        source_panel['type'] = 'timeseries'
+        targets.append(source_panel)
+
+    updated_targets = []
+    for projection in projection_list:
+        # Define the queries for the panel
+        base_target = copy.deepcopy(targets[0])  # An example target
+
+        # Make source data representing 'Additional JSON Data' on the panel
+        al_query = {}
+        al_query['value_column'] = projection_list.value_column
+        al_query['timestamp_column'] = projection_list.timestamp_column
+        al_query['functions'] = projection_list.functions
+        al_query["dbms"] = projection_list.dbms_name
+        al_query["table"] = projection_list.table_name
+        al_query["type"] = projection_list.query         # "increments" or "period
+        # Map back to a string
+
+        data, err_msg = format_grafana_json(al_query)
+        if err_msg:
+            err_msg = "Grafana API: Report (%s) failed to process 'Additional JSON Data' definitions" % dashboard_name
+            break
+
+        base_target["data"] = data
+        updated_targets.append(copy.deepcopy(base_target))  # Create a new entry
+        is_modified = True
+
+    if is_modified:
+        panel["targets"] = updated_targets  # Add a target with the dbms and table
+
+
+    return [is_modified, err_msg]
 # -----------------------------------------------------------------------------------
 # Create a dashboard to show current Status
 # -----------------------------------------------------------------------------------
