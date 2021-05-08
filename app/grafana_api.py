@@ -10,6 +10,10 @@ to be broadly interpreted) you or your such affiliates shall unconditionally ass
 such non-permitted act to AnyLog, Inc.
 '''
 
+'''
+Grafana Config file needs to be set to allow embedding:
+To validate setting: go to Server-Admin (Left side on the main panel) --> Setting --> allow_embedding : true
+'''
 
 # Example - https://avleonov.com/2020/06/10/how-to-list-create-update-and-delete-grafana-dashboards-via-api/
 
@@ -87,7 +91,7 @@ def get_reports(url:str, token:str, directory:str):
                         dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
                         if dashboard_info:
                             if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
-                                panels_urls = get_panels_urls(url, dashboard_info, dashboard_uid)
+                                panels_urls = get_panels_urls(url, dashboard_info, dashboard_uid, dashboard_name)
                                 panels[dashboard_name] = panels_urls
 
     return [panels, err_msg]
@@ -95,9 +99,9 @@ def get_reports(url:str, token:str, directory:str):
 # -----------------------------------------------------------------------------------
 # Get panels URLs of a particular dashboard - the urls are based on the dashboard url and the panel ID.
 # -----------------------------------------------------------------------------------
-def get_panels_urls(grafana_url, dashboard_info, dashboard_uid):
+def get_panels_urls(grafana_url, dashboard_info, dashboard_uid, dashboard_name):
     base_url = grafana_url.replace("localhost", "127.0.0.1")  # Otherwise Iframe does not works
-    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, "current_status")
+    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, dashboard_name)
 
     panels_list = []
     for panel in dashboard_info['dashboard']['panels']:
@@ -332,7 +336,7 @@ def get_init_dashboard(platform_info, dashboard_name):
 def get_url_time_range(platform_info):
 
     if not platform_info:
-        time_url = "?&from=%s&to=now" % "-2M"   # Arbitrary default
+        time_url = "?&to=now&from=now-%s" % "2M"   # Arbitrary default
     else:
 
         from_date = platform_info["from_date"]
