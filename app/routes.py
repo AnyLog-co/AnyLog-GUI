@@ -776,14 +776,15 @@ def policies_to_status_report( user_name, policies_list ):
                     if table_name:
                         projection_list.append((policy_name, dbms_name, table_name))
 
+                        # Add the projection list to each of the 2 default panels (Graph and Gauge)
+                        dashboard.add_projection_list("Graph", policy_name, dbms_name, table_name)
+                        dashboard.add_projection_list("Gauge", policy_name, dbms_name, table_name)
 
-    if not len (projection_list):
+
+    if not dashboard.get_panels_count():
         flash('AnyLog: Missing metadata information in policies', category='error')
         return None
 
-    # Add the projection list to each of the 2 default panels (Graph and Gauge)
-    dashboard.add_projection_list("Graph", projection_list)
-    dashboard.add_projection_list("Gauge", projection_list)
 
     gui_view = get_gui_view()
     platforms_tree = gui_view.get_base_info("visualization")
@@ -875,6 +876,7 @@ def conf_nav_report():
 def get_base_report_config(user_name, form_info):
 
     dashboard = path_stat.get_element(user_name, "default_dashboard")       # An object to include all dashboards declared on the form
+    dashboard.reset()
 
     for key, value in form_info.items():
 
@@ -883,7 +885,7 @@ def get_base_report_config(user_name, form_info):
             if len(checkbox) == 3:
                 panel_id = checkbox[1]
                 function = checkbox[2]
-                dashboard.add_function(panel_id, function)  # add function to the dashboard (and create a panel in the dashboard if needed)
+                dashboard.add_default_function(panel_id, function)  # add function to the dashboard (and create a panel in the dashboard if needed)
 
         elif key[:5] == "date_":
             dashboard.set_date_time(key[5:], value) # Set date start, date end, date range

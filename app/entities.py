@@ -57,6 +57,9 @@ class AnyLogTable(object):
 # -----------------------------------------------------------------------------------
 class AnyLogDateTime():
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self.start_date_time = None
         self.end_date_time = None
         self.range_date_time = None      # i.e. -2M
@@ -126,9 +129,21 @@ class AnyLogPanel():
 # -----------------------------------------------------------------------------------
 class AnyLogDashboard():
     def __init__(self):
-
-        self.panels = []        # List of panels
+        self.reset()
         self.date_time = AnyLogDateTime()
+
+    def reset(self):
+        self.panels = []        # List of panels
+
+    def get_panels_count(self):
+        return len(self.panels)
+    # -----------------------------------------------------------------------------------
+    # Add a projection list to the panel
+    # -----------------------------------------------------------------------------------
+    def add_projection_list(self, panel_id, policy_name, dbms_name, table_name, functions = None):
+
+        panel = self.get_set_panel(panel_id)
+        panel.add_projection(policy_name, dbms_name, table_name, functions)
 
     # -----------------------------------------------------------------------------------
     # Default setup = graph + Gauge
@@ -136,13 +151,13 @@ class AnyLogDashboard():
     def set_default(self):
         panel = AnyLogPanel()
         panel.id = "Graph"          # A unique name
-        panel.functions.append(["min","max","avg"])
+        panel.default_functions.append(["min","max","avg"])
         self.add_panel(panel)
 
         panel = AnyLogPanel()
         panel.id = "Gauge"
         panel.type = "Gauge"
-        panel.functions.append(["avg"])
+        panel.default_functions.append(["avg"])
         self.add_panel(panel)
 
         self.set_date_time("range", "-2M")      # Last 2 Months
@@ -160,28 +175,38 @@ class AnyLogDashboard():
         '''
         key values are "start", "end" or range"
         '''
+        self.date_time.reset()      # Delete older defs
         self.date_time.set_date_time(key, value)
 
     # -----------------------------------------------------------------------------------
-    # Add a function to a panel and create new panel if no panel with the needed ID
+    # Add a default function to a panel and create new panel if no panel with the needed ID
+    # The default function is set for a projection without functions definitions
     # -----------------------------------------------------------------------------------
-    def add_function(self, panel_id, function):
+    def add_default_function(self, panel_id, function):
         '''
         Find the panel in the array.
         If no such panel, create a panel.
         Add a function to the dashboard
         '''
-        panel_to_set = None
+
+        panel_to_set = self.get_set_panel(panel_id)
+
+        panel_to_set.default_functions.append(function)
+
+    # -----------------------------------------------------------------------------------
+    # Get or set a panel - if a panel exists return the panel, else add a new panel
+    # -----------------------------------------------------------------------------------
+    def get_set_panel(self, panel_id):
+
+        returned_panel = None
         for panel in self.panels:
             if panel.id == panel_id:
-                panel_to_set = panel
+                returned_panel = panel
                 break
 
-        if not panel_to_set:
-            panel_to_set = AnyLogPanel()    # Set a new panel
-            panel_to_set.id = panel_id
-            self.add_panel(panel_to_set)
+        if not returned_panel:
+            returned_panel = AnyLogPanel()    # Set a new panel
+            returned_panel.id = panel_id
+            self.add_panel(returned_panel)
 
-        panel_to_set.functions.append(function)
-
-
+        return returned_panel
