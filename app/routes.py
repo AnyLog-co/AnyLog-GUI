@@ -130,8 +130,11 @@ def login():
         user_name = request.form['username']
         session['username'] = user_name
 
-        # Register Useer
+        # Register User
         path_stat.set_new_user(user_name)
+
+        dashboard = AnyLogDashboard()  # The default dashboard for this user
+        path_stat.register_element(user_name, "default_dashboard", dashboard)
 
         # Load the default CONFIG file
 
@@ -729,8 +732,9 @@ def install():
 
 # -----------------------------------------------------------------------------------
 # Issue a report based on the list of policies IDs and the method to extract the dbms name and database name
+# The status report is 2 panels - a graph and a gauge which are defined in template base_conf_report.html
 # -----------------------------------------------------------------------------------
-def policies_to_status_report( selection, policies_list ):
+def policies_to_status_report( user_name, policies_list ):
     '''
     Each Policy is transformed to a report showing the data status
 
@@ -791,6 +795,10 @@ def policies_to_status_report( selection, policies_list ):
     platform_info['from_date'] = "-2M"
     platform_info['to_date'] = "now"
 
+    dashboard = path_stat.get_element(user_name, "default_dashboard")  # An object to include all dashboards declared on the form
+
+    platform_info["dashboard"] = dashboard
+
     url_list, err_msg = visualize.status_report("Grafana", **platform_info)
     if err_msg:
         flash(err_msg, category='error')
@@ -815,8 +823,7 @@ def conf_nav_report():
 
     form_info = request.form
     if len(form_info):
-        dashboard = get_base_report_config(form_info)        # get the report form
-        path_stat.register_element(user_name, "nav_report_conf", dashboard)
+        get_base_report_config(user_name, form_info)    # update the report configuration (on the user status)
 
 
     select_info = get_select_menu()
@@ -857,10 +864,11 @@ def conf_nav_report():
     return render_template('base_conf_report.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Get the report config info from the form
+# Set the info on the default_dashboard assigned to the user
 # -----------------------------------------------------------------------------------
-def get_base_report_config(form_info):
+def get_base_report_config(user_name, form_info):
 
-    dashboard = AnyLogDashboard()       # An object to include all dashboards declared on the form
+    dashboard = path_stat.get_element(user_name, "default_dashboard")       # An object to include all dashboards declared on the form
 
     for key, value in form_info.items():
 
@@ -897,7 +905,7 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            html = policies_to_status_report(location_key, [dbms_table_id])
+            html = policies_to_status_report(user_name, [dbms_table_id])
             if not html:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
@@ -946,7 +954,7 @@ def metadata( selection = "" ):
 
 
         if report_button:
-            html = policies_to_status_report(location_key, selected_list)
+            html = policies_to_status_report(user_name, selected_list)
             if not html:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
