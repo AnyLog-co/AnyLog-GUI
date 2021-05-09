@@ -831,7 +831,7 @@ def conf_nav_report():
         if err_msg:
             flash("AnyLog: %s" % err_msg, category='error')
             redirect(url_for('conf_nav_report'))        # Redo Form
-
+        flash("AnyLog: Report configured", category='message')
 
     select_info = get_select_menu()
 
