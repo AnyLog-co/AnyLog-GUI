@@ -858,10 +858,9 @@ def conf_nav_report():
     panel_config = PanelConfig( "Gauge", "gauge", functions_list, functions_selected )
     dashboard_conf.add_panel(panel_config)
 
-
     # Organize the report time selections as last selection
 
-    from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")      # Get the last selections of dates
+    from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")  # Get the last selections of dates
     if not to_date:
         to_date = 'now'
         from_date = "now-2M"
@@ -876,7 +875,7 @@ def conf_nav_report():
 
     time_config = TimeConfig(time_selection_, text_selected, time_selected, from_date, to_date)
 
-    dashboard_conf.set_time(time_config)    # Apply time selections options to the report
+    dashboard_conf.set_time(time_config)  # Apply time selections options to the report
 
     select_info['dashboard'] = dashboard_conf
 

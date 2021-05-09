@@ -39,7 +39,7 @@ def get_reports(platform_name, url, token, directory):
         reports_list = None
         error_msg = "%s not supported" % platform_name
     else:
-        reports_list, error_msg = connector.get_reports(url, token, directory)
+        reports_list, error_msg = connector.get_reports(url, None, token, directory)
 
 
     return [reports_list, error_msg]

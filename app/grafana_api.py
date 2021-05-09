@@ -55,7 +55,7 @@ def test_connection( grafana_url:str, token:str ):
 # For each dashboard - pull the panels
 # Return a list of all the panels per each dashboard
 # -----------------------------------------------------------------------------------
-def get_reports(url:str, token:str, directory:str):
+def get_reports(url:str, platform_info:dict, token:str, directory:str):
     '''
     Return the list of urls to the panels of the dashboards in the directory
     '''
@@ -91,7 +91,7 @@ def get_reports(url:str, token:str, directory:str):
                         dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
                         if dashboard_info:
                             if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
-                                panels_urls = get_panels_urls(url, dashboard_info, dashboard_uid, dashboard_name)
+                                panels_urls = get_panels_urls(url, platform_info, dashboard_info, dashboard_uid, dashboard_name)
                                 panels[dashboard_name] = panels_urls
 
     return [panels, err_msg]
@@ -99,7 +99,8 @@ def get_reports(url:str, token:str, directory:str):
 # -----------------------------------------------------------------------------------
 # Get panels URLs of a particular dashboard - the urls are based on the dashboard url and the panel ID.
 # -----------------------------------------------------------------------------------
-def get_panels_urls(grafana_url, dashboard_info, dashboard_uid, dashboard_name):
+def get_panels_urls(grafana_url, dashboard_selections, dashboard_info, dashboard_uid, dashboard_name):
+
     base_url = grafana_url.replace("localhost", "127.0.0.1")  # Otherwise Iframe does not works
     base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, dashboard_name)
 
@@ -107,7 +108,7 @@ def get_panels_urls(grafana_url, dashboard_info, dashboard_uid, dashboard_name):
     for panel in dashboard_info['dashboard']['panels']:
         id = panel['id']
         panel_url = base_url + "?orgId=1&viewPanel=%u" % (id)
-        panel_url += get_url_time_range(None)
+        panel_url += get_url_time_range(dashboard_selections)
         panels_list.append(panel_url)
 
     return panels_list  # Return list of urls, one for each panel
@@ -173,7 +174,7 @@ def status_report(**platform_info):
     if err_msg:
         return [None, err_msg]
 
-    panels_urls = get_panels_urls(grafana_url, dashboard_info, dashboard_uid, "current_status")
+    panels_urls = get_panels_urls(grafana_url, platform_info['dashboard'], dashboard_info, dashboard_uid, "current_status")
 
 
     return [panels_urls, None]  # Return list of urls, one for each panel
@@ -323,27 +324,35 @@ def get_init_dashboard(platform_info, dashboard_name):
     # ?&from=now-2M&to=now
     # ?&from=202103011248&to=202105011248
 # -----------------------------------------------------------------------------------
-def get_url_time_range(platform_info):
+def get_url_time_range(dashboard_selections):
+    '''
+    dashboard_selections is the user selections in base_conf_report.html
+    and organized in AnyLogDashboard class
+    '''
 
-    if not platform_info:
+    if not dashboard_selections:
         time_url = "?&to=now&from=now-%s" % "2M"   # Arbitrary default
     else:
 
-        from_date = platform_info["from_date"]
-        to_date = platform_info["to_date"]
-
-        if to_date[:3] == "now":
-            time_url = "?&from=%s&to=now" % from_date
+        date_time = dashboard_selections.date_time
+        if date_time.range_date_time:
+            time_url = "?&to=now&from=now%s" % date_time.range_date_time  # User selected last X years or month or days etc.
         else:
-            # Transform to  ms epoch
-            ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), \
-                                    int(from_date[14:16])) \
-                           - datetime(1970, 1, 1)).total_seconds() * 1000)
-            ms_to = int( \
-                (datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
-                 - datetime(1970, 1, 1)).total_seconds() * 1000)
+            from_date = date_time.start_date_time
+            to_date = date_time.end_date_time
 
-            time_url = "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
+            if to_date[:3] == "now":
+                time_url = "?&from=%s&to=now" % from_date
+            else:
+                # Transform to  ms epoch
+                ms_from = int((datetime(int(from_date[:4]), int(from_date[5:7]), int(from_date[8:10]), int(from_date[11:13]), \
+                                        int(from_date[14:16])) \
+                               - datetime(1970, 1, 1)).total_seconds() * 1000)
+                ms_to = int( \
+                    (datetime(int(to_date[:4]), int(to_date[5:7]), int(to_date[8:10]), int(to_date[11:13]), int(to_date[14:16])) \
+                     - datetime(1970, 1, 1)).total_seconds() * 1000)
+
+                time_url = "?&from=%s&to=%s" % (str(ms_from), str(ms_to))
 
     return time_url
 
