@@ -835,7 +835,10 @@ def conf_nav_report():
 
     form_info = request.form
     if len(form_info):
-        get_base_report_config(user_name, form_info)    # update the report configuration (on the user status)
+        err_msg = get_base_report_config(user_name, form_info)    # update the report configuration (on the user status)
+        if err_msg:
+            flash("AnyLog: %s" % err_msg, category='error')
+            redirect(url_for('conf_nav_report'))        # Redo Form
 
 
     select_info = get_select_menu()
@@ -860,20 +863,22 @@ def conf_nav_report():
 
     # Organize the report time selections as last selection
 
-    from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")  # Get the last selections of dates
-    if not to_date:
-        to_date = 'now'
-        from_date = "now-2M"
-    if to_date:
-        if to_date == 'now':
-            for entry in time_selection_:
+    # Get the last selection for time and date and provide the selection as the setup
+
+    start_date_time, end_date_time, range_date_time = default_dashboard.date_time.get_date_time_selections()
+
+    text_selected = None
+    time_selected = None
+    if range_date_time:
+        for entry in time_selection_:
                 # go over the entries to find the last selection made and set it as default
-                if entry[1] == from_date[3:]:
+                if entry[1] == range_date_time:
                     text_selected = entry[0]
                     time_selected = entry[1]
                     break
 
-    time_config = TimeConfig(time_selection_, text_selected, time_selected, from_date, to_date)
+
+    time_config = TimeConfig(time_selection_, text_selected, time_selected, start_date_time, end_date_time)
 
     dashboard_conf.set_time(time_config)  # Apply time selections options to the report
 
@@ -901,7 +906,9 @@ def get_base_report_config(user_name, form_info):
         elif key[:5] == "date_":
             dashboard.set_date_time(key[5:], value) # Set date start, date end, date range
 
-    return dashboard
+    selection_errors = dashboard.test_selections()
+
+    return selection_errors
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata

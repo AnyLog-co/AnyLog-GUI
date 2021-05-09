@@ -80,8 +80,27 @@ class AnyLogDateTime():
         else:
             self.range_date_time = value
 
+    def get_date_time_selections(self):
+        return [self.start_date_time, self.end_date_time, self.range_date_time]
 
-# -----------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------
+    # Rest if date and time are properly selected
+    #-----------------------------------------------------------------------------------
+    def test_date_time_selection(self):
+        '''
+        Return a message if date time selections are wrong
+        '''
+        if (self.start_date_time and not self.end_date_time) or (self.end_date_time and not self.start_date_time):
+            err_msg = "Missing date and time selection"
+        elif self.range_date_time and (self.start_date_time or self.end_date_time):
+            err_msg = "Wrong date and time selection"
+        elif not self.range_date_time and not self.start_date_time and not self.end_date_time:
+            err_msg = "Missing date and time selections"
+        else:
+            err_msg = None
+        return err_msg
+
+# ----------------------------------------------------------------------------------
 '''
 The Dashboard setup
 
@@ -139,9 +158,9 @@ class AnyLogPanel():
 # -----------------------------------------------------------------------------------
 class AnyLogDashboard():
     def __init__(self):
-        self.reset()
         self.date_time = AnyLogDateTime()
         self.default_functions = {}
+        self.reset()
 
     def reset_panels(self):
         '''
@@ -155,6 +174,8 @@ class AnyLogDashboard():
         '''
         self.panels = []        # List of panels
         self.default_functions = {}
+        self.date_time.reset()
+
 
     def get_panels_count(self):
         return len(self.panels)
@@ -230,7 +251,6 @@ class AnyLogDashboard():
         '''
         key values are "start", "end" or range"
         '''
-        self.date_time.reset()      # Delete older defs
         self.date_time.set_date_time(key, value)
 
     # -----------------------------------------------------------------------------------
@@ -273,6 +293,17 @@ class AnyLogDashboard():
                 returned_panel = panel
                 break
         return returned_panel
+
+    # -----------------------------------------------------------------------------------
+    # Test the user selections on the dasboard
+    # -----------------------------------------------------------------------------------
+    def test_selections(self):
+        '''
+        Test the user selections and return an error message (if an error is found
+        '''
+
+        err_msg = self.date_time.test_date_time_selection()
+        return err_msg
 # -----------------------------------------------------------------------------------
 # Return the klist of supported functions
 # -----------------------------------------------------------------------------------
