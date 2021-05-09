@@ -51,7 +51,7 @@ class PanelConfig():
 
     def __init__(self, name, panel_type, selected, not_selected):
         self.name = name        # The name of the panel on the config page (not the panel name when report is requested)
-        self.panel_type =   panel_type      # Graph, Gauge
+        self.panel_type = panel_type      # Graph, Gauge
         self.chek_box_selected = selected      # Each entry represents selected checkboxes for a panel
         self.chek_box = not_selected           # Each entry represent checkboxes for a panel
         self.time_config = None      # Time selection for the panel (if different than dashboard)

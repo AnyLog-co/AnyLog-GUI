@@ -13,13 +13,13 @@
        <!-- Selected checkboxes of report - Min, Max, Avg -->
         {% for check_box in panel.chek_box_selected %}
             <!-- Select functionality  -->
-            <input type="checkbox" name="checkbox.{{ panel.name }}.{{check_box}}" id={{check_box}} checked>
+            <input type="checkbox" name="checkbox.{{ panel.panel_type }}.{{check_box}}" id={{check_box}} checked>
             <label for={{check_box}}>{{check_box}}</label>&nbsp
         {% endfor %}
        <!-- Not selected checkboxes of report - Min, Max, Avg -->
         {% for check_box in panel.chek_box %}
             <!-- Select functionality  -->
-            <input type="checkbox" id={{check_box}} name={{check_box}}>
+             <input type="checkbox" name="checkbox.{{ panel.panel_type }}.{{check_box}}" id={{check_box}}>
             <label for={{check_box}}>{{check_box}}</label>&nbsp
         {% endfor %}
 

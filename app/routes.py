@@ -841,9 +841,14 @@ def conf_nav_report():
 
     dashboard_conf = DashboardConfig()
 
-    panel_config = PanelConfig( "Graph", "Graph", ["Avg", "Min", "Max"], ["Range", "Count"])
+    default_dashboard = path_stat.get_element(user_name, 'default_dashboard')
+
+    functions_selected, functions_not_selected = default_dashboard.get_default_functions("graph")
+    panel_config = PanelConfig( "Graph", "graph", functions_selected, functions_not_selected )
     dashboard_conf.add_panel(panel_config)
-    panel_config = PanelConfig( "Gauge", "Gauge", ["Avg"], ["Min", "Max", "Range", "Count"])
+
+    functions_selected, functions_not_selected  = default_dashboard.get_default_functions("gauge")
+    panel_config = PanelConfig( "Gauge", "gauge", functions_selected, functions_not_selected )
     dashboard_conf.add_panel(panel_config)
 
 

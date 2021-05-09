@@ -13,6 +13,8 @@ from flask_table import Table, Col, LinkCol
 
 import copy
 
+functions_with_order_ = ["avg", "min", "max", "range", "count"]
+
 class Item(object):
     def __init__(self, name, description = None):
         self.company = name
@@ -145,6 +147,7 @@ class AnyLogDashboard():
 
     def reset(self):
         self.panels = []        # List of panels
+        self.default_functions = {}
 
     def get_panels_count(self):
         return len(self.panels)
@@ -174,6 +177,25 @@ class AnyLogDashboard():
         self.set_date_time("range", "-2M")      # Last 2 Months
 
     # -----------------------------------------------------------------------------------
+    # Get the default setup for the type of graph
+    # -----------------------------------------------------------------------------------
+    def get_default_functions(self, panel_type):
+        '''
+        Return the default functions fir the type (graph/gauge) of panel
+        '''
+
+        global functions_with_order_
+        if panel_type in self.default_functions:
+            functions_selected =  self.default_functions[panel_type]
+        else:
+            functions_selected = []
+
+        functions_not_selected = list(set(functions_with_order_) - set(functions_selected))
+        functions_selected.sort(key = order_func)
+        functions_not_selected.sort(key = order_func)
+        return [functions_selected, functions_not_selected]
+
+    # -----------------------------------------------------------------------------------
     # Add a new panel
     # -----------------------------------------------------------------------------------
     def add_panel(self,panel):
@@ -193,16 +215,18 @@ class AnyLogDashboard():
     # Add a default function to a panel and create new panel if no panel with the needed ID
     # The default function is set for a projection without functions definitions
     # -----------------------------------------------------------------------------------
-    def add_default_function(self, panel_name, function):
+    def add_default_function(self, panel_type, function):
         '''
-        Find the panel in the array.
-        If no such panel, create a panel.
-        Add a function to the dashboard
+        add defualt function to the panel
+
+        params panel_type: graph, gauge
+        params function: "min", "max" etc.
         '''
 
-        panel_to_set = self.get_set_panel(panel_name)
+        if not panel_type in self.default_functions:
+            self.default_functions[panel_type] = []
+        self.default_functions[panel_type].append(function)  # A list of default functions if not specified for each projection
 
-        panel_to_set.default_functions.append(function)
 
     # -----------------------------------------------------------------------------------
     # Get or set a panel - if a panel exists return the panel, else add a new panel
@@ -221,3 +245,11 @@ class AnyLogDashboard():
             self.add_panel(returned_panel)
 
         return returned_panel
+
+# -----------------------------------------------------------------------------------
+# Maintain order - avg, min, max, diff, count
+# -----------------------------------------------------------------------------------
+def order_func(a):
+    global functions_with_order_
+    return functions_with_order_.index(a)
+
