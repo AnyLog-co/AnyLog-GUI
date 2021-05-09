@@ -800,14 +800,6 @@ def policies_to_status_report( user_name, policies_list ):
     platform_info = copy.deepcopy(platforms_tree["Grafana"])
     platform_info['base_report'] = "AnyLog_Base"
 
-    platform_info["projection_list"] = projection_list
-
-    platform_info['functions'] = ["min", "max", "avg"]
-
-    platform_info['from_date'] = "-2M"
-    platform_info['to_date'] = "now"
-
-
 
     platform_info["dashboard"] = dashboard
 

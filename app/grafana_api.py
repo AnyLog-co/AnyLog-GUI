@@ -143,8 +143,6 @@ def status_report(**platform_info):
         ("url", str),
         ("token", str),
         ("base_report", str),
-        ("functions", list),
-        ("projection_list", list),
     ]
 
     err_msg = test_params(params_required, platform_info)
