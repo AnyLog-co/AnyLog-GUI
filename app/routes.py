@@ -752,6 +752,8 @@ def policies_to_status_report( user_name, policies_list ):
     projection_list = []
 
     dashboard = path_stat.get_element(user_name, "default_dashboard")  # An object with panels definitions
+    dashboard.reset_panels()        # Remove previously defined panels
+
     for entry in policies_list:
         dbms_table_id = entry.split('@')
         if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID

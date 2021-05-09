@@ -143,7 +143,16 @@ class AnyLogDashboard():
         self.date_time = AnyLogDateTime()
         self.default_functions = {}
 
+    def reset_panels(self):
+        '''
+        Remove previously defined panels
+        '''
+        self.panels = []  # List of panels
+
     def reset(self):
+        '''
+        Reset panels and default functions
+        '''
         self.panels = []        # List of panels
         self.default_functions = {}
 
