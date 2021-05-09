@@ -49,6 +49,7 @@ from app import nav_tree        # Navigation Tree
 
 
 time_selection_ = [
+    ("Day & Time Selection", ""),
     ("Last 5 minutes", "-5m"),
     ("Last 15 minutes", "-15m"),
     ("Last 30 minutes", "-30m"),
