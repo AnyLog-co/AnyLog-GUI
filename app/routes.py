@@ -753,7 +753,6 @@ def policies_to_status_report( user_name, policies_list ):
 
     dashboard = path_stat.get_element(user_name, "default_dashboard")  # An object with panels definitions
     dashboard.reset_panels()        # Remove previously defined panels
-
     for entry in policies_list:
         dbms_table_id = entry.split('@')
         if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID
@@ -780,8 +779,10 @@ def policies_to_status_report( user_name, policies_list ):
                         projection_list.append((policy_name, dbms_name, table_name))
 
                         # Add the projection list to each of the 2 default panels (Graph and Gauge)
-                        dashboard.add_projection_list(policy_name + '- Operation', "graph", policy_name, dbms_name, table_name, None, None, None)
-                        dashboard.add_projection_list(policy_name + '- Status', "gauge", policy_name, dbms_name, table_name, None, "period", None)
+                        if dashboard.with_selections(policy_name, "graph"):
+                            dashboard.add_projection_list(policy_name + '- Operation', "graph", policy_name, dbms_name, table_name, None, None, None)
+                        if dashboard.with_selections(policy_name, "gauge"):
+                            dashboard.add_projection_list(policy_name + '- Status', "gauge", policy_name, dbms_name, table_name, None, "period", None)
 
 
     if not dashboard.get_panels_count():

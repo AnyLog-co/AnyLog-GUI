@@ -174,6 +174,25 @@ class AnyLogDashboard():
         panel.add_projection(policy_name, dbms_name, table_name, functions, query, where_cond)
 
     # -----------------------------------------------------------------------------------
+    # Test if panel with selections
+    # -----------------------------------------------------------------------------------
+    def with_selections(self, panel_name, panel_type):
+        '''
+        Return True if the panel is configured with report selections
+        '''
+
+        panel = self.get_panel(panel_name)
+
+        if not panel:
+            # Panel is not defined, test selections for the type of panel in the dashboard
+            # Take the default for the type of panel
+            ret_val = panel_type.lower() in self.default_functions # True if Panel will use defaults
+        else:
+            ret_val = True  # Panel is defined
+
+
+        return ret_val
+    # -----------------------------------------------------------------------------------
     # Default setup = graph + Gauge
     # -----------------------------------------------------------------------------------
     def set_default(self):
@@ -236,19 +255,24 @@ class AnyLogDashboard():
     # -----------------------------------------------------------------------------------
     def get_set_panel(self, panel_name):
 
-        returned_panel = None
-        for panel in self.panels:
-            if panel.panel_name == panel_name:
-                returned_panel = panel
-                break
-
+        returned_panel = self.get_panel(panel_name)
         if not returned_panel:
             returned_panel = AnyLogPanel()    # Set a new panel
             returned_panel.panel_name = panel_name
             self.add_panel(returned_panel)
 
         return returned_panel
+    # -----------------------------------------------------------------------------------
+    # Get panel by name
+    # -----------------------------------------------------------------------------------
+    def get_panel(self, panel_name):
 
+        returned_panel = None
+        for panel in self.panels:
+            if panel.panel_name == panel_name:
+                returned_panel = panel
+                break
+        return returned_panel
 # -----------------------------------------------------------------------------------
 # Return the klist of supported functions
 # -----------------------------------------------------------------------------------
