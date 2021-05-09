@@ -30,6 +30,7 @@ from app.entities import AnyLogItem
 
 from app.entities import AnyLogTable
 from app.entities import AnyLogDashboard
+from app.entities import get_functions      # Get the list of supported functions
 from app.entities import AnyLogPanel
 
 from config import Config
@@ -843,12 +844,14 @@ def conf_nav_report():
 
     default_dashboard = path_stat.get_element(user_name, 'default_dashboard')
 
-    functions_selected, functions_not_selected = default_dashboard.get_default_functions("graph")
-    panel_config = PanelConfig( "Graph", "graph", functions_selected, functions_not_selected )
+    functions_list = get_functions()
+
+    functions_selected = default_dashboard.get_default_functions("graph")
+    panel_config = PanelConfig( "Graph", "graph", functions_list, functions_selected )
     dashboard_conf.add_panel(panel_config)
 
-    functions_selected, functions_not_selected  = default_dashboard.get_default_functions("gauge")
-    panel_config = PanelConfig( "Gauge", "gauge", functions_selected, functions_not_selected )
+    functions_selected = default_dashboard.get_default_functions("gauge")
+    panel_config = PanelConfig( "Gauge", "gauge", functions_list, functions_selected )
     dashboard_conf.add_panel(panel_config)
 
 

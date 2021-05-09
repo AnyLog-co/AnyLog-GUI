@@ -49,11 +49,11 @@ class TimeConfig():
 # Type of queries for the panel
 class PanelConfig():
 
-    def __init__(self, name, panel_type, selected, not_selected):
+    def __init__(self, name, panel_type, options, selected):
         self.name = name        # The name of the panel on the config page (not the panel name when report is requested)
         self.panel_type = panel_type      # Graph, Gauge
-        self.chek_box_selected = selected      # Each entry represents selected checkboxes for a panel
-        self.chek_box = not_selected           # Each entry represent checkboxes for a panel
+        self.chek_box_options = options             # a list - Each entry represents a checkbox option
+        self.chek_box_selected = selected           # a list - Each entry represent a selected option
         self.time_config = None      # Time selection for the panel (if different than dashboard)
 
 

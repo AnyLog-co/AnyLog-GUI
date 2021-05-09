@@ -11,17 +11,16 @@
         <br>
 
        <!-- Selected checkboxes of report - Min, Max, Avg -->
-        {% for check_box in panel.chek_box_selected %}
+        {% for option in panel.chek_box_options %}
             <!-- Select functionality  -->
-            <input type="checkbox" name="checkbox.{{ panel.panel_type }}.{{check_box}}" id={{check_box}} checked>
-            <label for={{check_box}}>{{check_box}}</label>&nbsp
+            {% if option in panel.chek_box_selected %}
+                <input type="checkbox" name="checkbox.{{ panel.panel_type }}.{{option}}" id={{option}} checked>
+            {%  else %}
+                <input type="checkbox" name="checkbox.{{ panel.panel_type }}.{{option}}" id={{option}}>
+            {%  endif %}
+            <label for={{option}}>{{option}}</label>&nbsp
         {% endfor %}
-       <!-- Not selected checkboxes of report - Min, Max, Avg -->
-        {% for check_box in panel.chek_box %}
-            <!-- Select functionality  -->
-             <input type="checkbox" name="checkbox.{{ panel.panel_type }}.{{check_box}}" id={{check_box}}>
-            <label for={{check_box}}>{{check_box}}</label>&nbsp
-        {% endfor %}
+
 
         <br>
         <hr>

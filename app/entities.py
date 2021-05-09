@@ -13,8 +13,6 @@ from flask_table import Table, Col, LinkCol
 
 import copy
 
-functions_with_order_ = ["avg", "min", "max", "range", "count"]
-
 class Item(object):
     def __init__(self, name, description = None):
         self.company = name
@@ -184,16 +182,12 @@ class AnyLogDashboard():
         Return the default functions fir the type (graph/gauge) of panel
         '''
 
-        global functions_with_order_
         if panel_type in self.default_functions:
             functions_selected =  self.default_functions[panel_type]
         else:
             functions_selected = []
 
-        functions_not_selected = list(set(functions_with_order_) - set(functions_selected))
-        functions_selected.sort(key = order_func)
-        functions_not_selected.sort(key = order_func)
-        return [functions_selected, functions_not_selected]
+        return functions_selected
 
     # -----------------------------------------------------------------------------------
     # Add a new panel
@@ -247,9 +241,7 @@ class AnyLogDashboard():
         return returned_panel
 
 # -----------------------------------------------------------------------------------
-# Maintain order - avg, min, max, diff, count
+# Return the klist of supported functions
 # -----------------------------------------------------------------------------------
-def order_func(a):
-    global functions_with_order_
-    return functions_with_order_.index(a)
-
+def get_functions():
+    return ["avg", "min", "max", "range", "count"]
