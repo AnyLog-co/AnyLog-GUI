@@ -80,7 +80,13 @@
 
                         
                         }
-                }    
+                },
+                "Reports" :
+                {
+                    "type" : "reports",
+                    "organization" : "folders",
+                    "visualization" : "Grafana"
+                }
                 
             },
         

@@ -94,6 +94,19 @@ def status_report(platform_name, **platform_info):
         url_list, error_msg = connector.status_report(**platform_info)
 
     return url_list, error_msg
+# --------------------------------------------------------
+# Get the subfolders to the path of folders represented by the list
+# --------------------------------------------------------
+def get_child_folders(platform_name, url, token, parent_folders):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+        child_folders = None
+    else:
+        child_folders, error_msg = connector.get_child_folders(url, token, parent_folders)
+
+    return child_folders, error_msg
 
 # --------------------------------------------------------
 # Return the platform connector

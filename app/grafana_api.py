@@ -51,6 +51,20 @@ def test_connection( grafana_url:str, token:str ):
     return [ret_val, err_msg]
 
 # -----------------------------------------------------------------------------------
+# Give a list of parent folders - return the children
+# Grafana folders API - https://grafana.com/docs/grafana/latest/http_api/folder/
+# -----------------------------------------------------------------------------------
+def get_child_folders( url, token, parent_folders:list):
+
+
+    folders, err_msg = get_folders(url, token)
+
+    children = []
+
+    # Find the immediate children
+
+    return [children, err_msg]
+# -----------------------------------------------------------------------------------
 # Get the list of Dashboards (reports) for the given directory
 # For each dashboard - pull the panels
 # Return a list of all the panels per each dashboard
@@ -62,40 +76,45 @@ def get_reports(url:str, platform_info:dict, token:str, directory:str):
 
     directory_name = directory.lower()
 
+
     # Get the list of grafana folders
     folder_id = -1
     folders, err_msg = get_folders(url, token)
-    for entry in folders:
-        if "title" in entry and "id" in entry:
-            if entry["title"].lower() == directory_name :
-                folder_id = entry["id"]
-                break
 
-    if folder_id != -1:
+    if not err_msg:
 
-        dashboards, err_msg = get_dashboards(url, folder_id, token)
+        for entry in folders:
+            if "title" in entry and "id" in entry:
+                if entry["title"].lower() == directory_name :
+                    folder_id = entry["id"]
+                    break
 
-        panels = {}
-        if not err_msg:
-            for entry in dashboards:
-                # every entry is a report
-                if "type" in entry and entry["type"] == 'dash-db':
-                    # this is a dashboard entry
-                    if "title" in entry:
-                        # reports exists
-                        dashboard_name = entry['title']
-                        dashboard_id = entry["id"]
-                        dashboard_uid = entry["uid"]
-                        if "version" in entry:
-                            report_version = entry["version"]
-                        dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
-                        if dashboard_info:
-                            if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
-                                panels_urls = get_panels_urls(url, platform_info, dashboard_info, dashboard_uid, dashboard_name)
-                                panels[dashboard_name] = panels_urls
+        if folder_id != -1:
+
+            dashboards, err_msg = get_dashboards(url, folder_id, token)
+
+            panels = {}
+            if not err_msg:
+                for entry in dashboards:
+                    # every entry is a report
+                    if "type" in entry and entry["type"] == 'dash-db':
+                        # this is a dashboard entry
+                        if "title" in entry:
+                            # reports exists
+                            dashboard_name = entry['title']
+                            dashboard_id = entry["id"]
+                            dashboard_uid = entry["uid"]
+                            if "version" in entry:
+                                report_version = entry["version"]
+                            dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
+                            if dashboard_info:
+                                if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
+                                    panels_urls = get_panels_urls(url, platform_info, dashboard_info, dashboard_uid, dashboard_name)
+                                    panels[dashboard_name] = panels_urls
+    else:
+        panels = None
 
     return [panels, err_msg]
-
 # -----------------------------------------------------------------------------------
 # Get panels URLs of a particular dashboard - the urls are based on the dashboard url and the panel ID.
 # -----------------------------------------------------------------------------------

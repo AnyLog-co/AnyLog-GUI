@@ -99,6 +99,19 @@ def get_gui_view():
         gui_view = None
     return gui_view
 # -----------------------------------------------------------------------------------
+# Determine in the config file if selection is for reports
+# -----------------------------------------------------------------------------------
+def is_reports(user_name, selection):
+    ret_val = False
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    if 'children' in gui_view.config_struct['gui']:
+        first_children = gui_view.config_struct['gui']['children']
+        if selection in first_children:
+            if 'type' in first_children[selection] and first_children[selection]['type'] == 'reports':
+                ret_val = True
+    return ret_val
+
+# -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
 # Example Table: https://progbook.org/shop5.html
@@ -916,6 +929,18 @@ def metadata( selection = "" ):
 
     location_key = selection
 
+    if selection:
+        index = selection.find('@')
+        if index != -1:
+            key = selection[:index]
+        else:
+            key = selection
+
+            if is_reports(user_name, key):
+                # Navigate in reports
+                return navigate_in_reports(user_name, location_key)
+
+
     if request.query_string:
         query_string = request.query_string.decode('ascii')
         if query_string[:7] == "report=":
@@ -1037,7 +1062,7 @@ def metadata( selection = "" ):
 
                 # Get the options from the config file and set the options as children
 
-                gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+                root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
                 if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
                     # Executes a query to select data from the network and set the data as as the children
@@ -1062,6 +1087,43 @@ def metadata( selection = "" ):
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
+
+# -----------------------------------------------------------------------------------
+# Navigate in the reports partitioned by folders
+# -----------------------------------------------------------------------------------
+def navigate_in_reports(user_name, location_key):
+
+    root_nav = path_stat.get_element(user_name, "root_nav")
+
+    selection_list = location_key.replace('+', '@').split('@')
+
+    # Navigate in the tree to find location of Node
+    current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
+
+    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+    platform = root_gui["visualization"]        # Grafana, Power BI etc.
+
+    company_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + company_name
+
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree[platform]['url']
+    token = platforms_tree[platform]['token']
+
+    # Get the child folders
+    child_folders = visualize.get_child_folders(platform, url, token, root_folder)
+
+
+
+    # Get the reports in the folder
+
+    # Update the tree
+
+    return None
 
 # -----------------------------------------------------------------------------------
 # Call the navigation page - metadata.html
@@ -1163,7 +1225,7 @@ def get_path_info(selection, select_info, current_node):
     gui_view = path_stat.get_element(user_name, "gui_view")
 
     # Get the location in the Config file to set the user navigation links
-    gui_sub_tree = gui_view.get_subtree(selection)
+    root_gui, gui_sub_tree = gui_view.get_subtree(selection)
 
     command = app_view.get_tree_entree(gui_sub_tree, "query")  # get the command from the Config file
 
@@ -1453,7 +1515,7 @@ def path_selection(parent_menu, policy_id, data):
 
     gui_view = path_stat.get_element(user_name, "gui_view")
     # pull the keys that are used to print a summary of the data instance
-    gui_sub_tree = gui_view.get_subtree(parent_menu[-1][1][6:])
+    root_gui, gui_sub_tree = gui_view.get_subtree(parent_menu[-1][1][6:])
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     table_title = app_view.get_tree_entree(gui_sub_tree, "table_title")
 
@@ -1550,7 +1612,6 @@ def manage_reports():
     url = platforms_tree["Grafana"]['url']
     token = platforms_tree["Grafana"]['token']
     network_name = gui_view.get_network_name()
-
 
     panels_urls, err_msg = visualize.get_reports("Grafana", url, token, "AnyLog_" + network_name)   # Get the list of reports associated with
 
