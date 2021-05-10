@@ -61,6 +61,15 @@ h1 {
 
 }
 
+.message-table tr:first-child{
+    background-color:whitesmoke;
+    color:green;
+}
+.message-table tr{
+    background-color:whitesmoke;
+    color:darkslateblue;
+}
+
 .error-table tr:first-child{
     background-color:whitesmoke;
     color:indianred;
@@ -156,6 +165,22 @@ ul.tree li:last-child:before {
     color: black;
     padding: 15px;
     margin: 20px;
+    float:right;
+}
+
+.boxed_login{
+
+    width: 50%;
+    padding: 20px;
+    background: #f2f2f2;
+    float: left;
+    box-sizing: border-box;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* change the center from the upper left corner to middle of box */
+    transform: translate(-50%, -50%);
+
 }
 
 

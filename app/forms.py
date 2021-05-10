@@ -13,7 +13,7 @@ such non-permitted act to AnyLog, Inc.
 # https://exploreflask.com/en/latest/forms.html
 import getpass
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField, FileField
 from wtforms.validators import DataRequired, Optional, ValidationError
 
 class LoginForm(FlaskForm):
@@ -23,14 +23,11 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class ConfigForm(FlaskForm):
-    company = StringField('Company', validators=[DataRequired()])
-    node_ip = StringField('Node IP', validators=[DataRequired()])
-    node_port = IntegerField('Node Port', validators=[DataRequired()])
-    reports_ip = StringField('Reports IP', validators=[DataRequired()])
-    reports_port = IntegerField('Reports Port', validators=[DataRequired()])
 
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Save')
+    conf_file_name = SelectField('Select File', default="")
+    node_ip = StringField('Node IP')
+    node_port = IntegerField('Node Port')
+    submit = SubmitField('Submit')
 
 class CommandsForm(FlaskForm):
 
@@ -38,6 +35,44 @@ class CommandsForm(FlaskForm):
     destination = StringField('Destination (IP:Port)', validators=[])
   
     submit = SubmitField('Submit')
+
+
+# Time configuration for a panel or a report
+class TimeConfig():
+    def __init__(self, default_range, default_from, default_to):
+        self.default_time_range = default_range  # i.e. now-2M
+        self.default_from = default_from
+        self.default_to = default_to
+
+# Type of queries for the panel
+class PanelConfig():
+
+    def __init__(self, name, panel_type, selected, not_selected):
+        self.name = name        # The name of the panel on the config page (not the panel name when report is requested)
+        self.panel_type =   panel_type      # Graph, Gauge
+        self.chek_box_selected = selected      # Each entry represents selected checkboxes for a panel
+        self.chek_box = not_selected           # Each entry represent checkboxes for a panel
+        self.time_config = None      # Time selection for the panel (if different than dashboard)
+
+
+class DashboardConfig():
+    def __init__(self):
+        self.panels = []        # List of panels
+        self.time_config = None  # Time selection for the dashboard
+
+    def add_panel(self, new_panel):
+        self.panels.append(new_panel)
+
+
+class ConfDynamicReport(FlaskForm):
+    report_name = SelectField('Select Report', default="")
+    new_report = StringField('New Report', default="")
+    rename = StringField('Rename Report', default="")
+    make_default = BooleanField('Set as Default', default=False)
+    reset = BooleanField('Reset Report', default=False)
+    delete = BooleanField('Delete Report', default=False)
+    submit = SubmitField('Apply Changes')
+
 
 class InstallForm(FlaskForm):
     # Basic SCP/SSH connection information
@@ -139,14 +174,6 @@ class InstallForm(FlaskForm):
     #is_master = BooleanField('Master')
     deploy = SubmitField('Deploy')
 
-class ConfDynamicReport(FlaskForm):
-    report_name = SelectField('Select Report', default="")
-    new_report = StringField('New Report', default="")
-    rename = StringField('Rename Report', default="")
-    make_default = BooleanField('Set as Default', default=False)
-    reset = BooleanField('Reset Report', default=False)
-    delete = BooleanField('Delete Report', default=False)
-    submit = SubmitField('Apply Changes')
 
 
 

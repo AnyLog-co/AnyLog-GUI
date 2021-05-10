@@ -15,23 +15,7 @@
         </p>
     {% endif %}
 
-    
-    {% if children_gui %}
-        <h3>Navigation</h3>
-        <p>
-        {%- for text, url_target in children_gui -%}
-   
-            <a href="{{ url_target }}">{{text}}</a><br>
-    
-        {%- endfor -%}
-        </p>
-
-        <br><a href="{{ url_for('metadata') }}">Metadata</a><br>
-
-
-    {% endif %}
-
-
-   
+    <hr>
+    <h3><br><a href="{{ url_for('metadata') }}">Views & Reports</a></h3>
 
  {% endblock %}

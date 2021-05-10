@@ -10,6 +10,7 @@ to be broadly interpreted) you or your such affiliates shall unconditionally ass
 such non-permitted act to AnyLog, Inc.
 '''
 
+import os
 
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
@@ -20,7 +21,8 @@ from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
-
+from app.forms import DashboardConfig       # Base config of a user defined report to include multiple panels
+from app.forms import PanelConfig           # Base config of a user defined panel
 
 from app.entities import Item
 from app.entities import AnyLogItem
@@ -41,12 +43,6 @@ from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
 
-user_connect_ = False       # Flag indicating connected to the AnyLog Node 
-
-gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
-gui_view_.set_gui()
-
-query_node_ = None
 
 time_selection_ = [
     ("Last 5 minutes", "-5m"),
@@ -70,6 +66,34 @@ time_selection_ = [
     ("last 3 years", "-3y"),
 ]
 # -----------------------------------------------------------------------------------
+# Is user connected
+# -----------------------------------------------------------------------------------
+def get_user_by_session():
+    '''
+    Need to sattisfy 2 conditions:
+    a) Registered in Flask Session
+    b) Registered on oath_stat
+    :return: User Name
+    '''
+    if 'username' in session:       # Session is a Flask object organizing the session and is setg in login
+        user_name = session['username']     # Example in https://pythonbasics.org/flask-sessions/
+        if user_name and not path_stat.is_user_connnected( user_name ):
+            user_name  = None
+    else:
+        user_name = None
+
+    return user_name
+# -----------------------------------------------------------------------------------
+# Get GUI_VIEW - pull the user name from the session and bring the GUI_VIEW struct from path_stat
+# -----------------------------------------------------------------------------------
+def get_gui_view():
+    if 'username' in session:
+        user_name = session['username']
+        gui_view = path_stat.get_element(user_name, "gui_view")
+    else:
+        gui_view = None
+    return gui_view
+# -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
 # Example Table: https://progbook.org/shop5.html
@@ -78,7 +102,7 @@ time_selection_ = [
 @app.route('/index')
 def index():
 
-    if not user_connect_:
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login
 
     select_info = get_select_menu()
@@ -94,55 +118,67 @@ def login():
     Input login name & password, connecet to a node in the network
     and move to main page to determine GUI to use
     '''
-    global user_connect_
 
-    select_info = get_select_menu( caller = "login" )
 
     form = LoginForm()
 
     if form.validate_on_submit():
 
-        target_node = get_target_node()
-
-        al_headers = {
-            'command' : 'get status',
-            'User-Agent' : 'AnyLog/1.23'
-            }
-
-        try:
-            response = requests.get(target_node, headers=al_headers)
-        except:
-            flash('AnyLog: No network connection', category='error')
-            user_connect_ = False
-        else:
-            if response.status_code == 200:
-                user_connect_ = True
-            else:
-                user_connect_ = False
-                flash('AnyLog: Netowk node failed to authenticate {}'.format(form.username.data))
-        
-        if not user_connect_:
-            return redirect(('/login'))        # Redo the login
-
         user_name = request.form['username']
         session['username'] = user_name
-        path_stat.set_new_user( user_name )
 
-        return redirect(('/index'))     # Go to main page
+        # Register Useer
+        path_stat.set_new_user(user_name)
 
+        # Load the default CONFIG file
 
-    title_str = 'Sign In'
+        if load_config_file("login", user_name, Config.GUI_VIEW):
 
-    if 'username' in session:
-        user_name = session['username']
-        if not path_stat.is_with_user( user_name ):
-            path_stat.set_new_user( user_name )
+            data, error_msg = exec_al_cmd("get status")
+            if error_msg:
+                flash('AnyLog: No network connection', category='error')
+                flash(error_msg, category='error')
+                return redirect(('/login'))  # Redo the login
 
-   
-    select_info['title'] = title_str
+            path_stat.set_user_connnected(user_name)
+
+            return redirect(('/index'))     # Go to main page
+
+    select_info = get_select_menu( caller = "login" )
+    select_info['title'] = 'Sign In'
     select_info['form'] = form
 
     return render_template('login.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Load config file - register the config file and the target node
+# -----------------------------------------------------------------------------------
+def load_config_file( caller, user_name, config_file):
+
+    if not config_file:
+        flash("AnyLog: Missing or wrong system variables: CONFIG_FOLDER and CONFIG_FILE", category='error')
+        return False  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "config_file", config_file)  # Register the Config file
+
+    gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
+    err_msg = gui_view.set_gui(config_file)
+    if err_msg:
+        flash(err_msg, category='error')
+        return False  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
+
+    # Get query node from the loaded config file
+    target_node = gui_view.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing Query Node in config file", category='error')
+        return False  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "target_node", target_node)
+
+    return True     # No redirect
+
 
 # -----------------------------------------------------------------------------------
 # View the report structure being dynamically build by navigation
@@ -156,10 +192,9 @@ def dynamic_report( report_name = "" ):
     View the report being used
     Called from - base.html
     '''
-    if not user_connect_:
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session['username']
 
     select_info = get_select_menu()
     if not report_name:
@@ -167,7 +202,7 @@ def dynamic_report( report_name = "" ):
 
     report_data = path_stat.get_report_info(user_name, report_name)
     if not report_data or not len(report_data["entries"]):
-        flash("AnyLog: Report '%s' has no selections" % report_name)
+        flash("AnyLog: Report '%s' has no selections" % report_name, category='error')
         return redirect(url_for('index')) 
 
     list_columns = ["ID", "DBMS", "Table"]
@@ -201,7 +236,8 @@ def dynamic_report( report_name = "" ):
         select_info['panels_list'] = panels_list  # Add the list of existing panels in this report
     if not platform:
         # select visualization platform
-        visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
+        gui_view = path_stat.get_element(user_name, "gui_view")
+        visualization = gui_view.get_base_info("visualization") or ["Grafana"]
         platforms = []
         default_platform = None
         for entry in visualization:
@@ -211,14 +247,14 @@ def dynamic_report( report_name = "" ):
                 platforms.append(entry)
         if not default_platform:
             if not len(platforms):
-                flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW)
+                flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW, category='error')
                 return redirect(url_for('index'))
             if len(platforms) == 1:
                 # Only one platform
                 default_platform = platforms[0]
                 platforms = None
             else:
-                flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW)
+                flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW, category='error')
                 return redirect(url_for('index'))
 
         select_info['default_platform'] = default_platform      # Default like: Grafana
@@ -250,7 +286,8 @@ def dynamic_report( report_name = "" ):
 def get_panels_list(user_name, report_name):
 
     platform_name = path_stat.get_platform_name(user_name, report_name)
-    platforms_tree = gui_view_.get_base_info("visualization")
+    gui_view = get_gui_view()
+    platforms_tree = gui_view.get_base_info("visualization")
     panels_list = []
     if not platform_name:
         # Get from all platforms
@@ -289,10 +326,9 @@ def get_panels_list(user_name, report_name):
 @app.route('/deploy_report', methods={'GET','POST'})
 def deploy_report():
 
-    if not user_connect_:
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session['username']
 
     form_info = request.form
 
@@ -329,7 +365,8 @@ def deploy_report():
 
     query_functions = get_query_functions(form_info)  # get min, max, count, avg
 
-    platforms_tree = gui_view_.get_base_info("visualization")
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    platforms_tree = gui_view.get_base_info("visualization")
     
     # The Info from the config file
     platform_info = copy.deepcopy( platforms_tree[platform_name])
@@ -364,7 +401,7 @@ def deploy_report():
     report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:
         # Failed to update the report
-        flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
+        flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg), category='error')
         return redirect(('/dynamic_report'))
 
     return redirect((report_url))       # Goto Grafana
@@ -420,7 +457,7 @@ def get_time_range(form_info):
 # -----------------------------------------------------------------------------------
 @app.route('/reports')
 def reports():
-    if not user_connect_:
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
@@ -439,37 +476,81 @@ def alerts():
 @app.route('/configure', methods = ['GET', 'POST'])
 def configure():
 
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+
+    form_info = request.form.to_dict()
+
+    if (len(form_info)):
+
+        # Change config file
+        if "conf_file_name" in form_info:
+            new_file = form_info["conf_file_name"] + ".json"
+            config_file = Config.CONFIG_FOLDER + new_file         # New config file
+            if not load_config_file("configire", user_name, config_file):
+                flash('AnyLog: failed to load config file: %s' % new_file, category='error')
+                return redirect(url_for('configure'))  # Redo the login
+
+            flash('AnyLog: New config file: %s' % new_file, category='message')
+
+        # Change target node
+        if "node_ip" in form_info and "node_port" in form_info:
+            node_ip = form_info["node_ip"]
+            node_port = form_info["node_port"]
+            if node_ip and node_port:
+                target_node = node_ip + ":" + node_port
+                path_stat.register_element(user_name, "target_node", target_node)
+                data, error_msg = exec_al_cmd("get status")
+                if error_msg:
+                    flash('AnyLog: No network connection', category='error')
+                    flash(error_msg, category='error')
+                    return redirect(url_for('configure'))  # Redo the login
+            elif node_ip or node_port:
+                flash('AnyLog: IP and port values were not properly provided', category='error')
+
+
+    form = ConfigForm()
+
+    # Get the list of the config files
+    config_dir = Config.CONFIG_FOLDER
+    try:
+        file_list = os.listdir(config_dir)
+    except:
+        flash('AnyLog: No config files in: %s' % config_dir, category='error')
+        file_list = []
+
+    # Keep the .json files
+    config_files = []
+    for entry in file_list:
+        if len(entry) > 5 and entry[-5:] == ".json":
+            value = entry[:-5]
+            config_files.append(value)
+
+    if len(config_files):
+        form.conf_file_name.choices = config_files  # set list with report names
+    else:
+        flash('AnyLog: No config files in: %s' % config_dir, category='error')
+
     select_info = get_select_menu( caller = "configure")
-    select_info["form"] = ConfigForm()
+    select_info["form"] = form
     select_info["title"] = 'Configure Network Connection'
 
-    if not gui_view_.is_with_config():
-        # Faild to recognize the JSON Config File
-        if gui_view_.is_config_error():
-            flash(gui_view_.get_config_error())
+    gui_view = path_stat.get_element(user_name,"gui_view")
+
 
     # Test connectors to the Visualization platforms
-    platforms = gui_view_.get_base_info("visualization")
+    platforms = gui_view.get_base_info("visualization")
     if platforms:
         for entry in platforms:
             if isinstance(platforms[entry], dict) and "url" in platforms[entry] and "token" in platforms[entry]:
                 ret_val, err_msg = visualize.test_connection( entry, platforms[entry]["url"], platforms[entry]["token"] )  # Platform name + connect_string
                 if not ret_val:
-                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
+                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry, err_msg), category='error')
             else:
-                flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW))
+                flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW), category='error')
 
-    if request.method == 'POST':
-        # Need to be completed
-        conf = {}
-        conf["node_ip"] = request.form["node_ip"]
-        conf["node_port"] = request.form["node_port"]
-        conf["reports_ip"] = request.form["reports_ip"]
-        conf["reports_port"] = request.form["reports_ip"]
-  
-
-    select_info["title"] = 'Configure Network Connection'
-    select_info["form"] = ConfigForm()         # New Form
 
     return render_template('configure.html', **select_info )
 # -----------------------------------------------------------------------------------
@@ -477,11 +558,12 @@ def configure():
 # -----------------------------------------------------------------------------------
 @app.route('/network')
 def network():
-    if not user_connect_:
+
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-
-    target_node = get_target_node()
+    target_node = path_stat.get_element(user_name,"target_node")
     
     form = CommandsForm()         # New Form
     
@@ -499,7 +581,8 @@ def network():
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
-    if not user_connect_:
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
     al_headers = {
@@ -509,7 +592,7 @@ def al_command():
 
     select_info = get_select_menu()
  
-    target_node = get_target_node()
+    target_node = path_stat.get_element(user_name,"target_node")
 
     command = request.form["command"]
     try:
@@ -517,14 +600,14 @@ def al_command():
         
         response = requests.get(target_node, headers=al_headers)
     except:
-        flash('AnyLog: Network connection failed')
+        flash('AnyLog: Network connection failed', category='error')
         return redirect(('/network'))     # Go to main page
     else:
         reply = response.text
         if response.status_code == 200:
             return print_network_reply(command, reply)
         else:
-            flash("AnyLog Network: Command Reply: '%s'" % (reply))
+            flash("AnyLog Network: Command Reply: '%s'" % (reply), category='error')
 
     
     select_info['title'] = 'Network Status'
@@ -689,7 +772,8 @@ def policies_to_status_report( selection, policies_list ):
         flash('AnyLog: Missing metadata information in policies', category='error')
         return None
 
-    platforms_tree = gui_view_.get_base_info("visualization")
+    gui_view = get_gui_view()
+    platforms_tree = gui_view.get_base_info("visualization")
     if not platforms_tree or not "Grafana" in platforms_tree:
         flash('AnyLog: Missing Grafana definitions in config file', category='error')
         return None
@@ -715,6 +799,56 @@ def policies_to_status_report( selection, policies_list ):
     select_info["url_list"] = url_list
 
     return  render_template('output_frame.html', **select_info)
+# -----------------------------------------------------------------------------------
+# Configure the Navigation Report - the report created from metadata.html
+# Calls - base_conf_report
+# -----------------------------------------------------------------------------------
+@app.route('/conf_nav_report', methods = ['GET', 'POST'])
+def conf_nav_report():
+
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    select_info = get_select_menu()
+
+    select_info['title'] = "Configure Report"
+
+    # define config params
+
+    dashboard_conf = DashboardConfig()
+
+    panel_config = PanelConfig( "Graph", "Graph", ["Avg", "Min", "Max"], ["Range", "Count"])
+    dashboard_conf.add_panel(panel_config)
+    panel_config = PanelConfig( "Gauge", "Gauge", ["Avg"], ["Min", "Max", "Range", "Count"])
+    dashboard_conf.add_panel(panel_config)
+    select_info['dashboard'] = dashboard_conf
+
+
+    select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
+    select_info['graph_additional'] = ["Range", "Count"]
+    select_info['gauge_default'] = ["Avg"]    # These are flagged as selected
+    select_info['gauge_additional'] = ["Min", "Max", "Range", "Count"]
+
+
+    # Organize the report time selections as last selection
+    select_info['time_options'] = time_selection_
+    from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")      # Get the last selections of dates
+    if not to_date:
+        to_date = 'now'
+        from_date = "now-2M"
+    if to_date:
+        if to_date == 'now':
+            for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == from_date[3:]:
+                    select_info['previous_range'] = (entry[0], entry[1])
+        else:
+            select_info['from_date'] = from_date
+            select_info['to_date'] = to_date
+
+
+    return render_template('base_conf_report.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -724,10 +858,9 @@ def policies_to_status_report( selection, policies_list ):
 @app.route('/metadata/<string:selection>', methods = ['GET', 'POST'])
 def metadata( selection = "" ):
 
-    if not user_connect_:
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session["username"]
 
     location_key = selection
 
@@ -738,7 +871,7 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            html = policies_to_status_report(selection, [dbms_table_id])
+            html = policies_to_status_report(location_key, [dbms_table_id])
             if not html:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
@@ -782,7 +915,9 @@ def metadata( selection = "" ):
             elif form_key == "Save":
                 save_button = True
             elif form_key == "Configure":
-                configure_button = True
+                # Configure the dynamic report
+                return redirect(url_for('conf_nav_report'))
+
 
         if report_button:
             html = policies_to_status_report(location_key, selected_list)
@@ -793,12 +928,13 @@ def metadata( selection = "" ):
             return html
 
 
+    gui_view = path_stat.get_element(user_name, "gui_view")
     if not selection:
 
         params = { 'is_anchor' : True }
         root_nav = nav_tree.TreeNode( **params )
 
-        children = gui_view_.get_gui_root() # Get the list of the children at layer 1 from the config file
+        children = gui_view.get_gui_root() # Get the list of the children at layer 1 from the config file
         for child in children:
             params = {
                 'name' : child,
@@ -840,36 +976,36 @@ def metadata( selection = "" ):
                     policy_node.add_policy(retrieved_policy[0] )
             select_info = get_select_menu(selection=gui_key)
         else:
-            current_node.reset_children()  # Delete children from older navigation
-
-            # Collect the children
-
-
-            # Get the options from the config file and set the options as children
-
             select_info = get_select_menu(selection=gui_key)
 
-            gui_sub_tree = gui_view_.get_subtree(gui_key)  # Get the subtree representing the location on the config file
-
-            if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
-                # Executes a query to select data from the network and set the data as as the children
-                reply = get_path_info(gui_key, select_info, current_node)
-                if reply:
-                    # Add children to tree
-                    gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
-                    if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
-                        # Push The key to pull dbms name and table name from the policy
-                        dbms_name = gui_sub_tree["dbms_name"]
-                        table_name = gui_sub_tree["table_name"]
-                    else:
-                        dbms_name = None
-                        table_name = None
-
-                    current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
-
+            if current_node.is_with_children():
+                current_node.reset_children()  # Delete children from older navigation
             else:
+                # Collect the children
 
-                current_node.add_option_children(gui_sub_tree, location_key)
+                # Get the options from the config file and set the options as children
+
+                gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+                if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
+                    # Executes a query to select data from the network and set the data as as the children
+                    reply = get_path_info(gui_key, select_info, current_node)
+                    if reply:
+                        # Add children to tree
+                        gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
+                        if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+                            # Push The key to pull dbms name and table name from the policy
+                            dbms_name = gui_sub_tree["dbms_name"]
+                            table_name = gui_sub_tree["table_name"]
+                        else:
+                            dbms_name = None
+                            table_name = None
+
+                        current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
+
+                else:
+
+                    current_node.add_option_children(gui_sub_tree, location_key)
 
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
@@ -909,12 +1045,9 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
 @app.route('/tree')
 @app.route('/tree/<string:selection>')
 def tree( selection = "" ):
-    global query_node_
-    global user_connect_
-    global gui_view_
 
     # Need to login before navigating
-    if not user_connect_:
+    if not get_user_by_session():
         return redirect(('/login'))  # start with Login  if not yet provided
 
     select_info = get_select_menu(selection=selection)
@@ -972,16 +1105,16 @@ def get_path_info(selection, select_info, current_node):
             table_rows:         A list with the data rows of the last level
     '''
 
-    global user_connect_
-    global gui_view_
 
     level = selection.count('@') + 1
+    user_name = session["username"]
+    gui_view = path_stat.get_element(user_name, "gui_view")
 
     # Get the location in the Config file to set the user navigation links
-    gui_sub_tree = gui_view_.get_subtree(selection)
+    gui_sub_tree = gui_view.get_subtree(selection)
 
     command = app_view.get_tree_entree(gui_sub_tree, "query")  # get the command from the Config file
-    user_name = session["username"]
+
     if current_node:
         # Use tree Navigation
         al_command = nav_tree.update_command(current_node, selection, command)  # Update the command with the parent info
@@ -990,26 +1123,27 @@ def get_path_info(selection, select_info, current_node):
         al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info
 
     if not al_command:
-        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (str(selection)))
+        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (str(selection)), category='error')
         return None  # Show all user select options
 
     # Get the columns names of the table to show
     list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
     if not list_columns:
-        flash("AnyLog: Missing column names in config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
+        flash("AnyLog: Missing column names in config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)), category='error')
         return None
 
     # Get the keys to pull data from the JSON reply
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     if not list_keys:
-        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level), category='error')
         return None # Show all user select options
-
-    target_node = get_target_node()
 
     # Run the query against the Query Node
 
     data, error_msg = exec_al_cmd( al_command )
+    if not data:
+        flash('AnyLog: Empty data set returned with command: %s' % al_command, category='error')
+        return None
     if error_msg:
         flash(error_msg, category='error')
         return None
@@ -1017,7 +1151,7 @@ def get_path_info(selection, select_info, current_node):
     data_list = app_view.str_to_list(data)
 
     if not data_list:
-        flash('AnyLog: Error in data format returned from node', category='error')
+        flash('AnyLog: Error in data format returned from node with command: %s' % al_command, category='error')
         return None
     if not len(data_list):
         flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
@@ -1083,11 +1217,8 @@ def selected( selection = "" ):
     '''
     Called from selection_table.html
     '''
-    global query_node_
-    global user_connect_
-    global gui_view_
 
-    if not user_connect_:
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     form_info = request.form
@@ -1194,7 +1325,8 @@ def status_view(selection, form_info,  policies):
         flash('AnyLog: Missing metadata information in policies', category='error')
         return redirect(url_for('tree', selection=selection))
 
-    platforms_tree = gui_view_.get_base_info("visualization")
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    platforms_tree = gui_view.get_base_info("visualization")
     if not platforms_tree or not "Grafana" in platforms_tree:
         flash('AnyLog: Missing Grafana definitions in config file', category='error')
         return redirect(url_for('tree', selection=selection))
@@ -1232,6 +1364,11 @@ def get_json_policy( id ):
         flash('AnyLog: Error in Policy ID', category='error')
         return redirect(('/index'))        # Select a different path
 
+    if id.find(' ') != -1:
+        if id[0] != "\"":
+            id = "\"" + id
+        if id[-1] != "\"":
+            id = id + "\""
     al_cmd = "blockchain get * where id = %s" % id
     data, error_msg = exec_al_cmd( al_cmd )
 
@@ -1258,13 +1395,13 @@ def path_selection(parent_menu, policy_id, data):
     data - the policy JSON data
     '''
 
-    if not 'username' in session:
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # Redo the login - need a user name
 
-    user_name = session["username"]
-
+    gui_view = path_stat.get_element(user_name, "gui_view")
     # pull the keys that are used to print a summary of the data instance
-    gui_sub_tree = gui_view_.get_subtree(parent_menu[-1][1][6:])
+    gui_sub_tree = gui_view.get_subtree(parent_menu[-1][1][6:])
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     table_title = app_view.get_tree_entree(gui_sub_tree, "table_title")
 
@@ -1278,8 +1415,9 @@ def exec_al_cmd( al_cmd ):
     Run the query against the Query Node
     '''
 
-    target_node = get_target_node()
+    user_name = session["username"]
 
+    target_node = path_stat.get_element(user_name, "target_node")
 
     al_headers = {
         'User-Agent' : 'AnyLog/1.23',
@@ -1291,9 +1429,11 @@ def exec_al_cmd( al_cmd ):
     if response and response.status_code == 200:
         data = response.text
     else:
+        data = None
         if not error_msg:
             # No data reply
-            error_msg = "AnyLog: REST command %s returned error code %u" % response.status_code
+            error_msg = "AnyLog: REST command %s returned error code %u" % (al_cmd, response.status_code)
+
     return [data, error_msg]
 
 # -----------------------------------------------------------------------------------
@@ -1304,51 +1444,40 @@ def get_select_menu(selection = "", caller = ""):
 
     select_info = {}
 
-    if not gui_view_.is_with_config():
-        # Faild to recognize the JSON Config File
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        if caller == "configure" or caller == "login":
-            # The config file is not available - ignore get_select_menu
-            return select_info  # return empty dictionary
+    gui_view = get_gui_view()
+    if gui_view:
 
-        form = ConfigForm()
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+        if not gui_view.is_with_config():
+            # Faild to recognize the JSON Config File
+            flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW, category='error')
+            if caller == "configure" or caller == "login":
+                # The config file is not available - ignore get_select_menu
+                return select_info  # return empty dictionary
 
-    company_name = gui_view_.get_base_info("name")                 # The user name
-    user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
+            form = ConfigForm()
+            return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
-    # get the loggin name a name from the conf file
-    if 'username' in session:
-        user_name = session['username']
-    else:
-        user_name = gui_view_.get_base_info("name") or "AnyLog"
+        company_name = gui_view.get_base_info("name")                 # The user name
+        user_menu = gui_view.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menu, children_menu = gui_view.get_dynamic_menu(selection)     # web pages based on the navigation
 
-    report_name = path_stat.get_report_selected(user_name)
+        if company_name:
+            select_info['company_name'] = company_name
+        if user_menu and len(user_menu):
+            select_info['user_gui'] = user_menu
+        if parent_menu and len(parent_menu):
+            select_info['parent_gui'] = parent_menu
+        if children_menu and len(children_menu):
+            select_info['children_gui'] = children_menu
 
-    if company_name:
-        select_info['company_name'] =company_name
-    if user_menu and len(user_menu):
-        select_info['user_gui'] = user_menu
-    if parent_menu and len(parent_menu):
-        select_info['parent_gui'] = parent_menu
-    if children_menu and len(children_menu):
-        select_info['children_gui'] = children_menu
-    if report_name:
-        select_info['report_name'] = report_name
-
+        # get the loggin name a name from the conf file
+        if 'username' in session:
+            user_name = session['username']
+        else:
+            user_name = gui_view.get_base_info("name") or "AnyLog"
+        select_info['report_name'] = path_stat.get_report_selected(user_name)
 
     return select_info
-# -----------------------------------------------------------------------------------
-# Get the target node from the Config Form or the Config File
-# -----------------------------------------------------------------------------------
-def get_target_node():
-
-    target_node = query_node_ or gui_view_.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
-    return target_node
 
 # -----------------------------------------------------------------------------------
 # Configure the dynamic reports
@@ -1358,10 +1487,10 @@ def configure_reports():
     '''
     View the report being used
     '''
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name = session['username']
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
     form = ConfDynamicReport()
 
@@ -1391,19 +1520,22 @@ def configure_reports():
 def policies(policy_name = ""):
    
 
-    if not user_connect_:
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
 
     select_info = get_select_menu()
     select_info['title'] = "Network Policies"
-    select_info['policies'] = gui_view_.get_policies_list()  # Collect the names of the policies
+    select_info['policies'] = gui_view.get_policies_list()  # Collect the names of the policies
 
     if policy_name:
         # A policy was selected
-        policy = gui_view_.get_policy_info(policy_name)
+        policy = gui_view.get_policy_info(policy_name)
         if len(request.form):
             # send policy from Form
-            target_node = get_target_node()
+            target_node = path_stat.get_element(user_name,"target_node")
 
             err_msg = anylog_api.deliver_policy(target_node, policy, request.form)
             if err_msg:
@@ -1411,7 +1543,7 @@ def policies(policy_name = ""):
 
         # Goto the same form again to add a new policy
         select_info['policy_name'] = policy_name
-        policy = gui_view_.get_policy_info(policy_name)
+        policy = gui_view.get_policy_info(policy_name)
         if policy:
             select_info['policy_name'] = policy_name
             policy_attr, err_msg = app_view.set_policy_form(policy_name, policy)

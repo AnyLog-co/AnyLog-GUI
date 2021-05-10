@@ -52,11 +52,27 @@ def set_new_user(user_name):
         "reports" : {
                     },
         "selected"  :   "My_Report",
-        "path" :    [],          # navigation as f(user)
-        "level" : 0,             # The current location in the path
+        "path" :    [],         # navigation as f(user)
+        "level" : 0,            # The current location in the path
+        "connected" : False,     # User is not connected
     }
     set_new_state(user_name, "My_Report", True)
 
+# -----------------------------------------------------------------------------------
+# is user connected
+# -----------------------------------------------------------------------------------
+def is_user_connnected(user_name):
+    '''
+    Return True if usser "connected" flag is set to True
+    '''
+    return (user_name in active_state_ and  active_state_[user_name]["connected"])
+
+# -----------------------------------------------------------------------------------
+# set user connected
+# -----------------------------------------------------------------------------------
+def set_user_connnected(user_name):
+    if user_name in active_state_:
+        active_state_[user_name]["connected"] = True
 
 # -----------------------------------------------------------------------------------
 # Register an element for the user
@@ -74,9 +90,13 @@ def get_element(user_name, element_key):
     '''
     keep info as f(user + key)
     '''
-    user_info = active_state_[user_name]
-    if element_key in user_info:
-        element = user_info[element_key]
+
+    if user_name in active_state_:
+        user_info = active_state_[user_name]
+        if element_key in user_info:
+            element = user_info[element_key]
+        else:
+            element = None
     else:
         element = None
     return element
