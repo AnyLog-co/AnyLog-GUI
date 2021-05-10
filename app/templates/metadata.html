@@ -37,8 +37,14 @@
                 {% endif %}
 
                 {% if node.name  %}
-                        <!-- View Policy or Select or Navigate  -->
-                        {% if node.details  %}
+
+                        {% if node.report  %}
+                            <!-- Option to update or delete thr report -->
+                            <input type="submit" value="Update" name="{{node.path}}" class="button_update">
+                            <input type="submit" value="Delete" name="{{node.path}}" class="button_delete">
+
+                        {% elif node.details  %}
+                            <!-- View Policy or Select or Navigate  -->
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
                             <input type="submit" value="View" name="{{node.path}}" class="button_view">
                         {% endif %}

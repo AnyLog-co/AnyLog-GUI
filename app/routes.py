@@ -1115,7 +1115,10 @@ def navigate_in_reports(user_name, location_key):
     token = platforms_tree[platform]['token']
 
     # Get the child folders
-    child_folders, error_msg = visualize.get_child_folders(platform, url, token, root_folder)
+    child_folders, err_msg = visualize.get_child_folders(platform, url, token, root_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(url_for('metadata', selection=location_key))
 
     if child_folders:
         # Add folders to tree
@@ -1123,10 +1126,25 @@ def navigate_in_reports(user_name, location_key):
 
     # Get the reports in the folder
     panels_urls, err_msg = visualize.get_reports("Grafana", url, token, root_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(url_for('metadata', selection=location_key))
 
     # Update the tree
 
-    return None
+    for name, url in panels_urls.items():
+        key = location_key + '@' + name
+        params = {
+            'name': name,
+            'key': key,
+            'path': key,
+            'report' : True
+        }
+        current_node.add_child( **params )
+
+    select_info = get_select_menu(selection=location_key)
+
+    return call_navigation_page(user_name, select_info, location_key, current_node)
 
 # -----------------------------------------------------------------------------------
 # Call the navigation page - metadata.html

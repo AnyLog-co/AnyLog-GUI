@@ -47,7 +47,8 @@ class TreeNode():
         self.parent = None              # Parent node
         self.path = None                # The complete path representing the node
         self.scroll_location = False    # Set to True to indicate the scroll location on the page
-
+        self.report = False             # True for a report type
+        self.folder = False             # True for a folder type
 
         # Setup params
         for key, value in params.items():
