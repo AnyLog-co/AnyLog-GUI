@@ -1107,19 +1107,22 @@ def navigate_in_reports(user_name, location_key):
 
     platform = root_gui["visualization"]        # Grafana, Power BI etc.
 
-    company_name = gui_view.get_base_info("name")
-    root_folder = "AnyLog_" + company_name
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
 
     platforms_tree = gui_view.get_base_info("visualization")
     url = platforms_tree[platform]['url']
     token = platforms_tree[platform]['token']
 
     # Get the child folders
-    child_folders = visualize.get_child_folders(platform, url, token, root_folder)
+    child_folders, error_msg = visualize.get_child_folders(platform, url, token, root_folder)
 
-
+    if child_folders:
+        # Add folders to tree
+        pass
 
     # Get the reports in the folder
+    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, root_folder)
 
     # Update the tree
 

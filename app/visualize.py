@@ -106,7 +106,7 @@ def get_child_folders(platform_name, url, token, parent_folders):
     else:
         child_folders, error_msg = connector.get_child_folders(url, token, parent_folders)
 
-    return child_folders, error_msg
+    return [child_folders, error_msg]
 
 # --------------------------------------------------------
 # Return the platform connector
