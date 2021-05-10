@@ -56,7 +56,7 @@
                                         {% if node.option  %}
                                             <!-- A node representing navigation selection based on the config file -->
                                             <!-- Moving from metadata (option from config) to data node -->
-                                            <input type="submit" value={{node.option}} name=option.{{node.path}}>
+                                            <input type="submit" value="{{node.option}}" name="option.{{node.path}}">
                                         {% else %}
                                             <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
                                         {% endif %}

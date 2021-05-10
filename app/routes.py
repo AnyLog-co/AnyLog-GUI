@@ -23,11 +23,15 @@ from app.forms import InstallForm
 from app.forms import ConfDynamicReport
 from app.forms import DashboardConfig       # Base config of a user defined report to include multiple panels
 from app.forms import PanelConfig           # Base config of a user defined panel
+from app.forms import TimeConfig            # Time/date selection for a report a panel
 
 from app.entities import Item
 from app.entities import AnyLogItem
 
 from app.entities import AnyLogTable
+from app.entities import AnyLogDashboard
+from app.entities import get_functions      # Get the list of supported functions
+from app.entities import AnyLogPanel
 
 from config import Config
 
@@ -45,6 +49,7 @@ from app import nav_tree        # Navigation Tree
 
 
 time_selection_ = [
+    ("Day & Time Selection", ""),
     ("Last 5 minutes", "-5m"),
     ("Last 15 minutes", "-15m"),
     ("Last 30 minutes", "-30m"),
@@ -127,8 +132,12 @@ def login():
         user_name = request.form['username']
         session['username'] = user_name
 
-        # Register Useer
+        # Register User
         path_stat.set_new_user(user_name)
+
+        dashboard = AnyLogDashboard()  # The default dashboard for this user
+        dashboard.set_default()
+        path_stat.register_element(user_name, "default_dashboard", dashboard)
 
         # Load the default CONFIG file
 
@@ -726,8 +735,9 @@ def install():
 
 # -----------------------------------------------------------------------------------
 # Issue a report based on the list of policies IDs and the method to extract the dbms name and database name
+# The status report is 2 panels - a graph and a gauge which are defined in template base_conf_report.html
 # -----------------------------------------------------------------------------------
-def policies_to_status_report( selection, policies_list ):
+def policies_to_status_report( user_name, policies_list ):
     '''
     Each Policy is transformed to a report showing the data status
 
@@ -742,6 +752,8 @@ def policies_to_status_report( selection, policies_list ):
     # Name, Table Name, DBMS name
     projection_list = []
 
+    dashboard = path_stat.get_element(user_name, "default_dashboard")  # An object with panels definitions
+    dashboard.reset_panels()        # Remove previously defined panels
     for entry in policies_list:
         dbms_table_id = entry.split('@')
         if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID
@@ -767,10 +779,17 @@ def policies_to_status_report( selection, policies_list ):
                     if table_name:
                         projection_list.append((policy_name, dbms_name, table_name))
 
+                        # Add the projection list to each of the 2 default panels (Graph and Gauge)
+                        if dashboard.with_selections(policy_name, "graph"):
+                            dashboard.add_projection_list(policy_name + '- Operation', "graph", policy_name, dbms_name, table_name, None, None, None)
+                        if dashboard.with_selections(policy_name, "gauge"):
+                            dashboard.add_projection_list(policy_name + '- Status', "gauge", policy_name, dbms_name, table_name, None, "period", None)
 
-    if not len (projection_list):
+
+    if not dashboard.get_panels_count():
         flash('AnyLog: Missing metadata information in policies', category='error')
         return None
+
 
     gui_view = get_gui_view()
     platforms_tree = gui_view.get_base_info("visualization")
@@ -781,12 +800,8 @@ def policies_to_status_report( selection, policies_list ):
     platform_info = copy.deepcopy(platforms_tree["Grafana"])
     platform_info['base_report'] = "AnyLog_Base"
 
-    platform_info["projection_list"] = projection_list
 
-    platform_info['functions'] = ["min", "max", "avg"]
-
-    platform_info['from_date'] = "-2M"
-    platform_info['to_date'] = "now"
+    platform_info["dashboard"] = dashboard
 
     url_list, err_msg = visualize.status_report("Grafana", **platform_info)
     if err_msg:
@@ -810,6 +825,14 @@ def conf_nav_report():
     if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
+    form_info = request.form
+    if len(form_info):
+        err_msg = get_base_report_config(user_name, form_info)    # update the report configuration (on the user status)
+        if err_msg:
+            flash("AnyLog: %s" % err_msg, category='error')
+            redirect(url_for('conf_nav_report'))        # Redo Form
+        flash("AnyLog: Report configured", category='message')
+
     select_info = get_select_menu()
 
     select_info['title'] = "Configure Report"
@@ -818,37 +841,66 @@ def conf_nav_report():
 
     dashboard_conf = DashboardConfig()
 
-    panel_config = PanelConfig( "Graph", "Graph", ["Avg", "Min", "Max"], ["Range", "Count"])
+    default_dashboard = path_stat.get_element(user_name, 'default_dashboard')
+
+    functions_list = get_functions()
+
+    functions_selected = default_dashboard.get_default_functions("graph")
+    panel_config = PanelConfig( "Graph", "graph", functions_list, functions_selected )
     dashboard_conf.add_panel(panel_config)
-    panel_config = PanelConfig( "Gauge", "Gauge", ["Avg"], ["Min", "Max", "Range", "Count"])
+
+    functions_selected = default_dashboard.get_default_functions("gauge")
+    panel_config = PanelConfig( "Gauge", "gauge", functions_list, functions_selected )
     dashboard_conf.add_panel(panel_config)
-    select_info['dashboard'] = dashboard_conf
-
-
-    select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
-    select_info['graph_additional'] = ["Range", "Count"]
-    select_info['gauge_default'] = ["Avg"]    # These are flagged as selected
-    select_info['gauge_additional'] = ["Min", "Max", "Range", "Count"]
-
 
     # Organize the report time selections as last selection
-    select_info['time_options'] = time_selection_
-    from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")      # Get the last selections of dates
-    if not to_date:
-        to_date = 'now'
-        from_date = "now-2M"
-    if to_date:
-        if to_date == 'now':
-            for entry in time_selection_:
-                # go over the entries to find the last selection made and set it as default
-                if entry[1] == from_date[3:]:
-                    select_info['previous_range'] = (entry[0], entry[1])
-        else:
-            select_info['from_date'] = from_date
-            select_info['to_date'] = to_date
 
+    # Get the last selection for time and date and provide the selection as the setup
+
+    start_date_time, end_date_time, range_date_time = default_dashboard.date_time.get_date_time_selections()
+
+    text_selected = None
+    time_selected = None
+    if range_date_time:
+        for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == range_date_time:
+                    text_selected = entry[0]
+                    time_selected = entry[1]
+                    break
+
+
+    time_config = TimeConfig(time_selection_, text_selected, time_selected, start_date_time, end_date_time)
+
+    dashboard_conf.set_time(time_config)  # Apply time selections options to the report
+
+    select_info['dashboard'] = dashboard_conf
 
     return render_template('base_conf_report.html', **select_info)
+# -----------------------------------------------------------------------------------
+# Get the report config info from the form
+# Set the info on the default_dashboard assigned to the user
+# -----------------------------------------------------------------------------------
+def get_base_report_config(user_name, form_info):
+
+    dashboard = path_stat.get_element(user_name, "default_dashboard")       # An object to include all dashboards declared on the form
+    dashboard.reset()
+
+    for key, value in form_info.items():
+
+        if key[:9] == "checkbox.":
+            checkbox = key.split('.')   # get the panel id and the function (Min, Max etc)
+            if len(checkbox) == 3:
+                panel_id = checkbox[1]
+                function = checkbox[2]
+                dashboard.add_default_function(panel_id, function)  # add function to the dashboard (and create a panel in the dashboard if needed)
+
+        elif key[:5] == "date_":
+            dashboard.set_date_time(key[5:], value) # Set date start, date end, date range
+
+    selection_errors = dashboard.test_selections()
+
+    return selection_errors
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -871,7 +923,7 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            html = policies_to_status_report(location_key, [dbms_table_id])
+            html = policies_to_status_report(user_name, [dbms_table_id])
             if not html:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
@@ -920,7 +972,7 @@ def metadata( selection = "" ):
 
 
         if report_button:
-            html = policies_to_status_report(location_key, selected_list)
+            html = policies_to_status_report(user_name, selected_list)
             if not html:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
@@ -1479,6 +1531,33 @@ def get_select_menu(selection = "", caller = ""):
 
     return select_info
 
+
+# -----------------------------------------------------------------------------------
+# Manage the reports
+# -----------------------------------------------------------------------------------
+@app.route('/manage_reports/', methods={'GET','POST'})
+def manage_reports():
+
+    user_name = get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))  # start with Login  if not yet provided
+
+    select_info = get_select_menu()
+    select_info['title'] = "Manage Reports"
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree["Grafana"]['url']
+    token = platforms_tree["Grafana"]['token']
+    network_name = gui_view.get_network_name()
+
+
+    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, "AnyLog_" + network_name)   # Get the list of reports associated with
+
+    if not err_msg:
+        select_info['panels_urls'] = panels_urls
+
+    return render_template('manage_reports.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Configure the dynamic reports
 # -----------------------------------------------------------------------------------

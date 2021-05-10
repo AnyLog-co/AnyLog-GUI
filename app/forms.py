@@ -39,19 +39,21 @@ class CommandsForm(FlaskForm):
 
 # Time configuration for a panel or a report
 class TimeConfig():
-    def __init__(self, default_range, default_from, default_to):
-        self.default_time_range = default_range  # i.e. now-2M
+    def __init__(self, time_options, text_selected, time_selected, default_from, default_to):
+        self.time_options = time_options
+        self.text_selected = text_selected  # Last 2 months
+        self.time_selected = time_selected # i.e. now-2M
         self.default_from = default_from
         self.default_to = default_to
 
 # Type of queries for the panel
 class PanelConfig():
 
-    def __init__(self, name, panel_type, selected, not_selected):
+    def __init__(self, name, panel_type, options, selected):
         self.name = name        # The name of the panel on the config page (not the panel name when report is requested)
-        self.panel_type =   panel_type      # Graph, Gauge
-        self.chek_box_selected = selected      # Each entry represents selected checkboxes for a panel
-        self.chek_box = not_selected           # Each entry represent checkboxes for a panel
+        self.panel_type = panel_type      # Graph, Gauge
+        self.chek_box_options = options             # a list - Each entry represents a checkbox option
+        self.chek_box_selected = selected           # a list - Each entry represent a selected option
         self.time_config = None      # Time selection for the panel (if different than dashboard)
 
 
@@ -62,6 +64,9 @@ class DashboardConfig():
 
     def add_panel(self, new_panel):
         self.panels.append(new_panel)
+    def set_time(self, time_config):
+        self.time_config = time_config  # Time selection for the dashboard
+
 
 
 class ConfDynamicReport(FlaskForm):

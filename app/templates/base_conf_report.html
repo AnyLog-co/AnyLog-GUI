@@ -7,87 +7,64 @@
     <br>
     {%  for panel in dashboard.panels %}
         <br>
-        panel.name
+        {{ panel.name }}
         <br>
 
        <!-- Selected checkboxes of report - Min, Max, Avg -->
-        {% for check_box in panel.chek_box_selected %}
+        {% for option in panel.chek_box_options %}
             <!-- Select functionality  -->
-            <input type="checkbox" id={{check_box}} name={{check_box}} checked>
-            <label for={{check_box}}>{{check_box}}</label>&nbsp
-        {% endfor %}
-       <!-- Not selected checkboxes of report - Min, Max, Avg -->
-        {% for check_box in panel.chek_box %}
-            <!-- Select functionality  -->
-            <input type="checkbox" id={{check_box}} name={{check_box}} checked>
-            <label for={{check_box}}>{{check_box}}</label>&nbsp
+            {% if option in panel.chek_box_selected %}
+                <input type="checkbox" name="checkbox.{{ panel.panel_type }}.{{option}}" id={{option}} checked>
+            {%  else %}
+                <input type="checkbox" name="checkbox.{{ panel.panel_type }}.{{option}}" id={{option}}>
+            {%  endif %}
+            <label for={{option}}>{{option}}</label>&nbsp
         {% endfor %}
 
 
+        <br>
+        <hr>
     {% endfor %}
-
-    <br>
-    Graph
-    <br>
-    <!-- Select Type of report - Min, Max, Avg -->
-    {% for option in graph_default %}
-        <!-- Select functionality  -->
-        <input type="checkbox" id={{option}} name={{option}} checked>
-        <label for={{option}}>{{option}}</label>&nbsp
-    {% endfor %}
-
-     <!-- Select Type of report - range, count -->
-    {% for option in graph_additional %}
-        <!-- Select functionality  -->
-        <input type="checkbox" id={{option}} name={{option}}>
-        <label for={{option}}>{{option}}</label>&nbsp
-    {% endfor %}
-
-    <br>
-    <hr>
-    <br>
-
-    Gauge
-
-    <br>
-    <!-- Select Type of report - Min, Max, Avg -->
-    {% for option in gauge_default %}
-        <!-- Select functionality  -->
-        <input type="checkbox" id={{option}} name={{option}} checked>
-        <label for={{option}}>{{option}}</label>&nbsp
-    {% endfor %}
-
-     <!-- Select Type of report - range, count -->
-    {% for option in gauge_additional %}
-        <!-- Select functionality  -->
-        <input type="checkbox" id={{option}} name={{option}}>
-        <label for={{option}}>{{option}}</label>&nbsp
-    {% endfor %}
-
 
     <br><hr><br>
 
     <!-- Select Dates  -->
-    <label for="start-date">Start: </label>
-    <input type="datetime-local" id="start_date" name="start_date" value={{from_date}}>
-    &nbsp&nbsp&nbsp
-    <label for="end-date">End:   </label>
-    <input type="datetime-local" id="end_date" name="end_date" value={{to_date}}>
+    {%  if dashboard.time_config %}
 
-    <!-- Select Date Range  -->
-    &nbsp&nbsp&nbsp
-    <label for="range">Date Range:</label>
-        <select name="date_range" id="date_range">
-            {% if previous_range %}
-                 <!-- set date range selection as previous selection -->
-                <option value={{previous_range[1]}}>{{previous_range[0]}}</option>
-            {% else %}}
-                <option value="">Dates selection</option>
-            {% endif %}
-            {% for option in time_options %}
-                <option value={{option[1]}}>{{option[0]}}</option>
-            {% endfor %}
-        </select>
+        <label for="start-date">Start: </label>
+        {%  if dashboard.time_config.default_from %}
+            <input type="datetime-local" id="date_start" name="date_start" value={{dashboard.time_config.default_from}}>
+        {%  else %}
+            <input type="datetime-local" id="date_start" name="date_start">
+        {%  endif %}
+
+        &nbsp&nbsp&nbsp
+        <label for="end-date">End:   </label>
+        {%  if dashboard.time_config.default_to %}
+            <input type="datetime-local" id="date_end" name="date_end" value={{dashboard.time_config.default_to}}>
+        {%  else %}
+            <input type="datetime-local" id="date_end" name="date_end">
+        {%  endif %}
+
+
+        <!-- Select Date Range  -->
+        &nbsp&nbsp&nbsp
+        {%  if dashboard.time_config.time_options %}
+            <label for="date_range">Date Range:</label>
+                <select name="date_range" id="date_range">
+                    {% if dashboard.time_config.text_selected  %}
+                         <!-- set date range selection as previous selection -->
+                        <option value={{dashboard.time_config.time_selected}}>{{dashboard.time_config.text_selected}}</option>
+                    {% else %}}
+                        <option value="">Dates selection</option>
+                    {% endif %}
+                    {% for option in dashboard.time_config.time_options %}
+                        <option value={{option[1]}}>{{option[0]}}</option>
+                    {% endfor %}
+                </select>
+
+        {%  endif %}
+    {%  endif %}
 
 
     <br><br>

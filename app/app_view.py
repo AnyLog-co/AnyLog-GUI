@@ -33,6 +33,17 @@ class gui():
         self.config_struct = None 
         self.config_error = None    # Error set if COnfig file with error in structure
         self.policies_table = []     # The list of policies in a 2 domentional list (representing the display of the list)
+
+    # ------------------------------------------------------------------------
+    # The name associated with the network
+    # ------------------------------------------------------------------------
+    def get_network_name(self):
+        if "gui" in self.config_struct and "name" in  self.config_struct["gui"]:
+            network_name = self.config_struct["gui"]["name"]
+        else:
+            network_name = ""
+        return network_name
+
     # ------------------------------------------------------------------------
     # Get Base Info from the config / JSON file
     # ------------------------------------------------------------------------
