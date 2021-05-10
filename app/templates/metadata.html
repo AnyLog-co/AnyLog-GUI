@@ -41,6 +41,7 @@
                         {% if node.report  %}
                             <!-- Option to update or delete thr report -->
                             <input type="submit" value="Update" name="{{node.path}}" class="button_update">
+                            <input type="submit" value="Rename" name="{{node.path}}" class="button_rename">
                             <input type="submit" value="Delete" name="{{node.path}}" class="button_delete">
 
                         {% elif node.details  %}
@@ -49,7 +50,13 @@
                             <input type="submit" value="View" name="{{node.path}}" class="button_view">
                         {% endif %}
                         {% if selection  %}
-                            {% if node.dbms_name  %}
+                             {% if node.report  %}
+                                 <!-- Flag to select the report (for multiple reports viewed) -->
+                                <td><input type=checkbox name=selected.{{node.path}}@{{node.name}}></td>
+                                <!-- Or go directly to a report -->
+                                <a href="{{url_for('metadata')}}/{{selection}}?report={{node.path}}?">{{node.name}}</a>
+
+                            {% elif node.dbms_name  %}
                                 <!-- Flag to select the edge (to Save for a future report or immediate report) -->
                                 <td><input type=checkbox name=selected.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
                                 <!-- Or go directly to a report -->

@@ -1114,6 +1114,8 @@ def navigate_in_reports(user_name, location_key):
     url = platforms_tree[platform]['url']
     token = platforms_tree[platform]['token']
 
+    current_node.add_child(name=location_key + '@' + "Add_Folder", option="New Folder", path=location_key + '@' + "Add_Folder")
+
     # Get the child folders
     child_folders, err_msg = visualize.get_child_folders(platform, url, token, root_folder)
     if err_msg:
@@ -1123,6 +1125,8 @@ def navigate_in_reports(user_name, location_key):
     if child_folders:
         # Add folders to tree
         pass
+
+    current_node.add_child(name=location_key + '@' + "Add_Report", option="New Report", path=location_key + '@' + "Add_Report")
 
     # Get the reports in the folder
     panels_urls, err_msg = visualize.get_reports("Grafana", url, token, root_folder)

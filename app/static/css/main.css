@@ -171,6 +171,19 @@ ul.tree li:last-child:before {
     height: 20px;
 }
 
+.button_rename {
+    background-color: #6a8993;
+    border-color: #3e3737;
+    border-width: 1px;
+    color: whitesmoke;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    width: 60px;
+    height: 20px;
+}
+
 .button_delete {
     background-color: #ac728b;
     border-color: #3e3737;
