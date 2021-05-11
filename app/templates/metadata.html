@@ -54,7 +54,7 @@
                                  <!-- Flag to select the report (for multiple reports viewed) -->
                                 <td><input type=checkbox name=selected.{{node.path}}@{{node.name}}></td>
                                 <!-- Or go directly to a report -->
-                                <a href="{{url_for('metadata')}}/{{selection}}?report={{node.path}}?">{{node.name}}</a>
+                                <a href="{{url_for('metadata')}}/{{selection}}?report={{node.url}}">{{node.name}}</a>
 
                             {% elif node.dbms_name  %}
                                 <!-- Flag to select the edge (to Save for a future report or immediate report) -->

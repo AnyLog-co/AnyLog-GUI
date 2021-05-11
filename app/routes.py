@@ -1095,6 +1095,18 @@ def navigate_in_reports(user_name, location_key):
 
     root_nav = path_stat.get_element(user_name, "root_nav")
 
+    if request.query_string:
+        query_string = request.query_string.decode('ascii')
+        if query_string[:7] == "report=":
+            select_info = get_select_menu()
+            select_info['title'] = "Current Status"
+
+            url_list = [query_string[7:]]
+
+            select_info["url_list"] = url_list
+
+            return render_template('output_frame.html', **select_info)
+
     selection_list = location_key.replace('+', '@').split('@')
 
     # Navigate in the tree to find location of Node
@@ -1142,7 +1154,8 @@ def navigate_in_reports(user_name, location_key):
             'name': name,
             'key': key,
             'path': key,
-            'report' : True
+            'report' : True,
+            'url' : url[0]
         }
         current_node.add_child( **params )
 
