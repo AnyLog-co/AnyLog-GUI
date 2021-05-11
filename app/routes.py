@@ -916,6 +916,59 @@ def get_base_report_config(user_name, form_info):
     return selection_errors
 
 # -----------------------------------------------------------------------------------
+# Analyze the form returned info
+# Returns form_selections - showing buttons selected
+# Selected list - showing a list of sensors selected
+# -----------------------------------------------------------------------------------
+def process_tree_form():
+
+    form_selections = {
+        "policy_id" : None,         # AN ID of a JSON policy
+        "location_key": None,       # Replace the user selection with the location key
+        "get_policy": False,        # Show the JSON policy (View button)
+        "report_button": False,     # Show a report of multiple selections (Report button)
+        "url" : None,               # URL to redirect  the process (For example to configure a report)
+    }
+
+    selected_list = []
+
+
+    # Go over report selections
+
+    form_info = request.form
+    if len(form_info):
+        for form_key, form_val in form_info.items():
+            if form_val == "View":
+                #  User selected to View a Policy (using a View BUTTON)
+                #  The user selected view - Bring the node Policy
+                offset = form_key.rfind('+')
+                if offset > 0:
+                    # Get the policy ID of the last layer
+                    form_selections["policy_id"] = form_key[offset + 1:]
+                    form_selections["location_key"] = form_key
+                    form_selections["get_policy"] = True    # Get the policy of the node
+                break
+            if form_key[:7] == "option.":
+                # User selected an option representing a metadata navigation (the type of the children to retrieve)
+                # Move from metadata to data
+                form_selections["location_key"] = form_key[7:]  # Remove the "option." prefix
+                break
+            if form_key[:9] == "selected.":
+                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
+                selected_list.append(form_key[9:])
+            elif form_key == "Report":
+                # The selected list is used for a report
+                form_selections["report_button"] = True
+            elif form_key == "Save":
+                form_selections["report_button"] = True
+            elif form_key == "Configure":
+                # Configure the dynamic report
+                form_selections["url"] = url_for('conf_nav_report')
+                break
+
+    return [form_selections, selected_list]
+
+# -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
 # -----------------------------------------------------------------------------------
@@ -928,6 +981,14 @@ def metadata( selection = "" ):
         return redirect(('/login'))        # start with Login  if not yet provided
 
     location_key = selection
+
+    form_selections, selected_list = process_tree_form()
+
+    if form_selections["url"]:
+        return form_selections["url"]       # Redirect to a different proocess
+
+    if form_selections["location_key"]:
+        location_key = form_selections["location_key"]  # Form selection changed the location
 
     if selection:
         index = selection.find('@')
@@ -956,53 +1017,13 @@ def metadata( selection = "" ):
             return html
 
 
-    form_info = request.form
-    get_policy = False
-
-    if len(form_info):
-        # Selection on the navigation form
-
-        selected_list = []
-        configure_button = False
-        save_button = False
-        report_button = False
-        # Go over report selections
-        for form_key, form_val in form_info.items():
-            if form_val == "View":
-                # Option 2 - User selected to View a Policy (using a View BUTTON)
-                # The user selected view - Bring the node Policy
-                offset = form_key.rfind('+')
-                if offset > 0:
-                    # Get the policy ID of the last layer
-                    policy_id = form_key[offset + 1:]
-                    location_key = form_key
-                    get_policy = True       # Get the policy of the node
-                break
-            if form_key[:7] == "option.":
-                # User selected an option representing a metadata navigation (the type of the children to retrieve)
-                # Move from metadata to data
-                location_key = form_key[7:]     # Remove the "option." prefix
-                break
-            if form_key[:9] == "selected.":
-                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
-                selected_list.append(form_key[9:])
-            elif form_key == "Report":
-                # The selected list is used for a report
-                report_button = True
-            elif form_key == "Save":
-                save_button = True
-            elif form_key == "Configure":
-                # Configure the dynamic report
-                return redirect(url_for('conf_nav_report'))
-
-
-        if report_button:
-            html = policies_to_status_report(user_name, selected_list)
-            if not html:
-                # Got an error
-                select_info = get_select_menu(selection=location_key)
-                return call_navigation_page(user_name, select_info, location_key, None)
-            return html
+    if form_selections["report_button"]:
+        html = policies_to_status_report(user_name, selected_list)
+        if not html:
+            # Got an error
+            select_info = get_select_menu(selection=location_key)
+            return call_navigation_page(user_name, select_info, location_key, None)
+        return html
 
 
     gui_view = path_stat.get_element(user_name, "gui_view")
@@ -1036,7 +1057,7 @@ def metadata( selection = "" ):
 
         gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
 
-        if get_policy:
+        if form_selections["get_policy"]:
             # User requested ti VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
 
@@ -1048,7 +1069,7 @@ def metadata( selection = "" ):
             if policy_node.is_with_policy():
                 policy_node.add_policy(None)
             else:
-                retrieved_policy = get_json_policy(policy_id)
+                retrieved_policy = get_json_policy(form_selections["policy_id"])
                 if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
                     policy_node.add_policy(retrieved_policy[0] )
             select_info = get_select_menu(selection=gui_key)
@@ -1097,6 +1118,7 @@ def navigate_in_reports(user_name, location_key):
 
     if request.query_string:
         query_string = request.query_string.decode('ascii')
+        # A Panel was selected - view the panel
         if query_string[:7] == "report=":
             select_info = get_select_menu()
             select_info['title'] = "Current Status"
