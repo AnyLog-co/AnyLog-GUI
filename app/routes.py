@@ -928,6 +928,7 @@ def process_tree_form():
         "get_policy": False,        # Show the JSON policy (View button)
         "report_button": False,     # Show a report of multiple selections (Report button)
         "url" : None,               # URL to redirect  the process (For example to configure a report)
+        "add_report" : False,       # Define a new report in the report section
     }
 
     selected_list = []
@@ -951,7 +952,11 @@ def process_tree_form():
             if form_key[:7] == "option.":
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
                 # Move from metadata to data
-                form_selections["location_key"] = form_key[7:]  # Remove the "option." prefix
+                key = form_key[7:]
+                if len(key) > 11 and key[-11:] == "@Add_Report":
+                    form_selections["add_report"] = True
+                    key = key[:-11]
+                form_selections["location_key"] = key  # Save the location key based on the user button selection
                 break
             if form_key[:9] == "selected.":
                 # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
@@ -967,6 +972,15 @@ def process_tree_form():
                 break
 
     return [form_selections, selected_list]
+
+# -----------------------------------------------------------------------------------
+# Define new report in the requested folder
+# -----------------------------------------------------------------------------------
+def define_new_report(folder):
+
+    select_info = get_select_menu(selection=folder)
+
+    return render_template('new_report.html', **select_info)
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -989,6 +1003,9 @@ def metadata( selection = "" ):
 
     if form_selections["location_key"]:
         location_key = form_selections["location_key"]  # Form selection changed the location
+
+    if form_selections["add_report"]:
+        return define_new_report(location_key)
 
     if selection:
         index = selection.find('@')
@@ -1024,6 +1041,14 @@ def metadata( selection = "" ):
             select_info = get_select_menu(selection=location_key)
             return call_navigation_page(user_name, select_info, location_key, None)
         return html
+
+
+    return metada_navigation(user_name, selection, location_key, form_selections)
+
+# -----------------------------------------------------------------------------------
+# Navigate using the metadata
+# -----------------------------------------------------------------------------------
+def metada_navigation(user_name, selection, location_key, form_selections):
 
 
     gui_view = path_stat.get_element(user_name, "gui_view")
