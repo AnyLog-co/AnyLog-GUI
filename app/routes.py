@@ -890,6 +890,8 @@ def conf_nav_report():
     select_info['dashboard'] = dashboard_conf
 
     return render_template('base_conf_report.html', **select_info)
+
+
 # -----------------------------------------------------------------------------------
 # Get the report config info from the form
 # Set the info on the default_dashboard assigned to the user
@@ -976,9 +978,47 @@ def process_tree_form():
 # -----------------------------------------------------------------------------------
 # Define new report in the requested folder
 # -----------------------------------------------------------------------------------
-def define_new_report(folder):
+def define_new_report(user_name, folder):
 
     select_info = get_select_menu(selection=folder)
+
+    dashboard_conf = DashboardConfig()
+
+    default_dashboard = path_stat.get_element(user_name, 'default_dashboard')
+
+    functions_list = get_functions()
+
+    functions_selected = default_dashboard.get_default_functions("graph")
+    panel_config = PanelConfig( "Graph", "graph", functions_list, functions_selected )
+    dashboard_conf.add_panel(panel_config)
+
+    functions_selected = default_dashboard.get_default_functions("gauge")
+    panel_config = PanelConfig( "Gauge", "gauge", functions_list, functions_selected )
+    dashboard_conf.add_panel(panel_config)
+
+    # Organize the report time selections as last selection
+
+    # Get the last selection for time and date and provide the selection as the setup
+
+    start_date_time, end_date_time, range_date_time = default_dashboard.date_time.get_date_time_selections()
+
+    text_selected = None
+    time_selected = None
+    if range_date_time:
+        for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == range_date_time:
+                    text_selected = entry[0]
+                    time_selected = entry[1]
+                    break
+
+
+    time_config = TimeConfig(time_selection_, text_selected, time_selected, start_date_time, end_date_time)
+
+    dashboard_conf.set_time(time_config)  # Apply time selections options to the report
+
+    select_info['dashboard'] = dashboard_conf
+
 
     return render_template('new_report.html', **select_info)
 
@@ -1005,7 +1045,7 @@ def metadata( selection = "" ):
         location_key = form_selections["location_key"]  # Form selection changed the location
 
     if form_selections["add_report"]:
-        return define_new_report(location_key)
+        return define_new_report(user_name, location_key)
 
     if selection:
         index = selection.find('@')
