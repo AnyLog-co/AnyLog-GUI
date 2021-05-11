@@ -988,12 +988,14 @@ def define_new_report(user_name, folder):
 
     functions_list = get_functions()
 
-    functions_selected = default_dashboard.get_default_functions("graph")
-    panel_config = PanelConfig( "Graph", "graph", functions_list, functions_selected )
+    # Get the functions
+
+    panel_config = PanelConfig( "Functions", "functions", functions_list, ["min", "max", "avg"] )
     dashboard_conf.add_panel(panel_config)
 
-    functions_selected = default_dashboard.get_default_functions("gauge")
-    panel_config = PanelConfig( "Gauge", "gauge", functions_list, functions_selected )
+    # Get the Report Type - Graph or Gauge
+    visualize_selected = ["Grapg", "Gauge"]
+    panel_config = PanelConfig( "Visualization", "visualize", ["Graph", "Gauge"], ["Graph"] )
     dashboard_conf.add_panel(panel_config)
 
     # Organize the report time selections as last selection
@@ -1016,6 +1018,7 @@ def define_new_report(user_name, folder):
     time_config = TimeConfig(time_selection_, text_selected, time_selected, start_date_time, end_date_time)
 
     dashboard_conf.set_time(time_config)  # Apply time selections options to the report
+
 
     select_info['dashboard'] = dashboard_conf
 
