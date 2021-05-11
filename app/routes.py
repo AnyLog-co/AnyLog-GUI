@@ -1039,7 +1039,7 @@ def metadata( selection = "" ):
     form_selections, selected_list = process_tree_form()
 
     if form_selections["url"]:
-        return form_selections["url"]       # Redirect to a different proocess
+        return redirect(form_selections["url"])       # Redirect to a different proocess
 
     if form_selections["location_key"]:
         location_key = form_selections["location_key"]  # Form selection changed the location
