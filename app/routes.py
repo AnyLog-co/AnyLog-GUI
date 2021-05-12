@@ -929,6 +929,7 @@ def process_tree_form():
         "location_key": None,       # Replace the user selection with the location key
         "get_policy": False,        # Show the JSON policy (View button)
         "report_button": False,     # Show a report of multiple selections (Report button)
+        "select_button": False,     # Add the database and table of an edge node to a list that is used when a new report is defined
         "url" : None,               # URL to redirect  the process (For example to configure a report)
         "add_report" : False,       # Define a new report in the report section
     }
@@ -966,8 +967,8 @@ def process_tree_form():
             elif form_key == "Report":
                 # The selected list is used for a report
                 form_selections["report_button"] = True
-            elif form_key == "Save":
-                form_selections["report_button"] = True
+            elif form_key == "Select":
+                form_selections["select_button"] = True
             elif form_key == "Configure":
                 # Configure the dynamic report
                 form_selections["url"] = url_for('conf_nav_report')
@@ -1078,6 +1079,7 @@ def metadata( selection = "" ):
 
 
     if form_selections["report_button"]:
+        # Show the default report with the selected edge nodes
         html = policies_to_status_report(user_name, selected_list)
         if not html:
             # Got an error
@@ -1085,8 +1087,60 @@ def metadata( selection = "" ):
             return call_navigation_page(user_name, select_info, location_key, None)
         return html
 
+    if form_selections["select_button"]:
+        if len(selected_list):
+            # Add the selected (edge) nodes to a list of nodes
+            add_selected_to_list(user_name, selected_list)
+
+
 
     return metada_navigation(user_name, selection, location_key, form_selections)
+
+# -----------------------------------------------------------------------------------
+# Add the selected nodes to a list of nodes that are option for a new report.
+# If a new report is selected, the user can select which edge nodes to include.
+# The edge nodes determine the database and table to use.
+# -----------------------------------------------------------------------------------
+def add_selected_to_list(user_name, new_selection):
+
+    '''
+    Every entry in new_selection includes:
+    a) dbms name (or pull instructions for the dbms name)
+    b) table name (or pull instructions for the table name)
+    c) JSON policy ID
+    '''
+
+    # Add the next selection to existing selection
+    for entry in new_selection:
+        node_segments = entry.split('@')
+        if len(node_segments) == 3:
+            policy_id = node_segments[2]
+            if not path_stat.is_node_selected(user_name, policy_id):
+                # Not in the list - add info to the list of selected nodes
+
+                policy_list = get_json_policy(policy_id)
+                policy_id = None  # Missing ID for the policy
+                if policy_list and isinstance(policy_list,list) and len(policy_list) == 1:
+                    policy = policy_list[0]
+                    policy_type = path_stat.get_policy_type(policy)
+                    if policy_type:
+                        if "id" in policy[policy_type]:
+                            policy_id = policy[policy_type]["id"]
+
+                if policy_id:
+                    # Copy the path anf pathe elements to the list of selected items to print
+                    node_info = {}
+                    json_entry = policy[policy_type]
+                    dbms_name = node_segments[0]
+                    table_name = node_segments[1]
+
+                    db_name = path_stat.get_sql_name(json_entry, dbms_name)  # Pull the dbms name from the policy
+                    tb_name = path_stat.get_sql_name(json_entry, table_name)  # Pull the dbms name from the policy
+
+                    node_info["dbms_name"] = db_name
+                    node_info["table_name"] = tb_name
+                    node_info["edge"] = json_entry
+
 
 # -----------------------------------------------------------------------------------
 # Navigate using the metadata

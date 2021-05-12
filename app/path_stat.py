@@ -50,6 +50,7 @@ def set_new_user(user_name):
 
     active_state_[user_name] = { 
         "reports" : {
+                        "edge_nodes" : {}         # a dictionary of edge nodes selected in the tree navigation
                     },
         "selected"  :   "My_Report",
         "path" :    [],         # navigation as f(user)
@@ -210,6 +211,19 @@ def get_path_overview(user_name, level, parent_menu):
                     path_steps.append( (step_name, step_title, step_keys, [columns_val]) )
 
     return path_steps
+
+# -----------------------------------------------------------------------------------
+# Test if the policy is in the selected nodes
+# -----------------------------------------------------------------------------------
+def is_node_selected(user_name:str, policy_id:str):
+    return policy_id in active_state_[user_name]['reports']['edge_nodes']
+
+# -----------------------------------------------------------------------------------
+# Add a node to the selected list
+# Node info includes dbms name and table mname for query
+# -----------------------------------------------------------------------------------
+def add_selected_node(user_name: str, policy_id: str, node_info:dict):
+    active_state_[user_name]['reports']['edge_nodes'][policy_id] = node_info
 
 # -----------------------------------------------------------------------------------
 # Reset or start a new state
