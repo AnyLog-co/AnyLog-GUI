@@ -1149,7 +1149,7 @@ def add_selected_to_list(user_name, location_key, new_selection):
 
                     node_info["dbms_name"] = db_name
                     node_info["table_name"] = tb_name
-                    node_info["edge"] = policy
+                    node_info["policy"] = policy
 
                     path_stat.add_selected_node(user_name, policy_id, node_info)        # Add the node info to the report
 

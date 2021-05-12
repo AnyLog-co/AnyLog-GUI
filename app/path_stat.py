@@ -233,26 +233,27 @@ def is_node_selected(user_name:str, policy_id:str):
 # Node info includes:
 #                     node_info["dbms_name"] = db_name
 #                     node_info["table_name"] = tb_name
-#                     node_info["edge"] = policy
+#                     node_info["policy"] = policy
 #
 # -----------------------------------------------------------------------------------
 def get_table_with_selected_nodes(user_name, policy_keys, add_dbms_name, add_table_name):
     selected_nodes = get_selected_nodes(user_name)
     table_info = []
-    for node_info in selected_nodes:
-        node_info = []
-        policy = node_info[2]
+    for node_info in selected_nodes.values():
+        row_info = []
+        policy = node_info['policy']
+        policy_type = get_policy_type(policy)
         for key in policy_keys:
-            if key in policy:
-                value = policy[key]
+            if key in policy[policy_type]:
+                value = policy[policy_type][key]
             else:
                 value = None
-            node_info.append(value)         # Add the value from the policy
+            row_info.append(value)         # Add the value from the policy
         if add_dbms_name:
-            node_info.append(node_info[0])
+            row_info.append(node_info["dbms_name"])
         if add_table_name:
-            node_info.append(node_info[1])
-        table_info.append(node_info)
+            row_info.append(node_info["table_name"])
+        table_info.append(row_info)
     return table_info
 # -----------------------------------------------------------------------------------
 # Add a node to the selected nodes list.
@@ -647,7 +648,7 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
 
             edge_selected[policy_id]["dbms_name"] = db_name
             edge_selected[policy_id]["table_name"] = tb_name
-            edge_selected[policy_id]["edge"] = json_entry
+            edge_selected[policy_id]["policy"] = json_entry
 
 # -------------------------------------------------------------------------
 # Get a dbms or a table name from the JSON structure
