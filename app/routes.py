@@ -979,6 +979,21 @@ def process_tree_form():
     return [form_selections, selected_list]
 
 # -----------------------------------------------------------------------------------
+# Define new report called bu URL
+# -----------------------------------------------------------------------------------
+@app.route('/new_report', methods = ['GET', 'POST'])
+@app.route('/new_report/<string:selection>', methods = ['GET', 'POST'])
+def new_report( selection = "" ):
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    form_info = request.form
+    
+    return define_new_report(user_name, selection)
+
+
+# -----------------------------------------------------------------------------------
 # Define new report in the requested folder
 # -----------------------------------------------------------------------------------
 def define_new_report(user_name, folder):

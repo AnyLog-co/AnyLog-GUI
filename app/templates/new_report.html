@@ -5,9 +5,9 @@
 {% block content %}
     {% if selection %}
         <!-- Add the usr path to the form (if provided)  -->
-        <form action="{{url_for('metadata')}}/{{selection}}" method="POST">
+        <form action="{{url_for('new_report')}}/{{selection}}" method="POST">
     {% else %}
-        <form action="{{url_for('metadata')}}" method="POST">
+        <form action="{{url_for('new_report')}}" method="POST">
     {% endif %}
 
     <br>
@@ -19,6 +19,7 @@
     </p>
     <hr>
 
+     <!-- The Selection table -->
     {% for table in tables_list %}
         <br>
         {{ table.table_name }}
@@ -37,7 +38,7 @@
                     <td>{{ col_val }}</td>
                 {% endfor %}
                 {% for extra_column in table.extr_col %}
-                    <td><input type={{extra_column[1]}} name={{extra_column[0]}}.{{row[0]}}></td> <!-- extra cell name  -->
+                    <td><input type={{extra_column[1]}} name="{{extra_column[0]}}.{{row[0]}}"></td> <!-- extra cell name  -->
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -47,7 +48,7 @@
     <hr>
 
 
-    {{ super() }}
+    {{ super() }}    <!-- Call base conf. report  -->
 
 
  {% endblock %}
