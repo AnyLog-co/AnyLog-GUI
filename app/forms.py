@@ -40,6 +40,13 @@ class CommandsForm(FlaskForm):
 # Time configuration for a panel or a report
 class TimeConfig():
     def __init__(self, time_options, text_selected, time_selected, default_from, default_to):
+        '''
+        time_options - the list of predefined time range
+        text_selected - The text selected from the list
+        time_selected - the key of the selected text
+        default_from - start date and time
+        default_to - end date and time
+        '''
         self.time_options = time_options
         self.text_selected = text_selected  # Last 2 months
         self.time_selected = time_selected # i.e. now-2M

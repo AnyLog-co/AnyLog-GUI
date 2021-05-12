@@ -992,13 +992,18 @@ def new_report( selection = "" ):
     form_info = request.form
 
     if len(form_info):
+        dashboard = AnyLogDashboard()  # Create a new dasboard
         tables_info = {}
         for entry in form_info:
 
             # Make a list with the following entries:
             # dbms name + Table Name + panel name + list of functions
 
-            if entry[:6] == "table.":
+            if entry[:5] == "date_":
+                # Set the date- time selections
+                dashboard.set_date_time(key[5:], form_info[entry])  # Set date start, date end, date range
+
+            elif entry[:6] == "table.":
                 table_info = entry[6:].split('.')   # List with DBMS name, Table name, function
                 dbms_name = table_info[0]
                 table_name = table_info[1]
@@ -1014,7 +1019,7 @@ def new_report( selection = "" ):
                     # add new entry
                     tables_info[key] = (dbms_name, table_name, panel_name, [function])
 
-        dashboard = AnyLogDashboard()  # Create a new dasboard
+
         for entry in tables_info.values():
             # Add the projection list for each table
             dashboard.add_projection_list(entry[2], "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
