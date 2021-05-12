@@ -1090,17 +1090,18 @@ def metadata( selection = "" ):
     if form_selections["select_button"]:
         if len(selected_list):
             # Add the selected (edge) nodes to a list of nodes
-            add_selected_to_list(user_name, selected_list)
+            add_selected_to_list(user_name, location_key, selected_list) # Return one selection from the list
             # Continue to show tree
 
-    return metada_navigation(user_name, selection, location_key, form_selections)
+
+    return metada_navigation(user_name, location_key, form_selections)
 
 # -----------------------------------------------------------------------------------
 # Add the selected nodes to a list of nodes that are option for a new report.
 # If a new report is selected, the user can select which edge nodes to include.
 # The edge nodes determine the database and table to use.
 # -----------------------------------------------------------------------------------
-def add_selected_to_list(user_name, new_selection):
+def add_selected_to_list(user_name, location_key, new_selection):
 
     '''
     Every entry in new_selection includes:
@@ -1141,15 +1142,14 @@ def add_selected_to_list(user_name, new_selection):
 
                     path_stat.add_selected_node(user_name, policy_id, node_info)        # Add the node info to the report
 
-
 # -----------------------------------------------------------------------------------
 # Navigate using the metadata
 # -----------------------------------------------------------------------------------
-def metada_navigation(user_name, selection, location_key, form_selections):
+def metada_navigation(user_name, location_key, form_selections):
 
 
     gui_view = path_stat.get_element(user_name, "gui_view")
-    if not selection:
+    if not location_key:
 
         params = { 'is_anchor' : True }
         root_nav = nav_tree.TreeNode( **params )
