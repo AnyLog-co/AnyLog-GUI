@@ -1130,16 +1130,15 @@ def add_selected_to_list(user_name, new_selection):
                 if policy_id:
                     # Copy the path anf pathe elements to the list of selected items to print
                     node_info = {}
-                    json_entry = policy[policy_type]
                     dbms_name = node_segments[0]
                     table_name = node_segments[1]
 
-                    db_name = path_stat.get_sql_name(json_entry, dbms_name)  # Pull the dbms name from the policy
-                    tb_name = path_stat.get_sql_name(json_entry, table_name)  # Pull the dbms name from the policy
+                    db_name = path_stat.get_sql_name(policy, dbms_name)  # Pull the dbms name from the policy
+                    tb_name = path_stat.get_sql_name(policy, table_name)  # Pull the dbms name from the policy
 
                     node_info["dbms_name"] = db_name
                     node_info["table_name"] = tb_name
-                    node_info["edge"] = json_entry
+                    node_info["edge"] = policy
 
 
 # -----------------------------------------------------------------------------------
