@@ -1022,15 +1022,13 @@ def define_new_report(user_name, folder):
 
     table_rows = path_stat.get_table_with_selected_nodes(user_name, ["name", "id"], True, True)
 
-
-
     tables_list = []
     extra_columns = [('Select', 'checkbox')]
     al_table = AnyLogTable("Select report data", ["Name", "ID", "DBMS", "Table"], None, table_rows, extra_columns)
 
     tables_list.append(al_table)  # Add the children
 
-    select_info['selection'] = selection
+    select_info['selection'] = folder
     select_info['tables_list'] = tables_list
     select_info['submit'] = "View"
 

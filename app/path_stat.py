@@ -228,8 +228,34 @@ def is_node_selected(user_name:str, policy_id:str):
     return policy_id in active_state_[user_name]['reports']['edge_nodes']
 
 # -----------------------------------------------------------------------------------
-# Add a node to the selected list
-# Node info includes dbms name and table mname for query
+#
+# Return a structure representing each node
+# Node info includes:
+#                     node_info["dbms_name"] = db_name
+#                     node_info["table_name"] = tb_name
+#                     node_info["edge"] = policy
+#
+# -----------------------------------------------------------------------------------
+def get_table_with_selected_nodes(user_name, policy_keys, add_dbms_name, add_table_name):
+    selected_nodes = get_selected_nodes(user_name)
+    table_info = []
+    for node_info in selected_nodes:
+        node_info = []
+        policy = node_info[2]
+        for key in policy_keys:
+            if key in policy:
+                value = policy[key]
+            else:
+                value = None
+            node_info.append(value)         # Add the value from the policy
+        if add_dbms_name:
+            node_info.append(node_info[0])
+        if add_table_name:
+            node_info.append(node_info[1])
+        table_info.append(node_info)
+    return table_info
+# -----------------------------------------------------------------------------------
+# Add a node to the selected nodes list.
 # -----------------------------------------------------------------------------------
 def add_selected_node(user_name: str, policy_id: str, node_info:dict):
     active_state_[user_name]['reports']['edge_nodes'][policy_id] = node_info

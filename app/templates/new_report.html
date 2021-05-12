@@ -3,6 +3,12 @@
 {% extends "base_conf_report.html" %}
 
 {% block content %}
+   {% if selection %}
+        <!-- Add the usr path to the form (if provided)  -->
+        <form action="{{url_for('metadata')}}/{{selection}}" method="POST">
+    {% else %}
+        <form action="{{url_for('metadata')}}" method="POST">
+    {% endif %}
 
     <br>
 
@@ -11,6 +17,32 @@
         Name Panel:&nbsp
         <input type="text" id="title1" name="title2">
     </p>
+
+    {% for table in tables_list %}
+        <h3>{{ table.table_name }}</h3>
+        <table border="1">
+            <tr>    <!-- table row  -->
+                {% for col_name in table.column_names %}
+                    <td>{{col_name}}</td> <!-- table cell  -->
+                {% endfor %}
+                {% for extra_column in table.extr_col %}
+                    <td>{{extra_column[0]}}</td> <!-- extra cell name  -->
+                {% endfor %}
+            </tr>
+            {% for row in table.rows %}
+            <tr>
+                {% for col_val in row %}
+                    <td>{{ col_val }}</td>
+                {% endfor %}
+                {% for extra_column in table.extr_col %}
+                    <td><input type={{extra_column[1]}} name={{extra_column[0]}}.{{row[0]}}></td> <!-- extra cell name  -->
+                {% endfor %}
+            </tr>
+            {% endfor %}
+
+    </table>
+    {% endfor %}
+
 
 
     {{ super() }}
