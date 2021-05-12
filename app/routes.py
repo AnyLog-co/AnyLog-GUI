@@ -992,14 +992,12 @@ def new_report( selection = "" ):
     form_info = request.form
 
     if len(form_info):
+        tables_info = {}
         for entry in form_info:
 
-            dashboard = AnyLogDashboard()  # Create a new dasboard
-            path_stat.register_element(user_name, "new_dashboard", dashboard)
-
             # Make a list with the following entries:
-            # Name, Table Name, DBMS name
-            projection_list = []
+            # dbms name + Table Name + panel name + list of functions
+
             if entry[:6] == "table.":
                 table_info = entry[6:].split('.')   # List with DBMS name, Table name, function
                 dbms_name = table_info[0]
@@ -1007,29 +1005,35 @@ def new_report( selection = "" ):
                 panel_name = table_info[2]
                 function = table_info[3]
 
-                projection_list.append((panel_name, dbms_name, table_name))
+                # Test if entry exists - if so add the function
+                key = dbms_name + '.' + table_name
+                if key in tables_info:
+                    # add the function
+                    tables_info[key][3].append(function)
+                else:
+                    # add new entry
+                    tables_info[key] = (dbms_name, table_name, panel_name, [function])
 
-                # Add the projection list to each of the 2 default panels (Graph and Gauge)
-                dashboard.add_projection_list(panel_name, "graph", panel_name, dbms_name, table_name,
-                                                  [function], None, None)
+        dashboard = AnyLogDashboard()  # Create a new dasboard
+        for entry in tables_info.values():
+            # Add the projection list for each table
+            dashboard.add_projection_list(entry[2], "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
 
-            gui_view = get_gui_view()
-            platforms_tree = gui_view.get_base_info("visualization")
-            if not platforms_tree or not "Grafana" in platforms_tree:
-                flash('AnyLog: Missing Grafana definitions in config file', category='error')
-                return None
+        gui_view = get_gui_view()
+        platforms_tree = gui_view.get_base_info("visualization")
+        if not platforms_tree or not "Grafana" in platforms_tree:
+            flash('AnyLog: Missing Grafana definitions in config file', category='error')
+            return None
 
-            platform_info = copy.deepcopy(platforms_tree["Grafana"])
-            platform_info['base_report'] = "AnyLog_Base"
+        platform_info = copy.deepcopy(platforms_tree["Grafana"])
+        platform_info['base_report'] = "AnyLog_Base"
 
-            platform_info["dashboard"] = dashboard
+        platform_info["dashboard"] = dashboard
 
-            visualize.create_report("Grafana", **platform_info)
+        visualize.create_report("Grafana", **platform_info)
 
 
     return define_new_report(user_name, selection)
-
-
 
 # -----------------------------------------------------------------------------------
 # Define new report in the requested folder

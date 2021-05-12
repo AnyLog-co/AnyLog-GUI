@@ -39,7 +39,7 @@
                 {% endfor %}
                 {% for extra_column in table.extr_col %}
                     <!-- The selections:                       table.DBMS_NAME.TABLE_NAME.Name.       SELECTION  -->
-                    <td><input type={{extra_column[1]}} name="table.{{row[2]}}.{{row[3]}}.{{row[2]}}.{{extra_column[0]}}"></td>
+                    <td><input type={{extra_column[1]}} name="table.{{row[2]}}.{{row[3]}}.{{row[0]}}.{{extra_column[0]}}"></td>
                 {% endfor %}
             </tr>
             {% endfor %}
