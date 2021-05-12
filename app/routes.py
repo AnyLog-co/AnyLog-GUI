@@ -31,6 +31,8 @@ from app.entities import AnyLogItem
 from app.entities import AnyLogTable
 from app.entities import AnyLogDashboard
 from app.entities import get_functions      # Get the list of supported functions
+from app.entities import get_functions_names      # Get the list of supported functions
+
 from app.entities import AnyLogPanel
 
 from config import Config
@@ -987,16 +989,10 @@ def define_new_report(user_name, folder):
 
     default_dashboard = path_stat.get_element(user_name, 'default_dashboard')
 
-    functions_list = get_functions()
-
-    # Get the functions
-
-    panel_config = PanelConfig( "Functions", "functions", functions_list, ["min", "max", "avg"] )
-    dashboard_conf.add_panel(panel_config)
 
     # Get the Report Type - Graph or Gauge
     visualize_selected = ["Grapg", "Gauge"]
-    panel_config = PanelConfig( "Visualization", "visualize", ["Graph", "Gauge"], ["Graph"] )
+    panel_config = PanelConfig( "Select visualization", "visualize", ["Graph", "Gauge"], ["Graph"] )
     dashboard_conf.add_panel(panel_config)
 
     # Organize the report time selections as last selection
@@ -1023,14 +1019,18 @@ def define_new_report(user_name, folder):
     table_rows = path_stat.get_table_with_selected_nodes(user_name, ["name", "id"], True, True)
 
     tables_list = []
-    extra_columns = [('Select', 'checkbox')]
+    extra_columns = []
+    options = get_functions_names()
+    for option in options:
+        extra_columns.append( (option,'checkbox' ))
+
     al_table = AnyLogTable("Select report data", ["Name", "ID", "DBMS", "Table"], None, table_rows, extra_columns)
 
     tables_list.append(al_table)  # Add the children
 
+    select_info['title'] = "New Report"
     select_info['selection'] = folder
     select_info['tables_list'] = tables_list
-    select_info['submit'] = "View"
 
     select_info['dashboard'] = dashboard_conf
 

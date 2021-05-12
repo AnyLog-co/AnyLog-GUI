@@ -305,7 +305,12 @@ class AnyLogDashboard():
         err_msg = self.date_time.test_date_time_selection()
         return err_msg
 # -----------------------------------------------------------------------------------
-# Return the klist of supported functions
+# Return the list of supported functions
 # -----------------------------------------------------------------------------------
 def get_functions():
     return ["avg", "min", "max", "range", "count"]
+# -----------------------------------------------------------------------------------
+# Return the klist of supported functions
+# -----------------------------------------------------------------------------------
+def get_functions_names():
+    return ["Avg", "Min", "Max", "Range", "Count"]

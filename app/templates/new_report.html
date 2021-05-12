@@ -3,7 +3,7 @@
 {% extends "base_conf_report.html" %}
 
 {% block content %}
-   {% if selection %}
+    {% if selection %}
         <!-- Add the usr path to the form (if provided)  -->
         <form action="{{url_for('metadata')}}/{{selection}}" method="POST">
     {% else %}
@@ -14,12 +14,13 @@
 
     <p>
         <!-- get report name  -->
-        Name Panel:&nbsp
+        Name Report:&nbsp
         <input type="text" id="title1" name="title2">
     </p>
+    <hr>
 
     {% for table in tables_list %}
-        <h3>{{ table.table_name }}</h3>
+        {{ table.table_name }}
         <table border="1">
             <tr>    <!-- table row  -->
                 {% for col_name in table.column_names %}
@@ -42,7 +43,7 @@
 
     </table>
     {% endfor %}
-
+    <hr>
 
 
     {{ super() }}
