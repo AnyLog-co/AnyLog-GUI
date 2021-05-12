@@ -1020,6 +1020,19 @@ def define_new_report(user_name, folder):
 
     dashboard_conf.set_time(time_config)  # Apply time selections options to the report
 
+    table_rows = path_stat.get_table_with_selected_nodes(user_name, ["name", "id"], True, True)
+
+
+
+    tables_list = []
+    extra_columns = [('Select', 'checkbox')]
+    al_table = AnyLogTable("Select report data", ["Name", "ID", "DBMS", "Table"], None, table_rows, extra_columns)
+
+    tables_list.append(al_table)  # Add the children
+
+    select_info['selection'] = selection
+    select_info['tables_list'] = tables_list
+    select_info['submit'] = "View"
 
     select_info['dashboard'] = dashboard_conf
 
@@ -1350,9 +1363,10 @@ def tree( selection = "" ):
 
     # Make title from the path
     title = ""
-    parent_menu = select_info["parent_gui"]
-    for parent in parent_menu:
-        title += " [%s] " % parent[0]
+    if "parent_gui" in select_info:
+        parent_menu = select_info["parent_gui"]
+        for parent in parent_menu:
+            title += " [%s] " % parent[0]
     select_info['title'] = title
 
     reply = get_path_info(selection, select_info, None)

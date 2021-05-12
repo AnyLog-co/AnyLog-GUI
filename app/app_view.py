@@ -278,7 +278,7 @@ def load_json(file_name):
 # ------------------------------------------------------------------------
 def get_tree_entree( json_struct, attr_name):
 
-    if attr_name in json_struct:
+    if json_struct and attr_name in json_struct:
         value = json_struct[attr_name]
     else:
         value = None

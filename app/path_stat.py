@@ -213,6 +213,15 @@ def get_path_overview(user_name, level, parent_menu):
     return path_steps
 
 # -----------------------------------------------------------------------------------
+# Return the list of nodes that are candidate to a report
+# -----------------------------------------------------------------------------------
+def get_selected_nodes(user_name:str):
+    '''
+    Return the nodes that were selected by the user as an option to a report
+    '''
+    return active_state_[user_name]['reports']['edge_nodes']
+
+# -----------------------------------------------------------------------------------
 # Test if the policy is in the selected nodes
 # -----------------------------------------------------------------------------------
 def is_node_selected(user_name:str, policy_id:str):

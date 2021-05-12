@@ -43,7 +43,7 @@ class AnyLogTable(object):
     table_data - a list representing the rows whereas each entry is the list of the column values.
     extr_col - additional table columns like checkbox or button
                 A list of attr-val pairs: Col-Name + HTML Input type (https://www.w3schools.com/html/html_form_input_types.asp)
-                fir example: [('select','checkbox'), ('View','button')]
+                for example: [('select','checkbox'), ('View','button')]
     '''
     def __init__(self, table_name:str, column_names:list, column_keys:list, rows:list, extr_col:list):
         self.table_name = table_name
