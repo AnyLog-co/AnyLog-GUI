@@ -818,7 +818,7 @@ def policies_to_status_report( user_name, policies_list ):
 
     platform_info["dashboard"] = dashboard
 
-    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+    url_list, err_msg = visualize.new_report("Grafana", **platform_info)
     if err_msg:
         flash(err_msg, category='error')
         return None
@@ -984,13 +984,51 @@ def process_tree_form():
 @app.route('/new_report', methods = ['GET', 'POST'])
 @app.route('/new_report/<string:selection>', methods = ['GET', 'POST'])
 def new_report( selection = "" ):
+
     user_name =  get_user_by_session()
     if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
     form_info = request.form
-    
+
+    if len(form_info):
+        for entry in form_info:
+
+            dashboard = AnyLogDashboard()  # Create a new dasboard
+            path_stat.register_element(user_name, "new_dashboard", dashboard)
+
+            # Make a list with the following entries:
+            # Name, Table Name, DBMS name
+            projection_list = []
+            if entry[:6] == "table.":
+                table_info = entry[6:].split('.')   # List with DBMS name, Table name, function
+                dbms_name = table_info[0]
+                table_name = table_info[1]
+                panel_name = table_info[2]
+                function = table_info[3]
+
+                projection_list.append((panel_name, dbms_name, table_name))
+
+                # Add the projection list to each of the 2 default panels (Graph and Gauge)
+                dashboard.add_projection_list(panel_name, "graph", panel_name, dbms_name, table_name,
+                                                  [function], None, None)
+
+            gui_view = get_gui_view()
+            platforms_tree = gui_view.get_base_info("visualization")
+            if not platforms_tree or not "Grafana" in platforms_tree:
+                flash('AnyLog: Missing Grafana definitions in config file', category='error')
+                return None
+
+            platform_info = copy.deepcopy(platforms_tree["Grafana"])
+            platform_info['base_report'] = "AnyLog_Base"
+
+            platform_info["dashboard"] = dashboard
+
+            visualize.create_report("Grafana", **platform_info)
+
+
     return define_new_report(user_name, selection)
+
 
 
 # -----------------------------------------------------------------------------------
@@ -1665,7 +1703,7 @@ def status_view(selection, form_info,  policies):
     platform_info['from_date'] = "-2M"
     platform_info['to_date'] = "now"
 
-    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+    url_list, err_msg = visualize.new_report("Grafana", **platform_info)
 
     if err_msg:
         return err_msg

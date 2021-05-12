@@ -156,7 +156,7 @@ def get_panels(grafana_url:str, token:str, dashboard_name:str):
 # Provide status on the list of entries at platform_info["projection_list]
 # Example URL returned: http://127.0.0.1:3000/d/nfDMna9Gz/current_status?orgId=1&viewPanel=2&from=-2M&to=now
 # --------------------------------------------------------
-def status_report(**platform_info):
+def new_report(**platform_info):
 
     params_required = [
         ("url", str),
@@ -193,8 +193,17 @@ def status_report(**platform_info):
 
     panels_urls = get_panels_urls(grafana_url, platform_info['dashboard'], dashboard_info, dashboard_uid, "current_status")
 
-
     return [panels_urls, None]  # Return list of urls, one for each panel
+
+# -----------------------------------------------------------------------------------
+# Create a new Grafana report
+# -----------------------------------------------------------------------------------
+def create_report(**platform_info):
+
+    panels_urls, err_msg = new_report(**platform_info)
+
+    ret_val = not err_msg
+    return [ret_val, err_msg]
 
 # -----------------------------------------------------------------------------------
 # Deploy a report

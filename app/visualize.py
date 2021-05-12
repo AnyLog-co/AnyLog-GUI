@@ -80,18 +80,31 @@ def deploy_report(platform_name, **platform_info):
 
     return [url, error_msg]
 
+# --------------------------------------------------------
+# Create a new report
+# --------------------------------------------------------
+def create_report(platform_name, **platform_info):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+        ret_val = False
+    else:
+        ret_val, error_msg = connector.create_report(**platform_info)
+
+    return ret_val, error_msg
 
 # --------------------------------------------------------
 # Provide status on the list of entries at platform_info["projection_list]
 # --------------------------------------------------------
-def status_report(platform_name, **platform_info):
+def new_report(platform_name, **platform_info):
 
     connector = get_connector(platform_name)
     if not connector:
         error_msg = "%s not supported" % platform_name
         url_list = None
     else:
-        url_list, error_msg = connector.status_report(**platform_info)
+        url_list, error_msg = connector.new_report(**platform_info)
 
     return url_list, error_msg
 # --------------------------------------------------------
