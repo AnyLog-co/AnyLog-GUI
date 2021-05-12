@@ -1091,8 +1091,7 @@ def metadata( selection = "" ):
         if len(selected_list):
             # Add the selected (edge) nodes to a list of nodes
             add_selected_to_list(user_name, selected_list)
-
-
+            # Continue to show tree
 
     return metada_navigation(user_name, selection, location_key, form_selections)
 
