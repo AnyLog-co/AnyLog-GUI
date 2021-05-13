@@ -121,7 +121,8 @@ def get_reports(url:str, platform_info:dict, token:str, directory:str):
 def get_panels_urls(grafana_url, dashboard_selections, dashboard_info, dashboard_uid, dashboard_name):
 
     base_url = grafana_url.replace("localhost", "127.0.0.1")  # Otherwise Iframe does not works
-    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, dashboard_name)
+    url_name = dashboard_name.lower().replace(' ','-')
+    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, url_name)
 
     panels_list = []
     for panel in dashboard_info['dashboard']['panels']:
