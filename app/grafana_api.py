@@ -164,6 +164,9 @@ def new_report(**platform_info):
         ("base_report", str),
     ]
 
+    dashboard_defs = platform_info['dashboard']         # User/Form definitions of the report
+    dashboard_name = dashboard_defs.name
+
     err_msg = test_params(params_required, platform_info)
     if err_msg:
         return [None, err_msg]
@@ -171,27 +174,27 @@ def new_report(**platform_info):
     grafana_url = platform_info['url']
     token =  platform_info['token']
 
-    err_msg = get_init_dashboard(platform_info, "current_status")
+    err_msg = get_init_dashboard(platform_info, dashboard_name)
     if err_msg:
         return [None, err_msg]
 
     dashboard_uid = platform_info['dashboard_uid']
     new_dashboard = platform_info["new_dashboard"]
 
-    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, "current_status") # The Grafana dasboard requested or the base_report
+    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name) # The Grafana dasboard requested or the base_report
     if err_msg:
         return [None, err_msg]
 
-    is_modified, err_msg = create_dashboard(dashboard_info["dashboard"], "current_status", platform_info)
+    is_modified, err_msg = create_dashboard(dashboard_info["dashboard"], dashboard_name, platform_info)
 
     if err_msg:
         return [None, err_msg]
 
-    err_msg = add_update_dashboard(new_dashboard, is_modified, platform_info, "current_status", dashboard_info)
+    err_msg = add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_name, dashboard_info)
     if err_msg:
         return [None, err_msg]
 
-    panels_urls = get_panels_urls(grafana_url, platform_info['dashboard'], dashboard_info, dashboard_uid, "current_status")
+    panels_urls = get_panels_urls(grafana_url, dashboard_defs, dashboard_info, dashboard_uid, dashboard_name)
 
     return [panels_urls, None]  # Return list of urls, one for each panel
 

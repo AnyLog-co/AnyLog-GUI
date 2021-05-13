@@ -162,6 +162,8 @@ class AnyLogDashboard():
         self.default_functions = {}
         self.reset()
 
+    def set_name(self, dashboard_name):
+        self.name = dashboard_name
     def reset_panels(self):
         '''
         Remove previously defined panels
@@ -175,6 +177,7 @@ class AnyLogDashboard():
         self.panels = []        # List of panels
         self.default_functions = {}
         self.date_time.reset()
+        self.name = None
 
 
     def get_panels_count(self):
@@ -218,6 +221,7 @@ class AnyLogDashboard():
     # -----------------------------------------------------------------------------------
     def set_default(self):
 
+        self.name = "Current Status"
         self.default_functions["graph" ] = ["min","max","avg"]
         self.default_functions["gauge"] = ["min","max","avg"]
 

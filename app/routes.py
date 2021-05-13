@@ -1018,6 +1018,8 @@ def new_report( selection = "" ):
                 else:
                     # add new entry
                     tables_info[key] = (dbms_name, table_name, panel_name, [function])
+            elif entry == 'report_name':
+                dashboard.set_name(form_info[entry])
 
 
         for entry in tables_info.values():
