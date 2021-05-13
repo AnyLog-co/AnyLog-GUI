@@ -1001,7 +1001,7 @@ def new_report( selection = "" ):
 
             if entry[:5] == "date_":
                 # Set the date- time selections
-                dashboard.set_date_time(key[5:], form_info[entry])  # Set date start, date end, date range
+                dashboard.set_date_time(entry[5:], form_info[entry])  # Set date start, date end, date range
 
             elif entry[:6] == "table.":
                 table_info = entry[6:].split('.')   # List with DBMS name, Table name, function
@@ -1021,7 +1021,6 @@ def new_report( selection = "" ):
             elif entry == 'report_name':
                 dashboard.set_name(form_info[entry])
 
-
         for entry in tables_info.values():
             # Add the projection list for each table
             dashboard.add_projection_list(entry[2], "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
@@ -1030,18 +1029,19 @@ def new_report( selection = "" ):
         platforms_tree = gui_view.get_base_info("visualization")
         if not platforms_tree or not "Grafana" in platforms_tree:
             flash('AnyLog: Missing Grafana definitions in config file', category='error')
-            return None
+            return redirect(url_for('new_report', selection=selection))
 
         platform_info = copy.deepcopy(platforms_tree["Grafana"])
         platform_info['base_report'] = "AnyLog_Base"
 
         platform_info["dashboard"] = dashboard
 
-        visualize.create_report("Grafana", **platform_info)
-
+        ret_val, err_msg = visualize.create_report("Grafana", **platform_info)
+        if not ret_val:
+            flash(err_msg, category='error')
+            return redirect(url_for('new_report', selection=selection))
 
     return define_new_report(user_name, selection)
-
 # -----------------------------------------------------------------------------------
 # Define new report in the requested folder
 # -----------------------------------------------------------------------------------

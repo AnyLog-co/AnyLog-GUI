@@ -167,6 +167,10 @@ def new_report(**platform_info):
     dashboard_defs = platform_info['dashboard']         # User/Form definitions of the report
     dashboard_name = dashboard_defs.name
 
+    if not dashboard_name:
+        err_msg = "Grafana API: Missing report name"
+        return [None, err_msg]
+
     err_msg = test_params(params_required, platform_info)
     if err_msg:
         return [None, err_msg]
@@ -458,7 +462,7 @@ def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard)
         "Accept": "application/json"
     }
     new_dashboard_data = {
-    "folderId": 0,
+    "folderId": 0,          # https://grafana.com/docs/grafana/latest/http_api/dashboard/
     "overwrite": False
     }
 
