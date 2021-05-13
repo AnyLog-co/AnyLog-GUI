@@ -1287,15 +1287,23 @@ def metada_navigation(user_name, location_key, form_selections):
                     if reply:
                         # Add children to tree
                         gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
-                        if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
-                            # Push The key to pull dbms name and table name from the policy
-                            dbms_name = gui_sub_tree["dbms_name"]
-                            table_name = gui_sub_tree["table_name"]
-                        else:
-                            dbms_name = None
-                            table_name = None
 
-                        current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
+                        if "type" in gui_sub_tree and gui_sub_tree["type"] == "node":
+                            # Monitor a node
+                            current_node.add_option_children(gui_sub_tree, location_key)
+
+
+                        else:
+                                # Manage data
+                            if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+                                # Push The key to pull dbms name and table name from the policy
+                                dbms_name = gui_sub_tree["dbms_name"]
+                                table_name = gui_sub_tree["table_name"]
+                            else:
+                                dbms_name = None
+                                table_name = None
+
+                            current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
 
                 else:
 
@@ -1543,7 +1551,7 @@ def get_path_info(selection, select_info, current_node):
     else:
         # The table info is pulled from the source JSON policy
         cmd_list = al_command.split(' ', 3)
-        if len(cmd_list) == 4 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
+        if len(cmd_list) >= 3 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
             policy_type = cmd_list[2]
         else:
             policy_type = None
