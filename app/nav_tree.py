@@ -76,11 +76,13 @@ class TreeNode():
         '''
         return self.with_children
 
-    def get_network_cmd(self):
+
+    def is_network_cmd(self):
         '''
-        Return the command associated with the node
+        Return True for a network command node (a sibling of Monitor in the tree)
         '''
         return self.command
+
 
     # -----------------------------------------------------------------------------------
     # Indicate that when a page is loaded - set the scroll location on this node

@@ -1259,6 +1259,10 @@ def metada_navigation(user_name, location_key, form_selections):
             # Get the policy by the ID (or remove if the policy was retrieved)
             add_policy(current_node, form_selections["policy_id"])
 
+        elif current_node.is_network_cmd():
+            # Execute the network command
+            add_command_reply(current_node)
+
         else:
 
             if current_node.is_with_children():
@@ -1297,6 +1301,11 @@ def metada_navigation(user_name, location_key, form_selections):
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
+# -----------------------------------------------------------------------------------
+# Add reply from executing a command
+# -----------------------------------------------------------------------------------
+def add_command_reply(current_node):
+    pass
 # -----------------------------------------------------------------------------------
 # Add policy to the GUI
 # -----------------------------------------------------------------------------------
