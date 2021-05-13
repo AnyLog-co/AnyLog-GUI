@@ -126,15 +126,8 @@ def index():
     if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    select_info = get_select_menu()
+    return  redirect(url_for('metadata'))
 
-    gui_view = path_stat.get_element(user_name, "gui_view")
-    map_url = gui_view.get_base_info("map")
-    select_info['map_url'] = map_url
-
-    select_info['title'] = "AnyLog Network"
-    
-    return render_template('main.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Login
 # -----------------------------------------------------------------------------------
