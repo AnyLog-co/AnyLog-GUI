@@ -4,6 +4,12 @@
 
 {% block content %}
     <!-- process: title (for tab) + user_name + user_gui + parent_gui + child_gui + flush messages (errors) -->
+
+    <p>
+    {% if map_url %}
+        <iframe src="{{ map_url }}" width="450" height="400" frameborder="10" align="right" class="nodes-map"></iframe>
+    {% endif %}
+
     {% if user_gui %}
         <h3>Reports</h3>
         <p>
@@ -14,7 +20,7 @@
         {%- endfor -%}
         </p>
     {% endif %}
-
+    </p>
     <hr>
     <h3><br><a href="{{ url_for('metadata') }}">Views & Reports</a></h3>
 

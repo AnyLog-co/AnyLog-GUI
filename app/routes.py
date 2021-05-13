@@ -122,11 +122,16 @@ def is_reports(user_name, selection):
 @app.route('/index')
 def index():
 
-    if not get_user_by_session():
-        return redirect(('/login'))        # start with Login
-
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    map_url = gui_view.get_base_info("map")
+    select_info['map_url'] = map_url
+
     select_info['title'] = "AnyLog Network"
     
     return render_template('main.html', **select_info)
@@ -1398,12 +1403,19 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
         # Place a flag to indicate the position n the page  when page is loaded
         # Reset is done in nav_tree.setup_print_list
         current_node.set_scroll_location()
+    else:
+        # First page - nothing selected - show the Network Map
+        gui_view = path_stat.get_element(user_name, "gui_view")
+        map_url = gui_view.get_base_info("map")
+        if map_url:
+            select_info['map_url'] = map_url
 
     select_info['selection'] = location_key
 
     select_info['nodes_list'] = print_list
 
     select_info['title'] = "AnyLog Network"
+
 
     return render_template('metadata.html', **select_info)
 

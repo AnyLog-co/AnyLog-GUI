@@ -14,6 +14,11 @@
 <form action="{{url_for('metadata')}}" method="POST">
 {% endif %}
 
+    {% if map_url %}
+        <iframe src="{{ map_url }}" width="450" height="400" frameborder="10" align="right" class="nodes-map"></iframe>
+    {% endif %}
+
+
 <ul class="tree">
 
     {% for node in nodes_list %}
@@ -101,12 +106,14 @@
     {% endfor %}
 
     <br>
-    <hr>
+
      <!-- If edge nodes that can be selected to a report -->
+        {% if location_key %}
+            <hr>
         <input type="submit" value="Configure" name="Configure">    <!-- Configure report -->
         <input type="submit" value="Select" name="Select">    <!-- Selected edge to a new report -->
         <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
-
+        {% endif %}
 </ul>
 
 <!-- Change scroll location from the top of the screen to last node touched-->

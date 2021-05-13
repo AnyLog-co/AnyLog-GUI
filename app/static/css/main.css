@@ -8,6 +8,10 @@
 
 }
 
+.nodes-map{
+    margin-right: 40px;
+}
+
 table, th, td {
 	border: 1px black solid;
 }

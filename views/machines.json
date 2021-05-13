@@ -2,7 +2,7 @@
     "gui" : {
             "name" : "Orics",
             "query_node" : "http://10.0.0.78:7849",
-            "map"       : "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s",
+            "map"       : "http://127.0.0.1:3000/d/3WSvEorGk/map?viewPanel=2&orgId=1",
             "visualization" : {
                                 "Grafana" : { "url" : "http://localhost:3000",
                                               "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
