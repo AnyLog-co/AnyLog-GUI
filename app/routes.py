@@ -1252,25 +1252,14 @@ def metada_navigation(user_name, location_key, form_selections):
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
 
         gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+        select_info = get_select_menu(selection=gui_key)
 
         if form_selections["get_policy"]:
             # User requested ti VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
+            add_policy(current_node, form_selections["policy_id"])
 
-            if current_node.is_option_node():
-                # move to the data node
-                policy_node = current_node.get_parent()
-            else:
-                policy_node = current_node
-            if policy_node.is_with_policy():
-                policy_node.add_policy(None)
-            else:
-                retrieved_policy = get_json_policy(form_selections["policy_id"])
-                if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
-                    policy_node.add_policy(retrieved_policy[0] )
-            select_info = get_select_menu(selection=gui_key)
         else:
-            select_info = get_select_menu(selection=gui_key)
 
             if current_node.is_with_children():
                 current_node.reset_children()  # Delete children from older navigation
@@ -1282,28 +1271,24 @@ def metada_navigation(user_name, location_key, form_selections):
                 root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
                 if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
+
                     # Executes a query to select data from the network and set the data as as the children
                     reply = get_path_info(gui_key, select_info, current_node)
+
                     if reply:
                         # Add children to tree
                         gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
 
-                        if "type" in gui_sub_tree and gui_sub_tree["type"] == "node":
-                            # Monitor a node
-                            current_node.add_option_children(gui_sub_tree, location_key)
-
-
+                        # Manage data
+                        if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
+                            # Push The key to pull dbms name and table name from the policy
+                            dbms_name = gui_sub_tree["dbms_name"]
+                            table_name = gui_sub_tree["table_name"]
                         else:
-                                # Manage data
-                            if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
-                                # Push The key to pull dbms name and table name from the policy
-                                dbms_name = gui_sub_tree["dbms_name"]
-                                table_name = gui_sub_tree["table_name"]
-                            else:
-                                dbms_name = None
-                                table_name = None
+                            dbms_name = None
+                            table_name = None
 
-                            current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
+                        current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
 
                 else:
 
@@ -1311,6 +1296,24 @@ def metada_navigation(user_name, location_key, form_selections):
 
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
+
+# -----------------------------------------------------------------------------------
+# Add policy to the GUI
+# -----------------------------------------------------------------------------------
+def add_policy(current_node, policy_id):
+    if current_node.is_option_node():
+        # move to the data node
+        policy_node = current_node.get_parent()
+    else:
+        policy_node = current_node
+    if policy_node.is_with_policy():
+        # Policy exists with this node
+        policy_node.add_policy(None)
+    else:
+        # Read and add new policy
+        retrieved_policy = get_json_policy(policy_id)
+        if retrieved_policy and isinstance(retrieved_policy, list) and len(retrieved_policy) == 1:
+            policy_node.add_policy(retrieved_policy[0])
 
 
 # -----------------------------------------------------------------------------------
