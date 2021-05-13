@@ -125,6 +125,7 @@ def index():
     if not get_user_by_session():
         return redirect(('/login'))        # start with Login
 
+
     select_info = get_select_menu()
     select_info['title'] = "AnyLog Network"
     
