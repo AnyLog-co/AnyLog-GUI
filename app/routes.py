@@ -1370,10 +1370,15 @@ def navigate_in_reports(user_name, location_key):
 
             return render_template('output_frame.html', **select_info)
 
+    select_info = get_select_menu(selection=location_key)
+
     selection_list = location_key.replace('+', '@').split('@')
 
     # Navigate in the tree to find location of Node
     current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
+    if current_node.is_with_children():
+        current_node.reset_children()  # Delete children from older navigation
+        return call_navigation_page(user_name, select_info, location_key, current_node)
 
     gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
 
@@ -1421,8 +1426,6 @@ def navigate_in_reports(user_name, location_key):
             'url' : url[0]
         }
         current_node.add_child( **params )
-
-    select_info = get_select_menu(selection=location_key)
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
