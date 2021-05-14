@@ -1261,7 +1261,12 @@ def metada_navigation(user_name, location_key, form_selections):
 
         elif current_node.is_network_cmd():
             # Execute the network command
-            add_command_reply(current_node)
+            root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
+            if gui_sub_tree and isinstance(gui_sub_tree, dict) and "command" in gui_sub_tree:
+                add_command_reply(current_node, gui_sub_tree['command'])
+            else:
+                flash("AnyLog: Missing command in Monitor Nodes", category='error')
+                return redirect(url_for('metadata', selection=location_key))
 
         else:
 
@@ -1304,8 +1309,24 @@ def metada_navigation(user_name, location_key, form_selections):
 # -----------------------------------------------------------------------------------
 # Add reply from executing a command
 # -----------------------------------------------------------------------------------
-def add_command_reply(current_node):
-    pass
+def add_command_reply(current_node, al_cmd):
+    # Get from the parent the IP and port and issue the query
+    parent_node = current_node.get_parent()
+    parent_details = parent_node.details
+    if parent_details:
+        if "ip" in parent_details.keys and "rest_port" in parent_details.keys:
+            index = parent_details.keys.index("ip")
+            ip = parent_details.values[index]
+            index = parent_details.keys.index("rest_port")
+            port = parent_details.values[index]
+            target_node = "http://%s:%s" % (ip, str(port))
+
+            data, error_msg = exec_al_cmd( al_cmd, dest_node = target_node)
+            if not error_msg:
+                current_node.add_policy(data[0])
+
+
+    return error_msg
 # -----------------------------------------------------------------------------------
 # Add policy to the GUI
 # -----------------------------------------------------------------------------------
@@ -1808,14 +1829,17 @@ def path_selection(parent_menu, policy_id, data):
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
 # -----------------------------------------------------------------------------------
-def exec_al_cmd( al_cmd ):
+def exec_al_cmd( al_cmd, dest_node = None):
     '''
     Run the query against the Query Node
     '''
 
     user_name = session["username"]
 
-    target_node = path_stat.get_element(user_name, "target_node")
+    if dest_node:
+        target_node = dest_node
+    else:
+        target_node = path_stat.get_element(user_name, "target_node")
 
     al_headers = {
         'User-Agent' : 'AnyLog/1.23',
