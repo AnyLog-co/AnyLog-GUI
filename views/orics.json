@@ -5,7 +5,7 @@
 	    "map": "http://45.79.152.190:3000/d/1Cdj-hCGz/network-summary?orgId=1&from=1620932482591&to=1620954082595&viewPanel=2",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://45.79.152.190:3000",
-                                              "token" : "eyJrIjoiblFwZ0NoS21XVXlrWjRmMkN0SjdzMGhVSVpadDFGWnQiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==",
+                                              "token" : "eyJrIjoib0pmQXZ1dDJQR3BoUk9qTzZ3UTJSbXRJV0NvNUkzQ0EiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 },
