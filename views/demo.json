@@ -1,21 +1,13 @@
 {
     "gui" : {
             "name" : "Demo",
-	    "map": "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s&from=1620869946843&to=1620956346843&viewPanel=2", 
+	        "map": "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?viewPanel=2&orgId=1&refresh=30s",
             "query_node" : "http://23.239.12.151:2049",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://23.239.12.151:3000",
                                               "token" : "eyJrIjoiMmNzM1lHUjh3cXBNWDRXMVZFelp3MmVxb1FQS1BVZmkiLCJuIjoiYW55bG9nLWFkbWluLWd1aSIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
-                                },
-                                "Power BI" : { "url" : "http://23.239.12.151:3000",
-                                    "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
-                                    "base"  :  ["Base-Report"]
-                                },
-                                "Excel" : { "url" : "http://23.239.12.151:3000",
-                                    "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
-                                    "base"  :  ["Base-Report"]
                                 }
                             },
             "url_pages"  : [
@@ -50,8 +42,8 @@
                         "Operators" : {
                             "type" : "node",
                             "query" : "blockchain get operator",
-                            "table_title" : ["ID", "Name", "Cluster"],
-                            "json_keys" : ["id", "name", "cluster"],
+                            "table_title" : ["ID", "Name", "Cluster", "IP", "Port"],
+                            "json_keys" : ["id", "name", "cluster", "ip", "rest_port"],
                             "ip" : "[operator][ip]",
                             "port" : "[operator][port]",
                             "children" : {
