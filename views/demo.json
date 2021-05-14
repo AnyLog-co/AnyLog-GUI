@@ -1,10 +1,11 @@
 {
     "gui" : {
-            "name" : "Orics",
+            "name" : "AnyLog Demo",
+	    "map": "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s&from=1620869946843&to=1620956346843&viewPanel=2", 
             "query_node" : "http://23.239.12.151:2049",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://23.239.12.151:3000",
-                                              "token" : "eyJrIjoiZzFTbTF4Tm5XNEM2ZDc1Z3oxUWxJNzdCdk9NRVl5Y3QiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==",
+                                              "token" : "eyJrIjoiMmNzM1lHUjh3cXBNWDRXMVZFelp3MmVxb1FQS1BVZmkiLCJuIjoiYW55bG9nLWFkbWluLWd1aSIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 },
@@ -19,26 +20,18 @@
                             },
             "url_pages"  : [
                 ["Company", "https://anylog.co/"],
-                ["Map", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"],
+                ["Map", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s&from=1620869946843&to=1620956346843&viewPanel=2"],
                 ["Dashboards", "http://23.239.12.151:3000/dashboards"],
                 ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"],
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
 		"Lit San Leandro": {
-                    "query" : "blockchain get table where dbms=litsanleandro bring.unique.json [table][id] [table][name] [table][dbms] separator = ,",
-                    "table_title" : ["ID", "Name", "DB Name"],
-                    "json_keys" : ["id", "name", "dbms"],
-		    "children": {
-		        "Device": {
-			    "query": "blockchain get device where company = 2fd47b63bb9993967de7ca2cac60d557", 
-			    "table_title": ["ID", "Name"],
-			    "json_keys": ["id", "name"],
-			    "dbms_name": "litsanleandro",
-			    "table_name": "[table][name]",
-			    "condition": "device_name='[device][name]'" 
-		        }
-		    }
+		    "query": "blockchain get table where dbms = litsanleandro bring.unique.json [table][id] [table][name] separator= ,", 
+                    "table_title" : ["ID", "Name"],
+                    "json_keys" : ["id", "name"],
+		    "dbms_name": "litsanleandro",
+		    "table_name": "[table][name]"     
                 },
                 "IOTech": {
                     "query" : "blockchain get table where dbms=edgex bring.unique.json [table][id] [table][name] separator = ,",
@@ -48,6 +41,39 @@
                     "table_name" : "[table][name]"
                 }
 	    },
+            "Reports" : {
+                "type" : "reports",
+                "organization" : "folders",
+                "visualization" : "Grafana"
+            },
+            "Monitor": {
+                "children" : {
+                    "Operators" : {
+                        "type" : "node",
+                        "query" : "blockchain get operator",
+                        "table_title" : ["ID", "Name", "Cluster"],
+                        "json_keys" : ["id", "name", "cluster"],
+                        "ip" : "[operator][ip]",
+                        "port" : "[operator][port]",
+                        "children" : {
+                            "Node Status" :  { "command" : "get status" },
+                            "Load Status" :     { "command" : "get operator" },
+                            "Utilization" :    { "command" : "get get node info cpu_percent" }
+                        }
+                    },
+                    "Clusters" : {
+                        "query" : "blockchain get cluster",
+                        "table_title" : ["ID", "Name", "Cluster"],
+                        "json_keys" : ["id", "name", "cluster"]
+                    },
+                    "Sensors" : {
+                        "query" : "blockchain get sensor",
+                        "table_title" : ["ID", "Name", "Cluster"],
+                        "json_keys" : ["id", "name", "cluster"]
+                    }
+                }
+            },
+
             "policies" : [
                 {
                     "name" : "Authentication",
