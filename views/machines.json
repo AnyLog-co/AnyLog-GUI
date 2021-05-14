@@ -94,15 +94,13 @@
                       "Operators" : {
                           "type" : "node",
                           "query" : "blockchain get operator",
-                          "table_title" : ["ID", "Name", "Cluster"],
-                          "json_keys" : ["id", "name", "cluster"],
-                          "ip" : "[operator][ip]",
-                          "port" : "[operator][port]",
+                          "table_title" : ["ID", "Name", "Cluster", "IP", "Port"],
+                          "json_keys" : ["id", "name", "cluster", "ip", "rest_port"],
                           "children" : {
 
                               "Node Status" :  { "command" : "get status" },
                               "Load Status" :     { "command" : "get operator" },
-                              "Utilization" :    { "command" : "get get node info cpu_percent" }
+                              "Utilization" :    { "command" : "get node info cpu_percent" }
                           }
                       },
                       "Clusters" : {

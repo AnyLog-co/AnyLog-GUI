@@ -1261,7 +1261,19 @@ def metada_navigation(user_name, location_key, form_selections):
 
         elif current_node.is_network_cmd():
             # Execute the network command
-            add_command_reply(current_node)
+            root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
+            if gui_sub_tree and isinstance(gui_sub_tree, dict) and "command" in gui_sub_tree:
+                err_msg = add_command_reply(current_node, gui_sub_tree['command'])
+                if err_msg:
+                    flash("AnyLog: Network command failed: %s" % err_msg,  category='error')
+                    current_node.parent.reset_children()
+                    location_key = set_location_on_parent(location_key)
+                    return redirect(url_for('metadata', selection=location_key))
+            else:
+                flash("AnyLog: Missing command in Monitor Nodes", category='error')
+                current_node.parent.reset_children()
+                location_key = set_location_on_parent(location_key)
+                return redirect(url_for('metadata', selection=location_key))
 
         else:
 
@@ -1301,11 +1313,38 @@ def metada_navigation(user_name, location_key, form_selections):
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
+
+def set_location_on_parent( location_key ):
+
+    index = location_key.rfind('@')
+    if index != -1:
+        new_key = location_key[:index]
+    else:
+        new_key = ""
+    return new_key
+
 # -----------------------------------------------------------------------------------
 # Add reply from executing a command
 # -----------------------------------------------------------------------------------
-def add_command_reply(current_node):
-    pass
+def add_command_reply(current_node, al_cmd):
+    # Get from the parent the IP and port and issue the query
+    parent_node = current_node.get_parent()
+    parent_details = parent_node.details
+    if parent_details:
+        if "ip" in parent_details.keys and "rest_port" in parent_details.keys:
+            index = parent_details.keys.index("ip")
+            ip = parent_details.values[index]
+            index = parent_details.keys.index("rest_port")
+            port = parent_details.values[index]
+            target_node = "http://%s:%s" % (ip, str(port))
+
+            data, error_msg = exec_al_cmd( al_cmd, dest_node = target_node)
+            if not error_msg:
+                json_struct, error_msg = json_api.string_to_json(data)
+                if json_struct:
+                    current_node.add_policy(json_struct)
+
+    return error_msg
 # -----------------------------------------------------------------------------------
 # Add policy to the GUI
 # -----------------------------------------------------------------------------------
@@ -1345,10 +1384,15 @@ def navigate_in_reports(user_name, location_key):
 
             return render_template('output_frame.html', **select_info)
 
+    select_info = get_select_menu(selection=location_key)
+
     selection_list = location_key.replace('+', '@').split('@')
 
     # Navigate in the tree to find location of Node
     current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
+    if current_node.is_with_children():
+        current_node.reset_children()  # Delete children from older navigation
+        return call_navigation_page(user_name, select_info, location_key, current_node)
 
     gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
 
@@ -1396,8 +1440,6 @@ def navigate_in_reports(user_name, location_key):
             'url' : url[0]
         }
         current_node.add_child( **params )
-
-    select_info = get_select_menu(selection=location_key)
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
@@ -1808,14 +1850,17 @@ def path_selection(parent_menu, policy_id, data):
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
 # -----------------------------------------------------------------------------------
-def exec_al_cmd( al_cmd ):
+def exec_al_cmd( al_cmd, dest_node = None):
     '''
     Run the query against the Query Node
     '''
 
     user_name = session["username"]
 
-    target_node = path_stat.get_element(user_name, "target_node")
+    if dest_node:
+        target_node = dest_node
+    else:
+        target_node = path_stat.get_element(user_name, "target_node")
 
     al_headers = {
         'User-Agent' : 'AnyLog/1.23',
@@ -1830,7 +1875,7 @@ def exec_al_cmd( al_cmd ):
         data = None
         if not error_msg:
             # No data reply
-            error_msg = "AnyLog: REST command %s returned error code %u" % (al_cmd, response.status_code)
+            error_msg = "AnyLog: REST command \"%s\" returned error code %u" % (al_cmd, response.status_code)
 
     return [data, error_msg]
 
