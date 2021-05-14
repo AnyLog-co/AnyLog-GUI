@@ -38,7 +38,7 @@ class TreeNode():
         self.children = []
         self.with_children = False
         self.details = None
-        self.policy = None
+        self.json_struct = None
         self.json_key = None
         self.json_value = None          # shows value if the value is not a list or a dictionary
         self.dbms_name = None           # DBMS name or the key to pull the dbms name from the policy
@@ -255,12 +255,12 @@ class TreeNode():
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------
     def add_policy( self, retrieved_policy ):
-       self.policy = retrieved_policy
+       self.json_struct = retrieved_policy
     # -----------------------------------------------------------------------------------
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------
     def is_with_policy( self ):
-       return self.policy != None
+       return self.json_struct != None
 
     # -----------------------------------------------------------------------------------
     # Set Policy value
@@ -318,7 +318,7 @@ def setup_print_list( current_node, print_list):
             child.scroll_location = False       # Reset the scroll location
             print_list.append(child)
             if child.is_with_policy():
-                setup_print_policy( child.policy, print_list )
+                setup_print_json( child.json_struct, print_list )
             if child.with_children:
                 setup_print_list(child, print_list)
         print_list.append(None)     # All children onsidered - this is a flag to issue </li> and </ul>
@@ -327,7 +327,7 @@ def setup_print_list( current_node, print_list):
 # -----------------------------------------------------------------------------------
 # Setup a policy in the print_list structure
 # -----------------------------------------------------------------------------------
-def setup_print_policy( policy, print_list):
+def setup_print_json( policy, print_list):
 
     if len(policy):
         counter = 0
@@ -344,11 +344,11 @@ def setup_print_policy( policy, print_list):
             print_list.append(new_node)
 
             if isinstance(json_value,dict):
-                setup_print_policy(json_value, print_list)
+                setup_print_json(json_value, print_list)
             elif isinstance(json_value, list):
                 for list_entry in json_value:
                     if isinstance(list_entry,dict) or isinstance(list_entry,list):
-                        setup_print_policy(json_value, print_list)
+                        setup_print_json(json_value, print_list)
                     else:
                         new_node.set_json_value(json_value)
             else:
