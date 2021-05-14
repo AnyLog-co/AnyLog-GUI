@@ -1263,7 +1263,10 @@ def metada_navigation(user_name, location_key, form_selections):
             # Execute the network command
             root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
             if gui_sub_tree and isinstance(gui_sub_tree, dict) and "command" in gui_sub_tree:
-                add_command_reply(current_node, gui_sub_tree['command'])
+                err_msg = add_command_reply(current_node, gui_sub_tree['command'])
+                if err_msg:
+                    flash("AnyLog: Network command failed: %s" % err_msg,  category='error')
+                    return redirect(url_for('metadata', selection=location_key))
             else:
                 flash("AnyLog: Missing command in Monitor Nodes", category='error')
                 return redirect(url_for('metadata', selection=location_key))
@@ -1323,8 +1326,9 @@ def add_command_reply(current_node, al_cmd):
 
             data, error_msg = exec_al_cmd( al_cmd, dest_node = target_node)
             if not error_msg:
-                current_node.add_policy(data[0])
-
+                json_struct, error_msg = json_api.string_to_json(data)
+                if json_struct:
+                    current_node.add_policy(json_struct)
 
     return error_msg
 # -----------------------------------------------------------------------------------
