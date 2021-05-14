@@ -50,6 +50,7 @@ def set_new_user(user_name):
 
     active_state_[user_name] = { 
         "reports" : {
+                        "edge_nodes" : {}         # a dictionary of edge nodes selected in the tree navigation
                     },
         "selected"  :   "My_Report",
         "path" :    [],         # navigation as f(user)
@@ -210,6 +211,55 @@ def get_path_overview(user_name, level, parent_menu):
                     path_steps.append( (step_name, step_title, step_keys, [columns_val]) )
 
     return path_steps
+
+# -----------------------------------------------------------------------------------
+# Return the list of nodes that are candidate to a report
+# -----------------------------------------------------------------------------------
+def get_selected_nodes(user_name:str):
+    '''
+    Return the nodes that were selected by the user as an option to a report
+    '''
+    return active_state_[user_name]['reports']['edge_nodes']
+
+# -----------------------------------------------------------------------------------
+# Test if the policy is in the selected nodes
+# -----------------------------------------------------------------------------------
+def is_node_selected(user_name:str, policy_id:str):
+    return policy_id in active_state_[user_name]['reports']['edge_nodes']
+
+# -----------------------------------------------------------------------------------
+#
+# Return a structure representing each node
+# Node info includes:
+#                     node_info["dbms_name"] = db_name
+#                     node_info["table_name"] = tb_name
+#                     node_info["policy"] = policy
+#
+# -----------------------------------------------------------------------------------
+def get_table_with_selected_nodes(user_name, policy_keys, add_dbms_name, add_table_name):
+    selected_nodes = get_selected_nodes(user_name)
+    table_info = []
+    for node_info in selected_nodes.values():
+        row_info = []
+        policy = node_info['policy']
+        policy_type = get_policy_type(policy)
+        for key in policy_keys:
+            if key in policy[policy_type]:
+                value = policy[policy_type][key]
+            else:
+                value = None
+            row_info.append(value)         # Add the value from the policy
+        if add_dbms_name:
+            row_info.append(node_info["dbms_name"])
+        if add_table_name:
+            row_info.append(node_info["table_name"])
+        table_info.append(row_info)
+    return table_info
+# -----------------------------------------------------------------------------------
+# Add a node to the selected nodes list.
+# -----------------------------------------------------------------------------------
+def add_selected_node(user_name: str, policy_id: str, node_info:dict):
+    active_state_[user_name]['reports']['edge_nodes'][policy_id] = node_info
 
 # -----------------------------------------------------------------------------------
 # Reset or start a new state
@@ -598,7 +648,7 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
 
             edge_selected[policy_id]["dbms_name"] = db_name
             edge_selected[policy_id]["table_name"] = tb_name
-            edge_selected[policy_id]["edge"] = json_entry
+            edge_selected[policy_id]["policy"] = json_entry
 
 # -------------------------------------------------------------------------
 # Get a dbms or a table name from the JSON structure

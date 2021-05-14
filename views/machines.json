@@ -2,7 +2,8 @@
     "gui" : {
             "name" : "Orics",
             "query_node" : "http://10.0.0.78:7849",
-            "visualization" : { 
+            "map"       : "http://127.0.0.1:3000/d/3WSvEorGk/map?viewPanel=2&orgId=1",
+            "visualization" : {
                                 "Grafana" : { "url" : "http://localhost:3000",
                                               "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
                                               "base"  :  ["Base-Report"],
@@ -80,8 +81,43 @@
 
                         
                         }
-                }    
-                
+                },
+                "Reports" :
+                {
+                    "type" : "reports",
+                    "organization" : "folders",
+                    "visualization" : "Grafana"
+                },
+
+                "Monitor"    : {
+                   "children" : {
+                      "Operators" : {
+                          "type" : "node",
+                          "query" : "blockchain get operator",
+                          "table_title" : ["ID", "Name", "Cluster"],
+                          "json_keys" : ["id", "name", "cluster"],
+                          "ip" : "[operator][ip]",
+                          "port" : "[operator][port]",
+                          "children" : {
+
+                              "Node Status" :  { "command" : "get status" },
+                              "Load Status" :     { "command" : "get operator" },
+                              "Utilization" :    { "command" : "get get node info cpu_percent" }
+                          }
+                      },
+                      "Clusters" : {
+                          "query" : "blockchain get cluster",
+                          "table_title" : ["ID", "Name", "Cluster"],
+                          "json_keys" : ["id", "name", "cluster"]
+                      },
+                     "Sensors" : {
+                          "query" : "blockchain get sensor",
+                          "table_title" : ["ID", "Name", "Cluster"],
+                          "json_keys" : ["id", "name", "cluster"]
+                      }
+                   }
+
+                }
             },
         
             

@@ -51,6 +51,20 @@ def test_connection( grafana_url:str, token:str ):
     return [ret_val, err_msg]
 
 # -----------------------------------------------------------------------------------
+# Give a list of parent folders - return the children
+# Grafana folders API - https://grafana.com/docs/grafana/latest/http_api/folder/
+# -----------------------------------------------------------------------------------
+def get_child_folders( url, token, parent_folders:list):
+
+
+    folders, err_msg = get_folders(url, token)
+
+    children = []
+
+    # Find the immediate children
+
+    return [children, err_msg]
+# -----------------------------------------------------------------------------------
 # Get the list of Dashboards (reports) for the given directory
 # For each dashboard - pull the panels
 # Return a list of all the panels per each dashboard
@@ -62,47 +76,53 @@ def get_reports(url:str, platform_info:dict, token:str, directory:str):
 
     directory_name = directory.lower()
 
+
     # Get the list of grafana folders
     folder_id = -1
     folders, err_msg = get_folders(url, token)
-    for entry in folders:
-        if "title" in entry and "id" in entry:
-            if entry["title"].lower() == directory_name :
-                folder_id = entry["id"]
-                break
 
-    if folder_id != -1:
+    if not err_msg:
 
-        dashboards, err_msg = get_dashboards(url, folder_id, token)
+        for entry in folders:
+            if "title" in entry and "id" in entry:
+                if entry["title"].lower() == directory_name :
+                    folder_id = entry["id"]
+                    break
 
-        panels = {}
-        if not err_msg:
-            for entry in dashboards:
-                # every entry is a report
-                if "type" in entry and entry["type"] == 'dash-db':
-                    # this is a dashboard entry
-                    if "title" in entry:
-                        # reports exists
-                        dashboard_name = entry['title']
-                        dashboard_id = entry["id"]
-                        dashboard_uid = entry["uid"]
-                        if "version" in entry:
-                            report_version = entry["version"]
-                        dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
-                        if dashboard_info:
-                            if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
-                                panels_urls = get_panels_urls(url, platform_info, dashboard_info, dashboard_uid, dashboard_name)
-                                panels[dashboard_name] = panels_urls
+        if folder_id != -1:
+
+            dashboards, err_msg = get_dashboards(url, folder_id, token)
+
+            panels = {}
+            if not err_msg:
+                for entry in dashboards:
+                    # every entry is a report
+                    if "type" in entry and entry["type"] == 'dash-db':
+                        # this is a dashboard entry
+                        if "title" in entry:
+                            # reports exists
+                            dashboard_name = entry['title']
+                            dashboard_id = entry["id"]
+                            dashboard_uid = entry["uid"]
+                            if "version" in entry:
+                                report_version = entry["version"]
+                            dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
+                            if dashboard_info:
+                                if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
+                                    panels_urls = get_panels_urls(url, platform_info, dashboard_info, dashboard_uid, dashboard_name)
+                                    panels[dashboard_name] = panels_urls
+    else:
+        panels = None
 
     return [panels, err_msg]
-
 # -----------------------------------------------------------------------------------
 # Get panels URLs of a particular dashboard - the urls are based on the dashboard url and the panel ID.
 # -----------------------------------------------------------------------------------
 def get_panels_urls(grafana_url, dashboard_selections, dashboard_info, dashboard_uid, dashboard_name):
 
     base_url = grafana_url.replace("localhost", "127.0.0.1")  # Otherwise Iframe does not works
-    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, dashboard_name)
+    url_name = dashboard_name.lower().replace(' ','-')
+    base_url = "%s/d/%s/%s" % (base_url, dashboard_uid, url_name)
 
     panels_list = []
     for panel in dashboard_info['dashboard']['panels']:
@@ -137,13 +157,20 @@ def get_panels(grafana_url:str, token:str, dashboard_name:str):
 # Provide status on the list of entries at platform_info["projection_list]
 # Example URL returned: http://127.0.0.1:3000/d/nfDMna9Gz/current_status?orgId=1&viewPanel=2&from=-2M&to=now
 # --------------------------------------------------------
-def status_report(**platform_info):
+def new_report(**platform_info):
 
     params_required = [
         ("url", str),
         ("token", str),
         ("base_report", str),
     ]
+
+    dashboard_defs = platform_info['dashboard']         # User/Form definitions of the report
+    dashboard_name = dashboard_defs.name
+
+    if not dashboard_name:
+        err_msg = "Grafana API: Missing report name"
+        return [None, err_msg]
 
     err_msg = test_params(params_required, platform_info)
     if err_msg:
@@ -152,30 +179,39 @@ def status_report(**platform_info):
     grafana_url = platform_info['url']
     token =  platform_info['token']
 
-    err_msg = get_init_dashboard(platform_info, "current_status")
+    err_msg = get_init_dashboard(platform_info, dashboard_name)
     if err_msg:
         return [None, err_msg]
 
     dashboard_uid = platform_info['dashboard_uid']
     new_dashboard = platform_info["new_dashboard"]
 
-    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, "current_status") # The Grafana dasboard requested or the base_report
+    dashboard_info, err_msg = get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name) # The Grafana dasboard requested or the base_report
     if err_msg:
         return [None, err_msg]
 
-    is_modified, err_msg = create_dashboard(dashboard_info["dashboard"], "current_status", platform_info)
+    is_modified, err_msg = create_dashboard(dashboard_info["dashboard"], dashboard_name, platform_info)
 
     if err_msg:
         return [None, err_msg]
 
-    err_msg = add_update_dashboard(new_dashboard, is_modified, platform_info, "current_status", dashboard_info)
+    err_msg = add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_name, dashboard_info)
     if err_msg:
         return [None, err_msg]
 
-    panels_urls = get_panels_urls(grafana_url, platform_info['dashboard'], dashboard_info, dashboard_uid, "current_status")
-
+    panels_urls = get_panels_urls(grafana_url, dashboard_defs, dashboard_info, dashboard_uid, dashboard_name)
 
     return [panels_urls, None]  # Return list of urls, one for each panel
+
+# -----------------------------------------------------------------------------------
+# Create a new Grafana report
+# -----------------------------------------------------------------------------------
+def create_report(**platform_info):
+
+    panels_urls, err_msg = new_report(**platform_info)
+
+    ret_val = not err_msg
+    return [ret_val, err_msg]
 
 # -----------------------------------------------------------------------------------
 # Deploy a report
@@ -427,7 +463,7 @@ def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard)
         "Accept": "application/json"
     }
     new_dashboard_data = {
-    "folderId": 0,
+    "folderId": 0,          # https://grafana.com/docs/grafana/latest/http_api/dashboard/
     "overwrite": False
     }
 

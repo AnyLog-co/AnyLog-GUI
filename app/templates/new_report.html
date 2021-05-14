@@ -1,0 +1,55 @@
+
+
+{% extends "base_conf_report.html" %}
+
+{% block content %}
+    {% if selection %}
+        <!-- Add the usr path to the form (if provided)  -->
+        <form action="{{url_for('new_report')}}/{{selection}}" method="POST">
+    {% else %}
+        <form action="{{url_for('new_report')}}" method="POST">
+    {% endif %}
+
+    <br>
+
+    <p>
+        <!-- get report name  -->
+        Name Report:&nbsp
+        <input type="text" id="report_name" name="report_name" value="">
+    </p>
+    <hr>
+
+     <!-- The Selection table -->
+    {% for table in tables_list %}
+        <br>
+        {{ table.table_name }}
+        <table border="1">
+            <tr>    <!-- table row  -->
+                {% for col_name in table.column_names %}
+                    <td>{{col_name}}</td> <!-- table cell  -->
+                {% endfor %}
+                {% for extra_column in table.extr_col %}
+                    <td>{{extra_column[0]}}</td> <!-- extra cell name  -->
+                {% endfor %}
+            </tr>
+            {% for row in table.rows %}
+            <tr>
+                {% for col_val in row %}
+                    <td>{{ col_val }}</td>
+                {% endfor %}
+                {% for extra_column in table.extr_col %}
+                    <!-- The selections:                       table.DBMS_NAME.TABLE_NAME.Name.       SELECTION  -->
+                    <td><input type={{extra_column[1]}} name="table.{{row[2]}}.{{row[3]}}.{{row[0]}}.{{extra_column[0]}}"></td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+
+    </table>
+    {% endfor %}
+    <hr>
+
+
+    {{ super() }}    <!-- Call base conf. report  -->
+
+
+ {% endblock %}

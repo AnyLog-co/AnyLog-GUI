@@ -14,6 +14,11 @@
 <form action="{{url_for('metadata')}}" method="POST">
 {% endif %}
 
+    {% if map_url %}
+        <iframe src="{{ map_url }}" width="450" height="400" frameborder="10" align="right" class="nodes-map"></iframe>
+    {% endif %}
+
+
 <ul class="tree">
 
     {% for node in nodes_list %}
@@ -37,13 +42,26 @@
                 {% endif %}
 
                 {% if node.name  %}
-                        <!-- View Policy or Select or Navigate  -->
-                        {% if node.details  %}
+
+                        {% if node.report  %}
+                            <!-- Option to update or delete thr report -->
+                            <input type="submit" value="Update" name="{{node.path}}" class="button_update">
+                            <input type="submit" value="Rename" name="{{node.path}}" class="button_rename">
+                            <input type="submit" value="Delete" name="{{node.path}}" class="button_delete">
+
+                        {% elif node.details  %}
+                            <!-- View Policy or Select or Navigate  -->
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
                             <input type="submit" value="View" name="{{node.path}}" class="button_view">
                         {% endif %}
                         {% if selection  %}
-                            {% if node.dbms_name  %}
+                             {% if node.report  %}
+                                 <!-- Flag to select the report (for multiple reports viewed) -->
+                                <td><input type=checkbox name=selected.{{node.path}}@{{node.name}}></td>
+                                <!-- Or go directly to a report -->
+                                <a href="{{url_for('metadata')}}/{{selection}}?report={{node.url}}">{{node.name}}</a>
+
+                            {% elif node.dbms_name  %}
                                 <!-- Flag to select the edge (to Save for a future report or immediate report) -->
                                 <td><input type=checkbox name=selected.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
                                 <!-- Or go directly to a report -->
@@ -88,12 +106,14 @@
     {% endfor %}
 
     <br>
-    <hr>
-     <!-- If edge nodes that can be selected to a report -->
-        <input type="submit" value="Configure" name="Configure">    <!-- Configure report -->
-        <input type="submit" value="Save" name="Save">    <!-- Save selected edge to report -->
-        <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
 
+     <!-- If edge nodes that can be selected to a report -->
+        {% if location_key %}
+            <hr>
+        <input type="submit" value="Configure" name="Configure">    <!-- Configure report -->
+        <input type="submit" value="Select" name="Select">    <!-- Selected edge to a new report -->
+        <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
+        {% endif %}
 </ul>
 
 <!-- Change scroll location from the top of the screen to last node touched-->

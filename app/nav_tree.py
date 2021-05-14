@@ -47,7 +47,10 @@ class TreeNode():
         self.parent = None              # Parent node
         self.path = None                # The complete path representing the node
         self.scroll_location = False    # Set to True to indicate the scroll location on the page
-
+        self.report = False             # True for a report type
+        self.folder = False             # True for a folder type
+        self.url = None                 # URL for a report
+        self.command = False            # Is node representing a network command
 
         # Setup params
         for key, value in params.items():
@@ -72,6 +75,14 @@ class TreeNode():
         return True if node has children
         '''
         return self.with_children
+
+
+    def is_network_cmd(self):
+        '''
+        Return True for a network command node (a sibling of Monitor in the tree)
+        '''
+        return self.command
+
 
     # -----------------------------------------------------------------------------------
     # Indicate that when a page is loaded - set the scroll location on this node
@@ -166,8 +177,13 @@ class TreeNode():
 
         if 'children' in options_tree:
             children = options_tree['children']
+            if "type" in options_tree and options_tree["type"] == "node":
+                network_command = True      # The child is a command to the network
+            else:
+                network_command = False
+
             for entry in children:
-                self.add_child(name=entry, option=entry, path=location_key+'@'+entry)
+                self.add_child(name=entry, option=entry, command=network_command, path=location_key+'@'+entry)
 
     # -----------------------------------------------------------------------------------
     # Add the children resulting from a query to the network

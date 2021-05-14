@@ -236,7 +236,9 @@ class gui():
     def get_subtree( self, selection ):
         select_list = selection.split('@')
         json_struct = self.config_struct["gui"]
-        for entry in select_list:
+        root_tree = None
+
+        for index, entry in enumerate(select_list):
             if not "children" in json_struct:
                 json_struct = None
                 break
@@ -245,8 +247,12 @@ class gui():
                 json_struct = None  # Path not found
                 break
             json_struct = json_struct[entry]
+
+            if not index:
+                # First entry in the tree
+                root_tree = json_struct
             
-        return json_struct
+        return [root_tree, json_struct]
 
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
@@ -272,7 +278,7 @@ def load_json(file_name):
 # ------------------------------------------------------------------------
 def get_tree_entree( json_struct, attr_name):
 
-    if attr_name in json_struct:
+    if json_struct and attr_name in json_struct:
         value = json_struct[attr_name]
     else:
         value = None

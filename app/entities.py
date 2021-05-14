@@ -43,7 +43,7 @@ class AnyLogTable(object):
     table_data - a list representing the rows whereas each entry is the list of the column values.
     extr_col - additional table columns like checkbox or button
                 A list of attr-val pairs: Col-Name + HTML Input type (https://www.w3schools.com/html/html_form_input_types.asp)
-                fir example: [('select','checkbox'), ('View','button')]
+                for example: [('select','checkbox'), ('View','button')]
     '''
     def __init__(self, table_name:str, column_names:list, column_keys:list, rows:list, extr_col:list):
         self.table_name = table_name
@@ -162,6 +162,8 @@ class AnyLogDashboard():
         self.default_functions = {}
         self.reset()
 
+    def set_name(self, dashboard_name):
+        self.name = dashboard_name
     def reset_panels(self):
         '''
         Remove previously defined panels
@@ -175,6 +177,7 @@ class AnyLogDashboard():
         self.panels = []        # List of panels
         self.default_functions = {}
         self.date_time.reset()
+        self.name = None
 
 
     def get_panels_count(self):
@@ -218,6 +221,7 @@ class AnyLogDashboard():
     # -----------------------------------------------------------------------------------
     def set_default(self):
 
+        self.name = "Current Status"
         self.default_functions["graph" ] = ["min","max","avg"]
         self.default_functions["gauge"] = ["min","max","avg"]
 
@@ -305,7 +309,12 @@ class AnyLogDashboard():
         err_msg = self.date_time.test_date_time_selection()
         return err_msg
 # -----------------------------------------------------------------------------------
-# Return the klist of supported functions
+# Return the list of supported functions
 # -----------------------------------------------------------------------------------
 def get_functions():
     return ["avg", "min", "max", "range", "count"]
+# -----------------------------------------------------------------------------------
+# Return the klist of supported functions
+# -----------------------------------------------------------------------------------
+def get_functions_names():
+    return ["Avg", "Min", "Max", "Range", "Count"]

@@ -31,6 +31,8 @@ from app.entities import AnyLogItem
 from app.entities import AnyLogTable
 from app.entities import AnyLogDashboard
 from app.entities import get_functions      # Get the list of supported functions
+from app.entities import get_functions_names      # Get the list of supported functions
+
 from app.entities import AnyLogPanel
 
 from config import Config
@@ -99,6 +101,19 @@ def get_gui_view():
         gui_view = None
     return gui_view
 # -----------------------------------------------------------------------------------
+# Determine in the config file if selection is for reports
+# -----------------------------------------------------------------------------------
+def is_reports(user_name, selection):
+    ret_val = False
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    if 'children' in gui_view.config_struct['gui']:
+        first_children = gui_view.config_struct['gui']['children']
+        if selection in first_children:
+            if 'type' in first_children[selection] and first_children[selection]['type'] == 'reports':
+                ret_val = True
+    return ret_val
+
+# -----------------------------------------------------------------------------------
 # GUI forms
 # HTML Cheat Sheet - http://www.simplehtmlguide.com/cheatsheet.php
 # Example Table: https://progbook.org/shop5.html
@@ -107,13 +122,12 @@ def get_gui_view():
 @app.route('/index')
 def index():
 
-    if not get_user_by_session():
-        return redirect(('/login'))        # start with Login
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
-    select_info = get_select_menu()
-    select_info['title'] = "AnyLog Network"
-    
-    return render_template('main.html', **select_info)
+    return  redirect(url_for('metadata'))
+
 # -----------------------------------------------------------------------------------
 # Login
 # -----------------------------------------------------------------------------------
@@ -803,7 +817,7 @@ def policies_to_status_report( user_name, policies_list ):
 
     platform_info["dashboard"] = dashboard
 
-    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+    url_list, err_msg = visualize.new_report("Grafana", **platform_info)
     if err_msg:
         flash(err_msg, category='error')
         return None
@@ -877,6 +891,8 @@ def conf_nav_report():
     select_info['dashboard'] = dashboard_conf
 
     return render_template('base_conf_report.html', **select_info)
+
+
 # -----------------------------------------------------------------------------------
 # Get the report config info from the form
 # Set the info on the default_dashboard assigned to the user
@@ -903,6 +919,188 @@ def get_base_report_config(user_name, form_info):
     return selection_errors
 
 # -----------------------------------------------------------------------------------
+# Analyze the form returned info
+# Returns form_selections - showing buttons selected
+# Selected list - showing a list of sensors selected
+# -----------------------------------------------------------------------------------
+def process_tree_form():
+
+    form_selections = {
+        "policy_id" : None,         # AN ID of a JSON policy
+        "location_key": None,       # Replace the user selection with the location key
+        "get_policy": False,        # Show the JSON policy (View button)
+        "report_button": False,     # Show a report of multiple selections (Report button)
+        "select_button": False,     # Add the database and table of an edge node to a list that is used when a new report is defined
+        "url" : None,               # URL to redirect  the process (For example to configure a report)
+        "add_report" : False,       # Define a new report in the report section
+    }
+
+    selected_list = []
+
+
+    # Go over report selections
+
+    form_info = request.form
+    if len(form_info):
+        for form_key, form_val in form_info.items():
+            if form_val == "View":
+                #  User selected to View a Policy (using a View BUTTON)
+                #  The user selected view - Bring the node Policy
+                offset = form_key.rfind('+')
+                if offset > 0:
+                    # Get the policy ID of the last layer
+                    form_selections["policy_id"] = form_key[offset + 1:]
+                    form_selections["location_key"] = form_key
+                    form_selections["get_policy"] = True    # Get the policy of the node
+                break
+            if form_key[:7] == "option.":
+                # User selected an option representing a metadata navigation (the type of the children to retrieve)
+                # Move from metadata to data
+                key = form_key[7:]
+                if len(key) > 11 and key[-11:] == "@Add_Report":
+                    form_selections["add_report"] = True
+                    key = key[:-11]
+                form_selections["location_key"] = key  # Save the location key based on the user button selection
+                break
+            if form_key[:9] == "selected.":
+                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
+                selected_list.append(form_key[9:])
+            elif form_key == "Report":
+                # The selected list is used for a report
+                form_selections["report_button"] = True
+            elif form_key == "Select":
+                form_selections["select_button"] = True
+            elif form_key == "Configure":
+                # Configure the dynamic report
+                form_selections["url"] = url_for('conf_nav_report')
+                break
+
+    return [form_selections, selected_list]
+
+# -----------------------------------------------------------------------------------
+# Define new report called bu URL
+# -----------------------------------------------------------------------------------
+@app.route('/new_report', methods = ['GET', 'POST'])
+@app.route('/new_report/<string:selection>', methods = ['GET', 'POST'])
+def new_report( selection = "" ):
+
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    form_info = request.form
+
+    if len(form_info):
+        dashboard = AnyLogDashboard()  # Create a new dasboard
+        tables_info = {}
+        for entry in form_info:
+
+            # Make a list with the following entries:
+            # dbms name + Table Name + panel name + list of functions
+
+            if entry[:5] == "date_":
+                # Set the date- time selections
+                dashboard.set_date_time(entry[5:], form_info[entry])  # Set date start, date end, date range
+
+            elif entry[:6] == "table.":
+                table_info = entry[6:].split('.')   # List with DBMS name, Table name, function
+                dbms_name = table_info[0]
+                table_name = table_info[1]
+                panel_name = table_info[2]
+                function = table_info[3]
+
+                # Test if entry exists - if so add the function
+                key = dbms_name + '.' + table_name
+                if key in tables_info:
+                    # add the function
+                    tables_info[key][3].append(function)
+                else:
+                    # add new entry
+                    tables_info[key] = (dbms_name, table_name, panel_name, [function])
+            elif entry == 'report_name':
+                dashboard.set_name(form_info[entry])
+
+        for entry in tables_info.values():
+            # Add the projection list for each table
+            dashboard.add_projection_list(entry[2], "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
+
+        gui_view = get_gui_view()
+        platforms_tree = gui_view.get_base_info("visualization")
+        if not platforms_tree or not "Grafana" in platforms_tree:
+            flash('AnyLog: Missing Grafana definitions in config file', category='error')
+            return redirect(url_for('new_report', selection=selection))
+
+        platform_info = copy.deepcopy(platforms_tree["Grafana"])
+        platform_info['base_report'] = "AnyLog_Base"
+
+        platform_info["dashboard"] = dashboard
+
+        ret_val, err_msg = visualize.create_report("Grafana", **platform_info)
+        if not ret_val:
+            flash(err_msg, category='error')
+            return redirect(url_for('new_report', selection=selection))
+
+    return define_new_report(user_name, selection)
+# -----------------------------------------------------------------------------------
+# Define new report in the requested folder
+# -----------------------------------------------------------------------------------
+def define_new_report(user_name, folder):
+
+    select_info = get_select_menu(selection=folder)
+
+    dashboard_conf = DashboardConfig()
+
+    default_dashboard = path_stat.get_element(user_name, 'default_dashboard')
+
+
+    # Get the Report Type - Graph or Gauge
+    visualize_selected = ["Grapg", "Gauge"]
+    panel_config = PanelConfig( "Select visualization", "visualize", ["Graph", "Gauge"], ["Graph"] )
+    dashboard_conf.add_panel(panel_config)
+
+    # Organize the report time selections as last selection
+
+    # Get the last selection for time and date and provide the selection as the setup
+
+    start_date_time, end_date_time, range_date_time = default_dashboard.date_time.get_date_time_selections()
+
+    text_selected = None
+    time_selected = None
+    if range_date_time:
+        for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == range_date_time:
+                    text_selected = entry[0]
+                    time_selected = entry[1]
+                    break
+
+
+    time_config = TimeConfig(time_selection_, text_selected, time_selected, start_date_time, end_date_time)
+
+    dashboard_conf.set_time(time_config)  # Apply time selections options to the report
+
+    table_rows = path_stat.get_table_with_selected_nodes(user_name, ["name", "id"], True, True)
+
+    tables_list = []
+    extra_columns = []
+    options = get_functions_names()
+    for option in options:
+        extra_columns.append( (option,'checkbox' ))
+
+    al_table = AnyLogTable("Select report data", ["Name", "ID", "DBMS", "Table"], None, table_rows, extra_columns)
+
+    tables_list.append(al_table)  # Add the children
+
+    select_info['title'] = "New Report"
+    select_info['selection'] = folder
+    select_info['tables_list'] = tables_list
+
+    select_info['dashboard'] = dashboard_conf
+
+
+    return render_template('new_report.html', **select_info)
+
+# -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
 # -----------------------------------------------------------------------------------
@@ -915,6 +1113,29 @@ def metadata( selection = "" ):
         return redirect(('/login'))        # start with Login  if not yet provided
 
     location_key = selection
+
+    form_selections, selected_list = process_tree_form()
+
+    if form_selections["url"]:
+        return redirect(form_selections["url"])       # Redirect to a different proocess
+
+    if form_selections["location_key"]:
+        location_key = form_selections["location_key"]  # Form selection changed the location
+
+    if form_selections["add_report"]:
+        return define_new_report(user_name, location_key)
+
+    if selection:
+        index = selection.find('@')
+        if index != -1:
+            key = selection[:index]
+        else:
+            key = selection
+
+            if is_reports(user_name, key):
+                # Navigate in reports
+                return navigate_in_reports(user_name, location_key)
+
 
     if request.query_string:
         query_string = request.query_string.decode('ascii')
@@ -931,57 +1152,78 @@ def metadata( selection = "" ):
             return html
 
 
-    form_info = request.form
-    get_policy = False
+    if form_selections["report_button"]:
+        # Show the default report with the selected edge nodes
+        html = policies_to_status_report(user_name, selected_list)
+        if not html:
+            # Got an error
+            select_info = get_select_menu(selection=location_key)
+            return call_navigation_page(user_name, select_info, location_key, None)
+        return html
 
-    if len(form_info):
-        # Selection on the navigation form
-
-        selected_list = []
-        configure_button = False
-        save_button = False
-        report_button = False
-        # Go over report selections
-        for form_key, form_val in form_info.items():
-            if form_val == "View":
-                # Option 2 - User selected to View a Policy (using a View BUTTON)
-                # The user selected view - Bring the node Policy
-                offset = form_key.rfind('+')
-                if offset > 0:
-                    # Get the policy ID of the last layer
-                    policy_id = form_key[offset + 1:]
-                    location_key = form_key
-                    get_policy = True       # Get the policy of the node
-                break
-            if form_key[:7] == "option.":
-                # User selected an option representing a metadata navigation (the type of the children to retrieve)
-                # Move from metadata to data
-                location_key = form_key[7:]     # Remove the "option." prefix
-                break
-            if form_key[:9] == "selected.":
-                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
-                selected_list.append(form_key[9:])
-            elif form_key == "Report":
-                # The selected list is used for a report
-                report_button = True
-            elif form_key == "Save":
-                save_button = True
-            elif form_key == "Configure":
-                # Configure the dynamic report
-                return redirect(url_for('conf_nav_report'))
+    if form_selections["select_button"]:
+        if len(selected_list):
+            # Add the selected (edge) nodes to a list of nodes
+            add_selected_to_list(user_name, location_key, selected_list) # Return one selection from the list
+            # Continue to show tree
 
 
-        if report_button:
-            html = policies_to_status_report(user_name, selected_list)
-            if not html:
-                # Got an error
-                select_info = get_select_menu(selection=location_key)
-                return call_navigation_page(user_name, select_info, location_key, None)
-            return html
+    return metada_navigation(user_name, location_key, form_selections)
+
+# -----------------------------------------------------------------------------------
+# Add the selected nodes to a list of nodes that are option for a new report.
+# If a new report is selected, the user can select which edge nodes to include.
+# The edge nodes determine the database and table to use.
+# -----------------------------------------------------------------------------------
+def add_selected_to_list(user_name, location_key, new_selection):
+
+    '''
+    Every entry in new_selection includes:
+    a) dbms name (or pull instructions for the dbms name)
+    b) table name (or pull instructions for the table name)
+    c) JSON policy ID
+    '''
+
+    # Add the next selection to existing selection
+    for entry in new_selection:
+        node_segments = entry.split('@')
+        if len(node_segments) == 3:
+            policy_id = node_segments[2]
+            if not path_stat.is_node_selected(user_name, policy_id):
+                # Not in the list - add info to the list of selected nodes
+
+                policy_list = get_json_policy(policy_id)
+                policy_id = None  # Missing ID for the policy
+                if policy_list and isinstance(policy_list,list) and len(policy_list) == 1:
+                    policy = policy_list[0]
+                    policy_type = path_stat.get_policy_type(policy)
+                    if policy_type:
+                        if "id" in policy[policy_type]:
+                            policy_id = policy[policy_type]["id"]
+
+                if policy_id:
+                    # Copy the path anf pathe elements to the list of selected items to print
+                    node_info = {}
+                    dbms_name = node_segments[0]
+                    table_name = node_segments[1]
+
+                    db_name = path_stat.get_sql_name(policy, dbms_name)  # Pull the dbms name from the policy
+                    tb_name = path_stat.get_sql_name(policy, table_name)  # Pull the dbms name from the policy
+
+                    node_info["dbms_name"] = db_name
+                    node_info["table_name"] = tb_name
+                    node_info["policy"] = policy
+
+                    path_stat.add_selected_node(user_name, policy_id, node_info)        # Add the node info to the report
+
+# -----------------------------------------------------------------------------------
+# Navigate using the metadata
+# -----------------------------------------------------------------------------------
+def metada_navigation(user_name, location_key, form_selections):
 
 
     gui_view = path_stat.get_element(user_name, "gui_view")
-    if not selection:
+    if not location_key:
 
         params = { 'is_anchor' : True }
         root_nav = nav_tree.TreeNode( **params )
@@ -1010,25 +1252,18 @@ def metadata( selection = "" ):
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
 
         gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+        select_info = get_select_menu(selection=gui_key)
 
-        if get_policy:
+        if form_selections["get_policy"]:
             # User requested ti VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
+            add_policy(current_node, form_selections["policy_id"])
 
-            if current_node.is_option_node():
-                # move to the data node
-                policy_node = current_node.get_parent()
-            else:
-                policy_node = current_node
-            if policy_node.is_with_policy():
-                policy_node.add_policy(None)
-            else:
-                retrieved_policy = get_json_policy(policy_id)
-                if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
-                    policy_node.add_policy(retrieved_policy[0] )
-            select_info = get_select_menu(selection=gui_key)
+        elif current_node.is_network_cmd():
+            # Execute the network command
+            add_command_reply(current_node)
+
         else:
-            select_info = get_select_menu(selection=gui_key)
 
             if current_node.is_with_children():
                 current_node.reset_children()  # Delete children from older navigation
@@ -1037,14 +1272,18 @@ def metadata( selection = "" ):
 
                 # Get the options from the config file and set the options as children
 
-                gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+                root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
                 if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
+
                     # Executes a query to select data from the network and set the data as as the children
                     reply = get_path_info(gui_key, select_info, current_node)
+
                     if reply:
                         # Add children to tree
                         gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
+
+                        # Manage data
                         if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
                             # Push The key to pull dbms name and table name from the policy
                             dbms_name = gui_sub_tree["dbms_name"]
@@ -1062,6 +1301,105 @@ def metadata( selection = "" ):
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
+# -----------------------------------------------------------------------------------
+# Add reply from executing a command
+# -----------------------------------------------------------------------------------
+def add_command_reply(current_node):
+    pass
+# -----------------------------------------------------------------------------------
+# Add policy to the GUI
+# -----------------------------------------------------------------------------------
+def add_policy(current_node, policy_id):
+    if current_node.is_option_node():
+        # move to the data node
+        policy_node = current_node.get_parent()
+    else:
+        policy_node = current_node
+    if policy_node.is_with_policy():
+        # Policy exists with this node
+        policy_node.add_policy(None)
+    else:
+        # Read and add new policy
+        retrieved_policy = get_json_policy(policy_id)
+        if retrieved_policy and isinstance(retrieved_policy, list) and len(retrieved_policy) == 1:
+            policy_node.add_policy(retrieved_policy[0])
+
+
+# -----------------------------------------------------------------------------------
+# Navigate in the reports partitioned by folders
+# -----------------------------------------------------------------------------------
+def navigate_in_reports(user_name, location_key):
+
+    root_nav = path_stat.get_element(user_name, "root_nav")
+
+    if request.query_string:
+        query_string = request.query_string.decode('ascii')
+        # A Panel was selected - view the panel
+        if query_string[:7] == "report=":
+            select_info = get_select_menu()
+            select_info['title'] = "Current Status"
+
+            url_list = [query_string[7:]]
+
+            select_info["url_list"] = url_list
+
+            return render_template('output_frame.html', **select_info)
+
+    selection_list = location_key.replace('+', '@').split('@')
+
+    # Navigate in the tree to find location of Node
+    current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
+
+    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+    platform = root_gui["visualization"]        # Grafana, Power BI etc.
+
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
+
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree[platform]['url']
+    token = platforms_tree[platform]['token']
+
+    current_node.add_child(name=location_key + '@' + "Add_Folder", option="New Folder", path=location_key + '@' + "Add_Folder")
+
+    # Get the child folders
+    child_folders, err_msg = visualize.get_child_folders(platform, url, token, root_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(url_for('metadata', selection=location_key))
+
+    if child_folders:
+        # Add folders to tree
+        pass
+
+    current_node.add_child(name=location_key + '@' + "Add_Report", option="New Report", path=location_key + '@' + "Add_Report")
+
+    # Get the reports in the folder
+    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, root_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(url_for('metadata', selection=location_key))
+
+    # Update the tree
+
+    for name, url in panels_urls.items():
+        key = location_key + '@' + name
+        params = {
+            'name': name,
+            'key': key,
+            'path': key,
+            'report' : True,
+            'url' : url[0]
+        }
+        current_node.add_child( **params )
+
+    select_info = get_select_menu(selection=location_key)
+
+    return call_navigation_page(user_name, select_info, location_key, current_node)
 
 # -----------------------------------------------------------------------------------
 # Call the navigation page - metadata.html
@@ -1078,12 +1416,19 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
         # Place a flag to indicate the position n the page  when page is loaded
         # Reset is done in nav_tree.setup_print_list
         current_node.set_scroll_location()
+    else:
+        # First page - nothing selected - show the Network Map
+        gui_view = path_stat.get_element(user_name, "gui_view")
+        map_url = gui_view.get_base_info("map")
+        if map_url:
+            select_info['map_url'] = map_url
 
     select_info['selection'] = location_key
 
     select_info['nodes_list'] = print_list
 
     select_info['title'] = "AnyLog Network"
+
 
     return render_template('metadata.html', **select_info)
 
@@ -1106,9 +1451,10 @@ def tree( selection = "" ):
 
     # Make title from the path
     title = ""
-    parent_menu = select_info["parent_gui"]
-    for parent in parent_menu:
-        title += " [%s] " % parent[0]
+    if "parent_gui" in select_info:
+        parent_menu = select_info["parent_gui"]
+        for parent in parent_menu:
+            title += " [%s] " % parent[0]
     select_info['title'] = title
 
     reply = get_path_info(selection, select_info, None)
@@ -1163,7 +1509,7 @@ def get_path_info(selection, select_info, current_node):
     gui_view = path_stat.get_element(user_name, "gui_view")
 
     # Get the location in the Config file to set the user navigation links
-    gui_sub_tree = gui_view.get_subtree(selection)
+    root_gui, gui_sub_tree = gui_view.get_subtree(selection)
 
     command = app_view.get_tree_entree(gui_sub_tree, "query")  # get the command from the Config file
 
@@ -1217,7 +1563,7 @@ def get_path_info(selection, select_info, current_node):
     else:
         # The table info is pulled from the source JSON policy
         cmd_list = al_command.split(' ', 3)
-        if len(cmd_list) == 4 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
+        if len(cmd_list) >= 3 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
             policy_type = cmd_list[2]
         else:
             policy_type = None
@@ -1394,7 +1740,7 @@ def status_view(selection, form_info,  policies):
     platform_info['from_date'] = "-2M"
     platform_info['to_date'] = "now"
 
-    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+    url_list, err_msg = visualize.new_report("Grafana", **platform_info)
 
     if err_msg:
         return err_msg
@@ -1453,7 +1799,7 @@ def path_selection(parent_menu, policy_id, data):
 
     gui_view = path_stat.get_element(user_name, "gui_view")
     # pull the keys that are used to print a summary of the data instance
-    gui_sub_tree = gui_view.get_subtree(parent_menu[-1][1][6:])
+    root_gui, gui_sub_tree = gui_view.get_subtree(parent_menu[-1][1][6:])
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     table_title = app_view.get_tree_entree(gui_sub_tree, "table_title")
 
@@ -1550,7 +1896,6 @@ def manage_reports():
     url = platforms_tree["Grafana"]['url']
     token = platforms_tree["Grafana"]['token']
     network_name = gui_view.get_network_name()
-
 
     panels_urls, err_msg = visualize.get_reports("Grafana", url, token, "AnyLog_" + network_name)   # Get the list of reports associated with
 
