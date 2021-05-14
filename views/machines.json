@@ -100,7 +100,7 @@
 
                               "Node Status" :  { "command" : "get status" },
                               "Load Status" :     { "command" : "get operator" },
-                              "Utilization" :    { "command" : "get get node info cpu_percent" }
+                              "Utilization" :    { "command" : "get node info cpu_percent" }
                           }
                       },
                       "Clusters" : {

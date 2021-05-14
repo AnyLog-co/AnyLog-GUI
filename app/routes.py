@@ -1266,9 +1266,13 @@ def metada_navigation(user_name, location_key, form_selections):
                 err_msg = add_command_reply(current_node, gui_sub_tree['command'])
                 if err_msg:
                     flash("AnyLog: Network command failed: %s" % err_msg,  category='error')
+                    current_node.parent.reset_children()
+                    location_key = set_location_on_parent(location_key)
                     return redirect(url_for('metadata', selection=location_key))
             else:
                 flash("AnyLog: Missing command in Monitor Nodes", category='error')
+                current_node.parent.reset_children()
+                location_key = set_location_on_parent(location_key)
                 return redirect(url_for('metadata', selection=location_key))
 
         else:
@@ -1308,6 +1312,16 @@ def metada_navigation(user_name, location_key, form_selections):
 
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
+
+
+def set_location_on_parent( location_key ):
+
+    index = location_key.rfind('@')
+    if index != -1:
+        new_key = location_key[:index]
+    else:
+        new_key = ""
+    return new_key
 
 # -----------------------------------------------------------------------------------
 # Add reply from executing a command
@@ -1861,7 +1875,7 @@ def exec_al_cmd( al_cmd, dest_node = None):
         data = None
         if not error_msg:
             # No data reply
-            error_msg = "AnyLog: REST command %s returned error code %u" % (al_cmd, response.status_code)
+            error_msg = "AnyLog: REST command \"%s\" returned error code %u" % (al_cmd, response.status_code)
 
     return [data, error_msg]
 

@@ -22,7 +22,7 @@ def do_get(url, headers_data):
     try:
         response = requests.get(url=url, params=None, verify=False, headers=headers_data)
     except HTTPError as http_err:
-        error_msg = "REST GET HTTPError from %s Error: %s" % (str(url), str(http_err))
+        error_msg = "REST GET HTTP Error from %s Error: %s" % (str(url), str(http_err))
         response = None
     except Exception as err:
         error_msg = "REST GET Error: %s" % str(err)
