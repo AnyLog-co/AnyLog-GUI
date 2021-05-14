@@ -1263,12 +1263,15 @@ def metada_navigation(user_name, location_key, form_selections):
             # Execute the network command
             root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
             if gui_sub_tree and isinstance(gui_sub_tree, dict) and "command" in gui_sub_tree:
-                err_msg = add_command_reply(current_node, gui_sub_tree['command'])
-                if err_msg:
-                    flash("AnyLog: Network command failed: %s" % err_msg,  category='error')
-                    current_node.parent.reset_children()
-                    location_key = set_location_on_parent(location_key)
-                    return redirect(url_for('metadata', selection=location_key))
+                if current_node.is_with_json():
+                    current_node.reset_json_struct()     # Remiove the child JSON struct
+                else:
+                    err_msg = add_command_reply(current_node, gui_sub_tree['command'])
+                    if err_msg:
+                        flash("AnyLog: Network command failed: %s" % err_msg,  category='error')
+                        current_node.parent.reset_children()
+                        location_key = set_location_on_parent(location_key)
+                        return redirect(url_for('metadata', selection=location_key))
             else:
                 flash("AnyLog: Missing command in Monitor Nodes", category='error')
                 current_node.parent.reset_children()
@@ -1354,9 +1357,9 @@ def add_policy(current_node, policy_id):
         policy_node = current_node.get_parent()
     else:
         policy_node = current_node
-    if policy_node.is_with_policy():
+    if policy_node.is_with_json():
         # Policy exists with this node
-        policy_node.add_policy(None)
+        policy_node.reset_json_struct()
     else:
         # Read and add new policy
         retrieved_policy = get_json_policy(policy_id)

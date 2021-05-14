@@ -259,8 +259,13 @@ class TreeNode():
     # -----------------------------------------------------------------------------------
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------
-    def is_with_policy( self ):
+    def is_with_json( self ):
        return self.json_struct != None
+    # -----------------------------------------------------------------------------------
+    # Reset the JSON structure that is assigned to the node
+    # -----------------------------------------------------------------------------------
+    def reset_json_struct( self ):
+       self.json_struct = None
 
     # -----------------------------------------------------------------------------------
     # Set Policy value
@@ -317,7 +322,7 @@ def setup_print_list( current_node, print_list):
         for child in current_node.children:
             child.scroll_location = False       # Reset the scroll location
             print_list.append(child)
-            if child.is_with_policy():
+            if child.is_with_json():
                 setup_print_json( child.json_struct, print_list )
             if child.with_children:
                 setup_print_list(child, print_list)
