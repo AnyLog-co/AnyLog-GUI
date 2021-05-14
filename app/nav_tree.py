@@ -39,8 +39,8 @@ class TreeNode():
         self.with_children = False
         self.details = None
         self.policy = None
-        self.policy_key = None
-        self.policy_value = None        # shows value if the value is not a list or a dictionary
+        self.json_key = None
+        self.json_value = None          # shows value if the value is not a list or a dictionary
         self.dbms_name = None           # DBMS name or the key to pull the dbms name from the policy
         self.table_name = None          # Table name or the key to pull the table name from the policy
         self.option = None              # If node maintains a metadata option representing a type of a child
@@ -265,11 +265,11 @@ class TreeNode():
     # -----------------------------------------------------------------------------------
     # Set Policy value
     # -----------------------------------------------------------------------------------
-    def set_policy_value(self, policy_value):
-        if isinstance(policy_value,str):
-            self.policy_value = "\"%s\"" % policy_value
+    def set_json_value(self, json_value):
+        if isinstance(json_value,str):
+            self.json_value = "\"%s\"" % json_value
         else:
-            self.policy_value = str(policy_value)
+            self.json_value = str(json_value)
 
 # -----------------------------------------------------------------------------------
 # Given a node and a list of keys - return the node addressed by the keys
@@ -331,10 +331,10 @@ def setup_print_policy( policy, print_list):
 
     if len(policy):
         counter = 0
-        for policy_key, policy_value in policy.items():
+        for json_key, json_value in policy.items():
             counter += 1
             params = {}
-            params['policy_key'] = policy_key
+            params['json_key'] = json_key
             if counter == 1:
                 params['first_child'] = True
             if counter == len(policy):
@@ -343,16 +343,16 @@ def setup_print_policy( policy, print_list):
             new_node = TreeNode(**params)
             print_list.append(new_node)
 
-            if isinstance(policy_value,dict):
-                setup_print_policy(policy_value, print_list)
-            elif isinstance(policy_value, list):
-                for list_entry in policy_value:
+            if isinstance(json_value,dict):
+                setup_print_policy(json_value, print_list)
+            elif isinstance(json_value, list):
+                for list_entry in json_value:
                     if isinstance(list_entry,dict) or isinstance(list_entry,list):
-                        setup_print_policy(policy_value, print_list)
+                        setup_print_policy(json_value, print_list)
                     else:
-                        new_node.set_policy_value(policy_value)
+                        new_node.set_json_value(json_value)
             else:
-                new_node.set_policy_value(policy_value)
+                new_node.set_json_value(json_value)
 
         print_list.append(None)  # All children onsidered - this is a flag to issue </li> and </ul>
 
@@ -387,10 +387,10 @@ def update_command(current_node, selection, command):
                             # info derived from the policy (organized in Details() object)
                             if parent_policy:
                                 value = ""
-                                for policy_key in keys_list[1:]:
+                                for json_key in keys_list[1:]:
                                     # Craete the value for the command
-                                    if policy_key[:-1] in parent_policy.keys:
-                                        index = parent_policy.keys.index(policy_key[:-1])
+                                    if json_key[:-1] in parent_policy.keys:
+                                        index = parent_policy.keys.index(json_key[:-1])
                                         value += parent_policy.values[index]
 
                 if value:

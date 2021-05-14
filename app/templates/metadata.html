@@ -84,11 +84,11 @@
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
                         {% endif %}
-                {% elif node.policy_key %}
+                {% elif node.json_key %}
                          <!-- View a policy (key and value)  -->
-                        <span id="json" class="key">{{node.policy_key}}</span>
-                        {% if node.policy_value  %}
-                            <span id="json" class="value"> : {{node.policy_value}}</span>
+                        <span id="json" class="key">{{node.json_key}}</span>
+                        {% if node.json_value  %}
+                            <span id="json" class="value"> : {{node.json_value}}</span>
                         {% endif %}
                 {% endif %}
 
