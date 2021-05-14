@@ -111,6 +111,9 @@ def get_reports(url:str, platform_info:dict, token:str, directory:str):
                                 if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
                                     panels_urls = get_panels_urls(url, platform_info, dashboard_info, dashboard_uid, dashboard_name)
                                     panels[dashboard_name] = panels_urls
+        else:
+            panels = None
+            err_msg = "Grafana API: Missing root folder in grafana: %s" % directory
     else:
         panels = None
 

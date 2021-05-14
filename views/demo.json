@@ -1,6 +1,6 @@
 {
     "gui" : {
-            "name" : "AnyLog Demo",
+            "name" : "Demo",
 	    "map": "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s&from=1620869946843&to=1620956346843&viewPanel=2", 
             "query_node" : "http://23.239.12.151:2049",
             "visualization" : { 
