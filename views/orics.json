@@ -2,7 +2,7 @@
     "gui" : {
             "name" : "Orics",
             "query_node" : "http://45.79.152.190:2049",
-	    "map": "http://45.79.152.190:3000/d/1Cdj-hCGz/network-summary?orgId=1&from=1620932482591&to=1620954082595&viewPanel=2",
+            "map": "http://45.79.152.190:3000/d/1Cdj-hCGz/network-summary?orgId=1&from=1620932482591&to=1620954082595&viewPanel=2",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://45.79.152.190:3000",
                                               "token" : "eyJrIjoib0pmQXZ1dDJQR3BoUk9qTzZ3UTJSbXRJV0NvNUkzQ0EiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==",
@@ -26,8 +26,7 @@
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
-                "Tag" :
-                {
+                "Tag" : {
                     "query" : "blockchain get tag bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
                     "table_title" : ["ID", "Name", "Description"],
                     "json_keys" : ["id", "name", "description"],
@@ -80,38 +79,37 @@
 
                         
                         }
-                }    
-                
-            },
-            "Reports" : {
-                "type" : "reports",
-                "organization" : "folders",
-                "visualization" : "Grafana"
-            },
-            "Monitor": {
-                "children" : {
-                    "Operators" : {
-                        "type" : "node",
-                        "query" : "blockchain get operator",
-                        "table_title" : ["ID", "Name", "Cluster"],
-                        "json_keys" : ["id", "name", "cluster"],
-                        "ip" : "[operator][ip]",
-                        "port" : "[operator][port]",
-                        "children" : {
-                            "Node Status" :  { "command" : "get status" },
-                            "Load Status" :     { "command" : "get operator" },
-                            "Utilization" :    { "command" : "get get node info cpu_percent" }
+                },    
+                "Reports" : {
+                    "type" : "reports",
+                    "organization" : "folders",
+                    "visualization" : "Grafana"
+                },
+                "Monitor": {
+                    "children" : {
+                        "Operators" : {
+                            "type" : "node",
+                            "query" : "blockchain get operator",
+                            "table_title" : ["ID", "Name", "Cluster"],
+                            "json_keys" : ["id", "name", "cluster"],
+                            "ip" : "[operator][ip]",
+                            "port" : "[operator][port]",
+                            "children" : {
+                                "Node Status" :  { "command" : "get status" },
+                                "Load Status" :     { "command" : "get operator" },
+                                "Utilization" :    { "command" : "get get node info cpu_percent" }
+                            }
+                        },
+                        "Clusters" : {
+                            "query" : "blockchain get cluster",
+                            "table_title" : ["ID", "Name", "Cluster"],
+                            "json_keys" : ["id", "name", "cluster"]
+                        },
+                        "Sensors" : {
+                            "query" : "blockchain get sensor",
+                            "table_title" : ["ID", "Name", "Cluster"],
+                            "json_keys" : ["id", "name", "cluster"]
                         }
-                    },
-                    "Clusters" : {
-                        "query" : "blockchain get cluster",
-                        "table_title" : ["ID", "Name", "Cluster"],
-                        "json_keys" : ["id", "name", "cluster"]
-                    },
-                    "Sensors" : {
-                        "query" : "blockchain get sensor",
-                        "table_title" : ["ID", "Name", "Cluster"],
-                        "json_keys" : ["id", "name", "cluster"]
                     }
                 }
             },
