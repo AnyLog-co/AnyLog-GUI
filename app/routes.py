@@ -1352,7 +1352,8 @@ def add_command_reply(current_node, al_cmd):
                         current_node.add_json_struct(json_struct)
                 else:
                     # Add text
-                    current_node.add_data(data)
+                    data_list = data.replace('\r','').strip().split('\n')
+                    current_node.add_data(data_list)
 
     return error_msg
 # -----------------------------------------------------------------------------------

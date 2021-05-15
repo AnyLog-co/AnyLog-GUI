@@ -43,7 +43,16 @@
 
                 {% if node.name  %}
 
-                        {% if node.report  %}
+                        {% if node.data_struct %}
+                            <!-- Message received from the network -->
+                             <ul>        <!--  Start unordered list   -->
+                            {% for data_line in node.data_struct %}
+                                 <li>
+                                <span> : {{data_line}}</span>
+                                 </li>
+                            {%  endfor %}
+                             </ul>        <!--  Start unordered list   -->
+                        {% elif node.report  %}
                             <!-- Option to update or delete thr report -->
                             <input type="submit" value="Update" name="{{node.path}}" class="button_update">
                             <input type="submit" value="Rename" name="{{node.path}}" class="button_rename">

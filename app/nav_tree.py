@@ -342,7 +342,7 @@ def setup_print_list( current_node, print_list):
                 setup_print_json( child.json_struct, print_list )
             if child.with_children:
                 setup_print_list(child, print_list)
-        print_list.append(None)     # All children onsidered - this is a flag to issue </li> and </ul>
+        print_list.append(None)     # All children considered - this is a flag to issue </li> and </ul>
 
 
 # -----------------------------------------------------------------------------------
