@@ -43,16 +43,8 @@
 
                 {% if node.name  %}
 
-                        {% if node.data_struct %}
-                            <!-- Message received from the network -->
-                             <ul>        <!--  Start unordered list   -->
-                            {% for data_line in node.data_struct %}
-                                 <li>
-                                <span> : {{data_line}}</span>
-                                 </li>
-                            {%  endfor %}
-                             </ul>        <!--  Start unordered list   -->
-                        {% elif node.report  %}
+
+                        {% if node.report  %}
                             <!-- Option to update or delete thr report -->
                             <input type="submit" value="Update" name="{{node.path}}" class="button_update">
                             <input type="submit" value="Rename" name="{{node.path}}" class="button_rename">
@@ -89,6 +81,20 @@
                                         {% endif %}
                                 {% endif %}
 
+                            {% endif %}
+                            {% if node.data_struct %}
+                            <!-- Message received from the network -->
+                                <ul>        <!--  Start unordered list   -->
+
+                                {% for data_line in node.data_struct %}
+                                    <li>
+                                    <span  style="background-color:#33475b; color: azure; padding: 0">
+                                     {{data_line}}
+                                    </span>
+                                    </li>
+                                {%  endfor %}
+
+                                </ul>        <!--  Start unordered list   -->
                             {% endif %}
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
