@@ -38,6 +38,7 @@ class TreeNode():
         self.children = []
         self.with_children = False
         self.details = None
+        self.data_struct = None         # Maintain data which is a reply from the network
         self.json_struct = None
         self.json_key = None
         self.json_value = None          # shows value if the value is not a list or a dictionary
@@ -252,10 +253,25 @@ class TreeNode():
             self.add_child( **params )
 
     # -----------------------------------------------------------------------------------
+    # Add data resulting from a network reply
+    # -----------------------------------------------------------------------------------
+    def add_data( self, data ):
+       self.data_struct = data
+    # -----------------------------------------------------------------------------------
+    # Test if node with data
+    # -----------------------------------------------------------------------------------
+    def is_with_data( self ):
+       return self.data_struct != None
+    # -----------------------------------------------------------------------------------
+    # Add data resulting from a network reply
+    # -----------------------------------------------------------------------------------
+    def reset_data( self ):
+       self.data_struct = None
+    # -----------------------------------------------------------------------------------
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------
-    def add_policy( self, retrieved_policy ):
-       self.json_struct = retrieved_policy
+    def add_json_struct( self, json_struct ):
+       self.json_struct = json_struct
     # -----------------------------------------------------------------------------------
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------

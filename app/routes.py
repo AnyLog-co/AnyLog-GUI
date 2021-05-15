@@ -1264,7 +1264,9 @@ def metada_navigation(user_name, location_key, form_selections):
             root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
             if gui_sub_tree and isinstance(gui_sub_tree, dict) and "command" in gui_sub_tree:
                 if current_node.is_with_json():
-                    current_node.reset_json_struct()     # Remiove the child JSON struct
+                    current_node.reset_json_struct()     # Remove the child JSON struct
+                elif current_node.is_with_data():
+                    current_node.reset_data_struct()  # Remove the data structure assigned to the node
                 else:
                     err_msg = add_command_reply(current_node, gui_sub_tree['command'])
                     if err_msg:
@@ -1342,10 +1344,15 @@ def add_command_reply(current_node, al_cmd):
             target_node = "http://%s:%s" % (ip, str(port))
 
             data, error_msg = exec_al_cmd( al_cmd, dest_node = target_node)
-            if not error_msg:
-                json_struct, error_msg = json_api.string_to_json(data)
-                if json_struct:
-                    current_node.add_policy(json_struct)
+            if not error_msg and len(data):
+                if data[0] == '{' and data[-1] =='}':
+                    # Add a subtree with the JSON message
+                    json_struct, error_msg = json_api.string_to_json(data)
+                    if json_struct:
+                        current_node.add_json_struct(json_struct)
+                else:
+                    # Add text
+                    current_node.add_data(data)
 
     return error_msg
 # -----------------------------------------------------------------------------------
@@ -1364,7 +1371,7 @@ def add_policy(current_node, policy_id):
         # Read and add new policy
         retrieved_policy = get_json_policy(policy_id)
         if retrieved_policy and isinstance(retrieved_policy, list) and len(retrieved_policy) == 1:
-            policy_node.add_policy(retrieved_policy[0])
+            policy_node.add_json_struct(retrieved_policy[0])
 
 
 # -----------------------------------------------------------------------------------
