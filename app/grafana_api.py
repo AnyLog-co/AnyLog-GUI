@@ -161,7 +161,7 @@ def rename_folder( grafana_url, token, old_folder, new_folder):
 # Give a list of parent folders - return the children
 # Grafana folders API - https://grafana.com/docs/grafana/latest/http_api/folder/
 # -----------------------------------------------------------------------------------
-def get_child_folders( url, token, parent_folder:list):
+def get_child_folders( url, token, parent_folder):
 
     parent_length = len(parent_folder)
     folders_list, err_msg = get_folders(url, token)
@@ -203,7 +203,8 @@ def get_reports(url:str, platform_info:dict, token:str, directory:str):
 
         for entry in folders:
             if "title" in entry and "id" in entry:
-                if entry["title"].lower() == directory_name :
+                folder_name = entry["title"].lower()
+                if folder_name == directory_name:
                     folder_id = entry["id"]
                     break
 

@@ -1122,24 +1122,10 @@ def define_new_report(user_name, folder):
 # -----------------------------------------------------------------------------------
 def add_folder(user_name, location_key):
 
-    gui_view = path_stat.get_element(user_name, "gui_view")
 
-    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+    platform, url, token, parent_folder = get_report_info(user_name, location_key)
 
-    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
-
-    platform = root_gui["visualization"]        # Grafana, Power BI etc.
-
-    platforms_tree = gui_view.get_base_info("visualization")
-    url = platforms_tree[platform]['url']
-    token = platforms_tree[platform]['token']
-
-    network_name = gui_view.get_base_info("name")
-    root_folder = "AnyLog_" + network_name
-    parent_folder = root_folder + location_key[7:]
-    new_folder = parent_folder + '@' + "New Folder"
-
-    err_msg = visualize.create_folder(platform, url, token, parent_folder, new_folder)
+    err_msg = visualize.create_folder(platform, url, token, parent_folder, "New Folder")
     if err_msg:
         flash(err_msg, category='error')
 
@@ -1148,29 +1134,14 @@ def add_folder(user_name, location_key):
 # -----------------------------------------------------------------------------------
 def rename_folder(user_name, location_key, old_folder, new_folder):
 
-    gui_view = path_stat.get_element(user_name, "gui_view")
+    platform, url, token, source_folder = get_report_info(user_name, location_key)
 
-    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
-
-    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
-
-    platform = root_gui["visualization"]        # Grafana, Power BI etc.
-
-    platforms_tree = gui_view.get_base_info("visualization")
-    url = platforms_tree[platform]['url']
-    token = platforms_tree[platform]['token']
-
-    network_name = gui_view.get_base_info("name")
-    parent_folder = "AnyLog_" + network_name
-
-    source_folder = parent_folder +  old_folder[7:]
     index = source_folder.rfind('@')        # Add parent folders to new folder name
     dest_folder = source_folder[:index + 1] + new_folder
 
     err_msg = visualize.rename_folder(platform, url, token, source_folder, dest_folder)
     if err_msg:
         flash(err_msg, category='error')
-
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -1492,24 +1463,12 @@ def navigate_in_reports(user_name, location_key, add_folder, rename_folder):
         current_node.reset_children()  # Delete children from older navigation
         return call_navigation_page(user_name, select_info, location_key, current_node)
 
-    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
-
-    gui_view = path_stat.get_element(user_name, "gui_view")
-    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
-
-    platform = root_gui["visualization"]        # Grafana, Power BI etc.
-
-    network_name = gui_view.get_base_info("name")
-    root_folder = "AnyLog_" + network_name
-
-    platforms_tree = gui_view.get_base_info("visualization")
-    url = platforms_tree[platform]['url']
-    token = platforms_tree[platform]['token']
+    platform, url, token, folder_name = get_report_info(user_name, location_key)
 
     current_node.add_child(name=location_key + '@' + "Add_Folder", option="New Folder", path=location_key + '@' + "Add_Folder")
 
     # Get the child folders
-    child_folders, err_msg = visualize.get_child_folders(platform, url, token, root_folder+ location_key[7:])     # pass location_key after the prefix "Reports"
+    child_folders, err_msg = visualize.get_child_folders(platform, url, token, folder_name)     # pass location_key after the prefix "Reports"
     if err_msg:
         flash(err_msg, category='error')
         return redirect(url_for('metadata', selection=location_key))
@@ -1521,7 +1480,7 @@ def navigate_in_reports(user_name, location_key, add_folder, rename_folder):
     current_node.add_child(name=location_key + '@' + "Add_Report", option="New Report", path=location_key + '@' + "Add_Report")
 
     # Get the reports in the folder
-    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, root_folder)
+    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, folder_name)
     if err_msg:
         flash(err_msg, category='error')
         return redirect(url_for('metadata', selection=location_key))
@@ -1540,6 +1499,33 @@ def navigate_in_reports(user_name, location_key, add_folder, rename_folder):
         current_node.add_child( **params )
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
+
+
+# -----------------------------------------------------------------------------------
+# Return the report platform and folder
+# -----------------------------------------------------------------------------------
+def get_report_info(user_name, location_key):
+    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    root_gui, gui_sub_tree = gui_view.get_subtree(
+        gui_key)  # Get the subtree representing the location on the config file
+
+    platform = root_gui["visualization"]  # Grafana, Power BI etc.
+
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
+
+    if location_key == "Reports":
+        folder_name = root_folder
+    else:
+        folder_name = root_folder + location_key[7:]
+
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree[platform]['url']
+    token = platforms_tree[platform]['token']
+
+    return [platform, url, token, folder_name]
 
 # -----------------------------------------------------------------------------------
 # Call the navigation page - metadata.html
