@@ -51,6 +51,52 @@ def test_connection( grafana_url:str, token:str ):
     return [ret_val, err_msg]
 
 # -----------------------------------------------------------------------------------
+# Given a parent folder - create a child folder
+# Grafana folders API - https://grafana.com/docs/grafana/latest/http_api/folder/#create-folder
+# -----------------------------------------------------------------------------------
+def create_folder( grafana_url, token, parent_folder, folder_name):
+
+    folders_list, err_msg = get_folders(grafana_url, token)
+
+    if not err_msg:
+        uid = -1
+        for folder in folders_list:
+            if folder['title'] == parent_folder:
+                uid = folder['uid']
+                break
+
+        if uid == -1:
+            # Parent folder is not available
+            err_msg = "Grafana API: Folder '%s' is not accessible"
+        else:
+
+            headers_data = {
+                "Authorization": "Bearer %s" % token,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+
+            folder_info = {
+                "uid": uid,  # https://grafana.com/docs/grafana/latest/http_api/dashboard/
+                "title": folder_name
+            }
+
+            response, err_msg = rest_api.do_post(url=grafana_url, headers_data=headers_data, data_json=folder_info)
+
+            if response:
+                if response.status_code != 200:
+                    if response.status_code == 400:
+                        err_msg = "Grafana API: Failed to create folder '%s'/'%s': error in data provided" % (parent_folder, folder_name)
+                    elif response.status_code == 401:
+                        err_msg = "Grafana API: Failed to create folder '%s'/'%s': Unauthorized" % (parent_folder, folder_name)
+                    elif response.status_code == 403:
+                        err_msg = "Grafana API: Failed to create folder '%s'/'%s': Access Denied" % (parent_folder, folder_name)
+                    else:
+                        err_msg = "Grafana API: Failed to create folder '%s'/'%s': with error code: %u" % (parent_folder, folder_name, response.status_code)
+
+    return err_msg
+
+# -----------------------------------------------------------------------------------
 # Give a list of parent folders - return the children
 # Grafana folders API - https://grafana.com/docs/grafana/latest/http_api/folder/
 # -----------------------------------------------------------------------------------
@@ -504,12 +550,12 @@ def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard)
 # -----------------------------------------------------------------------------------
 def get_folders(grafana_url, token):
     '''
-    Return a list with all the dashboards
+    Return a list with all the folders
     '''
 
-    dashboards, err_msg = grafana_get("Get Dashboards", grafana_url, "/api/folders", token)
+    folders, err_msg = grafana_get("Get Dashboards", grafana_url, "/api/folders", token)
 
-    return [dashboards, err_msg]
+    return [folders, err_msg]
 
 
 # -----------------------------------------------------------------------------------
