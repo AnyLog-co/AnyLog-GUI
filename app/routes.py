@@ -933,6 +933,7 @@ def process_tree_form():
         "select_button": False,     # Add the database and table of an edge node to a list that is used when a new report is defined
         "url" : None,               # URL to redirect  the process (For example to configure a report)
         "add_report" : False,       # Define a new report in the report section
+        "add_folder" : False        # Add a new Grafana Folder
     }
 
     selected_list = []
@@ -957,9 +958,15 @@ def process_tree_form():
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
                 # Move from metadata to data
                 key = form_key[7:]
-                if len(key) > 11 and key[-11:] == "@Add_Report":
-                    form_selections["add_report"] = True
+                if len(key) > 11:
+                    if key[-11:] == "@Add_Report":
+                        form_selections["add_report"] = True
+
+                    elif key[-11:] == "@Add_Folder":
+                        form_selections["add_folder"] = True
+
                     key = key[:-11]
+
                 form_selections["location_key"] = key  # Save the location key based on the user button selection
                 break
             if form_key[:9] == "selected.":
@@ -1100,6 +1107,28 @@ def define_new_report(user_name, folder):
 
     return render_template('new_report.html', **select_info)
 
+
+# -----------------------------------------------------------------------------------
+# Add new child folder for reports
+# -----------------------------------------------------------------------------------
+def add_folder(user_name, parent_folder):
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+
+    gui_key = app_view.get_gui_key(parent_folder)  # Transform selection with data to selection of GUI keys
+
+    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+    platform = root_gui["visualization"]        # Grafana, Power BI etc.
+
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree[platform]['url']
+    token = platforms_tree[platform]['token']
+
+    visualize.create_folder(platform, url, token, parent_folder, "New Folder")
+
+
+
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
@@ -1124,6 +1153,9 @@ def metadata( selection = "" ):
 
     if form_selections["add_report"]:
         return define_new_report(user_name, location_key)
+
+    if form_selections["add_folder"]:
+        return add_folder(user_name, location_key)
 
     if selection:
         index = selection.find('@')

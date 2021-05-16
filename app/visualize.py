@@ -138,6 +138,18 @@ def  get_connector(platform):
     return connector
 
 
+# --------------------------------------------------------
+# Create a new child Folder to the parent folder
+# --------------------------------------------------------
+def create_folder(platform_name, url, token, parent_folder, folder_name):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.create_folder( url, token, parent_folder, folder_name)
+
+    return error_msg
 
 
 
