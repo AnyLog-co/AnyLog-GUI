@@ -1134,10 +1134,10 @@ def add_folder(user_name, location_key):
 # -----------------------------------------------------------------------------------
 def rename_folder(user_name, location_key, old_folder, new_folder):
 
-    platform, url, token, source_folder = get_report_info(user_name, location_key)
+    platform, url, token, source_folder = get_report_info(user_name, old_folder)
 
-    index = source_folder.rfind('@')        # Add parent folders to new folder name
-    dest_folder = source_folder[:index + 1] + new_folder
+    index = source_folder.rfind('@')
+    dest_folder = source_folder[:index +1] + new_folder
 
     err_msg = visualize.rename_folder(platform, url, token, source_folder, dest_folder)
     if err_msg:
@@ -1486,17 +1486,17 @@ def navigate_in_reports(user_name, location_key, add_folder, rename_folder):
         return redirect(url_for('metadata', selection=location_key))
 
     # Update the tree
-
-    for name, url in panels_urls.items():
-        key = location_key + '@' + name
-        params = {
-            'name': name,
-            'key': key,
-            'path': key,
-            'report' : True,
-            'url' : url[0]
-        }
-        current_node.add_child( **params )
+    if panels_urls:
+        for name, url in panels_urls.items():
+            key = location_key + '@' + name
+            params = {
+                'name': name,
+                'key': key,
+                'path': key,
+                'report' : True,
+                'url' : url[0]
+            }
+            current_node.add_child( **params )
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 

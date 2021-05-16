@@ -221,10 +221,7 @@ def get_reports(url:str, platform_info:dict, token:str, directory:str):
                         if "title" in entry:
                             # reports exists
                             dashboard_name = entry['title']
-                            dashboard_id = entry["id"]
                             dashboard_uid = entry["uid"]
-                            if "version" in entry:
-                                report_version = entry["version"]
                             dashboard_info, err_msg = get_dashboard_info(url, token, dashboard_uid, dashboard_name)
                             if dashboard_info:
                                 if 'dashboard' in dashboard_info and 'panels' in dashboard_info['dashboard']:
@@ -232,7 +229,6 @@ def get_reports(url:str, platform_info:dict, token:str, directory:str):
                                     panels[dashboard_name] = panels_urls
         else:
             panels = None
-            err_msg = "Grafana API: Missing root folder in grafana: %s" % directory
     else:
         panels = None
 
