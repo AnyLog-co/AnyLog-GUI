@@ -1255,7 +1255,7 @@ def metada_navigation(user_name, location_key, form_selections):
         select_info = get_select_menu(selection=gui_key)
 
         if form_selections["get_policy"]:
-            # User requested ti VIEW the policy of a tree entry
+            # User requested to VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
             add_policy(current_node, form_selections["policy_id"])
 
@@ -1335,6 +1335,7 @@ def add_command_reply(current_node, al_cmd):
     # Get from the parent the IP and port and issue the query
     parent_node = current_node.get_parent()
     parent_details = parent_node.details
+    error_msg = None
     if parent_details:
         if "ip" in parent_details.keys and "rest_port" in parent_details.keys:
             index = parent_details.keys.index("ip")
@@ -1354,6 +1355,8 @@ def add_command_reply(current_node, al_cmd):
                     # Add text
                     data_list = data.replace('\r','').strip().split('\n')
                     current_node.add_data(data_list)
+        else:
+            error_msg = "IP and Port information for node: '%s' are not available" % parent_node.name
 
     return error_msg
 # -----------------------------------------------------------------------------------

@@ -54,8 +54,8 @@
                         },
                         "Clusters" : {
                             "query" : "blockchain get cluster",
-                            "table_title" : ["ID", "Name", "Cluster"],
-                            "json_keys" : ["id", "name", "cluster"]
+                            "table_title" : ["ID", "Name"],
+                            "json_keys" : ["id", "name"]
                         },
                         "Sensors" : {
                             "query" : "blockchain get sensor",

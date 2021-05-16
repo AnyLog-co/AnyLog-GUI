@@ -369,7 +369,7 @@ def setup_print_json( policy, print_list):
             elif isinstance(json_value, list):
                 for list_entry in json_value:
                     if isinstance(list_entry,dict) or isinstance(list_entry,list):
-                        setup_print_json(json_value, print_list)
+                        setup_print_json(list_entry, print_list)
                     else:
                         new_node.set_json_value(json_value)
             else:
@@ -392,7 +392,7 @@ def update_command(current_node, selection, command):
     '''
     cmd_words = command.split()
     value = None
-    if len(cmd_words) > 7:
+    if len(cmd_words) >= 7:
         if cmd_words[3] == "where" and cmd_words[5] == '=':
             for index, word in enumerate(cmd_words[6:]):
                 if word == 'bring' or word.startswith("bring."):
