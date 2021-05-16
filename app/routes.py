@@ -1212,9 +1212,9 @@ def metadata( selection = "" ):
         else:
             key = selection
 
-            if is_reports(user_name, key):
-                # Navigate in reports
-                return navigate_in_reports(user_name, location_key, form_selections["add_folder"])
+        if is_reports(user_name, key):
+            # Navigate in reports
+            return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"])
 
 
     if request.query_string:
@@ -1464,7 +1464,7 @@ def add_policy(current_node, policy_id):
 # -----------------------------------------------------------------------------------
 # Navigate in the reports partitioned by folders
 # -----------------------------------------------------------------------------------
-def navigate_in_reports(user_name, location_key, add_folder):
+def navigate_in_reports(user_name, location_key, add_folder, rename_folder):
 
     root_nav = path_stat.get_element(user_name, "root_nav")
 
@@ -1487,8 +1487,8 @@ def navigate_in_reports(user_name, location_key, add_folder):
 
     # Navigate in the tree to find location of Node
     current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
-    if add_folder:
-        # If adding a folder - reset children and read again the children folders - with the new folder
+    if add_folder or rename_folder:
+        # If adding a folder or renaming - reset children and read again the children folders - with the new folder
         current_node.reset_children()
     elif current_node.is_with_children():
         current_node.reset_children()  # Delete children from older navigation
@@ -1511,7 +1511,7 @@ def navigate_in_reports(user_name, location_key, add_folder):
     current_node.add_child(name=location_key + '@' + "Add_Folder", option="New Folder", path=location_key + '@' + "Add_Folder")
 
     # Get the child folders
-    child_folders, err_msg = visualize.get_child_folders(platform, url, token, root_folder)
+    child_folders, err_msg = visualize.get_child_folders(platform, url, token, root_folder+ location_key[7:])     # pass location_key after the prefix "Reports"
     if err_msg:
         flash(err_msg, category='error')
         return redirect(url_for('metadata', selection=location_key))
