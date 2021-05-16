@@ -1477,7 +1477,7 @@ def navigate_in_reports(user_name, location_key, add_folder):
 
     for child in child_folders:
         # Add folders to tree
-        current_node.add_child(name=child, path=location_key + '@' + child)
+        current_node.add_child(name=child, path=location_key + '@' + child, folder=True)
 
     current_node.add_child(name=location_key + '@' + "Add_Report", option="New Report", path=location_key + '@' + "Add_Report")
 
