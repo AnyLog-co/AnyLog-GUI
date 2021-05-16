@@ -1354,6 +1354,9 @@ def add_command_reply(current_node, al_cmd):
                 else:
                     # Add text
                     data_list = data.replace('\r','').strip().split('\n')
+                    # Split text to attribiute value using colon
+                    for index, entry in enumerate(data_list):
+                        data_list[index] = entry.split(':', 1)
                     current_node.add_data(data_list)
         else:
             error_msg = "IP and Port information for node: '%s' are not available" % parent_node.name

@@ -87,8 +87,20 @@
                                 <ul>        <!--  Start unordered list   -->
 
                                 {% for data_line in node.data_struct %}
-                                    <li style="background-color: steelblue; color: papayawhip;  border: 1px solid #DDDDDD">
-                                     {{data_line}}
+                                     <li>
+                                    {% if data_line[1] %}
+                                        <!--  transformed text to attr value pairs separated by colon   -->
+                                        <span style="color: #140d84">
+                                        {{data_line[0]}}&nbsp : &nbsp
+                                        </span>
+                                        <span style="color: black">
+                                        {{data_line[1]}}
+                                        </span>
+                                    {% else %}
+                                        <span style="color: black">
+                                        {{data_line[0]}}
+                                        </span>
+                                    {% endif %}
                                     </li>
                                 {%  endfor %}
 
