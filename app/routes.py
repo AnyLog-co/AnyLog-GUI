@@ -1134,14 +1134,12 @@ def add_folder(user_name, location_key):
     url = platforms_tree[platform]['url']
     token = platforms_tree[platform]['token']
 
-    if location_key == "Reports":
-        network_name = gui_view.get_base_info("name")
-        parent_folder = "AnyLog_" + network_name
-    else:
-        parent_folder = location_key
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
+    parent_folder = root_folder + location_key[7:]
+    new_folder = parent_folder + '@' + "New Folder"
 
-
-    err_msg = visualize.create_folder(platform, url, token, parent_folder, "New Folder")
+    err_msg = visualize.create_folder(platform, url, token, parent_folder, new_folder)
     if err_msg:
         flash(err_msg, category='error')
 
