@@ -102,8 +102,8 @@
                           "children" : {
                               "Operators":  {
                                             "query" : "blockchain get operator where cluster = [cluster][id]",
-                                            "table_title" : ["ID", "Name"],
-                                            "json_keys" : ["id", "name"],
+                                            "table_title" : ["ID", "Name", "IP", "Port"],
+                                            "json_keys" : ["id", "name", "ip", "rest_port"],
                                             "type" : "node",
                                             "children" : {
 
