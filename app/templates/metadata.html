@@ -18,13 +18,17 @@ else
 }
 // -->
 <!--
-function get_file_name()
+function get_name()
 {
-var file_name=prompt("New file name:");
-return file_name
+    document.getElementById("folder_name").value=prompt("New name:");
 }
+
+
 // -->
 </script>
+
+
+
 
 {% if selection %}
 
@@ -72,8 +76,9 @@ return file_name
 
                         {% elif node.folder  %}
                             <!-- Option to rename or delete a folder -->
-                            <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename" onclick="get_file_name()">
+                            <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename" onclick="get_name()">
                             <input type="submit" value="Delete" name="folder.{{node.path}}" class="button_delete" onclick="confirm_selection()">
+                            <input type="hidden" name="folder_name" id="folder_name">
                         {% elif node.details  %}
                             <!-- View Policy or Select or Navigate  -->
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
