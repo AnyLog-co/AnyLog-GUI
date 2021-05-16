@@ -1111,11 +1111,11 @@ def define_new_report(user_name, folder):
 # -----------------------------------------------------------------------------------
 # Add new child folder for reports
 # -----------------------------------------------------------------------------------
-def add_folder(user_name, parent_folder):
+def add_folder(user_name, location_key):
 
     gui_view = path_stat.get_element(user_name, "gui_view")
 
-    gui_key = app_view.get_gui_key(parent_folder)  # Transform selection with data to selection of GUI keys
+    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
 
     root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
@@ -1124,6 +1124,13 @@ def add_folder(user_name, parent_folder):
     platforms_tree = gui_view.get_base_info("visualization")
     url = platforms_tree[platform]['url']
     token = platforms_tree[platform]['token']
+
+    if location_key == "Reports":
+        network_name = gui_view.get_base_info("name")
+        parent_folder = "AnyLog_" + network_name
+    else:
+        parent_folder = location_key
+
 
     visualize.create_folder(platform, url, token, parent_folder, "New Folder")
 
@@ -1465,9 +1472,9 @@ def navigate_in_reports(user_name, location_key):
         flash(err_msg, category='error')
         return redirect(url_for('metadata', selection=location_key))
 
-    if child_folders:
+    for child in child_folders:
         # Add folders to tree
-        pass
+        current_node.add_child(name=child, path=location_key + '@' + child)
 
     current_node.add_child(name=location_key + '@' + "Add_Report", option="New Report", path=location_key + '@' + "Add_Report")
 

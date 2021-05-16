@@ -110,14 +110,14 @@ def new_report(platform_name, **platform_info):
 # --------------------------------------------------------
 # Get the subfolders to the path of folders represented by the list
 # --------------------------------------------------------
-def get_child_folders(platform_name, url, token, parent_folders):
+def get_child_folders(platform_name, url, token, parent_folder):
 
     connector = get_connector(platform_name)
     if not connector:
         error_msg = "%s not supported" % platform_name
         child_folders = None
     else:
-        child_folders, error_msg = connector.get_child_folders(url, token, parent_folders)
+        child_folders, error_msg = connector.get_child_folders(url, token, parent_folder)
 
     return [child_folders, error_msg]
 

@@ -77,11 +77,12 @@ def create_folder( grafana_url, token, parent_folder, folder_name):
             }
 
             folder_info = {
-                "uid": uid,  # https://grafana.com/docs/grafana/latest/http_api/dashboard/
-                "title": folder_name
+                "title": parent_folder + '@' + folder_name    # https://grafana.com/docs/grafana/latest/http_api/dashboard/
             }
 
-            response, err_msg = rest_api.do_post(url=grafana_url, headers_data=headers_data, data_json=folder_info)
+            url = "%s/api/folders" % grafana_url
+
+            response, err_msg = rest_api.do_post(url=url, headers_data=headers_data, data_json=folder_info)
 
             if response:
                 if response.status_code != 200:
@@ -100,14 +101,25 @@ def create_folder( grafana_url, token, parent_folder, folder_name):
 # Give a list of parent folders - return the children
 # Grafana folders API - https://grafana.com/docs/grafana/latest/http_api/folder/
 # -----------------------------------------------------------------------------------
-def get_child_folders( url, token, parent_folders:list):
+def get_child_folders( url, token, parent_folder:list):
 
-
-    folders, err_msg = get_folders(url, token)
-
+    parent_length = len(parent_folder)
+    folders_list, err_msg = get_folders(url, token)
     children = []
 
     # Find the immediate children
+    if not err_msg:
+        for folder in folders_list:
+            if folder['title'][:parent_length] == parent_folder:
+                sub_folder = folder['title']
+                if len (sub_folder) > (parent_length + 1):
+                    child = sub_folder[parent_length+1:]
+                    index = child.find('@')
+                    if index == 0:
+                        continue        # The folder has "@@" as a substring
+                    if index != -1:
+                        child = child[:index]
+                    children.append(child)
 
     return [children, err_msg]
 # -----------------------------------------------------------------------------------
