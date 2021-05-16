@@ -6,6 +6,26 @@
 
 {% block content %}
 
+<script LANGUAGE="JavaScript">
+<!--
+function confirm_selection()
+{
+var agree=confirm("Are you sure you wish to continue?");
+if (agree)
+ return true ;
+else
+ return false ;
+}
+// -->
+<!--
+function get_file_name()
+{
+var file_name=prompt("New file name:");
+return file_name
+}
+// -->
+</script>
+
 {% if selection %}
 
 <!-- Add the usr path to the form (if provided)  -->
@@ -52,8 +72,8 @@
 
                         {% elif node.folder  %}
                             <!-- Option to rename or delete a folder -->
-                            <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename">
-                            <input type="submit" value="Delete" name="folder.{{node.path}}" class="button_delete">
+                            <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename" onclick="get_file_name()">
+                            <input type="submit" value="Delete" name="folder.{{node.path}}" class="button_delete" onclick="confirm_selection()">
                         {% elif node.details  %}
                             <!-- View Policy or Select or Navigate  -->
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
