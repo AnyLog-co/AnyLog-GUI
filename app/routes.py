@@ -1131,9 +1131,9 @@ def add_folder(user_name, location_key):
         parent_folder = location_key
 
 
-    visualize.create_folder(platform, url, token, parent_folder, "New Folder")
-
-
+    err_msg = visualize.create_folder(platform, url, token, parent_folder, "New Folder")
+    if err_msg:
+        flash(err_msg, category='error')
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -1161,7 +1161,8 @@ def metadata( selection = "" ):
         return define_new_report(user_name, location_key)
 
     if form_selections["add_folder"]:
-        return add_folder(user_name, location_key)
+        # Continue to print tree  with new folder
+        add_folder(user_name, location_key)
 
     if selection:
         index = selection.find('@')
@@ -1172,7 +1173,7 @@ def metadata( selection = "" ):
 
             if is_reports(user_name, key):
                 # Navigate in reports
-                return navigate_in_reports(user_name, location_key)
+                return navigate_in_reports(user_name, location_key, form_selections["add_folder"])
 
 
     if request.query_string:
@@ -1422,7 +1423,7 @@ def add_policy(current_node, policy_id):
 # -----------------------------------------------------------------------------------
 # Navigate in the reports partitioned by folders
 # -----------------------------------------------------------------------------------
-def navigate_in_reports(user_name, location_key):
+def navigate_in_reports(user_name, location_key, add_folder):
 
     root_nav = path_stat.get_element(user_name, "root_nav")
 
@@ -1445,7 +1446,10 @@ def navigate_in_reports(user_name, location_key):
 
     # Navigate in the tree to find location of Node
     current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
-    if current_node.is_with_children():
+    if add_folder:
+        # If adding a folder - reset children and read again the children folders - with the new folder
+        current_node.reset_children()
+    elif current_node.is_with_children():
         current_node.reset_children()  # Delete children from older navigation
         return call_navigation_page(user_name, select_info, location_key, current_node)
 
