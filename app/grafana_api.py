@@ -72,7 +72,7 @@ def create_folder( grafana_url, token, parent_folder, child_folder):
         if not err_msg:
             if uid == -1:
                 # Parent folder is not available
-                err_msg = "Grafana API: Folder '%s' is not accessible"
+                err_msg = "Grafana API: Folder '%s' is not accessible" % parent_folder
             else:
 
                 headers_data = {
@@ -99,6 +99,61 @@ def create_folder( grafana_url, token, parent_folder, child_folder):
                             err_msg = "Grafana API: Failed to create folder '%s'/'%s': Access Denied" % (parent_folder, child_folder)
                         else:
                             err_msg = "Grafana API: Failed to create folder '%s'/'%s': with error code: %u" % (parent_folder, child_folder, response.status_code)
+
+    return err_msg
+# -----------------------------------------------------------------------------------
+# Given a parent folder - create a child folder
+# Grafana folders API - https://grafana.com/docs/grafana/latest/http_api/folder/#create-folder
+# -----------------------------------------------------------------------------------
+def rename_folder( grafana_url, token, old_folder, new_folder):
+
+    folders_list, err_msg = get_folders(grafana_url, token)
+
+    if not err_msg:
+        uid = None
+        for folder in folders_list:
+            folder_name = folder['title']
+            if folder_name == old_folder:
+                uid = folder['uid']
+            elif folder_name == new_folder:
+                err_msg = "Grafana API: Duplicate folder name: '%s'" % (new_folder)
+                break
+
+        if not err_msg:
+            if uid == None:
+                # Parent folder is not available
+                err_msg = "Grafana API: Folder '%s' was not found" % old_folder
+            else:
+
+                headers_data = {
+                    "Authorization": "Bearer %s" % token,
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }
+
+                folder_info = {
+                    "title": new_folder,
+                    "overwrite": True
+                }
+
+                url = "%s/api/folders/%s" % (grafana_url, uid)
+
+                response, err_msg = rest_api.do_put(url=url, headers_data=headers_data, data_json=folder_info)
+
+                if response:
+                    if response.status_code != 200:
+                        if response.status_code == 400:
+                            err_msg = "Grafana API: Failed to rename folder '%s' to '%s': error in data provided" % (old_folder, new_folder)
+                        elif response.status_code == 401:
+                            err_msg = "Grafana API: Failed to rename folder '%s' to '%s': Unauthorized" % (old_folder, new_folder)
+                        elif response.status_code == 403:
+                            err_msg = "Grafana API: Failed to rename folder '%s' to '%s': Access Denied" % (old_folder, new_folder)
+                        elif response.status_code == 404:
+                            err_msg = "Grafana API: Failed to rename folder '%s': folder not found" % old_folder
+                        elif response.status_code == 412:
+                            err_msg = "Grafana API: Failed to rename folder '%s': preconditions failed" % old_folder
+                        else:
+                            err_msg = "Grafana API: Failed to rename folder '%s' to '%s': with error code: %u" % (old_folder, new_folder, response.status_code)
 
     return err_msg
 

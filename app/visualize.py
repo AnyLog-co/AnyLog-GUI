@@ -151,6 +151,19 @@ def create_folder(platform_name, url, token, parent_folder, folder_name):
 
     return error_msg
 
+# --------------------------------------------------------
+# Rename a folder
+# --------------------------------------------------------
+def rename_folder(platform_name, url, token, old_folder, new_name):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.rename_folder( url, token, old_folder, new_name)
+
+    return error_msg
+
 
 
 

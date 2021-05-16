@@ -933,7 +933,8 @@ def process_tree_form():
         "select_button": False,     # Add the database and table of an edge node to a list that is used when a new report is defined
         "url" : None,               # URL to redirect  the process (For example to configure a report)
         "add_report" : False,       # Define a new report in the report section
-        "add_folder" : False        # Add a new Grafana Folder
+        "add_folder" : False,        # Add a new Grafana Folder
+        "rename_folder": False
     }
 
     selected_list = []
@@ -954,6 +955,15 @@ def process_tree_form():
                     form_selections["location_key"] = form_key
                     form_selections["get_policy"] = True    # Get the policy of the node
                 break
+            if form_val == "Rename":
+                # Rename a folder
+                if "folder_name" in form_info and len(form_info["folder_name"]):
+                    new_folder_name = form_info["folder_name"]
+                    old_folder_name = form_key[7:]
+                    form_selections["rename_folder"] = True
+                    form_selections["new_folder_name"] = new_folder_name
+                    form_selections["old_folder_name"] = old_folder_name
+                    break
             if form_key[:7] == "option.":
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
                 # Move from metadata to data
@@ -1136,6 +1146,35 @@ def add_folder(user_name, location_key):
         flash(err_msg, category='error')
 
 # -----------------------------------------------------------------------------------
+# Add new child folder for reports
+# -----------------------------------------------------------------------------------
+def rename_folder(user_name, location_key, old_folder, new_folder):
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+
+    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
+    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+    platform = root_gui["visualization"]        # Grafana, Power BI etc.
+
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree[platform]['url']
+    token = platforms_tree[platform]['token']
+
+    network_name = gui_view.get_base_info("name")
+    parent_folder = "AnyLog_" + network_name
+
+    source_folder = parent_folder +  old_folder[7:]
+    index = source_folder.rfind('@')        # Add parent folders to new folder name
+    dest_folder = source_folder[:index + 1] + new_folder
+
+    err_msg = visualize.rename_folder(platform, url, token, source_folder, dest_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+
+
+# -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
 # -----------------------------------------------------------------------------------
@@ -1163,6 +1202,8 @@ def metadata( selection = "" ):
     if form_selections["add_folder"]:
         # Continue to print tree  with new folder
         add_folder(user_name, location_key)
+    elif form_selections["rename_folder"]:
+        rename_folder(user_name, location_key, form_selections["old_folder_name"], form_selections["new_folder_name"])
 
     if selection:
         index = selection.find('@')
