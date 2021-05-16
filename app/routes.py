@@ -961,11 +961,10 @@ def process_tree_form():
                 if len(key) > 11:
                     if key[-11:] == "@Add_Report":
                         form_selections["add_report"] = True
-
+                        key = key[:-11]
                     elif key[-11:] == "@Add_Folder":
                         form_selections["add_folder"] = True
-
-                    key = key[:-11]
+                        key = key[:-11]
 
                 form_selections["location_key"] = key  # Save the location key based on the user button selection
                 break
