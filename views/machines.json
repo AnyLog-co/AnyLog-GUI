@@ -25,7 +25,8 @@
                     "table_title" : ["ID", "Name", "Description"],
                     "json_keys" : ["id", "name", "description"],
                     "dbms_name" : "Orics",
-                    "table_name" : "[tag][name]"
+                    "table_name" : "[tag][name]",
+                    "submit" : ["Configure", "Select", "Report"]
                 },
                 "Manufacturer" :
                 {
@@ -53,7 +54,8 @@
                                                             "table_title" : ["ID", "Name", "Description"],
                                                             "json_keys" : ["id", "name", "description"],
                                                             "dbms_name" : "Orics",
-                                                            "table_name" : "[tag][name]"
+                                                            "table_name" : "[tag][name]",
+                                                            "submit" : ["Configure", "Select", "Report"]
                                                         }
                                             }
                                         },

@@ -52,6 +52,7 @@ class TreeNode():
         self.folder = False             # True for a folder type
         self.url = None                 # URL for a report
         self.command = False            # Is node representing a network command
+        self.submit_buttons = None      # A potential list of submit buttons assigned to a node
 
         # Setup params
         for key, value in params.items():
@@ -84,6 +85,13 @@ class TreeNode():
         '''
         return self.command
 
+
+    # -----------------------------------------------------------------------------------
+    # Add Submit buttons to a node
+    # These provide additional options when navigating
+    # -----------------------------------------------------------------------------------
+    def add_submit_buttons(self, submit_list):
+        self.submit_buttons = submit_list
 
     # -----------------------------------------------------------------------------------
     # Indicate that when a page is loaded - set the scroll location on this node

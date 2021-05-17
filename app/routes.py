@@ -1340,6 +1340,10 @@ def metada_navigation(user_name, location_key, form_selections):
 
                 root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
+                if gui_sub_tree and 'submit' in gui_sub_tree:
+                    # add submit buttons
+                    current_node.add_submit_buttons(gui_sub_tree['submit'])
+
                 if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
 
                     # Executes a query to select data from the network and set the data as as the children
