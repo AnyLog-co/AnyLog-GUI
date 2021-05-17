@@ -1358,7 +1358,6 @@ def metada_navigation(user_name, location_key, form_selections):
 
             if current_node.is_with_children():
                 current_node.reset_children()  # Delete children from older navigation
-                current_node.reset_submit_buttons()
             else:
                 # Collect the children
 
@@ -1366,9 +1365,6 @@ def metada_navigation(user_name, location_key, form_selections):
 
                 root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
-                if gui_sub_tree and 'submit' in gui_sub_tree:
-                    # add submit buttons
-                    current_node.add_submit_buttons(gui_sub_tree['submit'])
 
                 if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
 
@@ -1569,15 +1565,30 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
     nav_tree.setup_print_list(root_nav, print_list)
 
     if current_node:
+
+        gui_view = path_stat.get_element(user_name, "gui_view")
+        gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+        root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+        if gui_sub_tree and 'submit' in gui_sub_tree:
+            # add submit buttons
+            if current_node.is_with_children():
+                current_node.add_submit_buttons(gui_sub_tree['submit'])
+            else:
+                current_node.reset_submit_buttons() # No need in submit buttons with no children
+
         # Place a flag to indicate the position n the page  when page is loaded
         # Reset is done in nav_tree.setup_print_list
         current_node.set_scroll_location()
+
     else:
         # First page - nothing selected - show the Network Map
         gui_view = path_stat.get_element(user_name, "gui_view")
         map_url = gui_view.get_base_info("map")
         if map_url:
             select_info['map_url'] = map_url
+
+
 
     select_info['selection'] = location_key
 
