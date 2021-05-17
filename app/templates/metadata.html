@@ -66,8 +66,6 @@ function get_name()
                 {% endif %}
 
                 {% if node.name  %}
-
-
                         {% if node.report  %}
                             <!-- Option to rename update or delete a report -->
                             <input type="submit" value="Update" name="{{node.path}}" class="button_update">
@@ -137,6 +135,11 @@ function get_name()
                             {% endif %}
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
+                        {% endif %}
+                        {%  if node.submit_buttons %}
+                            {% for button in node.submit_buttons %}
+                                <input type="submit" value="{{ button }}" name="{{ button }}" class="button_submit">    <!-- Configure report / Select report / Add report -->
+                            {%  endfor %}
                         {% endif %}
                 {% elif node.json_key %}
                          <!-- View a policy (key and value)  -->
