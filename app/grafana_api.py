@@ -175,10 +175,8 @@ def get_child_folders( url, token, parent_folder):
                 if len (sub_folder) > (parent_length + 1):
                     child = sub_folder[parent_length+1:]
                     index = child.find('@')
-                    if index == 0:
-                        continue        # The folder has "@@" as a substring
                     if index != -1:
-                        child = child[:index]
+                        continue        # The folder has "@@" as a substring
                     children.append(child)
 
     return [children, err_msg]
