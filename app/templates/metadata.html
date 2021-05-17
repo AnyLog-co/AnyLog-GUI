@@ -10,11 +10,7 @@
 <!--
 function confirm_selection()
 {
-var agree=confirm("Are you sure you wish to continue?");
-if (agree)
- return true ;
-else
- return false ;
+    document.getElementById("delete_confirmed").value=confirm("Are you sure you wish to continue?");
 }
 // -->
 <!--
@@ -77,6 +73,7 @@ function get_name()
                             <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename" onclick="get_name()">
                             <input type="submit" value="Delete" name="folder.{{node.path}}" class="button_delete" onclick="confirm_selection()">
                             <input type="hidden" name="folder_name" id="folder_name">
+                            <input type="hidden" name="delete_confirmed" id="delete_confirmed">
                         {% elif node.details  %}
                             <!-- View Policy or Select or Navigate  -->
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->

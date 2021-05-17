@@ -934,7 +934,8 @@ def process_tree_form():
         "url" : None,               # URL to redirect  the process (For example to configure a report)
         "add_report" : False,       # Define a new report in the report section
         "add_folder" : False,        # Add a new Grafana Folder
-        "rename_folder": False
+        "rename_folder": False,
+        "delete_folder" : False,
     }
 
     selected_list = []
@@ -964,6 +965,12 @@ def process_tree_form():
                     form_selections["new_folder_name"] = new_folder_name
                     form_selections["old_folder_name"] = old_folder_name
                     break
+            if form_val == "Delete":
+                if form_key[:7] == "folder.":
+                    form_selections["delete_folder"] = True
+                    form_selections["folder_name"] = form_key[7:]
+                    break
+
             if form_key[:7] == "option.":
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
                 # Move from metadata to data
@@ -1145,6 +1152,19 @@ def rename_folder(user_name, location_key, old_folder, new_folder):
     err_msg = visualize.rename_folder(platform, url, token, source_folder, dest_folder)
     if err_msg:
         flash(err_msg, category='error')
+# -----------------------------------------------------------------------------------
+# Delete a folder
+# -----------------------------------------------------------------------------------
+def delete_folder(user_name, location_key, folder_name):
+
+    platform, url, token, source_folder = get_report_info(user_name, folder_name)
+
+    index = source_folder.rfind('@')
+    target_folder = source_folder[:index +1] + folder_name
+
+    err_msg = visualize.delete_folder(platform, url, token, target_folder)
+    if err_msg:
+        flash(err_msg, category='error')
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -1176,6 +1196,8 @@ def metadata( selection = "" ):
         add_folder(user_name, location_key)
     elif form_selections["rename_folder"]:
         rename_folder(user_name, location_key, form_selections["old_folder_name"], form_selections["new_folder_name"])
+    elif form_selections["delete_folder"]:
+        delete_folder(user_name, location_key, form_selections["folder_name"])
 
     if selection:
         index = selection.find('@')
