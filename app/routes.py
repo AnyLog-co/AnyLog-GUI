@@ -1196,16 +1196,16 @@ def metadata( selection = "" ):
     elif form_selections["delete_folder"]:
         delete_folder(user_name, location_key, form_selections["folder_name"])
 
-    if selection:
-        index = selection.find('@')
+    if location_key:
+        index = location_key.find('@')
         if index != -1:
-            key = selection[:index]
+            key = location_key[:index]
         else:
-            key = selection
+            key = location_key
 
         if is_reports(user_name, key):
             # Navigate in reports
-            return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"])
+            return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"], form_selections["delete_folder"])
 
 
     if request.query_string:
@@ -1460,7 +1460,7 @@ def add_policy(current_node, policy_id):
 # -----------------------------------------------------------------------------------
 # Navigate in the reports partitioned by folders
 # -----------------------------------------------------------------------------------
-def navigate_in_reports(user_name, location_key, add_folder, rename_folder):
+def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, folder_deleted):
 
     root_nav = path_stat.get_element(user_name, "root_nav")
 
@@ -1483,7 +1483,7 @@ def navigate_in_reports(user_name, location_key, add_folder, rename_folder):
 
     # Navigate in the tree to find location of Node
     current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
-    if add_folder or rename_folder:
+    if folder_added or folder_renamed or folder_deleted:
         # If adding a folder or renaming - reset children and read again the children folders - with the new folder
         current_node.reset_children()
     elif current_node.is_with_children():
