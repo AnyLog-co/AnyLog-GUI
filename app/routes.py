@@ -1157,10 +1157,7 @@ def rename_folder(user_name, location_key, old_folder, new_folder):
 # -----------------------------------------------------------------------------------
 def delete_folder(user_name, location_key, folder_name):
 
-    platform, url, token, source_folder = get_report_info(user_name, folder_name)
-
-    index = source_folder.rfind('@')
-    target_folder = source_folder[:index +1] + folder_name
+    platform, url, token, target_folder = get_report_info(user_name, folder_name)
 
     err_msg = visualize.delete_folder(platform, url, token, target_folder)
     if err_msg:
