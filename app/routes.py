@@ -811,9 +811,12 @@ def policies_to_status_report( user_name, policies_list ):
         flash('AnyLog: Missing Grafana definitions in config file', category='error')
         return None
 
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
+
     platform_info = copy.deepcopy(platforms_tree["Grafana"])
     platform_info['base_report'] = "AnyLog_Base"
-
+    platform_info["folder"] = root_folder
 
     platform_info["dashboard"] = dashboard
 
