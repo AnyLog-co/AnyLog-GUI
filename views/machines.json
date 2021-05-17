@@ -26,7 +26,7 @@
                     "json_keys" : ["id", "name", "description"],
                     "dbms_name" : "Orics",
                     "table_name" : "[tag][name]",
-                    "submit" : ["Config", "Select", "Report"]
+                    "submit" : ["Config", "Select", "Open"]
                 },
                 "Manufacturer" :
                 {
@@ -55,7 +55,7 @@
                                                             "json_keys" : ["id", "name", "description"],
                                                             "dbms_name" : "Orics",
                                                             "table_name" : "[tag][name]",
-                                                            "submit" : ["Config", "Select", "Report"]
+                                                            "submit" : ["Config", "Select", "Open"]
                                                         }
                                             }
                                         },
@@ -80,7 +80,8 @@
                 {
                     "type" : "reports",
                     "organization" : "folders",
-                    "visualization" : "Grafana"
+                    "visualization" : "Grafana",
+                    "submit" : ["Open"]
                 },
 
                 "Monitor"    : {

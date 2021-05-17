@@ -991,7 +991,7 @@ def process_tree_form():
             if form_key[:9] == "selected.":
                 # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
                 selected_list.append(form_key[9:])
-            elif form_key == "Report":
+            elif form_key == "Open":
                 # The selected list is used for a report
                 form_selections["report_button"] = True
             elif form_key == "Select":
