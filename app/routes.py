@@ -986,7 +986,7 @@ def process_tree_form():
                 form_selections["report_button"] = True
             elif form_key == "Select":
                 form_selections["select_button"] = True
-            elif form_key == "Configure":
+            elif form_key == "Config":
                 # Configure the dynamic report
                 form_selections["url"] = url_for('conf_nav_report')
                 break
