@@ -70,3 +70,21 @@ def do_put(url, headers_data, data_str = None, data_json = None):
         error_msg = None
 
     return [response, error_msg]
+
+# -----------------------------------------------------------------------------------
+# Delete request
+# -----------------------------------------------------------------------------------
+def do_delete(url, headers_data):
+
+    try:
+        response= requests.delete(url=url, headers=headers_data)
+    except HTTPError as http_err:
+        error_msg = "REST DELETE HTTPError Error: %s" % str(http_err)
+        response = None
+    except Exception as err:
+        error_msg = "REST DELETE Error: %s" % str(err)
+        response = None
+    else:
+        error_msg = None
+
+    return [response, error_msg]

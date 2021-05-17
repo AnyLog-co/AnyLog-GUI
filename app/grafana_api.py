@@ -156,6 +156,41 @@ def rename_folder( grafana_url, token, old_folder, new_folder):
                             err_msg = "Grafana API: Failed to rename folder '%s' to '%s': with error code: %u" % (old_folder, new_folder, response.status_code)
 
     return err_msg
+# -----------------------------------------------------------------------------------
+# Given a parent folder - create a child folder
+# Grafana folders API - https://grafana.com/docs/grafana/latest/http_api/folder/#create-folder
+# -----------------------------------------------------------------------------------
+def delete_folder( grafana_url, token, folder_name):
+
+    folder_uid = get_folder_value(grafana_url, token, folder_name, "uid")
+
+    if not folder_uid:
+        # Parent folder is not available
+        err_msg = "Grafana API: Folder '%s' was not found" % folder_name
+    else:
+
+        headers_data = {
+            "Authorization": "Bearer %s" % token,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+
+        url = "%s/api/folders/%s" % (grafana_url, folder_uid)
+
+        response, err_msg = rest_api.do_delete(url=url, headers_data=headers_data)
+
+        if response:
+            if response.status_code != 200:
+                if response.status_code == 401:
+                    err_msg = "Grafana API: Failed to delete folder '%s': Unauthorized" % folder_name
+                elif response.status_code == 403:
+                    err_msg = "Grafana API: Failed to delete folder '%s'': Access Denied" % folder_name
+                elif response.status_code == 404:
+                    err_msg = "Grafana API: Failed to delete folder '%s': folder not found" % folder_name
+                else:
+                    err_msg = "Grafana API: Failed to delete folder '%s': with error code: %u" % (folder_name, response.status_code)
+
+    return err_msg
 
 # -----------------------------------------------------------------------------------
 # Give a list of parent folders - return the children
@@ -409,9 +444,9 @@ def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_na
     if new_dashboard:
         # First time that the dasboard with that name is written
 
-        folder_id = get_folder_id(grafana_url, token, folder_name)
+        folder_id = get_folder_value(grafana_url, token, folder_name, "id")
 
-        if folder_id != -1:
+        if folder_id:
             dashboard_uid, err_msg = add_dashboard(grafana_url, token, folder_id, dashboard_name, dashboard_info["dashboard"])
             if err_msg:
                 return err_msg
@@ -630,19 +665,22 @@ def get_folders(grafana_url, token):
 
     return [folders, err_msg]
 # -----------------------------------------------------------------------------------
-# Get the folder ID by the folder name
+# Get the folder ID or Uid by the folder name
 # -----------------------------------------------------------------------------------
-def get_folder_id(grafana_url, token, folder_name):
+def get_folder_value(grafana_url, token, folder_name, key):
+    '''
+    Key determines the value to retrieve from the folder. ie.: "id" or "uid"
+    '''
 
-    folder_id = -1
+    folder_value = None
     folders_list, err_msg = get_folders(grafana_url, token)
     if not err_msg:
         for folder in folders_list:
             title = folder['title']
             if folder_name == title:
-                folder_id = folder['id']
+                folder_value = folder[key]
                 break
-    return folder_id
+    return folder_value
 # -----------------------------------------------------------------------------------
 # Get dashboards IDs
 # There is no method to list dashboards, - do an empty search request and get dashboards from the results.

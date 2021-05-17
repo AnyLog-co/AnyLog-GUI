@@ -164,6 +164,19 @@ def rename_folder(platform_name, url, token, old_folder, new_name):
 
     return error_msg
 
+# --------------------------------------------------------
+# Rename a folder
+# --------------------------------------------------------
+def delete_folder(platform_name, url, token, folder_name):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.delete_folder( url, token, folder_name)
+
+    return error_msg
+
 
 
 
