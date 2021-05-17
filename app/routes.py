@@ -939,6 +939,8 @@ def process_tree_form():
         "add_folder" : False,        # Add a new Grafana Folder
         "rename_folder": False,
         "delete_folder" : False,
+        "status_report" : False,    # A report determined dynamically by the navigation
+        "existing_report" : False   # A predefined report
     }
 
     selected_list = []
@@ -989,14 +991,21 @@ def process_tree_form():
                 form_selections["location_key"] = key  # Save the location key based on the user button selection
                 break
             if form_key[:9] == "selected.":
-                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
-                selected_list.append(form_key[9:])
-            elif form_key == "Open":
+                # the user selected one or mulitple ege node (in the CHECKBOX)
+                if form_key[9:15] == "table.":
+                    # The path determines the report (Current status report processed in - policies_to_status_report
+                    selected_list.append(form_key[15:])
+                    form_selections["status_report"] = True
+                elif form_key[9:13] == "url.":
+                    # Entries represent existing reports
+                    selected_list.append(form_key[13:])
+                    form_selections["existing_report"] = True
+            elif form_val == "Open":
                 # The selected list is used for a report
                 form_selections["report_button"] = True
-            elif form_key == "Select":
+            elif form_val == "Select":
                 form_selections["select_button"] = True
-            elif form_key == "Config":
+            elif form_val == "Config":
                 # Configure the dynamic report
                 form_selections["url"] = url_for('conf_nav_report')
                 break
@@ -1198,6 +1207,25 @@ def metadata( selection = "" ):
         rename_folder(user_name, location_key, form_selections["old_folder_name"], form_selections["new_folder_name"])
     elif form_selections["delete_folder"]:
         delete_folder(user_name, location_key, form_selections["folder_name"])
+    elif form_selections["report_button"]:    # Report Open Selection
+        if form_selections["status_report"]:
+            # Show the default report with the selected edge nodes
+            url_list = policies_to_status_report(user_name, selected_list)
+        elif form_selections["existing_report"]:
+            url_list = selected_list            # List of selected URLs
+        else:
+            url_list = None
+        if not url_list:
+            # Got an error
+            select_info = get_select_menu(selection=location_key)
+            return call_navigation_page(user_name, select_info, location_key, None)
+        select_info = get_select_menu()
+        select_info['title'] = "Selected Reports"
+        select_info["url_list"] = url_list
+
+        return render_template('output_frame.html', **select_info)
+
+
 
     if location_key:
         index = location_key.find('@')
@@ -1226,14 +1254,6 @@ def metadata( selection = "" ):
             return html
 
 
-    if form_selections["report_button"]:
-        # Show the default report with the selected edge nodes
-        html = policies_to_status_report(user_name, selected_list)
-        if not html:
-            # Got an error
-            select_info = get_select_menu(selection=location_key)
-            return call_navigation_page(user_name, select_info, location_key, None)
-        return html
 
     if form_selections["select_button"]:
         if len(selected_list):
@@ -1520,7 +1540,7 @@ def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, f
                 'key': key,
                 'path': key,
                 'report' : True,
-                'url' : url[0]
+                'url' : url[0],
             }
             current_node.add_child( **params )
 

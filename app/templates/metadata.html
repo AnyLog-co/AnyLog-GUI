@@ -82,13 +82,13 @@ function get_name()
                         {% if selection  %}
                              {% if node.report  %}
                                  <!-- Flag to select the report (for multiple reports viewed) -->
-                                <td><input type=checkbox name=selected.{{node.path}}@{{node.name}}></td>
+                                <td><input type=checkbox name=selected.url.{{node.url}}></td>
                                 <!-- Or go directly to a report -->
                                 <a href="{{url_for('metadata')}}/{{selection}}?report={{node.url}}">{{node.name}}</a>
 
                             {% elif node.dbms_name  %}
                                 <!-- Flag to select the edge (to Save for a future report or immediate report) -->
-                                <td><input type=checkbox name=selected.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
+                                <td><input type=checkbox name=selected.table.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
                                 <!-- Or go directly to a report -->
                                 <a href="{{url_for('metadata')}}/{{selection}}?report={{node.dbms_name}}@{{node.table_name}}@{{node.id}}?">{{node.name}}</a>
                             {% else %}
@@ -136,7 +136,7 @@ function get_name()
                         {%  if node.submit_buttons %}
                             {% for button in node.submit_buttons %}
                                  <!-- Configure report / Select report / Add report -->
-                                <input type="submit" value="{{ button }}" name="{{ button }}" class="button_submit">
+                                <input type="submit" value="{{ button }}" name="path.{{ node.path }}" class="button_submit">
                             {%  endfor %}
                         {% endif %}
                 {% elif node.json_key %}
