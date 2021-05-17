@@ -1046,12 +1046,15 @@ def new_report( selection = "" ):
             flash('AnyLog: Missing Grafana definitions in config file', category='error')
             return redirect(url_for('new_report', selection=selection))
 
-        platform_info = copy.deepcopy(platforms_tree["Grafana"])
+        platform, url, token, folder = get_report_info(user_name, selection)
+        platform_info = copy.deepcopy(platforms_tree[platform])
         platform_info['base_report'] = "AnyLog_Base"
 
         platform_info["dashboard"] = dashboard
 
-        ret_val, err_msg = visualize.create_report("Grafana", **platform_info)
+        platform_info["folder"] = folder
+
+        ret_val, err_msg = visualize.create_report(platform, **platform_info)
         if not ret_val:
             flash(err_msg, category='error')
             return redirect(url_for('new_report', selection=selection))

@@ -404,13 +404,19 @@ def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_na
     dashboard_uid = platform_info['dashboard_uid']
     dashboard_version = platform_info['dashboard_version']
     new_dashboard = platform_info["new_dashboard"]
-
+    folder_name =  platform_info["folder"]
 
     if new_dashboard:
         # First time that the dasboard with that name is written
-        dashboard_uid, err_msg = add_dashboard(grafana_url, token, dashboard_name, dashboard_info["dashboard"])
-        if err_msg:
-            return err_msg
+
+        folder_id = get_folder_id(grafana_url, token, folder_name)
+
+        if folder_id != -1:
+            dashboard_uid, err_msg = add_dashboard(grafana_url, token, folder_id, dashboard_name, dashboard_info["dashboard"])
+            if err_msg:
+                return err_msg
+        else:
+            return "Grafana API: Failed to find folder %s" % folder_name
 
     else:
 
@@ -569,7 +575,7 @@ def get_dashboard_info(grafana_url, token, dashboard_uid, dashboard_name):
 # -----------------------------------------------------------------------------------
 # Add a new report
 # -----------------------------------------------------------------------------------
-def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard):
+def add_dashboard(grafana_url:str, token:str, folder_id:int, dashboard_name:str, new_dashboard):
 
     url = "%s/api/dashboards/db" % grafana_url
 
@@ -579,7 +585,7 @@ def add_dashboard(grafana_url:str, token:str, dashboard_name:str, new_dashboard)
         "Accept": "application/json"
     }
     new_dashboard_data = {
-    "folderId": 0,          # https://grafana.com/docs/grafana/latest/http_api/dashboard/
+    "folderId": folder_id,          # https://grafana.com/docs/grafana/latest/http_api/dashboard/
     "overwrite": False
     }
 
@@ -623,8 +629,20 @@ def get_folders(grafana_url, token):
     folders, err_msg = grafana_get("Get Dashboards", grafana_url, "/api/folders", token)
 
     return [folders, err_msg]
+# -----------------------------------------------------------------------------------
+# Get the folder ID by the folder name
+# -----------------------------------------------------------------------------------
+def get_folder_id(grafana_url, token, folder_name):
 
-
+    folder_id = -1
+    folders_list, err_msg = get_folders(grafana_url, token)
+    if not err_msg:
+        for folder in folders_list:
+            title = folder['title']
+            if folder_name == title:
+                folder_id = folder['id']
+                break
+    return folder_id
 # -----------------------------------------------------------------------------------
 # Get dashboards IDs
 # There is no method to list dashboards, - do an empty search request and get dashboards from the results.
