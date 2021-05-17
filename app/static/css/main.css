@@ -163,7 +163,7 @@ ul.tree li:last-child:before {
 }
 
 .button_submit {
-    background-color: rgba(157, 172, 114, 0.49); /* Green */
+    background-color: rgba(95, 151, 1, 0.49); /* Green */
     border-color: #3e3737;
     border-width: 1px;
     color: whitesmoke;

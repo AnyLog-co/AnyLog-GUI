@@ -138,7 +138,8 @@ function get_name()
                         {% endif %}
                         {%  if node.submit_buttons %}
                             {% for button in node.submit_buttons %}
-                                <input type="submit" value="{{ button }}" name="{{ button }}" class="button_submit">    <!-- Configure report / Select report / Add report -->
+                                 <!-- Configure report / Select report / Add report -->
+                                <input type="submit" value="{{ button }}" name="{{ button }}" class="button_submit">
                             {%  endfor %}
                         {% endif %}
                 {% elif node.json_key %}
@@ -163,14 +164,6 @@ function get_name()
     {% endfor %}
 
     <br>
-
-     <!-- If edge nodes that can be selected to a report -->
-        {% if location_key %}
-            <hr>
-        <input type="submit" value="Configure" name="Configure">    <!-- Configure report -->
-        <input type="submit" value="Select" name="Select">    <!-- Selected edge to a new report -->
-        <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
-        {% endif %}
 </ul>
 
 <!-- Change scroll location from the top of the screen to last node touched-->

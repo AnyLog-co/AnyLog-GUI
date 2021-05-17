@@ -1333,6 +1333,7 @@ def metada_navigation(user_name, location_key, form_selections):
 
             if current_node.is_with_children():
                 current_node.reset_children()  # Delete children from older navigation
+                current_node.reset_submit_buttons()
             else:
                 # Collect the children
 

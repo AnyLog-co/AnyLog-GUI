@@ -92,6 +92,11 @@ class TreeNode():
     # -----------------------------------------------------------------------------------
     def add_submit_buttons(self, submit_list):
         self.submit_buttons = submit_list
+    # -----------------------------------------------------------------------------------
+    # Reset the submot buttons assigned to a node
+    # -----------------------------------------------------------------------------------
+    def reset_submit_buttons(self):
+        self.submit_buttons = None
 
     # -----------------------------------------------------------------------------------
     # Indicate that when a page is loaded - set the scroll location on this node
