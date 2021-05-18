@@ -969,15 +969,16 @@ def process_tree_form():
                     form_selections["old_folder_name"] = old_folder_name
                     break
             if form_val == "Delete":
-                # Delete folder
-                if form_key[:7] == "folder.":
-                    form_selections["delete_folder"] = True
-                    form_selections["folder_name"] = form_key[7:]
-                    break
-            if form_key[:10] == "dashboard.":
-                # delete dashboard
-                form_selections["delete_dashboard"] = True
-                form_selections["dashboard_name"] = form_key[10:]
+                if "delete_confirmed" in form_info and form_info["delete_confirmed"] == 'true':
+                    # Delete folder
+                    if form_key[:7] == "folder.":
+                        form_selections["delete_folder"] = True
+                        form_selections["folder_name"] = form_key[7:]
+                        break
+                    if form_key[:10] == "dashboard.":
+                        # delete dashboard
+                        form_selections["delete_dashboard"] = True
+                        form_selections["dashboard_name"] = form_key[10:]
 
             if form_key[:7] == "option.":
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
