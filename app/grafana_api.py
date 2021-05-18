@@ -482,7 +482,12 @@ def get_init_dashboard(platform_info, dashboard_name):
     grafana_url = platform_info['url']
     token = platform_info['token']
 
-    reply, err_msg = get_dashboards(grafana_url, "", token)
+    folder_name = platform_info['folder']
+    folder_id = get_folder_value(grafana_url, token, folder_name, "id")
+    if not folder_id:
+        return "Grafana API: Failed to retrieve reports from folder '%s'" % (folder_name)
+
+    reply, err_msg = get_dashboards(grafana_url, folder_id, token)
     if err_msg:
         return "Grafana API: Failed to provide the list of dashboards: %s" % err_msg
 
@@ -494,11 +499,26 @@ def get_init_dashboard(platform_info, dashboard_name):
     else:
         new_dashboard = True
         base_dashboard = platform_info['base_report']  # Get the initial report name from the config file
+        # The base folder is in the root directory - get thr base from the directory
+        index = folder_name.find('@')
+        if index != -1:
+            # Creating a report in a directory which is not the root - get the report from the root
+            root_dir = folder_name[:index]
+            folder_id = get_folder_value(grafana_url, token, root_dir, "id")
+            if not folder_id:
+                return "Grafana API: Failed to retrieve base report from folder '%s'" % (root_dir)
+            reply, err_msg = get_dashboards(grafana_url, folder_id, token)
+            if err_msg:
+                return "Grafana API: Failed to provide the list of dashboards: %s" % err_msg
+        else:
+            root_dir = folder_name  # nre Dashboard is in the root dir
+
+        # Get the base dasboard
         dashboard_id, dashboard_uid, dashboard_version = get_existing_dashboaard(reply, base_dashboard)
 
         if not dashboard_id:
             # Missing base report
-            return "Grafana API: Missing base dashboard: %s Using: %s" % (base_dashboard, grafana_url)
+            return "Grafana API: Missing base dashboard: '%s' in folder: '%s' using URL: '%s'" % (base_dashboard, root_dir, grafana_url)
 
     platform_info["new_dashboard"] = new_dashboard
     platform_info["dashboard_id"] = dashboard_id
