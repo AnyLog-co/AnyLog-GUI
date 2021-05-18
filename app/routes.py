@@ -1255,7 +1255,7 @@ def metadata( selection = "" ):
     elif form_selections["delete_dashboard"]:
         delete_dashboard(user_name, location_key, form_selections["dashboard_name"])
     elif form_selections["rename_dashboard"]:
-        rename_dashboard(user_name, location_key, form_selections["dashboard_name"], form_selections["new_dashboard_name"])
+        rename_dashboard(user_name, location_key, form_selections["old_dashboard_name"], form_selections["new_dashboard_name"])
     elif form_selections["report_button"]:    # Report Open Selection
         if form_selections["status_report"]:
             # Show the default report with the selected edge nodes

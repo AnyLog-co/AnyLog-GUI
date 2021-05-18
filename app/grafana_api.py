@@ -210,7 +210,7 @@ def rename_dashboard( grafana_url, token, folder_name, dashboard_name, new_name)
             if "version" in dashboard:
                 dashboard_version = dashboard["version"]
             else:
-                dashboard_version = 1
+                dashboard_version = 0
 
             dashboard['title'] = new_name
 
