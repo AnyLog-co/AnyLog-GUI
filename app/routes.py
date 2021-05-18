@@ -962,20 +962,21 @@ def process_tree_form():
                 break
             if form_val == "Rename":
                 # Rename a folder
-                if "folder_name" in form_info and len(form_info["folder_name"]):
-                    new_folder_name = form_info["folder_name"]
-                    old_folder_name = form_key[7:]
-                    form_selections["rename_folder"] = True
-                    form_selections["new_folder_name"] = new_folder_name
-                    form_selections["old_folder_name"] = old_folder_name
-                    break
-                if "dashboard_name" in form_info and len(form_info["dashboard_name"]):
-                    new_dashboard_name = form_info["dashboard_name"]
-                    old_dashboard_name = form_key[7:]
-                    form_selections["rename_dashboard"] = True
-                    form_selections["new_dashboard_name"] = new_dashboard_name
-                    form_selections["old_dashboard_name"] = old_dashboard_name
-                    break
+                if "new_name" in form_info and len(form_info["new_name"]):
+                    if form_key[:7] == "folder.":
+                        new_folder_name = form_info["new_name"]
+                        old_folder_name = form_key[7:]
+                        form_selections["rename_folder"] = True
+                        form_selections["new_folder_name"] = new_folder_name
+                        form_selections["old_folder_name"] = old_folder_name
+                        break
+                    if form_key[:10] == "dashboard.":
+                        new_dashboard_name = form_info["new_name"]
+                        old_dashboard_name = form_key[10:]
+                        form_selections["rename_dashboard"] = True
+                        form_selections["new_dashboard_name"] = new_dashboard_name
+                        form_selections["old_dashboard_name"] = old_dashboard_name
+                        break
             if form_val == "Delete":
                 if "delete_confirmed" in form_info and form_info["delete_confirmed"] == 'true':
                     # Delete folder
