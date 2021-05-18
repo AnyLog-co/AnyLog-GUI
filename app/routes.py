@@ -934,8 +934,11 @@ def process_tree_form():
         "add_folder" : False,        # Add a new Grafana Folder
         "rename_folder": False,
         "delete_folder" : False,
+        "folder_name" : None,
         "status_report" : False,    # A report determined dynamically by the navigation
-        "existing_report" : False   # A predefined report
+        "existing_report" : False,   # A predefined report
+        "delete_dashboard" : False,
+        "dashboard_name" : None
     }
 
     selected_list = []
@@ -966,10 +969,15 @@ def process_tree_form():
                     form_selections["old_folder_name"] = old_folder_name
                     break
             if form_val == "Delete":
+                # Delete folder
                 if form_key[:7] == "folder.":
                     form_selections["delete_folder"] = True
                     form_selections["folder_name"] = form_key[7:]
                     break
+            if form_key[:10] == "dashboard.":
+                # delete dashboard
+                form_selections["delete_dashboard"] = True
+                form_selections["dashboard_name"] = form_key[10:]
 
             if form_key[:7] == "option.":
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
@@ -1171,6 +1179,22 @@ def delete_folder(user_name, location_key, folder_name):
         flash(err_msg, category='error')
 
 # -----------------------------------------------------------------------------------
+# Delete a folder
+# -----------------------------------------------------------------------------------
+def delete_dashboard(user_name, location_key, dashboard_name):
+
+    platform, url, token, target_folder = get_report_info(user_name, location_key)
+
+    index = dashboard_name.rfind('@')
+    if index != -1:
+        dashboard = dashboard_name[index + 1:]  # Name without folder
+    else:
+        dashboard = dashboard_name
+    err_msg = visualize.delete_dashboard(platform, url, token, target_folder, dashboard)
+    if err_msg:
+        flash(err_msg, category='error')
+
+# -----------------------------------------------------------------------------------
 # Navigate in the metadata
 # https://flask-navigation.readthedocs.io/en/latest/
 # -----------------------------------------------------------------------------------
@@ -1230,8 +1254,11 @@ def metadata( selection = "" ):
             key = location_key
 
         if is_reports(user_name, key):
-            # Navigate in reports
-            return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"], form_selections["delete_folder"])
+            if form_selections["delete_dashboard"]:
+                delete_dashboard(user_name, location_key, form_selections["dashboard_name"])
+            else:
+                # Navigate in reports
+                return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"], form_selections["delete_folder"])
 
 
     if request.query_string:

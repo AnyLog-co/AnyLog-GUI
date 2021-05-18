@@ -64,11 +64,11 @@ function get_name()
                 {% if node.name  %}
                         {% if node.report  %}
                             <!-- Option to rename update or delete a report -->
-                            <input type="submit" value="Update" name="{{node.path}}" class="button_update">
-                            <input type="submit" value="Rename" name="{{node.path}}" class="button_rename">
-                            <input type="submit" value="Delete" name="{{node.path}}" class="button_delete">
+                            <input type="submit" value="Update" name="dashboard.{{node.path}}" class="button_update">
+                            <input type="submit" value="Rename" name="dashboard.{{node.path}}" class="button_rename" class="button_rename" onclick="get_name()">
+                            <input type="submit" value="Delete" name="dashboard.{{node.path}}" class="button_delete" onclick="confirm_selection()">
 
-                        {% elif node.folder  %}
+                        {% elif node.folder %}
                             <!-- Option to rename or delete a folder -->
                             <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename" onclick="get_name()">
                             <input type="submit" value="Delete" name="folder.{{node.path}}" class="button_delete" onclick="confirm_selection()">
