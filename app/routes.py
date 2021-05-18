@@ -1026,7 +1026,7 @@ def process_tree_form():
     return [form_selections, selected_list]
 
 # -----------------------------------------------------------------------------------
-# Define new report called bu URL
+# Define new report called from new_report.html
 # -----------------------------------------------------------------------------------
 @app.route('/new_report', methods = ['GET', 'POST'])
 @app.route('/new_report/<string:selection>', methods = ['GET', 'POST'])
@@ -1041,6 +1041,7 @@ def new_report( selection = "" ):
     if len(form_info):
         dashboard = AnyLogDashboard()  # Create a new dasboard
         tables_info = {}
+        panels_names = {}   # organize the name of each panel as f(dbms + table)
         for entry in form_info:
 
             # Make a list with the following entries:
@@ -1061,7 +1062,12 @@ def new_report( selection = "" ):
                 key = dbms_name + '.' + table_name
                 if key in tables_info:
                     # add the function
-                    tables_info[key][3].append(function)
+                    if function == "Panel Name":
+                        panel_name = form_info[entry]
+                        if panel_name:
+                            panels_names[key] = panel_name
+                    else:
+                        tables_info[key][3].append(function)
                 else:
                     # add new entry
                     tables_info[key] = (dbms_name, table_name, panel_name, [function])
@@ -1070,7 +1076,12 @@ def new_report( selection = "" ):
 
         for entry in tables_info.values():
             # Add the projection list for each table
-            dashboard.add_projection_list(entry[2], "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
+            key =  entry[0] + '.' + entry[1]
+            if key in panels_names:
+                panel_name = panels_names[key]      # User provided a name for the panel
+            else:
+                panel_name = dashboard.get_name()               # Use dashboard name
+            dashboard.add_projection_list(panel_name, "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
 
         gui_view = get_gui_view()
         platforms_tree = gui_view.get_base_info("visualization")
@@ -1137,6 +1148,8 @@ def define_new_report(user_name, folder):
     options = get_functions_names()
     for option in options:
         extra_columns.append( (option,'checkbox' ))
+
+    extra_columns.append( ("Panel Name", 'text'))
 
     al_table = AnyLogTable("Select report data", ["Name", "ID", "DBMS", "Table"], None, table_rows, extra_columns)
 
