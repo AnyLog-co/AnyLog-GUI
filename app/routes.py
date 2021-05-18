@@ -1256,9 +1256,9 @@ def metadata( selection = "" ):
         if is_reports(user_name, key):
             if form_selections["delete_dashboard"]:
                 delete_dashboard(user_name, location_key, form_selections["dashboard_name"])
-            else:
-                # Navigate in reports
-                return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"], form_selections["delete_folder"])
+
+            # Navigate in reports
+            return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"], form_selections["delete_folder"], form_selections["delete_dashboard"])
 
 
     if request.query_string:
@@ -1507,7 +1507,7 @@ def add_policy(current_node, policy_id):
 # -----------------------------------------------------------------------------------
 # Navigate in the reports partitioned by folders
 # -----------------------------------------------------------------------------------
-def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, folder_deleted):
+def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, folder_deleted, dashboard_deleted):
 
     root_nav = path_stat.get_element(user_name, "root_nav")
 
@@ -1530,7 +1530,7 @@ def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, f
 
     # Navigate in the tree to find location of Node
     current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
-    if folder_added or folder_renamed or folder_deleted:
+    if folder_added or folder_renamed or folder_deleted or dashboard_deleted:
         # If adding a folder or renaming - reset children and read again the children folders - with the new folder
         current_node.reset_children()
     elif current_node.is_with_children():
