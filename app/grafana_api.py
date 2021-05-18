@@ -191,6 +191,66 @@ def delete_folder( grafana_url, token, folder_name):
                     err_msg = "Grafana API: Failed to delete folder '%s': with error code: %u" % (folder_name, response.status_code)
 
     return err_msg
+# -----------------------------------------------------------------------------------
+# Given a folder and a dashboard name - delete the dashboard
+# Grafana  API - https://grafana.com/docs/grafana/latest/http_api/dashboard/#delete-dashboard-by-uid
+# -----------------------------------------------------------------------------------
+def delete_dashboard( grafana_url, token, folder_name, dashboard_name):
+
+    dashboard, err_msg = get_dashboard_from_folder(grafana_url, token, folder_name, dashboard_name)
+
+    if not err_msg:
+        if not dashboard:
+            err_msg = "Grafana API: Dashboard '%s' in folder: %s is not accessible" % (dashboard_name, folder_name)
+
+        else:
+            headers_data = {
+                "Authorization": "Bearer %s" % token,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+
+            dashboard_uid = dashboard['uid']
+
+            url = "%s/api/dashboards/uid/%s" % (grafana_url, dashboard_uid)
+
+            response, err_msg = rest_api.do_delete(url=url, headers_data=headers_data)
+
+            if response:
+                if response.status_code != 200:
+                    if response.status_code == 401:
+                        err_msg = "Grafana API: Failed to delete dashboard '%s' in folder: '%s': Unauthorized" % (dashboard_name, folder_name)
+                    elif response.status_code == 403:
+                        err_msg = "Grafana API: Failed to delete dashboard '%s' in folder: '%s': Access Denied" % (dashboard_name, folder_name)
+                    elif response.status_code == 404:
+                        err_msg = "Grafana API: Failed to delete dashboard '%s' in folder: '%s': Dashboard not found" % (dashboard_name, folder_name)
+                    else:
+                        err_msg = "Grafana API: Failed to delete dashboard '%s' in folder: '%s' Error Code: %u" % (dashboard_name, folder_name, response.status_code)
+
+    return err_msg
+# -----------------------------------------------------------------------------------
+# Get dashboard by folder name and dashboard name
+# -----------------------------------------------------------------------------------
+def get_dashboard_from_folder(grafana_url, token, folder_name, dashboard_name):
+
+    dashboard = None
+    folder_id = get_folder_value(grafana_url, token, folder_name, "id")
+
+    if not folder_id:
+        # Parent folder is not available
+        err_msg = "Grafana API: Folder '%s' was not found" % folder_name
+    else:
+
+        dashboards_list, err_msg = get_dashboards(grafana_url, folder_id, token)
+
+        if not err_msg:
+            for entry in dashboards_list:
+                if entry['title'] == dashboard_name:
+                    dashboard = entry
+                    break
+
+    return [dashboard, err_msg]
+
 
 # -----------------------------------------------------------------------------------
 # Give a list of parent folders - return the children
@@ -757,19 +817,6 @@ def grafana_get(get_type, grafana_url, query, token):
             err_msg = "HTTP GET returned code %u - (%s) URL: %s" % (response.status_code, info, url)
 
     return [json_info, err_msg]
-# -----------------------------------------------------------------------------------
-# Delete a dashboard
-# -----------------------------------------------------------------------------------
-def delete_dashboard(grafana_url):
-
-    uid = "DoZVWjzGz"
-    url = grafana_url + "/api/dashboards/uid/" + uid
-    headers = {
-        "Authorization":"Bearer #####API_KEY#####",
-        "Content-Type":"application/json",
-        "Accept": "application/json"
-    }
-    r = requests.delete(url = url, headers = headers, verify=False)
 
 # -----------------------------------------------------------------------------------
 # update an existing dashboard. 
