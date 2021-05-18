@@ -177,7 +177,6 @@ def delete_folder(platform_name, url, token, folder_name):
 
     return error_msg
 
-
 # --------------------------------------------------------
 # Rename a dashboard
 # --------------------------------------------------------
@@ -188,6 +187,19 @@ def delete_dashboard(platform_name, url, token, folder_name, dashboard_name):
         error_msg = "%s not supported" % platform_name
     else:
         error_msg = connector.delete_dashboard( url, token, folder_name, dashboard_name)
+
+    return error_msg
+
+# --------------------------------------------------------
+# Rename a dashboard
+# --------------------------------------------------------
+def rename_dashboard(platform_name, url, token, folder_name, dashboard_name, new_name):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.rename_dashboard( url, token, folder_name, dashboard_name, new_name)
 
     return error_msg
 

@@ -938,7 +938,8 @@ def process_tree_form():
         "status_report" : False,    # A report determined dynamically by the navigation
         "existing_report" : False,   # A predefined report
         "delete_dashboard" : False,
-        "dashboard_name" : None
+        "dashboard_name" : None,
+        "rename_dashboard" : False,
     }
 
     selected_list = []
@@ -967,6 +968,13 @@ def process_tree_form():
                     form_selections["rename_folder"] = True
                     form_selections["new_folder_name"] = new_folder_name
                     form_selections["old_folder_name"] = old_folder_name
+                    break
+                if "dashboard_name" in form_info and len(form_info["dashboard_name"]):
+                    new_dashboard_name = form_info["dashboard_name"]
+                    old_dashboard_name = form_key[7:]
+                    form_selections["rename_dashboard"] = True
+                    form_selections["new_dashboard_name"] = new_dashboard_name
+                    form_selections["old_dashboard_name"] = old_dashboard_name
                     break
             if form_val == "Delete":
                 if "delete_confirmed" in form_info and form_info["delete_confirmed"] == 'true':
@@ -1180,7 +1188,7 @@ def delete_folder(user_name, location_key, folder_name):
         flash(err_msg, category='error')
 
 # -----------------------------------------------------------------------------------
-# Delete a folder
+# Delete a dashboard
 # -----------------------------------------------------------------------------------
 def delete_dashboard(user_name, location_key, dashboard_name):
 
@@ -1192,6 +1200,22 @@ def delete_dashboard(user_name, location_key, dashboard_name):
     else:
         dashboard = dashboard_name
     err_msg = visualize.delete_dashboard(platform, url, token, target_folder, dashboard)
+    if err_msg:
+        flash(err_msg, category='error')
+
+# -----------------------------------------------------------------------------------
+# Rename a dashboard
+# -----------------------------------------------------------------------------------
+def rename_dashboard(user_name, location_key, dashboard_name, new_name):
+
+    platform, url, token, target_folder = get_report_info(user_name, location_key)
+
+    index = dashboard_name.rfind('@')
+    if index != -1:
+        dashboard = dashboard_name[index + 1:]  # Name without folder
+    else:
+        dashboard = dashboard_name
+    err_msg = visualize.rename_dashboard(platform, url, token, target_folder, dashboard, new_name)
     if err_msg:
         flash(err_msg, category='error')
 
@@ -1227,6 +1251,10 @@ def metadata( selection = "" ):
         rename_folder(user_name, location_key, form_selections["old_folder_name"], form_selections["new_folder_name"])
     elif form_selections["delete_folder"]:
         delete_folder(user_name, location_key, form_selections["folder_name"])
+    elif form_selections["delete_dashboard"]:
+        delete_dashboard(user_name, location_key, form_selections["dashboard_name"])
+    elif form_selections["rename_dashboard"]:
+        rename_dashboard(user_name, location_key, form_selections["dashboard_name"], form_selections["new_dashboard_name"])
     elif form_selections["report_button"]:    # Report Open Selection
         if form_selections["status_report"]:
             # Show the default report with the selected edge nodes
@@ -1255,8 +1283,6 @@ def metadata( selection = "" ):
             key = location_key
 
         if is_reports(user_name, key):
-            if form_selections["delete_dashboard"]:
-                delete_dashboard(user_name, location_key, form_selections["dashboard_name"])
 
             # Navigate in reports
             return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"], form_selections["delete_folder"], form_selections["delete_dashboard"])

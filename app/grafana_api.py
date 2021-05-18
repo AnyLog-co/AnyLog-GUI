@@ -191,13 +191,42 @@ def delete_folder( grafana_url, token, folder_name):
                     err_msg = "Grafana API: Failed to delete folder '%s': with error code: %u" % (folder_name, response.status_code)
 
     return err_msg
+
+
+# -----------------------------------------------------------------------------------
+# Given a folder and a dashboard name - rename the dashboard
+# Grafana  API - https://grafana.com/docs/grafana/latest/http_api/dashboard/#delete-dashboard-by-uid
+# -----------------------------------------------------------------------------------
+def rename_dashboard( grafana_url, token, folder_name, dashboard_name, new_name):
+
+    dashboard, folder_id, err_msg = get_dashboard_from_folder(grafana_url, token, folder_name, dashboard_name)
+
+    if not err_msg:
+        if not dashboard:
+            err_msg = "Grafana API: Dashboard '%s' in folder: %s is not accessible" % (dashboard_name, folder_name)
+        else:
+            dashboard_id = dashboard['id']
+            dashboard_uid = dashboard['uid']
+            if "version" in dashboard:
+                dashboard_version = dashboard["version"]
+            else:
+                dashboard_version = 1
+
+            dashboard['title'] = new_name
+
+            if not update_dashboard(grafana_url, token, folder_id, dashboard, dashboard_id, dashboard_uid, dashboard_version):
+                err_msg = "Grafana API: Failed to update dashboard name from '%s' to '%s'" % (dashboard_name, new_name)
+
+    return err_msg
+
+
 # -----------------------------------------------------------------------------------
 # Given a folder and a dashboard name - delete the dashboard
 # Grafana  API - https://grafana.com/docs/grafana/latest/http_api/dashboard/#delete-dashboard-by-uid
 # -----------------------------------------------------------------------------------
 def delete_dashboard( grafana_url, token, folder_name, dashboard_name):
 
-    dashboard, err_msg = get_dashboard_from_folder(grafana_url, token, folder_name, dashboard_name)
+    dashboard, folder_id, err_msg = get_dashboard_from_folder(grafana_url, token, folder_name, dashboard_name)
 
     if not err_msg:
         if not dashboard:
@@ -249,7 +278,7 @@ def get_dashboard_from_folder(grafana_url, token, folder_name, dashboard_name):
                     dashboard = entry
                     break
 
-    return [dashboard, err_msg]
+    return [dashboard, folder_id, err_msg]
 
 
 # -----------------------------------------------------------------------------------
@@ -527,7 +556,7 @@ def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_na
             if not update_dashboard(grafana_url, token, folder_id, dashboard_info["dashboard"], dashboard_id, dashboard_uid,
                                     dashboard_version):
                 # Failed to upfate a report
-                return "Grafana API: Failed to update dasboard %s" % dashboard_name
+                return "Grafana API: Failed to update dashboard %s" % dashboard_name
 
     return None
 # -----------------------------------------------------------------------------------
