@@ -441,17 +441,16 @@ def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_na
     new_dashboard = platform_info["new_dashboard"]
     folder_name =  platform_info["folder"]
 
+    folder_id = get_folder_value(grafana_url, token, folder_name, "id")
+    if not folder_id:
+        return "Grafana API: Failed to find folder %s" % folder_name
+
     if new_dashboard:
         # First time that the dasboard with that name is written
 
-        folder_id = get_folder_value(grafana_url, token, folder_name, "id")
-
-        if folder_id:
-            dashboard_uid, err_msg = add_dashboard(grafana_url, token, folder_id, dashboard_name, dashboard_info["dashboard"])
-            if err_msg:
-                return err_msg
-        else:
-            return "Grafana API: Failed to find folder %s" % folder_name
+        dashboard_uid, err_msg = add_dashboard(grafana_url, token, folder_id, dashboard_name, dashboard_info["dashboard"])
+        if err_msg:
+            return err_msg
 
     else:
 
@@ -465,7 +464,7 @@ def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_na
 
         if is_modified:
             # push update to Grafana
-            if not update_dashboard(grafana_url, token, dashboard_info["dashboard"], dashboard_id, dashboard_uid,
+            if not update_dashboard(grafana_url, token, folder_id, dashboard_info["dashboard"], dashboard_id, dashboard_uid,
                                     dashboard_version):
                 # Failed to upfate a report
                 return "Grafana API: Failed to update dasboard %s" % dashboard_name
@@ -780,7 +779,7 @@ def delete_dashboard(grafana_url):
 # * set id, uid, incremented version and set overwrite parameter to true. 
 # * make the same request as creating a new dashboard.dashboard
 # -----------------------------------------------------------------------------------
-def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, report_version):
+def update_dashboard(grafana_url, token, folder_id, dashboard_data, report_id, report_uid, report_version):
 
     headers = {
         "Authorization":"Bearer %s" % token,
@@ -795,7 +794,7 @@ def update_dashboard(grafana_url, token, dashboard_data, report_id, report_uid, 
 
     updated_dashboard_data = {
         "dashboard":   dashboard_data,
-        "folderId": 0,
+        "folderId": folder_id,
         "overwrite": True
     }
 

@@ -825,12 +825,7 @@ def policies_to_status_report( user_name, policies_list ):
         flash(err_msg, category='error')
         return None
 
-    select_info = get_select_menu()
-    select_info['title'] = "Current Status"
-
-    select_info["url_list"] = url_list
-
-    return  render_template('output_frame.html', **select_info)
+    return url_list
 # -----------------------------------------------------------------------------------
 # Configure the Navigation Report - the report created from metadata.html
 # Calls - base_conf_report
@@ -1246,12 +1241,18 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            html = policies_to_status_report(user_name, [dbms_table_id])
-            if not html:
+            url_list = policies_to_status_report(user_name, [dbms_table_id])
+            if not url_list:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
                 return call_navigation_page(user_name, select_info, location_key, None)
-            return html
+
+            select_info = get_select_menu()
+            select_info['title'] = "Current Status"
+
+            select_info["url_list"] = url_list
+
+            return render_template('output_frame.html', **select_info)
 
 
 
