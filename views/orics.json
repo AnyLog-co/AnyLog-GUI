@@ -8,30 +8,22 @@
                                               "token" : "eyJrIjoib0pmQXZ1dDJQR3BoUk9qTzZ3UTJSbXRJV0NvNUkzQ0EiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
-                                },
-                                "Power BI" : { "url" : "http://45.79.152.190:3000",
-                                    "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
-                                    "base"  :  ["Base-Report"]
-                                },
-                                "Excel" : { "url" : "http://45.79.152.190:3000",
-                                    "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
-                                    "base"  :  ["Base-Report"]
                                 }
                             },
             "url_pages"  : [
                 ["Company", "https://orics.com/"],
                 ["Map", "http://45.79.152.190:3000/d/1Cdj-hCGz/network-summary?orgId=1&from=1620932482591&to=1620954082595&viewPanel=2"],
-                ["Dashboards", "http://45.79.152.190:3000/dashboards"],
-                ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"],
-                ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
+                ["Dashboards", "http://45.79.152.190:3000/dashboards"]
             ],
             "children" : {
-                "Tag" : {
+                "Tag" :
+                {
                     "query" : "blockchain get tag bring.unique.json [tag][name] [tag][description] [tag][id] separator = ,",
                     "table_title" : ["ID", "Name", "Description"],
                     "json_keys" : ["id", "name", "description"],
                     "dbms_name" : "Orics",
-                    "table_name" : "[tag][name]"
+                    "table_name" : "[tag][name]",
+                    "submit" : ["Config", "Select", "Open"]
                 },
                 "Manufacturer" :
                 {
@@ -59,7 +51,8 @@
                                                             "table_title" : ["ID", "Name", "Description"],
                                                             "json_keys" : ["id", "name", "description"],
                                                             "dbms_name" : "Orics",
-                                                            "table_name" : "[tag][name]"
+                                                            "table_name" : "[tag][name]",
+                                                            "submit" : ["Config", "Select", "Open"]
                                                         }
                                             }
                                         },
@@ -79,40 +72,59 @@
 
                         
                         }
-                },    
-                "Reports" : {
+                },
+                "Reports" :
+                {
                     "type" : "reports",
                     "organization" : "folders",
-                    "visualization" : "Grafana"
+                    "visualization" : "Grafana",
+                    "submit" : ["Open"]
                 },
-                "Monitor": {
-                    "children" : {
-                        "Operators" : {
-                            "type" : "node",
-                            "query" : "blockchain get operator",
-                            "table_title" : ["ID", "Name", "Cluster"],
-                            "json_keys" : ["id", "name", "cluster"],
-                            "ip" : "[operator][ip]",
-                            "port" : "[operator][port]",
-                            "children" : {
-                                "Node Status" :  { "command" : "get status" },
-                                "Load Status" :     { "command" : "get operator" },
-                                "Utilization" :    { "command" : "get get node info cpu_percent" }
+
+                "Monitor"    : {
+                   "children" : {
+                      "Operators" : {
+                          "type" : "node",
+                          "query" : "blockchain get operator",
+                          "table_title" : ["ID", "Name", "Cluster", "IP", "Port"],
+                          "json_keys" : ["id", "name", "cluster", "ip", "rest_port"],
+                          "children" : {
+
+                              "Node Status" :  { "command" : "get status" },
+                              "Load Status" :     { "command" : "get operator" },
+                              "Utilization" :    { "command" : "get node info cpu_percent" }
+                          }
+                      },
+                      "Clusters" : {
+                          "query" : "blockchain get cluster",
+                          "table_title" : ["ID", "Name"],
+                          "json_keys" : ["id", "name"],
+                          "children" : {
+                              "Operators":  {
+                                            "query" : "blockchain get operator where cluster = [cluster][id]",
+                                            "table_title" : ["ID", "Name", "IP", "Port"],
+                                            "json_keys" : ["id", "name", "ip", "rest_port"],
+                                            "type" : "node",
+                                            "children" : {
+
+                                                  "Node Status" :  { "command" : "get status" },
+                                                  "Load Status" :     { "command" : "get operator" },
+                                                  "Utilization" :    { "command" : "get node info cpu_percent" }
+                                                }
+                              }
                             }
-                        },
-                        "Clusters" : {
-                            "query" : "blockchain get cluster",
-                            "table_title" : ["ID", "Name", "Cluster"],
-                            "json_keys" : ["id", "name", "cluster"]
-                        },
-                        "Sensors" : {
-                            "query" : "blockchain get sensor",
-                            "table_title" : ["ID", "Name", "Cluster"],
-                            "json_keys" : ["id", "name", "cluster"]
-                        }
-                    }
+                      },
+                     "Sensors" : {
+                          "query" : "blockchain get sensor",
+                          "table_title" : ["ID", "Name", "Cluster"],
+                          "json_keys" : ["id", "name", "cluster"]
+                      }
+                   }
+
                 }
             },
+        
+            
             "policies" : [
                 {
                     "name" : "Authentication",
