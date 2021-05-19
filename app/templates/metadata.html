@@ -91,7 +91,9 @@ function get_name()
                                 <!-- Flag to select the edge (to Save for a future report or immediate report) -->
                                 <td><input type=checkbox name=selected.table.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
                                 <!-- Or go directly to a report -->
+                                 <i class="fas fa-database" style='font-size:16px;color:#5b5f5b'></i>
                                 <a href="{{url_for('metadata')}}/{{selection}}?report={{node.dbms_name}}@{{node.table_name}}@{{node.id}}?">{{node.name}}</a>
+
                             {% else %}
                                 <!-- Not Edge -->
                                 {% if node.id  %}
