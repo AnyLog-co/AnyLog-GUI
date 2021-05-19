@@ -38,9 +38,10 @@ class TreeNode():
         self.children = []
         self.with_children = False
         self.details = None
-        self.policy = None
-        self.policy_key = None
-        self.policy_value = None        # shows value if the value is not a list or a dictionary
+        self.data_struct = None         # Maintain data which is a reply from the network
+        self.json_struct = None
+        self.json_key = None
+        self.json_value = None          # shows value if the value is not a list or a dictionary
         self.dbms_name = None           # DBMS name or the key to pull the dbms name from the policy
         self.table_name = None          # Table name or the key to pull the table name from the policy
         self.option = None              # If node maintains a metadata option representing a type of a child
@@ -51,6 +52,7 @@ class TreeNode():
         self.folder = False             # True for a folder type
         self.url = None                 # URL for a report
         self.command = False            # Is node representing a network command
+        self.submit_buttons = None      # A potential list of submit buttons assigned to a node
 
         # Setup params
         for key, value in params.items():
@@ -83,6 +85,18 @@ class TreeNode():
         '''
         return self.command
 
+
+    # -----------------------------------------------------------------------------------
+    # Add Submit buttons to a node
+    # These provide additional options when navigating
+    # -----------------------------------------------------------------------------------
+    def add_submit_buttons(self, submit_list):
+        self.submit_buttons = submit_list
+    # -----------------------------------------------------------------------------------
+    # Reset the submot buttons assigned to a node
+    # -----------------------------------------------------------------------------------
+    def reset_submit_buttons(self):
+        self.submit_buttons = None
 
     # -----------------------------------------------------------------------------------
     # Indicate that when a page is loaded - set the scroll location on this node
@@ -252,24 +266,44 @@ class TreeNode():
             self.add_child( **params )
 
     # -----------------------------------------------------------------------------------
+    # Add data resulting from a network reply
+    # -----------------------------------------------------------------------------------
+    def add_data( self, data ):
+       self.data_struct = data
+    # -----------------------------------------------------------------------------------
+    # Test if node with data
+    # -----------------------------------------------------------------------------------
+    def is_with_data( self ):
+       return self.data_struct != None
+    # -----------------------------------------------------------------------------------
+    # Add data resulting from a network reply
+    # -----------------------------------------------------------------------------------
+    def reset_data_struct( self ):
+       self.data_struct = None
+    # -----------------------------------------------------------------------------------
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------
-    def add_policy( self, retrieved_policy ):
-       self.policy = retrieved_policy
+    def add_json_struct( self, json_struct ):
+       self.json_struct = json_struct
     # -----------------------------------------------------------------------------------
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------
-    def is_with_policy( self ):
-       return self.policy != None
+    def is_with_json( self ):
+       return self.json_struct != None
+    # -----------------------------------------------------------------------------------
+    # Reset the JSON structure that is assigned to the node
+    # -----------------------------------------------------------------------------------
+    def reset_json_struct( self ):
+       self.json_struct = None
 
     # -----------------------------------------------------------------------------------
     # Set Policy value
     # -----------------------------------------------------------------------------------
-    def set_policy_value(self, policy_value):
-        if isinstance(policy_value,str):
-            self.policy_value = "\"%s\"" % policy_value
+    def set_json_value(self, json_value):
+        if isinstance(json_value,str):
+            self.json_value = "\"%s\"" % json_value
         else:
-            self.policy_value = str(policy_value)
+            self.json_value = str(json_value)
 
 # -----------------------------------------------------------------------------------
 # Given a node and a list of keys - return the node addressed by the keys
@@ -317,24 +351,24 @@ def setup_print_list( current_node, print_list):
         for child in current_node.children:
             child.scroll_location = False       # Reset the scroll location
             print_list.append(child)
-            if child.is_with_policy():
-                setup_print_policy( child.policy, print_list )
+            if child.is_with_json():
+                setup_print_json( child.json_struct, print_list )
             if child.with_children:
                 setup_print_list(child, print_list)
-        print_list.append(None)     # All children onsidered - this is a flag to issue </li> and </ul>
+        print_list.append(None)     # All children considered - this is a flag to issue </li> and </ul>
 
 
 # -----------------------------------------------------------------------------------
 # Setup a policy in the print_list structure
 # -----------------------------------------------------------------------------------
-def setup_print_policy( policy, print_list):
+def setup_print_json( policy, print_list):
 
     if len(policy):
         counter = 0
-        for policy_key, policy_value in policy.items():
+        for json_key, json_value in policy.items():
             counter += 1
             params = {}
-            params['policy_key'] = policy_key
+            params['json_key'] = json_key
             if counter == 1:
                 params['first_child'] = True
             if counter == len(policy):
@@ -343,16 +377,16 @@ def setup_print_policy( policy, print_list):
             new_node = TreeNode(**params)
             print_list.append(new_node)
 
-            if isinstance(policy_value,dict):
-                setup_print_policy(policy_value, print_list)
-            elif isinstance(policy_value, list):
-                for list_entry in policy_value:
+            if isinstance(json_value,dict):
+                setup_print_json(json_value, print_list)
+            elif isinstance(json_value, list):
+                for list_entry in json_value:
                     if isinstance(list_entry,dict) or isinstance(list_entry,list):
-                        setup_print_policy(policy_value, print_list)
+                        setup_print_json(list_entry, print_list)
                     else:
-                        new_node.set_policy_value(policy_value)
+                        new_node.set_json_value(json_value)
             else:
-                new_node.set_policy_value(policy_value)
+                new_node.set_json_value(json_value)
 
         print_list.append(None)  # All children onsidered - this is a flag to issue </li> and </ul>
 
@@ -371,7 +405,7 @@ def update_command(current_node, selection, command):
     '''
     cmd_words = command.split()
     value = None
-    if len(cmd_words) > 7:
+    if len(cmd_words) >= 7:
         if cmd_words[3] == "where" and cmd_words[5] == '=':
             for index, word in enumerate(cmd_words[6:]):
                 if word == 'bring' or word.startswith("bring."):
@@ -387,10 +421,10 @@ def update_command(current_node, selection, command):
                             # info derived from the policy (organized in Details() object)
                             if parent_policy:
                                 value = ""
-                                for policy_key in keys_list[1:]:
+                                for json_key in keys_list[1:]:
                                     # Craete the value for the command
-                                    if policy_key[:-1] in parent_policy.keys:
-                                        index = parent_policy.keys.index(policy_key[:-1])
+                                    if json_key[:-1] in parent_policy.keys:
+                                        index = parent_policy.keys.index(json_key[:-1])
                                         value += parent_policy.values[index]
 
                 if value:

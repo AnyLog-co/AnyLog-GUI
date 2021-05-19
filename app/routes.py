@@ -811,9 +811,12 @@ def policies_to_status_report( user_name, policies_list ):
         flash('AnyLog: Missing Grafana definitions in config file', category='error')
         return None
 
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
+
     platform_info = copy.deepcopy(platforms_tree["Grafana"])
     platform_info['base_report'] = "AnyLog_Base"
-
+    platform_info["folder"] = root_folder
 
     platform_info["dashboard"] = dashboard
 
@@ -822,12 +825,7 @@ def policies_to_status_report( user_name, policies_list ):
         flash(err_msg, category='error')
         return None
 
-    select_info = get_select_menu()
-    select_info['title'] = "Current Status"
-
-    select_info["url_list"] = url_list
-
-    return  render_template('output_frame.html', **select_info)
+    return url_list
 # -----------------------------------------------------------------------------------
 # Configure the Navigation Report - the report created from metadata.html
 # Calls - base_conf_report
@@ -933,6 +931,15 @@ def process_tree_form():
         "select_button": False,     # Add the database and table of an edge node to a list that is used when a new report is defined
         "url" : None,               # URL to redirect  the process (For example to configure a report)
         "add_report" : False,       # Define a new report in the report section
+        "add_folder" : False,        # Add a new Grafana Folder
+        "rename_folder": False,
+        "delete_folder" : False,
+        "folder_name" : None,
+        "status_report" : False,    # A report determined dynamically by the navigation
+        "existing_report" : False,   # A predefined report
+        "delete_dashboard" : False,
+        "dashboard_name" : None,
+        "rename_dashboard" : False,
     }
 
     selected_list = []
@@ -953,24 +960,65 @@ def process_tree_form():
                     form_selections["location_key"] = form_key
                     form_selections["get_policy"] = True    # Get the policy of the node
                 break
+            if form_val == "Rename":
+                # Rename a folder
+                if "new_name" in form_info and len(form_info["new_name"]):
+                    if form_key[:7] == "folder.":
+                        new_folder_name = form_info["new_name"]
+                        old_folder_name = form_key[7:]
+                        form_selections["rename_folder"] = True
+                        form_selections["new_folder_name"] = new_folder_name
+                        form_selections["old_folder_name"] = old_folder_name
+                        break
+                    if form_key[:10] == "dashboard.":
+                        new_dashboard_name = form_info["new_name"]
+                        old_dashboard_name = form_key[10:]
+                        form_selections["rename_dashboard"] = True
+                        form_selections["new_dashboard_name"] = new_dashboard_name
+                        form_selections["old_dashboard_name"] = old_dashboard_name
+                        break
+            if form_val == "Delete":
+                if "delete_confirmed" in form_info and form_info["delete_confirmed"] == 'true':
+                    # Delete folder
+                    if form_key[:7] == "folder.":
+                        form_selections["delete_folder"] = True
+                        form_selections["folder_name"] = form_key[7:]
+                        break
+                    if form_key[:10] == "dashboard.":
+                        # delete dashboard
+                        form_selections["delete_dashboard"] = True
+                        form_selections["dashboard_name"] = form_key[10:]
+
             if form_key[:7] == "option.":
                 # User selected an option representing a metadata navigation (the type of the children to retrieve)
                 # Move from metadata to data
                 key = form_key[7:]
-                if len(key) > 11 and key[-11:] == "@Add_Report":
-                    form_selections["add_report"] = True
-                    key = key[:-11]
+                if len(key) > 11:
+                    if key[-11:] == "@Add_Report":
+                        form_selections["add_report"] = True
+                        key = key[:-11]
+                    elif key[-11:] == "@Add_Folder":
+                        form_selections["add_folder"] = True
+                        key = key[:-11]
+
                 form_selections["location_key"] = key  # Save the location key based on the user button selection
                 break
             if form_key[:9] == "selected.":
-                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
-                selected_list.append(form_key[9:])
-            elif form_key == "Report":
+                # the user selected one or mulitple ege node (in the CHECKBOX)
+                if form_key[9:15] == "table.":
+                    # The path determines the report (Current status report processed in - policies_to_status_report
+                    selected_list.append(form_key[15:])
+                    form_selections["status_report"] = True
+                elif form_key[9:13] == "url.":
+                    # Entries represent existing reports
+                    selected_list.append(form_key[13:])
+                    form_selections["existing_report"] = True
+            elif form_val == "Open":
                 # The selected list is used for a report
                 form_selections["report_button"] = True
-            elif form_key == "Select":
+            elif form_val == "Select":
                 form_selections["select_button"] = True
-            elif form_key == "Configure":
+            elif form_val == "Config":
                 # Configure the dynamic report
                 form_selections["url"] = url_for('conf_nav_report')
                 break
@@ -978,7 +1026,7 @@ def process_tree_form():
     return [form_selections, selected_list]
 
 # -----------------------------------------------------------------------------------
-# Define new report called bu URL
+# Define new report called from new_report.html
 # -----------------------------------------------------------------------------------
 @app.route('/new_report', methods = ['GET', 'POST'])
 @app.route('/new_report/<string:selection>', methods = ['GET', 'POST'])
@@ -993,6 +1041,7 @@ def new_report( selection = "" ):
     if len(form_info):
         dashboard = AnyLogDashboard()  # Create a new dasboard
         tables_info = {}
+        panels_names = {}   # organize the name of each panel as f(dbms + table)
         for entry in form_info:
 
             # Make a list with the following entries:
@@ -1013,7 +1062,12 @@ def new_report( selection = "" ):
                 key = dbms_name + '.' + table_name
                 if key in tables_info:
                     # add the function
-                    tables_info[key][3].append(function)
+                    if function == "Panel Name":
+                        panel_name = form_info[entry]
+                        if panel_name:
+                            panels_names[key] = panel_name
+                    else:
+                        tables_info[key][3].append(function)
                 else:
                     # add new entry
                     tables_info[key] = (dbms_name, table_name, panel_name, [function])
@@ -1022,7 +1076,12 @@ def new_report( selection = "" ):
 
         for entry in tables_info.values():
             # Add the projection list for each table
-            dashboard.add_projection_list(entry[2], "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
+            key =  entry[0] + '.' + entry[1]
+            if key in panels_names:
+                panel_name = panels_names[key]      # User provided a name for the panel
+            else:
+                panel_name = dashboard.get_name()               # Use dashboard name
+            dashboard.add_projection_list(panel_name, "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
 
         gui_view = get_gui_view()
         platforms_tree = gui_view.get_base_info("visualization")
@@ -1030,12 +1089,15 @@ def new_report( selection = "" ):
             flash('AnyLog: Missing Grafana definitions in config file', category='error')
             return redirect(url_for('new_report', selection=selection))
 
-        platform_info = copy.deepcopy(platforms_tree["Grafana"])
+        platform, url, token, folder = get_report_info(user_name, selection)
+        platform_info = copy.deepcopy(platforms_tree[platform])
         platform_info['base_report'] = "AnyLog_Base"
 
         platform_info["dashboard"] = dashboard
 
-        ret_val, err_msg = visualize.create_report("Grafana", **platform_info)
+        platform_info["folder"] = folder
+
+        ret_val, err_msg = visualize.create_report(platform, **platform_info)
         if not ret_val:
             flash(err_msg, category='error')
             return redirect(url_for('new_report', selection=selection))
@@ -1087,6 +1149,8 @@ def define_new_report(user_name, folder):
     for option in options:
         extra_columns.append( (option,'checkbox' ))
 
+    extra_columns.append( ("Panel Name", 'text'))
+
     al_table = AnyLogTable("Select report data", ["Name", "ID", "DBMS", "Table"], None, table_rows, extra_columns)
 
     tables_list.append(al_table)  # Add the children
@@ -1099,6 +1163,75 @@ def define_new_report(user_name, folder):
 
 
     return render_template('new_report.html', **select_info)
+
+
+# -----------------------------------------------------------------------------------
+# Add new child folder for reports
+# -----------------------------------------------------------------------------------
+def add_folder(user_name, location_key):
+
+
+    platform, url, token, parent_folder = get_report_info(user_name, location_key)
+
+    err_msg = visualize.create_folder(platform, url, token, parent_folder, "New Folder")
+    if err_msg:
+        flash(err_msg, category='error')
+
+# -----------------------------------------------------------------------------------
+# Add new child folder for reports
+# -----------------------------------------------------------------------------------
+def rename_folder(user_name, location_key, old_folder, new_folder):
+
+    platform, url, token, source_folder = get_report_info(user_name, old_folder)
+
+    index = source_folder.rfind('@')
+    dest_folder = source_folder[:index +1] + new_folder
+
+    err_msg = visualize.rename_folder(platform, url, token, source_folder, dest_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+# -----------------------------------------------------------------------------------
+# Delete a folder
+# -----------------------------------------------------------------------------------
+def delete_folder(user_name, location_key, folder_name):
+
+    platform, url, token, target_folder = get_report_info(user_name, folder_name)
+
+    err_msg = visualize.delete_folder(platform, url, token, target_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+
+# -----------------------------------------------------------------------------------
+# Delete a dashboard
+# -----------------------------------------------------------------------------------
+def delete_dashboard(user_name, location_key, dashboard_name):
+
+    platform, url, token, target_folder = get_report_info(user_name, location_key)
+
+    index = dashboard_name.rfind('@')
+    if index != -1:
+        dashboard = dashboard_name[index + 1:]  # Name without folder
+    else:
+        dashboard = dashboard_name
+    err_msg = visualize.delete_dashboard(platform, url, token, target_folder, dashboard)
+    if err_msg:
+        flash(err_msg, category='error')
+
+# -----------------------------------------------------------------------------------
+# Rename a dashboard
+# -----------------------------------------------------------------------------------
+def rename_dashboard(user_name, location_key, dashboard_name, new_name):
+
+    platform, url, token, target_folder = get_report_info(user_name, location_key)
+
+    index = dashboard_name.rfind('@')
+    if index != -1:
+        dashboard = dashboard_name[index + 1:]  # Name without folder
+    else:
+        dashboard = dashboard_name
+    err_msg = visualize.rename_dashboard(platform, url, token, target_folder, dashboard, new_name)
+    if err_msg:
+        flash(err_msg, category='error')
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -1125,16 +1258,48 @@ def metadata( selection = "" ):
     if form_selections["add_report"]:
         return define_new_report(user_name, location_key)
 
-    if selection:
-        index = selection.find('@')
-        if index != -1:
-            key = selection[:index]
+    if form_selections["add_folder"]:
+        # Continue to print tree  with new folder
+        add_folder(user_name, location_key)
+    elif form_selections["rename_folder"]:
+        rename_folder(user_name, location_key, form_selections["old_folder_name"], form_selections["new_folder_name"])
+    elif form_selections["delete_folder"]:
+        delete_folder(user_name, location_key, form_selections["folder_name"])
+    elif form_selections["delete_dashboard"]:
+        delete_dashboard(user_name, location_key, form_selections["dashboard_name"])
+    elif form_selections["rename_dashboard"]:
+        rename_dashboard(user_name, location_key, form_selections["old_dashboard_name"], form_selections["new_dashboard_name"])
+    elif form_selections["report_button"]:    # Report Open Selection
+        if form_selections["status_report"]:
+            # Show the default report with the selected edge nodes
+            url_list = policies_to_status_report(user_name, selected_list)
+        elif form_selections["existing_report"]:
+            url_list = selected_list            # List of selected URLs
         else:
-            key = selection
+            url_list = None
+        if not url_list:
+            # Got an error
+            select_info = get_select_menu(selection=location_key)
+            return call_navigation_page(user_name, select_info, location_key, None)
+        select_info = get_select_menu()
+        select_info['title'] = "Selected Reports"
+        select_info["url_list"] = url_list
 
-            if is_reports(user_name, key):
-                # Navigate in reports
-                return navigate_in_reports(user_name, location_key)
+        return render_template('output_frame.html', **select_info)
+
+
+
+    if location_key:
+        index = location_key.find('@')
+        if index != -1:
+            key = location_key[:index]
+        else:
+            key = location_key
+
+        if is_reports(user_name, key):
+
+            # Navigate in reports
+            return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"], form_selections["delete_folder"], form_selections["delete_dashboard"])
 
 
     if request.query_string:
@@ -1144,22 +1309,20 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            html = policies_to_status_report(user_name, [dbms_table_id])
-            if not html:
+            url_list = policies_to_status_report(user_name, [dbms_table_id])
+            if not url_list:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
                 return call_navigation_page(user_name, select_info, location_key, None)
-            return html
+
+            select_info = get_select_menu()
+            select_info['title'] = "Current Status"
+
+            select_info["url_list"] = url_list
+
+            return render_template('output_frame.html', **select_info)
 
 
-    if form_selections["report_button"]:
-        # Show the default report with the selected edge nodes
-        html = policies_to_status_report(user_name, selected_list)
-        if not html:
-            # Got an error
-            select_info = get_select_menu(selection=location_key)
-            return call_navigation_page(user_name, select_info, location_key, None)
-        return html
 
     if form_selections["select_button"]:
         if len(selected_list):
@@ -1255,7 +1418,7 @@ def metada_navigation(user_name, location_key, form_selections):
         select_info = get_select_menu(selection=gui_key)
 
         if form_selections["get_policy"]:
-            # User requested ti VIEW the policy of a tree entry
+            # User requested to VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
             add_policy(current_node, form_selections["policy_id"])
 
@@ -1263,12 +1426,17 @@ def metada_navigation(user_name, location_key, form_selections):
             # Execute the network command
             root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
             if gui_sub_tree and isinstance(gui_sub_tree, dict) and "command" in gui_sub_tree:
-                err_msg = add_command_reply(current_node, gui_sub_tree['command'])
-                if err_msg:
-                    flash("AnyLog: Network command failed: %s" % err_msg,  category='error')
-                    current_node.parent.reset_children()
-                    location_key = set_location_on_parent(location_key)
-                    return redirect(url_for('metadata', selection=location_key))
+                if current_node.is_with_json():
+                    current_node.reset_json_struct()     # Remove the child JSON struct
+                elif current_node.is_with_data():
+                    current_node.reset_data_struct()  # Remove the data structure assigned to the node
+                else:
+                    err_msg = add_command_reply(current_node, gui_sub_tree['command'])
+                    if err_msg:
+                        flash("AnyLog: Network command failed: %s" % err_msg,  category='error')
+                        current_node.parent.reset_children()
+                        location_key = set_location_on_parent(location_key)
+                        return redirect(url_for('metadata', selection=location_key))
             else:
                 flash("AnyLog: Missing command in Monitor Nodes", category='error')
                 current_node.parent.reset_children()
@@ -1285,6 +1453,7 @@ def metada_navigation(user_name, location_key, form_selections):
                 # Get the options from the config file and set the options as children
 
                 root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
 
                 if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
 
@@ -1330,6 +1499,7 @@ def add_command_reply(current_node, al_cmd):
     # Get from the parent the IP and port and issue the query
     parent_node = current_node.get_parent()
     parent_details = parent_node.details
+    error_msg = None
     if parent_details:
         if "ip" in parent_details.keys and "rest_port" in parent_details.keys:
             index = parent_details.keys.index("ip")
@@ -1339,10 +1509,21 @@ def add_command_reply(current_node, al_cmd):
             target_node = "http://%s:%s" % (ip, str(port))
 
             data, error_msg = exec_al_cmd( al_cmd, dest_node = target_node)
-            if not error_msg:
-                json_struct, error_msg = json_api.string_to_json(data)
-                if json_struct:
-                    current_node.add_policy(json_struct)
+            if not error_msg and len(data):
+                if data[0] == '{' and data[-1] =='}':
+                    # Add a subtree with the JSON message
+                    json_struct, error_msg = json_api.string_to_json(data)
+                    if json_struct:
+                        current_node.add_json_struct(json_struct)
+                else:
+                    # Add text
+                    data_list = data.replace('\r','').strip().split('\n')
+                    # Split text to attribiute value using colon
+                    for index, entry in enumerate(data_list):
+                        data_list[index] = entry.split(':', 1)
+                    current_node.add_data(data_list)
+        else:
+            error_msg = "IP and Port information for node: '%s' are not available" % parent_node.name
 
     return error_msg
 # -----------------------------------------------------------------------------------
@@ -1354,20 +1535,20 @@ def add_policy(current_node, policy_id):
         policy_node = current_node.get_parent()
     else:
         policy_node = current_node
-    if policy_node.is_with_policy():
+    if policy_node.is_with_json():
         # Policy exists with this node
-        policy_node.add_policy(None)
+        policy_node.reset_json_struct()
     else:
         # Read and add new policy
         retrieved_policy = get_json_policy(policy_id)
         if retrieved_policy and isinstance(retrieved_policy, list) and len(retrieved_policy) == 1:
-            policy_node.add_policy(retrieved_policy[0])
+            policy_node.add_json_struct(retrieved_policy[0])
 
 
 # -----------------------------------------------------------------------------------
 # Navigate in the reports partitioned by folders
 # -----------------------------------------------------------------------------------
-def navigate_in_reports(user_name, location_key):
+def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, folder_deleted, dashboard_deleted):
 
     root_nav = path_stat.get_element(user_name, "root_nav")
 
@@ -1390,58 +1571,76 @@ def navigate_in_reports(user_name, location_key):
 
     # Navigate in the tree to find location of Node
     current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
-    if current_node.is_with_children():
+    if folder_added or folder_renamed or folder_deleted or dashboard_deleted:
+        # If adding a folder or renaming - reset children and read again the children folders - with the new folder
+        current_node.reset_children()
+    elif current_node.is_with_children():
         current_node.reset_children()  # Delete children from older navigation
         return call_navigation_page(user_name, select_info, location_key, current_node)
 
-    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
-
-    gui_view = path_stat.get_element(user_name, "gui_view")
-    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
-
-    platform = root_gui["visualization"]        # Grafana, Power BI etc.
-
-    network_name = gui_view.get_base_info("name")
-    root_folder = "AnyLog_" + network_name
-
-    platforms_tree = gui_view.get_base_info("visualization")
-    url = platforms_tree[platform]['url']
-    token = platforms_tree[platform]['token']
+    platform, url, token, folder_name = get_report_info(user_name, location_key)
 
     current_node.add_child(name=location_key + '@' + "Add_Folder", option="New Folder", path=location_key + '@' + "Add_Folder")
 
     # Get the child folders
-    child_folders, err_msg = visualize.get_child_folders(platform, url, token, root_folder)
+    child_folders, err_msg = visualize.get_child_folders(platform, url, token, folder_name)     # pass location_key after the prefix "Reports"
     if err_msg:
         flash(err_msg, category='error')
         return redirect(url_for('metadata', selection=location_key))
 
-    if child_folders:
+    for child in child_folders:
         # Add folders to tree
-        pass
+        current_node.add_child(name=child, path=location_key + '@' + child, folder=True)
 
     current_node.add_child(name=location_key + '@' + "Add_Report", option="New Report", path=location_key + '@' + "Add_Report")
 
     # Get the reports in the folder
-    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, root_folder)
+    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, folder_name)
     if err_msg:
         flash(err_msg, category='error')
         return redirect(url_for('metadata', selection=location_key))
 
     # Update the tree
-
-    for name, url in panels_urls.items():
-        key = location_key + '@' + name
-        params = {
-            'name': name,
-            'key': key,
-            'path': key,
-            'report' : True,
-            'url' : url[0]
-        }
-        current_node.add_child( **params )
+    if panels_urls:
+        for name, url in panels_urls.items():
+            key = location_key + '@' + name
+            params = {
+                'name': name,
+                'key': key,
+                'path': key,
+                'report' : True,
+                'url' : url[0],
+            }
+            current_node.add_child( **params )
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
+
+
+# -----------------------------------------------------------------------------------
+# Return the report platform and folder
+# -----------------------------------------------------------------------------------
+def get_report_info(user_name, location_key):
+    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    root_gui, gui_sub_tree = gui_view.get_subtree(
+        gui_key)  # Get the subtree representing the location on the config file
+
+    platform = root_gui["visualization"]  # Grafana, Power BI etc.
+
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
+
+    if location_key == "Reports":
+        folder_name = root_folder
+    else:
+        folder_name = root_folder + location_key[7:]
+
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree[platform]['url']
+    token = platforms_tree[platform]['token']
+
+    return [platform, url, token, folder_name]
 
 # -----------------------------------------------------------------------------------
 # Call the navigation page - metadata.html
@@ -1455,15 +1654,30 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
     nav_tree.setup_print_list(root_nav, print_list)
 
     if current_node:
+
+        gui_view = path_stat.get_element(user_name, "gui_view")
+        gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+        root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+        if gui_sub_tree and 'submit' in gui_sub_tree:
+            # add submit buttons
+            if current_node.is_with_children():
+                current_node.add_submit_buttons(gui_sub_tree['submit'])
+            else:
+                current_node.reset_submit_buttons() # No need in submit buttons with no children
+
         # Place a flag to indicate the position n the page  when page is loaded
         # Reset is done in nav_tree.setup_print_list
         current_node.set_scroll_location()
+
     else:
         # First page - nothing selected - show the Network Map
         gui_view = path_stat.get_element(user_name, "gui_view")
         map_url = gui_view.get_base_info("map")
         if map_url:
             select_info['map_url'] = map_url
+
+
 
     select_info['selection'] = location_key
 

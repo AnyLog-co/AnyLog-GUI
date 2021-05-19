@@ -110,14 +110,14 @@ def new_report(platform_name, **platform_info):
 # --------------------------------------------------------
 # Get the subfolders to the path of folders represented by the list
 # --------------------------------------------------------
-def get_child_folders(platform_name, url, token, parent_folders):
+def get_child_folders(platform_name, url, token, parent_folder):
 
     connector = get_connector(platform_name)
     if not connector:
         error_msg = "%s not supported" % platform_name
         child_folders = None
     else:
-        child_folders, error_msg = connector.get_child_folders(url, token, parent_folders)
+        child_folders, error_msg = connector.get_child_folders(url, token, parent_folder)
 
     return [child_folders, error_msg]
 
@@ -138,7 +138,70 @@ def  get_connector(platform):
     return connector
 
 
+# --------------------------------------------------------
+# Create a new child Folder to the parent folder
+# --------------------------------------------------------
+def create_folder(platform_name, url, token, parent_folder, folder_name):
 
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.create_folder( url, token, parent_folder, folder_name)
+
+    return error_msg
+
+# --------------------------------------------------------
+# Rename a folder
+# --------------------------------------------------------
+def rename_folder(platform_name, url, token, old_folder, new_name):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.rename_folder( url, token, old_folder, new_name)
+
+    return error_msg
+
+# --------------------------------------------------------
+# Rename a folder
+# --------------------------------------------------------
+def delete_folder(platform_name, url, token, folder_name):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.delete_folder( url, token, folder_name)
+
+    return error_msg
+
+# --------------------------------------------------------
+# Rename a dashboard
+# --------------------------------------------------------
+def delete_dashboard(platform_name, url, token, folder_name, dashboard_name):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.delete_dashboard( url, token, folder_name, dashboard_name)
+
+    return error_msg
+
+# --------------------------------------------------------
+# Rename a dashboard
+# --------------------------------------------------------
+def rename_dashboard(platform_name, url, token, folder_name, dashboard_name, new_name):
+
+    connector = get_connector(platform_name)
+    if not connector:
+        error_msg = "%s not supported" % platform_name
+    else:
+        error_msg = connector.rename_dashboard( url, token, folder_name, dashboard_name, new_name)
+
+    return error_msg
 
 
 

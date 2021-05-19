@@ -6,6 +6,26 @@
 
 {% block content %}
 
+<script LANGUAGE="JavaScript">
+<!--
+function confirm_selection()
+{
+    document.getElementById("delete_confirmed").value=confirm("Are you sure you wish to continue?");
+}
+// -->
+<!--
+function get_name()
+{
+    document.getElementById("new_name").value=prompt("New name:");
+}
+
+
+// -->
+</script>
+
+
+
+
 {% if selection %}
 
 <!-- Add the usr path to the form (if provided)  -->
@@ -20,6 +40,9 @@
 
 
 <ul class="tree">
+
+    <input type="hidden" name="new_name" id="new_name">
+    <input type="hidden" name="delete_confirmed" id="delete_confirmed">
 
     {% for node in nodes_list %}
 
@@ -42,13 +65,16 @@
                 {% endif %}
 
                 {% if node.name  %}
-
                         {% if node.report  %}
-                            <!-- Option to update or delete thr report -->
-                            <input type="submit" value="Update" name="{{node.path}}" class="button_update">
-                            <input type="submit" value="Rename" name="{{node.path}}" class="button_rename">
-                            <input type="submit" value="Delete" name="{{node.path}}" class="button_delete">
+                            <!-- Option to rename update or delete a report -->
+                            <input type="submit" value="Update" name="dashboard.{{node.path}}" class="button_update">
+                            <input type="submit" value="Rename" name="dashboard.{{node.path}}" class="button_rename" onclick="get_name()">
+                            <input type="submit" value="Delete" name="dashboard.{{node.path}}" class="button_delete" onclick="confirm_selection()">
 
+                        {% elif node.folder %}
+                            <!-- Option to rename or delete a folder -->
+                            <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename" onclick="get_name()">
+                            <input type="submit" value="Delete" name="folder.{{node.path}}" class="button_delete" onclick="confirm_selection()">
                         {% elif node.details  %}
                             <!-- View Policy or Select or Navigate  -->
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
@@ -57,13 +83,13 @@
                         {% if selection  %}
                              {% if node.report  %}
                                  <!-- Flag to select the report (for multiple reports viewed) -->
-                                <td><input type=checkbox name=selected.{{node.path}}@{{node.name}}></td>
+                                <td><input type=checkbox name=selected.url.{{node.url}}></td>
                                 <!-- Or go directly to a report -->
                                 <a href="{{url_for('metadata')}}/{{selection}}?report={{node.url}}">{{node.name}}</a>
 
                             {% elif node.dbms_name  %}
                                 <!-- Flag to select the edge (to Save for a future report or immediate report) -->
-                                <td><input type=checkbox name=selected.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
+                                <td><input type=checkbox name=selected.table.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
                                 <!-- Or go directly to a report -->
                                 <a href="{{url_for('metadata')}}/{{selection}}?report={{node.dbms_name}}@{{node.table_name}}@{{node.id}}?">{{node.name}}</a>
                             {% else %}
@@ -81,14 +107,44 @@
                                 {% endif %}
 
                             {% endif %}
+                            {% if node.data_struct %}
+                            <!-- Message received from the network -->
+                                <ul>        <!--  Start unordered list   -->
+
+                                {% for data_line in node.data_struct %}
+                                     <li>
+                                    {% if data_line[1] %}
+                                        <!--  transformed text to attr value pairs separated by colon   -->
+                                        <span style="color: #140d84">
+                                        {{data_line[0]}}&nbsp : &nbsp
+                                        </span>
+                                        <span style="color: black">
+                                        {{data_line[1]}}
+                                        </span>
+                                    {% else %}
+                                        <span style="color: black">
+                                        {{data_line[0]}}
+                                        </span>
+                                    {% endif %}
+                                    </li>
+                                {%  endfor %}
+
+                                </ul>        <!--  Start unordered list   -->
+                            {% endif %}
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
                         {% endif %}
-                {% elif node.policy_key %}
+                        {%  if node.submit_buttons %}
+                            {% for button in node.submit_buttons %}
+                                 <!-- Configure report / Select report / Add report -->
+                                <input type="submit" value="{{ button }}" name="path.{{ node.path }}" class="button_submit">
+                            {%  endfor %}
+                        {% endif %}
+                {% elif node.json_key %}
                          <!-- View a policy (key and value)  -->
-                        <span id="json" class="key">{{node.policy_key}}</span>
-                        {% if node.policy_value  %}
-                            <span id="json" class="value"> : {{node.policy_value}}</span>
+                        <span id="json" style="color: #140d84">{{node.json_key}}</span>
+                        {% if node.json_value  %}
+                            <span id="json" style="color: black"> : {{node.json_value}}</span>
                         {% endif %}
                 {% endif %}
 
@@ -106,14 +162,6 @@
     {% endfor %}
 
     <br>
-
-     <!-- If edge nodes that can be selected to a report -->
-        {% if location_key %}
-            <hr>
-        <input type="submit" value="Configure" name="Configure">    <!-- Configure report -->
-        <input type="submit" value="Select" name="Select">    <!-- Selected edge to a new report -->
-        <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
-        {% endif %}
 </ul>
 
 <!-- Change scroll location from the top of the screen to last node touched-->

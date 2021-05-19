@@ -164,6 +164,10 @@ class AnyLogDashboard():
 
     def set_name(self, dashboard_name):
         self.name = dashboard_name
+
+    def get_name(self):
+        return self.name
+
     def reset_panels(self):
         '''
         Remove previously defined panels

@@ -162,6 +162,19 @@ ul.tree li:last-child:before {
     height: 20px;
 }
 
+.button_submit {
+    background-color: rgba(17, 8, 24, 0.49); /* Green */
+    border-color: #3e3737;
+    border-width: 2px;
+    color: whitesmoke;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    width: 50px;
+    height: 20px;
+}
+
 .button_update {
     background-color: #96ac72;
     border-color: #3e3737;

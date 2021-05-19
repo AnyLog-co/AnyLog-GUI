@@ -51,3 +51,40 @@ def do_post(url, headers_data, data_str = None, data_json = None):
         error_msg = None
 
     return [response, error_msg]
+
+
+# -----------------------------------------------------------------------------------
+# Put request
+# -----------------------------------------------------------------------------------
+def do_put(url, headers_data, data_str = None, data_json = None):
+
+    try:
+        response= requests.put(url=url, headers=headers_data, data=data_str, json=data_json, verify=False)
+    except HTTPError as http_err:
+        error_msg = "REST PUT HTTPError Error: %s" % str(http_err)
+        response = None
+    except Exception as err:
+        error_msg = "REST PUT Error: %s" % str(err)
+        response = None
+    else:
+        error_msg = None
+
+    return [response, error_msg]
+
+# -----------------------------------------------------------------------------------
+# Delete request
+# -----------------------------------------------------------------------------------
+def do_delete(url, headers_data):
+
+    try:
+        response= requests.delete(url=url, headers=headers_data)
+    except HTTPError as http_err:
+        error_msg = "REST DELETE HTTPError Error: %s" % str(http_err)
+        response = None
+    except Exception as err:
+        error_msg = "REST DELETE Error: %s" % str(err)
+        response = None
+    else:
+        error_msg = None
+
+    return [response, error_msg]

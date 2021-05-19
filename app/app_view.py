@@ -371,4 +371,6 @@ def get_gui_key(selection):
 # The GUI determines an edge if the position on the config file has no children
 # -----------------------------------------------------------------------------------
 def is_edge_node( gui_sub_tree ):
+    if not gui_sub_tree:
+        return False
     return not 'children' in gui_sub_tree
