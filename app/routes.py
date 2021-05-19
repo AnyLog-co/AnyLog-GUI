@@ -651,89 +651,29 @@ def print_network_reply(command, data):
     select_info['title'] = 'Network Command'
     select_info['command'] = command
 
-    # Print Tree
-
-    policy = None
-    if data[0] == '{' and data[-1] == '}':
-        policy, error_msg = json_api.string_to_json(data)
-
-    elif data[0] == '[' and data[-1] == ']':
-        policy, error_msg = json_api.string_to_list(data)
-
+    policy, table_info, print_info, error_msg = format_message_reply(data)
     if policy:
-        # Print Tree Structure
+        # Reply was a JSON policy
         data_list = []
         json_api.setup_print_tree(policy, data_list)
         select_info['text'] = data_list
         # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
         return render_template('output_tree.html', **select_info)
 
-    # Make a list of strings to print
-    data = data.replace('\r', '')
-    text_list = data.split('\n')
-
-
-    # Print a Table
-    is_table = False
-    for index, entry in enumerate(text_list):
-        if entry and index:
-            if entry[0] == '-' and entry[-1] == '|':
-                # Identified a table
-                is_table = True
-                columns_list = entry.split('|')
-                columns_size = []
-                for column in columns_list:
-                    if len(column):
-                        columns_size.append(len(column))     # An array with the size of each column
-                header = []
-                offset = 0
-                for column_id, size in enumerate(columns_size):
-                    header.append(text_list[index - 1][offset:offset + size])
-                    offset += (size + 1)                # Add the field size and the separator (|)
-
-                select_info['header'] = header
-                if index > 1 and len(text_list[index -2]):
-                    select_info['table_title'] = text_list[index -2]         # Get the title if available
-                break
-        if index >= 5:
-            break  # not a table
-
-    if is_table:
-        # a Table setup and print
-        table_rows = []
-        for y in range(index + 1, len(text_list)): # Skip the dashed separator to the column titles
-            row = text_list[y]
-
-            columns = []
-            offset = 0
-            for column_id, size in enumerate(columns_size):
-                columns.append(row[offset:offset + size])
-                offset += (size + 1)  # Add the field size and the separator (|)
-
-            table_rows.append(columns)
-
-        select_info['rows'] = table_rows
+    if table_info:
+        # Reply is structured as a table
+        if 'header' in table_info:
+            select_info['header'] = table_info['header']
+        if 'table_title' in table_info:
+            select_info['table_title'] = table_info['table_title']
+        if 'rows' in table_info:
+            select_info['rows'] = table_info['rows']
         return render_template('output_table.html', **select_info)
 
-    # Print Text
-
-    print_info = []     # Every entry holds type of text ("text" or "Url) and the text string
-
-    for entry in text_list:
-        # Setup URL Link
-        if entry[:6] == "Link: ":
-            index = entry.rfind('#')  # try to find name of help section
-            if index != -1:
-                section = entry[index + 1:].replace('-', ' ')
-            else:
-                section = ""
-            print_info.append(("url", entry[6:], section))
-        else:
-            print_info.append(("text", entry))
-
-    select_info['text'] = print_info
+    select_info['text'] = print_info        # Only TEXT
 
     return render_template('output_cmd.html', **select_info)
+
 # -----------------------------------------------------------------------------------
 # Install New Node
 # -----------------------------------------------------------------------------------
@@ -1545,6 +1485,7 @@ def format_message_reply(msg_text):
     # If the message is a dictionary or a list - return the dictionary or the list
 
     policy = None
+    error_msg = None
     if msg_text[0] == '{' and msg_text[-1] == '}':
         policy, error_msg = json_api.string_to_json(msg_text)
 
