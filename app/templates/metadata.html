@@ -78,6 +78,11 @@ function get_name()
                             <!-- Option to rename or delete a folder -->
                             <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename" onclick="get_name()">
                             <input type="submit" value="Delete" name="folder.{{node.path}}" class="button_delete" onclick="confirm_selection()">
+                            {% if node.children  %}
+                                <i class="far fa-folder-open" style='font-size:16px;color:#F8D775'></i>
+                            {%  else %}
+                                <i class="far fa-folder" style='font-size:16px;color:#F8D775'></i>
+                            {% endif %}
                         {% elif node.details  %}
                             <!-- View Policy or Select or Navigate  -->
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
