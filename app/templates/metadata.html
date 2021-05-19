@@ -70,7 +70,7 @@ function get_name()
                         {% endif %}
                         {% if node.report  %}
                             <!-- Option to rename update or delete a report -->
-                            <input type="submit" value="Update" name="dashboard.{{node.path}}" class="button_update">
+                            <!--  <input type="submit" value="Update" name="dashboard.{{node.path}}" class="button_update">  -->
                             <input type="submit" value="Rename" name="dashboard.{{node.path}}" class="button_rename" onclick="get_name()">
                             <input type="submit" value="Delete" name="dashboard.{{node.path}}" class="button_delete" onclick="confirm_selection()">
                             <i class="far fa-chart-bar" style='font-size:16px;color:#0a8007'></i>
