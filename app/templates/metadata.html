@@ -65,6 +65,9 @@ function get_name()
                 {% endif %}
 
                 {% if node.name  %}
+                        {% if node.icon  %}
+                            <i class="{{ node.icon[0]}}" style='font-size:{{ node.icon[1] }}px;color:{{ node.icon[2] }}'></i>
+                        {% endif %}
                         {% if node.report  %}
                             <!-- Option to rename update or delete a report -->
                             <input type="submit" value="Update" name="dashboard.{{node.path}}" class="button_update">
