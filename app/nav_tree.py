@@ -53,12 +53,11 @@ class TreeNode():
         self.url = None                 # URL for a report
         self.command = False            # Is node representing a network command
         self.submit_buttons = None      # A potential list of submit buttons assigned to a node
+        self.icon = None                # Icon shape size and color to show on the nav tree
 
         # Setup params
         for key, value in params.items():
             setattr(self, key, value)
-
-
 
     def get_name(self):
         '''

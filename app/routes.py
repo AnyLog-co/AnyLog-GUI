@@ -1398,6 +1398,9 @@ def metada_navigation(user_name, location_key, form_selections):
                 'key'  : child,
                 'path' : child,
             }
+            if "icon" in children[child]:
+                params['icon'] = children[child]['icon']    # Icon shape size and color to show on the nav tree
+
             root_nav.add_child( **params )
 
         path_stat.register_element(user_name, "root_nav", root_nav)     # Anchor the root as f(user)

@@ -26,7 +26,8 @@
                     "json_keys" : ["id", "name", "description"],
                     "dbms_name" : "Orics",
                     "table_name" : "[tag][name]",
-                    "submit" : ["Config", "Select", "Open"]
+                    "submit" : ["Config", "Select", "Open"],
+                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
                 },
                 "Manufacturer" :
                 {
