@@ -49,7 +49,11 @@ function get_name()
         {% if node %}        <!--  The node is not None   -->
 
                 {% if node.first_child %}
-                    <ul>        <!--  Start unordered list   -->
+                    {%  if node.json_key %}
+                        <ul  class="monitor-box">        <!--  Start unordered list   -->
+                    {%  else %}
+                        <ul>        <!--  Start unordered list   -->
+                    {%  endif %}
                 {% endif %}
 
                 <!--  List Item starts  -->
@@ -152,9 +156,9 @@ function get_name()
                         {% endif %}
                 {% elif node.json_key %}
                          <!-- View a policy (key and value)  -->
-                        <span id="json" style="color: #140d84">{{node.json_key}}</span>
+                        <span id="json" style="color: #FFB000">{{node.json_key}}</span>
                         {% if node.json_value  %}
-                            <span id="json" style="color: black"> : {{node.json_value}}</span>
+                            <span id="json" style="color:#66FF66"> : {{node.json_value}}</span>
                         {% endif %}
                 {% endif %}
 
