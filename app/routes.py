@@ -1453,19 +1453,17 @@ def add_command_reply(current_node, al_cmd):
 
             data, error_msg = exec_al_cmd( al_cmd, dest_node = target_node)
             if not error_msg and len(data):
-                if data[0] == '{' and data[-1] =='}':
-                    # Add a subtree with the JSON message
-                    json_struct, error_msg = json_api.string_to_json(data)
-                    if json_struct:
-                        current_node.add_json_struct(json_struct)
-                else:
-                    # Add text
-                    format_message_reply(data)
-                    data_list = data.replace('\r','').strip().split('\n')
-                    # Split text to attribiute value using colon
-                    for index, entry in enumerate(data_list):
-                        data_list[index] = entry.split(':', 1)
-                    current_node.add_data(data_list)
+                json_info, table_info, data_info, error_msg = format_message_reply(data)
+                if not error_msg:
+                    if json_info:
+                        # Add a subtree with the JSON message
+                        current_node.add_json_struct(json_info)
+                    elif table_info:
+                        # Add table
+                        current_node.add_table(table_info)
+                    else:
+                        # Add text
+                        current_node.add_data(data_info)
         else:
             error_msg = "IP and Port information for node: '%s' are not available" % parent_node.name
 

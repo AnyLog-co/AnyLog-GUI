@@ -127,17 +127,17 @@ function get_name()
 
                                 {% for data_line in node.data_struct %}
                                      <li>
-                                    {% if data_line[1] %}
+                                    {% if data_line[2] %}
                                         <!--  transformed text to attr value pairs separated by colon   -->
                                         <span style="color: #FFB000">
-                                        {{data_line[0]}}&nbsp : &nbsp
+                                        {{data_line[1]}}&nbsp : &nbsp
                                         </span>
                                         <span style="color: #66FF66">
-                                        {{data_line[1]}}
+                                        {{data_line[2]}}
                                         </span>
                                     {% else %}
                                         <span style="color: #66FF66">
-                                        {{data_line[0]}}
+                                        {{data_line[1]}}
                                         </span>
                                     {% endif %}
                                     </li>
