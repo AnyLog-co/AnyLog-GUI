@@ -1558,8 +1558,9 @@ def format_message_reply(msg_text):
         else:
             # Split text to attribiute value using colon
             key_val = entry.split(':', 1)
+            key_val.insert(0, "text")
 
-            data_list.append("text" + key_val)
+            data_list.append("key_val")
 
     return [None, None, data_list, None]
 

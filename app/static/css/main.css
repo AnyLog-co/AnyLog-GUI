@@ -240,6 +240,10 @@ ul.tree li:last-child:before {
 }
 
 
+.table-cmd {
+    display: inline-table
+}
+
 .table-cmd tr:first-child{
     background-color:cadetblue;
     color:whitesmoke;

@@ -123,7 +123,8 @@ function get_name()
                             {% endif %}
                             {% if node.table_struct %}
                             <!-- Message received from the network in the format of a table -->
-
+                            <ul>
+                                 <li>
                                     <table border="1" class="table-cmd">
                                     <tr>    <!-- table header  -->
                                         {% for col_name in node.table_struct["header"] %}
@@ -137,7 +138,9 @@ function get_name()
                                         {% endfor %}
                                     </tr>
                                     {% endfor %}
-
+                                    </table>
+                                </li>
+                            </ul>
                             {% elif node.data_struct %}
                             <!-- Message received from the network -->
                                 <ul class="monitor-box">        <!--  Start unordered list   -->
