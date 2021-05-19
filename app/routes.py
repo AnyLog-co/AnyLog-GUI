@@ -1373,6 +1373,8 @@ def metada_navigation(user_name, location_key, form_selections):
                     current_node.reset_json_struct()     # Remove the child JSON struct
                 elif current_node.is_with_data():
                     current_node.reset_data_struct()  # Remove the data structure assigned to the node
+                elif current_node.is_with_table():
+                    current_node.reset_table_struct()
                 else:
                     err_msg = add_command_reply(current_node, gui_sub_tree['command'])
                     if err_msg:
@@ -1557,10 +1559,11 @@ def format_message_reply(msg_text):
             data_list.append(("url", entry[6:], section))
         else:
             # Split text to attribiute value using colon
-            key_val = entry.split(':', 1)
-            key_val.insert(0, "text")
+            if entry:
+                key_val = entry.split(':', 1)
+                key_val.insert(0, "text")
 
-            data_list.append("key_val")
+                data_list.append(key_val)
 
     return [None, None, data_list, None]
 
