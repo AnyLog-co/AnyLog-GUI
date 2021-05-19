@@ -35,6 +35,7 @@
 
                     "table_title" : ["ID", "Name", "URL"],
                     "json_keys" : ["id", "name", "url"],
+                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
                     "children" : {
                             "Company" :
                             {
@@ -82,10 +83,12 @@
                     "type" : "reports",
                     "organization" : "folders",
                     "visualization" : "Grafana",
-                    "submit" : ["Open"]
+                    "submit" : ["Open"],
+                    "icon"  :   ["fas fa-desktop", 16, "#5499C7"]
                 },
 
                 "Monitor"    : {
+                  "icon"  :   ["fas fa-microchip", 16, "#1ABC9C"],
                    "children" : {
                       "Operators" : {
                           "type" : "node",
