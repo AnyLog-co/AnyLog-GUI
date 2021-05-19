@@ -143,6 +143,8 @@ function get_name()
                             </ul>
                             {% elif node.data_struct %}
                             <!-- Message received from the network -->
+                                <ul>
+                                <li>
                                 <ul class="monitor-box">        <!--  Start unordered list   -->
 
                                 {% for data_line in node.data_struct %}
@@ -162,7 +164,8 @@ function get_name()
                                     {% endif %}
                                     </li>
                                 {%  endfor %}
-
+                                </li>
+                                </ul>
                                 </ul>        <!--  Start unordered list   -->
                             {% endif %}
                         {% else %}
