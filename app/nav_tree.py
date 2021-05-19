@@ -54,6 +54,7 @@ class TreeNode():
         self.command = False            # Is node representing a network command
         self.submit_buttons = None      # A potential list of submit buttons assigned to a node
         self.icon = None                # Icon shape size and color to show on the nav tree
+        self.table_struct  = None       # Contains replies from the network formatted as a table structure
 
         # Setup params
         for key, value in params.items():
@@ -263,6 +264,13 @@ class TreeNode():
                 params['table_name'] = table_name   # Table name or the bring (from the policy) instructions
 
             self.add_child( **params )
+
+    # -----------------------------------------------------------------------------------
+    # Add Table structure
+    # Table includes 3 components: Header, columns names, rows (split to columns)
+    # -----------------------------------------------------------------------------------
+    def add_table( self, table_struct ):
+       self.table_struct = table_struct
 
     # -----------------------------------------------------------------------------------
     # Add data resulting from a network reply
