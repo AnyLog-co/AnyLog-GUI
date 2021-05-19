@@ -84,11 +84,11 @@
                     "organization" : "folders",
                     "visualization" : "Grafana",
                     "submit" : ["Open"],
-                    "icon"  :   ["fas fa-desktop", 16, "#5499C7"]
+                    "icon"  :   ["fas fa-desktop", 16, "#1ABC9C"]
                 },
 
                 "Monitor"    : {
-                  "icon"  :   ["fas fa-microchip", 16, "#1ABC9C"],
+                  "icon"  :   ["fas fa-satellite-dish", 16, "#5499C7"],
                    "children" : {
                       "Operators" : {
                           "type" : "node",
