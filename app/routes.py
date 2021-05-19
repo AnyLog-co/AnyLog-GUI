@@ -1520,6 +1520,7 @@ def add_command_reply(current_node, al_cmd):
                         current_node.add_json_struct(json_struct)
                 else:
                     # Add text
+                    format_message_reply(data)
                     data_list = data.replace('\r','').strip().split('\n')
                     # Split text to attribiute value using colon
                     for index, entry in enumerate(data_list):
@@ -1529,6 +1530,100 @@ def add_command_reply(current_node, al_cmd):
             error_msg = "IP and Port information for node: '%s' are not available" % parent_node.name
 
     return error_msg
+
+# -----------------------------------------------------------------------------------
+# Based on the message reply - organize as a table or as an attrubute values list
+# -----------------------------------------------------------------------------------
+def format_message_reply(msg_text):
+    '''
+    Return 4 values depending on the type of message:
+    policy
+    table_info (header, title and rows)
+    Text List (entries are attr - val pairs)
+    '''
+
+    # If the message is a dictionary or a list - return the dictionary or the list
+
+    policy = None
+    if msg_text[0] == '{' and msg_text[-1] == '}':
+        policy, error_msg = json_api.string_to_json(msg_text)
+
+    elif msg_text[0] == '[' and msg_text[-1] == ']':
+        policy, error_msg = json_api.string_to_list(msg_text)
+
+    if policy or error_msg:
+        return [policy, None, None, error_msg]  # return the dictionary or the list
+
+
+    # Make a list of strings to print
+    data = msg_text.replace('\r', '')
+    text_list = data.split('\n')
+
+
+    # Test id the returned message is formatted as a table
+    table_data = {}
+    is_table = False
+    for index, entry in enumerate(text_list):
+        if entry and index:
+            if entry[0] == '-' and entry[-1] == '|':
+                # Identified a table
+                is_table = True
+                columns_list = entry.split('|')
+                columns_size = []
+                for column in columns_list:
+                    if len(column):
+                        columns_size.append(len(column))     # An array with the size of each column
+                header = []
+                offset = 0
+                for column_id, size in enumerate(columns_size):
+                    header.append(text_list[index - 1][offset:offset + size])
+                    offset += (size + 1)                # Add the field size and the separator (|)
+
+                table_data['header'] = header
+                if index > 1 and len(text_list[index -2]):
+                    table_data['table_title'] = text_list[index -2]         # Get the title if available
+                break
+        if index >= 5:
+            break  # not a table
+
+    if is_table:
+        # a Table setup and print
+        table_rows = []
+        for y in range(index + 1, len(text_list)): # Skip the dashed separator to the column titles
+            row = text_list[y]
+
+            columns = []
+            offset = 0
+            for column_id, size in enumerate(columns_size):
+                columns.append(row[offset:offset + size])
+                offset += (size + 1)  # Add the field size and the separator (|)
+
+            table_rows.append(columns)
+
+        table_data['rows'] = table_rows
+        return [None, table_data, None, None]
+
+    # Print Text
+
+    data_list = []     # Every entry holds type of text ("text" or "Url) and the text string
+
+    for entry in text_list:
+        # Setup URL Link (reply to help command + a link to the help page)
+        if entry[:6] == "Link: ":
+            index = entry.rfind('#')  # try to find name of help section
+            if index != -1:
+                section = entry[index + 1:].replace('-', ' ')
+            else:
+                section = ""
+            data_list.append(("url", entry[6:], section))
+        else:
+            # Split text to attribiute value using colon
+            key_val = entry.split(':', 1)
+
+            data_list.append("text" + key_val)
+
+    return [None, None, data_list, None]
+
 # -----------------------------------------------------------------------------------
 # Add policy to the GUI
 # -----------------------------------------------------------------------------------
