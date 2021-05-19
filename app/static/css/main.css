@@ -248,3 +248,13 @@ ul.tree li:last-child:before {
     background-color:lightgray;
     color:black;
 }
+
+
+.monitor-box {
+
+    background-color: #282828;
+    border: 5px solid #00b7a8;
+    border-radius: .5em;
+    padding: 20px 40px;
+    width: fit-content;
+}

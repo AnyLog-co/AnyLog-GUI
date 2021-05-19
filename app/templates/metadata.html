@@ -119,20 +119,20 @@ function get_name()
                             {% endif %}
                             {% if node.data_struct %}
                             <!-- Message received from the network -->
-                                <ul>        <!--  Start unordered list   -->
+                                <ul class="monitor-box">        <!--  Start unordered list   -->
 
                                 {% for data_line in node.data_struct %}
                                      <li>
                                     {% if data_line[1] %}
                                         <!--  transformed text to attr value pairs separated by colon   -->
-                                        <span style="color: #140d84">
+                                        <span style="color: #FFCC00">
                                         {{data_line[0]}}&nbsp : &nbsp
                                         </span>
-                                        <span style="color: black">
+                                        <span style="color: #33FF33">
                                         {{data_line[1]}}
                                         </span>
                                     {% else %}
-                                        <span style="color: black">
+                                        <span style="color: #33FF33">
                                         {{data_line[0]}}
                                         </span>
                                     {% endif %}
