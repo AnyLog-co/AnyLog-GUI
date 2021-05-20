@@ -1600,7 +1600,8 @@ def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, f
             select_info = get_select_menu()
             select_info['title'] = "Current Status"
 
-            url_list = [query_string[7:]]
+            compressed_urls = query_string[7:]
+            url_list = uncompress_urls(compressed_urls) # Uncompress the string to the list of panels
 
             select_info["url_list"] = url_list
 
