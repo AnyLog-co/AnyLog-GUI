@@ -1651,7 +1651,7 @@ def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, f
                 'key': key,
                 'path': key,
                 'report' : True,
-                'url' : urls_list[0],     # Take the url of the first panel
+                'url' : urls_string,     # Save a compressed strung representing a list of URLS
             }
             current_node.add_child( **params )
 
@@ -1675,19 +1675,19 @@ def compress_urls(urls_list):
         last_url = urls_list[counter -1]
 
         # get number of bytes to compare
-        shared_bytes = len(first_url)
-        if len(last_url) < shared_bytes:
-            shared_bytes = len(last_url)
+        max_bytes = len(first_url)
+        if len(last_url) < max_bytes:
+            max_bytes = len(last_url)
 
-        for bytes_eauql in range (shared_bytes):
+        for bytes_eauql in range (max_bytes):
             if first_url[bytes_eauql] != last_url[bytes_eauql]:
                 break
 
-        compressed_info = "%u.%u." % (counter, shared_bytes)  # The number of URLS + the size of common prefix
+        compressed_info = "%u.%u." % (counter, bytes_eauql)  # The number of URLS + the size of common prefix
         compressed_data = first_url[:bytes_eauql]      # The size of the prefix
 
         for entry in urls_list:
-            len_delta = len(entry) - shared_bytes    # The difference that is needed to complete the URL
+            len_delta = len(entry) - bytes_eauql    # The difference that is needed to complete the URL
             compressed_info += "%u." % len_delta    # Add the size to complete the url
             compressed_data += entry[-len_delta:] # The url delta (suffix)
 
@@ -1706,9 +1706,9 @@ def uncompress_urls(compressed_string):
             urls_list.append(compressed_string[index + 1:])
         else:
             list_entries = compressed_string[index + 1:].split('.', counter + 1)
-            shared_bytes = int(list_entries[0])
-            shared_prefix = list_entries[-1][:shared_bytes]
-            offset = shared_prefix
+            bytes_eauql = int(list_entries[0])
+            shared_prefix = list_entries[-1][:bytes_eauql]
+            offset = bytes_eauql
 
             for i in range (counter):
                 suffix_length = int(list_entries[1 + i])
