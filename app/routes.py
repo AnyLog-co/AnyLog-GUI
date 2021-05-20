@@ -1675,19 +1675,19 @@ def compress_urls(urls_list):
         last_url = urls_list[counter -1]
 
         # get number of bytes to compare
-        max_bytes = len(first_url)
-        if len(last_url) < max_bytes:
-            max_bytes = len(last_url)
+        shared_bytes = len(first_url)
+        if len(last_url) < shared_bytes:
+            shared_bytes = len(last_url)
 
-        for bytes_eauql in range (max_bytes):
+        for bytes_eauql in range (shared_bytes):
             if first_url[bytes_eauql] != last_url[bytes_eauql]:
                 break
 
-        compressed_info = "%u.%u." % (counter, max_bytes)  # The number of URLS + the size of common prefix
+        compressed_info = "%u.%u." % (counter, shared_bytes)  # The number of URLS + the size of common prefix
         compressed_data = first_url[:bytes_eauql]      # The size of the prefix
 
         for entry in urls_list:
-            len_delta = len(entry)- max_bytes    # The difference that is needed to complete the URL
+            len_delta = len(entry) - shared_bytes    # The difference that is needed to complete the URL
             compressed_info += "%u." % len_delta    # Add the size to complete the url
             compressed_data += entry[-len_delta:] # The url delta (suffix)
 
@@ -1701,10 +1701,23 @@ def uncompress_urls(compressed_string):
     urls_list = []
     index = compressed_string.find('.')     # Get the number of urls
     if index > 0:
-        counter = int(compressed_string[:index])
+        counter = int(compressed_string[:index])         # the number of urls
+        if counter == 1:
+            urls_list.append(compressed_string[index + 1:])
+        else:
+            list_entries = compressed_string[index + 1:].split('.', counter + 1)
+            shared_bytes = int(list_entries[0])
+            shared_prefix = list_entries[-1][:shared_bytes]
+            offset = shared_prefix
 
+            for i in range (counter):
+                suffix_length = int(list_entries[1 + i])
+                url_string = shared_prefix + list_entries[-1][offset:offset+suffix_length]
+                offset += suffix_length
 
+                urls_list.append(url_string)
 
+    return urls_list
 
 # -----------------------------------------------------------------------------------
 # Return the report platform and folder
