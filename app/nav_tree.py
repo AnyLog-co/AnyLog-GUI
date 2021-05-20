@@ -21,7 +21,19 @@ class Details():
         self.values = values      # The list of values
 
 # -----------------------------------------------------------------------------------
-# Objects to describe a tree hierarchy used in output_tree.html
+# Object to describe formatting in HTML
+# -----------------------------------------------------------------------------------
+class format_node():
+    def __init__(self):
+        self.format = True
+        self.start_list = False
+
+    def set_new_list(self):
+        self.start_list = True
+
+
+# -----------------------------------------------------------------------------------
+# Object to describe a tree hierarchy used in output_tree.html
 # -----------------------------------------------------------------------------------
 class TreeNode():
 
@@ -370,7 +382,15 @@ def setup_print_list( current_node, print_list):
             child.scroll_location = False       # Reset the scroll location
             print_list.append(child)
             if child.is_with_json():
+
+                new_node = format_node()
+                new_node.set_new_list()
+                print_list.append(new_node)     # A node to start a new list
+
                 setup_print_json( child.json_struct, print_list )
+
+                print_list.append(None)         # End the new list
+
             if child.with_children:
                 setup_print_list(child, print_list)
         print_list.append(None)     # All children considered - this is a flag to issue </li> and </ul>

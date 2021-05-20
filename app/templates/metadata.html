@@ -46,7 +46,13 @@ function get_name()
 
     {% for node in nodes_list %}
 
-        {% if node %}        <!--  The node is not None   -->
+        {% if node.format %}
+            <!--  A format node  -->
+            {% if node.start_list %}
+                <ul>
+                <li>
+            {%  endif %}
+        {% elif node %}        <!--  The node is not None   -->
 
                 {% if node.first_child %}
                     {%  if node.json_key %}
