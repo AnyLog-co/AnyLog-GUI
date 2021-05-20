@@ -1643,18 +1643,67 @@ def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, f
 
     # Update the tree
     if panels_urls:
-        for name, url in panels_urls.items():
+        for name, urls_list in panels_urls.items():
             key = location_key + '@' + name
+            urls_string = compress_urls(urls_list)    # Make a string representing the list of urls (each url represents a panel)
             params = {
                 'name': name,
                 'key': key,
                 'path': key,
                 'report' : True,
-                'url' : url[0],
+                'url' : urls_list[0],     # Take the url of the first panel
             }
             current_node.add_child( **params )
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
+# -----------------------------------------------------------------------------------
+# Represent a list of urls as a single string:
+# The process:
+# Sort the given set of N strings.
+# Compare the first and last string in the sorted array of strings.
+# The string with prefix characters matching in the first and last string will be the answer.
+# -----------------------------------------------------------------------------------
+def compress_urls(urls_list):
+
+    counter = len(urls_list)
+
+    if counter == 1:
+        compressed_string = "1." + urls_list[0]     # Only one string
+    else:
+        urls_list.sort()
+        first_url =  urls_list[0]
+        last_url = urls_list[counter -1]
+
+        # get number of bytes to compare
+        max_bytes = len(first_url)
+        if len(last_url) < max_bytes:
+            max_bytes = len(last_url)
+
+        for bytes_eauql in range (max_bytes):
+            if first_url[bytes_eauql] != last_url[bytes_eauql]:
+                break
+
+        compressed_info = "%u.%u." % (counter, max_bytes)  # The number of URLS + the size of common prefix
+        compressed_data = first_url[:bytes_eauql]      # The size of the prefix
+
+        for entry in urls_list:
+            len_delta = len(entry)- max_bytes    # The difference that is needed to complete the URL
+            compressed_info += "%u." % len_delta    # Add the size to complete the url
+            compressed_data += entry[-len_delta:] # The url delta (suffix)
+
+        compressed_string = compressed_info + compressed_data
+
+    return compressed_string
+# -----------------------------------------------------------------------------------
+# Transformed a compressed string to a list of URLS
+# -----------------------------------------------------------------------------------
+def uncompress_urls(compressed_string):
+    urls_list = []
+    index = compressed_string.find('.')     # Get the number of urls
+    if index > 0:
+        counter = int(compressed_string[:index])
+
+
 
 
 # -----------------------------------------------------------------------------------

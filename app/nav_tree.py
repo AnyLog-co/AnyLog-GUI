@@ -62,7 +62,7 @@ class TreeNode():
         self.scroll_location = False    # Set to True to indicate the scroll location on the page
         self.report = False             # True for a report type
         self.folder = False             # True for a folder type
-        self.url = None                 # URL for a report
+        self.url = None                 # URL for a first panel
         self.command = False            # Is node representing a network command
         self.submit_buttons = None      # A potential list of submit buttons assigned to a node
         self.icon = None                # Icon shape size and color to show on the nav tree
