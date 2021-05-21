@@ -1214,7 +1214,10 @@ def metadata( selection = "" ):
             # Show the default report with the selected edge nodes
             url_list = policies_to_status_report(user_name, selected_list)
         elif form_selections["existing_report"]:
-            url_list = selected_list            # List of selected URLs
+            urls_compressed = selected_list            # List of selected URLs
+            url_list = []
+            for url_encoded in urls_compressed:
+                url_list += uncompress_urls(url_encoded)    # Uncompress mutiple pannels that are represented as a single string
         else:
             url_list = None
         if not url_list:
