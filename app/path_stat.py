@@ -48,7 +48,8 @@ def set_new_user(user_name):
     '''
     global active_state_
 
-    active_state_[user_name] = { 
+    active_state_[user_name] = {
+        "lists" : {},           # Dictionaries of nodes maintained as f (user) and a unique name
         "reports" : {
                         "edge_nodes" : {}         # a dictionary of edge nodes selected in the tree navigation
                     },
@@ -59,6 +60,46 @@ def set_new_user(user_name):
     }
     set_new_state(user_name, "My_Report", True)
 
+# -----------------------------------------------------------------------------------
+# Test for existance of a policy in a list of nodes selected to be monitored
+# -----------------------------------------------------------------------------------
+def is_in_info_list(user_name, list_name, policy_id):
+    '''
+    Selected policies are maintained as f(user)
+    test if the policy exists in the list of policies
+
+    param: list_name - an ID of the list. i.e. "monitored"
+    '''
+    user_info = active_state_[user_name]["lists"]
+    if not list_name in user_info:
+        return False
+    return policy_id in user_info[list_name]
+
+# -----------------------------------------------------------------------------------
+# Updates a list of nodes selected to be monitored
+# -----------------------------------------------------------------------------------
+def add_to_info_list(user_name, list_name, policy_id, info):
+    '''
+     Selected policies are maintained as f(user)
+     Add a policy to the list
+
+     param: list_name - an ID of the list. i.e. "monitored"
+     '''
+    user_info = active_state_[user_name]["lists"]
+    if not list_name in user_info:
+        user_info[list_name] = {}
+
+    user_info[list_name][policy_id] = info
+# -----------------------------------------------------------------------------------
+# Get a list of nodes selected to be monitored
+# -----------------------------------------------------------------------------------
+def get_info_list(user_name, list_name):
+    user_info = active_state_[user_name]["lists"]
+    if not list_name in user_info:
+        info_list = None
+    else:
+        info_list = user_info[list_name]
+    return info_list
 # -----------------------------------------------------------------------------------
 # is user connected
 # -----------------------------------------------------------------------------------

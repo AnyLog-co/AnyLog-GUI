@@ -1274,21 +1274,49 @@ def metadata( selection = "" ):
         if len(selected_list):
             if form_selections["nodes_selected"]:
                 # Monitor selected nodes
-                pass
+                add_selected_to_node_list(user_name, location_key, selected_list)
             else:
                 # Report on data noides - Add the selected (edge) nodes to a list of nodes for a report
-                add_selected_to_list(user_name, location_key, selected_list) # Return one selection from the list
+                add_selected_to_report_list(user_name, location_key, selected_list) # Return one selection from the list
         # Continue to show tree
 
 
     return metada_navigation(user_name, location_key, form_selections)
 
 # -----------------------------------------------------------------------------------
+# Add the selected nodes to a list of nodes that are option for monitoring
+
+# -----------------------------------------------------------------------------------
+def add_selected_to_node_list(user_name, location_key, new_selection):
+
+    '''
+    Every entry in new_selection includes:
+    a) dbms name (or pull instructions for the dbms name)
+    b) table name (or pull instructions for the table name)
+    c) JSON policy ID
+    '''
+
+    # Add the next selection to existing selection
+    for entry in new_selection:
+        node_segments = entry.split('.')
+        if len(node_segments) == 2:
+            policy_id = node_segments[1]
+
+            if not path_stat.is_in_info_list(user_name, "monitored", policy_id):
+                # Not in the list - add info to the list of selected nodes
+                policy_list = get_json_policy(policy_id)
+                if policy_list and isinstance(policy_list,list) and len(policy_list) == 1:
+                    policy = policy_list[0]
+                    # Add the selected policy to the list of nodes that can be monitored
+                    path_stat.add_to_info_list(user_name, "monitored", policy_id, policy)
+
+
+# -----------------------------------------------------------------------------------
 # Add the selected nodes to a list of nodes that are option for a new report.
 # If a new report is selected, the user can select which edge nodes to include.
 # The edge nodes determine the database and table to use.
 # -----------------------------------------------------------------------------------
-def add_selected_to_list(user_name, location_key, new_selection):
+def add_selected_to_report_list(user_name, location_key, new_selection):
 
     '''
     Every entry in new_selection includes:
