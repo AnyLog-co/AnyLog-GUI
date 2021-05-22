@@ -98,7 +98,7 @@
                           "children" : {
                               "Connections" :  { "command" : "get connections" },
                               "Node Status" :  { "command" : "get status" },
-                              "Load Status" :     { "command" : "get operator" },
+                              "Load Status" :     { "command" : "get operator format = json" },
                               "Utilization" :    { "command" : "get node info cpu_percent" }
                           }
                       },

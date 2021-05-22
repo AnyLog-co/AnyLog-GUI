@@ -222,7 +222,6 @@ ul.tree li:last-child:before {
     color: black;
     padding: 15px;
     margin: 20px;
-    float:right;
 }
 
 .boxed_login{
