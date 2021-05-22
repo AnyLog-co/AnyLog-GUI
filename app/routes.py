@@ -512,12 +512,12 @@ def define_monitoring():
         flash('AnyLog: Missing selection of nodes for monitoring', category='error')
 
     extra_columns = [("Select", 'checkbox')]
-    al_table = AnyLogTable("Select participating rows", ["Type", "Name", "ID", "IP", "Port"], None, table_rows, extra_columns)
+    al_table = AnyLogTable("Select participating nodes", ["Type", "Name", "ID", "IP", "Port"], None, table_rows, extra_columns)
 
     gui_view = path_stat.get_element(user_name, "gui_view")
     gui_key = app_view.get_gui_key("Monitor")  # Transform selection with data to selection of GUI keys
     root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
-    
+
     monitor_options = []
     if 'options' in gui_sub_tree:
         monitored_options = gui_sub_tree['options']
@@ -533,7 +533,7 @@ def define_monitoring():
     if al_table:
         select_info["table"] = al_table
 
-
+    select_info["monitor_options"] = monitor_options
 
     return render_template('monitor_setup.html', **select_info)
 # -----------------------------------------------------------------------------------

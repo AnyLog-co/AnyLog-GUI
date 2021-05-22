@@ -4,7 +4,9 @@
 
 <form action="{{url_for('define_monitoring')}}" method="POST">
 
-       <!-- SHow nodes and checkbox for selection -->
+
+        <h3>{{ table.table_name }}</h3>
+       <!-- Show nodes and checkbox for selection -->
        <table border="1">
             <tr>    <!-- table row  -->
                 {% for col_name in table.column_names %}
@@ -27,6 +29,18 @@
             {% endfor %}
 
     </table>
+
+    <br>
+    <br>
+    <h3>Select type of monitoring</h3>
+    <!-- Select list for monitoring options -->
+
+    <select name="monitor_option" id="monitor_option" size = 6>
+        {% for option in monitor_options %}
+            <option value={{option[1]}}>{{option[0]}}</option>
+        {% endfor %}
+    </select>
+
 
 </form>
     
