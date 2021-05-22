@@ -67,6 +67,7 @@ class TreeNode():
         self.submit_buttons = None      # A potential list of submit buttons assigned to a node
         self.icon = None                # Icon shape size and color to show on the nav tree
         self.table_struct  = None       # Contains replies from the network formatted as a table structure
+        self.checkbox = False           # An option for a checkbox near content
 
         # Setup params
         for key, value in params.items():
@@ -214,12 +215,13 @@ class TreeNode():
     # -----------------------------------------------------------------------------------
     # Add the children resulting from a query to the network
     # -----------------------------------------------------------------------------------
-    def add_data_children(self, location_key, list_columns, list_keys, table_rows, dbms_name, table_name):
+    def add_data_children(self, location_key, list_columns, list_keys, table_rows, add_checkbox, dbms_name, table_name):
         '''
         Create children to the specifird node
         :param list_columns:    The attribute names retrieved from the config file
         :param list_keys:       The keys of the policies
         :param table_rows:      The children
+        :param add_checkbox     Provide checkbox selection
         :return:
         '''
 
@@ -269,6 +271,8 @@ class TreeNode():
                     path += ('+' + entry[name_offset])
 
             params['path'] = path       # ID of the node
+
+            params["checkbox"] = add_checkbox
 
             if dbms_name:
                 # This is an edge node that can pull a report using the dbms and table info

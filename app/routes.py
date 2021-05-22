@@ -1230,8 +1230,6 @@ def metadata( selection = "" ):
 
         return render_template('output_frame.html', **select_info)
 
-
-
     if location_key:
         index = location_key.find('@')
         if index != -1:
@@ -1417,11 +1415,17 @@ def metada_navigation(user_name, location_key, form_selections):
                             # Push The key to pull dbms name and table name from the policy
                             dbms_name = gui_sub_tree["dbms_name"]
                             table_name = gui_sub_tree["table_name"]
+                            add_checkbox = True         # Checkbox to select nodes
+                        elif "submit" in gui_sub_tree:
+                            add_checkbox = True
+                            dbms_name = None
+                            table_name = None
                         else:
+                            add_checkbox = False
                             dbms_name = None
                             table_name = None
 
-                        current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
+                        current_node.add_data_children(location_key, list_columns, list_keys, table_rows, add_checkbox, dbms_name, table_name)
 
                 else:
 

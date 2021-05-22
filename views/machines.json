@@ -95,10 +95,11 @@
                           "query" : "blockchain get operator",
                           "table_title" : ["ID", "Name", "Cluster", "IP", "Port"],
                           "json_keys" : ["id", "name", "cluster", "ip", "rest_port"],
+                          "submit" : ["Select"],
                           "children" : {
                               "Connections" :  { "command" : "get connections" },
                               "Node Status" :  { "command" : "get status" },
-                              "Load Status" :     { "command" : "get operator format = json" },
+                              "Load Status" :     { "command" : "get operator format = json"},
                               "Utilization" :    { "command" : "get node info cpu_percent" }
                           }
                       },

@@ -114,6 +114,9 @@ function get_name()
 
                             {% else %}
                                 <!-- Not Edge -->
+                                {% if node.checkbox  %}
+                                    <input type=checkbox name=selected.node.{{node.name}}>
+                                {% endif %}
                                 {% if node.id  %}
                                     <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
                                 {% else %}
