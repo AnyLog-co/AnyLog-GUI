@@ -488,10 +488,10 @@ def reports():
 
     return render_template('reports.html', **select_info)
 # -----------------------------------------------------------------------------------
-# Alerts
+# monitor nodes
 # -----------------------------------------------------------------------------------
-@app.route('/alerts')
-def alerts():
+@app.route('/monitor_nodes')
+def monitor_nodes():
     return redirect(('/login'))        # start with Login if not yet provided
 # -----------------------------------------------------------------------------------
 # Configure
@@ -880,6 +880,7 @@ def process_tree_form():
         "delete_dashboard" : False,
         "dashboard_name" : None,
         "rename_dashboard" : False,
+        "nodes_selected" : False,       # User selection of nodes
     }
 
     selected_list = []
@@ -953,6 +954,10 @@ def process_tree_form():
                     # Entries represent existing reports
                     selected_list.append(form_key[13:])
                     form_selections["existing_report"] = True
+                elif form_key[9:14] == "node.":
+                    # Entries represent nodes selected
+                    selected_list.append(form_key[14:])
+                    form_selections["nodes_selected"] = True
             elif form_val == "Open":
                 # The selected list is used for a report
                 form_selections["report_button"] = True
@@ -1267,9 +1272,13 @@ def metadata( selection = "" ):
 
     if form_selections["select_button"]:
         if len(selected_list):
-            # Add the selected (edge) nodes to a list of nodes
-            add_selected_to_list(user_name, location_key, selected_list) # Return one selection from the list
-            # Continue to show tree
+            if form_selections["nodes_selected"]:
+                # Monitor selected nodes
+                pass
+            else:
+                # Report on data noides - Add the selected (edge) nodes to a list of nodes for a report
+                add_selected_to_list(user_name, location_key, selected_list) # Return one selection from the list
+        # Continue to show tree
 
 
     return metada_navigation(user_name, location_key, form_selections)
