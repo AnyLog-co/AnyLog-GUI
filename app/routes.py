@@ -501,18 +501,39 @@ def define_monitoring():
 
     selected_nodes = path_stat.get_info_list(user_name, "monitored")
 
-    for policy in selected_nodes.values():
-        policy_type = path_stat.get_policy_type(policy)
-        if policy_type:
-            if "name" in policy[policy_type] and "id" in policy[policy_type] and "ip" in policy[policy_type] and "port" in policy[policy_type]:
-                table_rows.append((policy_type, policy[policy_type]["name"], policy[policy_type]["id"], policy[policy_type]["ip"], policy[policy_type]["port"]))
+    if selected_nodes:
+        for policy in selected_nodes.values():
+            policy_type = path_stat.get_policy_type(policy)
+            if policy_type:
+                if "name" in policy[policy_type] and "id" in policy[policy_type] and "ip" in policy[policy_type] and "port" in policy[policy_type]:
+                    table_rows.append((policy_type, policy[policy_type]["name"], policy[policy_type]["id"], policy[policy_type]["ip"], policy[policy_type]["port"]))
+    else:
+        table_rows = []
+        flash('AnyLog: Missing selection of nodes for monitoring', category='error')
 
     extra_columns = [("Select", 'checkbox')]
     al_table = AnyLogTable("Select participating rows", ["Type", "Name", "ID", "IP", "Port"], None, table_rows, extra_columns)
 
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    gui_key = app_view.get_gui_key("Monitor")  # Transform selection with data to selection of GUI keys
+    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+    
+    monitor_options = []
+    if 'options' in gui_sub_tree:
+        monitored_options = gui_sub_tree['options']
+        for index, option in enumerate(monitored_options):
+            option_name = option[0]
+            monitor_options.append((option_name, index))       # Create a list of options to monitor
+    else:
+        flash('AnyLog: Missing configuration options for monitoring', category='error')
+
+
     select_info = get_select_menu()
     select_info["title"] = 'Setup Monitoring'
-    select_info["table"] = al_table
+    if al_table:
+        select_info["table"] = al_table
+
+
 
     return render_template('monitor_setup.html', **select_info)
 # -----------------------------------------------------------------------------------
