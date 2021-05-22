@@ -488,11 +488,33 @@ def reports():
 
     return render_template('reports.html', **select_info)
 # -----------------------------------------------------------------------------------
-# monitor nodes
+# Define which of the selected nodes is to be monitored and how
 # -----------------------------------------------------------------------------------
-@app.route('/monitor_nodes')
-def monitor_nodes():
-    return redirect(('/login'))        # start with Login if not yet provided
+@app.route('/define_monitoring')
+def define_monitoring():
+
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    table_rows = []
+
+    selected_nodes = path_stat.get_info_list(user_name, "monitored")
+
+    for policy in selected_nodes.values():
+        policy_type = path_stat.get_policy_type(policy)
+        if policy_type:
+            if "name" in policy[policy_type] and "id" in policy[policy_type] and "ip" in policy[policy_type] and "port" in policy[policy_type]:
+                table_rows.append((policy_type, policy[policy_type]["name"], policy[policy_type]["id"], policy[policy_type]["ip"], policy[policy_type]["port"]))
+
+    extra_columns = [("Select", 'checkbox')]
+    al_table = AnyLogTable("Select participating rows", ["Type", "Name", "ID", "IP", "Port"], None, table_rows, extra_columns)
+
+    select_info = get_select_menu()
+    select_info["title"] = 'Setup Monitoring'
+    select_info["table"] = al_table
+
+    return render_template('monitor_setup.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Configure
 # -----------------------------------------------------------------------------------
@@ -1274,7 +1296,7 @@ def metadata( selection = "" ):
         if len(selected_list):
             if form_selections["nodes_selected"]:
                 # Monitor selected nodes
-                add_selected_to_node_list(user_name, location_key, selected_list)
+                add_selected_to_nodes_list(user_name, location_key, selected_list)
             else:
                 # Report on data noides - Add the selected (edge) nodes to a list of nodes for a report
                 add_selected_to_report_list(user_name, location_key, selected_list) # Return one selection from the list
@@ -1287,13 +1309,13 @@ def metadata( selection = "" ):
 # Add the selected nodes to a list of nodes that are option for monitoring
 
 # -----------------------------------------------------------------------------------
-def add_selected_to_node_list(user_name, location_key, new_selection):
+def add_selected_to_nodes_list(user_name, location_key, new_selection):
 
     '''
     Every entry in new_selection includes:
-    a) dbms name (or pull instructions for the dbms name)
-    b) table name (or pull instructions for the table name)
-    c) JSON policy ID
+    a) Node Name
+    b) Node ID
+    Get the policy using the ID and save in a list called "monitored"
     '''
 
     # Add the next selection to existing selection
