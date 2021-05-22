@@ -89,6 +89,11 @@
 
                 "Monitor"    : {
                   "icon"  :   ["fas fa-satellite-dish", 16, "#2E86C1"],
+                  "Options" : [
+                      ["Monitor status", "get status"],
+                      ["Monitor Data", "operator_stat = operator get stat",
+                                        "monitor operator where info = !operator_stat"]
+                  ],
                    "children" : {
                       "Operators" : {
                           "type" : "node",
