@@ -68,6 +68,7 @@ class TreeNode():
         self.icon = None                # Icon shape size and color to show on the nav tree
         self.table_struct  = None       # Contains replies from the network formatted as a table structure
         self.checkbox = False           # An option for a checkbox near content
+        self.monitor = False            # A node that monitors network status using - "get monitored" command
 
         # Setup params
         for key, value in params.items():

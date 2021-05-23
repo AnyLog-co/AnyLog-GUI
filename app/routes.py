@@ -1542,18 +1542,31 @@ def metada_navigation(user_name, location_key, form_selections):
                     current_node.add_option_children(gui_sub_tree, location_key)
 
                     if location_key == "Monitor":
-                        add_monitored_topics()
+                        add_monitored_topics(current_node)
 
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
 # -----------------------------------------------------------------------------------
-# Add reply from executing a command
-# Query the destination node for all the monitored topics
+# For Topic in the navigation tree, get the list of monitored topics on the connected node.
+# Provide each monitored topic as a child
 # -----------------------------------------------------------------------------------
-def add_monitored_topics():
+def add_monitored_topics(current_node):
 
-    pass
+    # get the list of monitored topics
+
+    topics_string, error_msg = exec_al_cmd("get monitored")
+    if not error_msg and len(topics_string):
+        try:
+            topics_list = eval(topics_string)
+        except:
+            topics_list = None
+        else:
+            for topic in topics_list:
+                # Add each topic as a child
+                child_path = "Monitor@" + topic
+                icon = ("fas fa-wifi", 16, "#4b7799" )
+                current_node.add_child(name=topic, path=child_path, icon=icon, monitor=True)
 
 # -----------------------------------------------------------------------------------
 # Set the location key on the parent node
