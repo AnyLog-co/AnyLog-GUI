@@ -521,10 +521,12 @@ def define_monitoring():
 
             # Go over the nodes
             for node in nodes_selected:
-                # For each node execure the commands
-                node_info = node.split('.') # Get node-type, node-name, node-id, node-ip, node-port
+                # For each node execute the commands
+                node_info = node.split('@') # Get node-type, node-name, node-id, node-ip, node-port
+                dest_node = node_info[3] + ':' + node_info[4]
                 for command in monitor_cmds:
-                    pass
+                    data, error_msg = exec_al_cmd(command, dest_node)
+
 
 
     table_rows = []
@@ -535,7 +537,7 @@ def define_monitoring():
         for policy in selected_nodes.values():
             policy_type = path_stat.get_policy_type(policy)
             if policy_type:
-                if "name" in policy[policy_type] and "id" in policy[policy_type] and "ip" in policy[policy_type] and "port" in policy[policy_type]:
+                if "name" in policy[policy_type] and "id" in policy[policy_type] and "ip" in policy[policy_type] and "rest_port" in policy[policy_type]:
                     table_rows.append((policy_type, policy[policy_type]["name"], policy[policy_type]["id"], policy[policy_type]["ip"], policy[policy_type]["port"]))
     else:
         table_rows = []

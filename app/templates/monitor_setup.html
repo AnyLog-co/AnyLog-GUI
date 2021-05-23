@@ -24,7 +24,7 @@
                 {% for extra_column in table.extr_col %}
                     <!-- The selections: -->
                     <!-- Send the following info: node-type, node-name, node-id, node-ip, node-port -->
-                    <td><input type={{extra_column[1]}} name="selected.{{row[0]}}.{{row[1]}}.{{row[2]}}.{{row[3]}}.{{row[4]}}"></td>
+                    <td><input type={{extra_column[1]}} name="selected.{{row[0]}}@{{row[1]}}@{{row[2]}}@{{row[3]}}@{{row[4]}}"></td>
                 {% endfor %}
             </tr>
             {% endfor %}
