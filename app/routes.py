@@ -1541,10 +1541,23 @@ def metada_navigation(user_name, location_key, form_selections):
 
                     current_node.add_option_children(gui_sub_tree, location_key)
 
+                    if location_key == "Monitor":
+                        add_monitored_topics()
+
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
+# -----------------------------------------------------------------------------------
+# Add reply from executing a command
+# Query the destination node for all the monitored topics
+# -----------------------------------------------------------------------------------
+def add_monitored_topics():
 
+    pass
+
+# -----------------------------------------------------------------------------------
+# Set the location key on the parent node
+# -----------------------------------------------------------------------------------
 def set_location_on_parent( location_key ):
 
     index = location_key.rfind('@')
