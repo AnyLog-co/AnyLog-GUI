@@ -231,6 +231,12 @@ class TreeNode():
         else:
             id_offset = -1
 
+        if 'ip' in list_keys:
+            ip_offset = list_keys.index('ip')
+        else:
+            ip_offset = -1
+
+
         if 'name' in list_keys:
             name_offset = list_keys.index('name')
         else:
@@ -265,7 +271,14 @@ class TreeNode():
                 path += ('+' + entry[id_offset])
 
             if name_offset >= 0:
-                params['name'] = entry[name_offset]
+                if entry[name_offset]:
+                    params['name'] = entry[name_offset]
+                elif ip_offset != -1:
+                    # If no name - use IP as name
+                    params['name'] = entry[ip_offset]
+                elif id_offset != -1:
+                    params['name'] = entry[id_offset]
+
                 if id_offset == -1:
                     # No ID for this entry
                     path += ('+' + entry[name_offset])
