@@ -523,8 +523,9 @@ def define_monitoring():
             for node in nodes_selected:
                 # For each node execute the commands
                 node_info = node.split('@') # Get node-type, node-name, node-id, node-ip, node-port
-                dest_node = node_info[3] + ':' + node_info[4]
-                for command in monitor_cmds:
+                dest_node = "http://" + node_info[3] + ':' + node_info[4]
+
+                for command in monitor_cmds[1:]: # The first entry in monitor_cmds is the name on the GUI
                     data, error_msg = exec_al_cmd(command, dest_node)
 
 
@@ -538,7 +539,7 @@ def define_monitoring():
             policy_type = path_stat.get_policy_type(policy)
             if policy_type:
                 if "name" in policy[policy_type] and "id" in policy[policy_type] and "ip" in policy[policy_type] and "rest_port" in policy[policy_type]:
-                    table_rows.append((policy_type, policy[policy_type]["name"], policy[policy_type]["id"], policy[policy_type]["ip"], policy[policy_type]["port"]))
+                    table_rows.append((policy_type, policy[policy_type]["name"], policy[policy_type]["id"], policy[policy_type]["ip"], policy[policy_type]["rest_port"]))
     else:
         table_rows = []
         flash('AnyLog: Missing selection of nodes for monitoring', category='error')
