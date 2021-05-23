@@ -510,7 +510,7 @@ def define_monitoring():
             flash('AnyLog: Type of monitoring was not selected', category='error')
         else:
             # Get the The commands to execute
-            option_id = form_info["monitor_option"]
+            option_id = int(form_info["monitor_option"])
             monitor_cmds = gui_sub_tree["options"][option_id]       # The list of commands to execute
 
             # Get the list of nodes
@@ -522,7 +522,7 @@ def define_monitoring():
             # Go over the nodes
             for node in nodes_selected:
                 # For each node execure the commands
-                node.info = node.split('.') # Get node-type, node-name, node-id, node-ip, node-port
+                node_info = node.split('.') # Get node-type, node-name, node-id, node-ip, node-port
                 for command in monitor_cmds:
                     pass
 
