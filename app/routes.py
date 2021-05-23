@@ -490,12 +490,42 @@ def reports():
 # -----------------------------------------------------------------------------------
 # Define which of the selected nodes is to be monitored and how
 # -----------------------------------------------------------------------------------
-@app.route('/define_monitoring')
+@app.route('/define_monitoring', methods = ['GET', 'POST'])
 def define_monitoring():
 
     user_name =  get_user_by_session()
     if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    gui_key = app_view.get_gui_key("Monitor")  # Transform selection with data to selection of GUI keys
+    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+
+    form_info = request.form.to_dict()
+
+    if len(form_info):
+
+        if "monitor_option" not in form_info:
+            flash('AnyLog: Type of monitoring was not selected', category='error')
+        else:
+            # Get the The commands to execute
+            option_id = form_info["monitor_option"]
+            monitor_cmds = gui_sub_tree["options"][option_id]       # The list of commands to execute
+
+            # Get the list of nodes
+            nodes_selected = []
+            for key, value in form_info.items():
+                if key[:9] == "selected.":
+                    nodes_selected.append(key[9:])
+
+            # Go over the nodes
+            for node in nodes_selected:
+                # For each node execure the commands
+                node.info = node.split('.') # Get node-type, node-name, node-id, node-ip, node-port
+                for command in monitor_cmds:
+                    pass
+
 
     table_rows = []
 
@@ -514,9 +544,6 @@ def define_monitoring():
     extra_columns = [("Select", 'checkbox')]
     al_table = AnyLogTable("Select participating nodes", ["Type", "Name", "ID", "IP", "Port"], None, table_rows, extra_columns)
 
-    gui_view = path_stat.get_element(user_name, "gui_view")
-    gui_key = app_view.get_gui_key("Monitor")  # Transform selection with data to selection of GUI keys
-    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
     monitor_options = []
     if 'options' in gui_sub_tree:
