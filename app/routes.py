@@ -1476,6 +1476,11 @@ def metada_navigation(user_name, location_key, form_selections):
             # Get the policy by the ID (or remove if the policy was retrieved)
             add_policy(current_node, form_selections["policy_id"])
 
+        elif current_node.is_monitoring():
+            # This is a node that monitors the network using "get monitored" command
+            monitored_data = get_monitored_info(current_node, location_key)
+            if monitored_data:
+                current_node.current_node.add_json_struct(monitored_data)
         elif current_node.is_network_cmd():
             # Execute the network command
             root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
@@ -1569,6 +1574,19 @@ def add_monitored_topics(current_node):
                 icon = ("fas fa-wifi", 16, "#4b7799" )
                 current_node.add_child(name=node_name, icon=icon, path = path, monitor=True)
 
+# -----------------------------------------------------------------------------------
+# Get network info using "get monitored" command
+# -----------------------------------------------------------------------------------
+def get_monitored_info(current_node, location_key):
+
+    index = location_key.find("Network ")
+    data = None
+    if index != -1:
+        topic = location_key[index + 8:]
+        al_cmd = "get monitored %s" % topic
+        data, error_msg = exec_al_cmd(al_cmd)
+
+    return data
 # -----------------------------------------------------------------------------------
 # Set the location key on the parent node
 # -----------------------------------------------------------------------------------
