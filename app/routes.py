@@ -1615,10 +1615,13 @@ def get_monitored_info(topic):
 @app.route('/monitor_topic/<string:topic>', methods = ['GET'])
 def monitor_topic( topic = "" ):
 
+    if not get_user_by_session():
+        return redirect(('/login'))  # start with Login  if not yet provided
 
     json_struct = get_monitored_info(topic)
 
     select_info = get_select_menu()
+    select_info['title'] = "Monitored %s" % topic
 
     if json_struct:
         # Transform the JSON to a table
@@ -1635,14 +1638,14 @@ def monitor_topic( topic = "" ):
                 if attr_name not in column_names_list:
                     column_names_list.append(attr_name)
 
-        table_rows.append(column_names_list)
+        select_info['header'] = column_names_list
 
         # Get the columns values
         for node_name, node_info in  json_struct.items():
             # Key is the node name and value is the second tier dictionary with the info
             row_info = []
             row_info.append(node_name)      # First column is node name
-            for column_name in column_names_list:
+            for column_name in column_names_list[1:]:
                 if column_name in node_info:
                     row_info.append(node_info[column_name])
                 else:
@@ -1650,17 +1653,9 @@ def monitor_topic( topic = "" ):
 
             table_rows.append(row_info)
 
-        select_info['header'] = topic
         select_info['rows'] = table_rows
 
-
-    select_info = get_select_menu()
-    select_info['title'] = "Monitor"
-
-    select_info["topic"] = topic
-
     return render_template('monitor_topic.html', **select_info)
-
 
 # -----------------------------------------------------------------------------------
 # Set the location key on the parent node
