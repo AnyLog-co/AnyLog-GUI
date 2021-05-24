@@ -954,6 +954,7 @@ def process_tree_form():
         "dashboard_name" : None,
         "rename_dashboard" : False,
         "nodes_selected" : False,       # User selection of nodes
+        "monitor"   : None,         # Name of topic to monitor
     }
 
     selected_list = []
@@ -1036,6 +1037,8 @@ def process_tree_form():
                 form_selections["report_button"] = True
             elif form_val == "Select":
                 form_selections["select_button"] = True
+                if form_key[:12] == "path.Monitor":
+                    form_selections["monitor"] = form_key[21:]      # The monitoring topic (text after "Network")
             elif form_val == "Config":
                 # Configure the dynamic report
                 form_selections["url"] = url_for('conf_nav_report')
@@ -1307,6 +1310,10 @@ def metadata( selection = "" ):
         select_info["url_list"] = url_list
 
         return render_template('output_frame.html', **select_info)
+
+    if form_selections["monitor"]:
+        topic = form_selections["monitor"]
+        monitor_topic(topic)
 
     if location_key:
         index = location_key.find('@')
@@ -1580,7 +1587,8 @@ def add_monitored_topics(current_node):
                 node_name = "Network %s" % topic
                 path = "Monitor@"  + node_name
                 icon = ("fas fa-wifi", 16, "#4b7799" )
-                current_node.add_child(name=node_name, icon=icon, path = path, monitor=True)
+                submit_buttons = ["Select"]
+                current_node.add_child(name=node_name, icon=icon, path = path, monitor=True, submit_buttons = submit_buttons)
 
 # -----------------------------------------------------------------------------------
 # Get network info using "get monitored" command
@@ -1597,6 +1605,13 @@ def get_monitored_info(current_node, location_key):
             flash("AnyLog: Network returned error with command: %s" % al_cmd, category='error')
 
     return data
+
+# -----------------------------------------------------------------------------------
+# Monitor a topic
+# -----------------------------------------------------------------------------------
+def monitor_topic( topic ):
+    pass
+    
 # -----------------------------------------------------------------------------------
 # Set the location key on the parent node
 # -----------------------------------------------------------------------------------

@@ -179,9 +179,6 @@ function get_name()
                             {% endif %}
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
-                            {%  if node.monitor %}
-                                 <input type="submit" value="Expand" name="monitor.{{ node.path }}" class="button_view">
-                            {% endif %}
                         {% endif %}
                         {%  if node.submit_buttons %}
                             {% for button in node.submit_buttons %}
