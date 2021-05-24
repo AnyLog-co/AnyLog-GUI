@@ -1037,8 +1037,11 @@ def process_tree_form():
                 form_selections["report_button"] = True
             elif form_val == "Select":
                 form_selections["select_button"] = True
-                if form_key[:12] == "path.Monitor":
-                    form_selections["monitor"] = form_key[21:]      # The monitoring topic (text after "Network")
+                if form_key[:8] == "Network ":
+                    index = form_key.find('.',8)
+                    if index != -1:
+                        topic = form_key[8:index]
+                        form_selections["monitor"] = topic      # The monitoring topic (text after "Network")
             elif form_val == "Config":
                 # Configure the dynamic report
                 form_selections["url"] = url_for('conf_nav_report')

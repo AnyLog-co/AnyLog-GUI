@@ -183,7 +183,7 @@ function get_name()
                         {%  if node.submit_buttons %}
                             {% for button in node.submit_buttons %}
                                  <!-- Configure report / Select report / Add report -->
-                                <input type="submit" value="{{ button }}" name="path.{{ node.path }}" class="button_submit">
+                                <input type="submit" value="{{ button }}" name="{{ node.name }}.{{ node.path }}" class="button_submit">
                             {%  endfor %}
                         {% endif %}
                 {% elif node.json_key %}
