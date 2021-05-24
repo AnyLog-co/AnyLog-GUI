@@ -1313,7 +1313,7 @@ def metadata( selection = "" ):
 
     if form_selections["monitor"]:
         topic = form_selections["monitor"]
-        monitor_topic(topic)
+        return monitor_topic(topic)
 
     if location_key:
         index = location_key.find('@')
@@ -1618,13 +1618,48 @@ def monitor_topic( topic = "" ):
 
     json_struct = get_monitored_info(topic)
 
+    select_info = get_select_menu()
+
+    if json_struct:
+        # Transform the JSON to a table
+        table_data = {}
+        column_names_list = []
+        table_rows = []
+
+        column_names_list.append("Node")
+        # Get the columns names
+        for node_name, node_info in  json_struct.items():
+            # Key is the node name and value is the second tier dictionary with the info
+            for attr_name in node_info:
+                # The keys are the column names
+                if attr_name not in column_names_list:
+                    column_names_list.append(attr_name)
+
+        table_rows.append(column_names_list)
+
+        # Get the columns values
+        for node_name, node_info in  json_struct.items():
+            # Key is the node name and value is the second tier dictionary with the info
+            row_info = []
+            row_info.append(node_name)      # First column is node name
+            for column_name in column_names_list:
+                if column_name in node_info:
+                    row_info.append(node_info[column_name])
+                else:
+                    row_info.append("")
+
+            table_rows.append(row_info)
+
+        select_info['header'] = topic
+        select_info['rows'] = table_rows
+
 
     select_info = get_select_menu()
     select_info['title'] = "Monitor"
 
     select_info["topic"] = topic
 
-    return render_template('output_frame.html', **select_info)
+    return render_template('monitor_topic.html', **select_info)
 
 
 # -----------------------------------------------------------------------------------
