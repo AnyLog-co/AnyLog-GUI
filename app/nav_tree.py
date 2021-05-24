@@ -136,6 +136,13 @@ class TreeNode():
         return self.parent.is_anchor
 
     # -----------------------------------------------------------------------------------
+    # A node that calls the network to monitor a topic using the command: get monitored topic
+    # i.e. get monitored operators
+    # -----------------------------------------------------------------------------------
+    def is_monitoring_node(self):
+
+        return self.monitor
+    # -----------------------------------------------------------------------------------
     # An option node is a node representing option on the Config File for navigation
     # -----------------------------------------------------------------------------------
     def is_option_node(self):

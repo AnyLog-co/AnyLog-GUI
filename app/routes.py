@@ -1476,11 +1476,16 @@ def metada_navigation(user_name, location_key, form_selections):
             # Get the policy by the ID (or remove if the policy was retrieved)
             add_policy(current_node, form_selections["policy_id"])
 
-        elif current_node.is_monitoring():
+        elif current_node.is_monitoring_node():
             # This is a node that monitors the network using "get monitored" command
             monitored_data = get_monitored_info(current_node, location_key)
             if monitored_data:
-                current_node.current_node.add_json_struct(monitored_data)
+                try:
+                    json_struct = eval(monitored_data)
+                except:
+                    flash("AnyLog: Error in monitored data for topic %s" % location_key,  category='error')
+                else:
+                    current_node.add_json_struct(json_struct)
         elif current_node.is_network_cmd():
             # Execute the network command
             root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
@@ -1585,6 +1590,8 @@ def get_monitored_info(current_node, location_key):
         topic = location_key[index + 8:]
         al_cmd = "get monitored %s" % topic
         data, error_msg = exec_al_cmd(al_cmd)
+        if error_msg:
+            flash("AnyLog: Network returned error with command: %s" % al_cmd, category='error')
 
     return data
 # -----------------------------------------------------------------------------------
