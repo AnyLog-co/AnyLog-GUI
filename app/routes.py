@@ -1488,14 +1488,13 @@ def metada_navigation(user_name, location_key, form_selections):
             if current_node.is_with_json():
                 current_node.reset_json_struct()     # Remove the child JSON struct
             else:
-                monitored_data = get_monitored_info(current_node, location_key)
-                if monitored_data:
-                    try:
-                        json_struct = eval(monitored_data)
-                    except:
-                        flash("AnyLog: Error in monitored data for topic %s" % location_key,  category='error')
-                    else:
+                index = location_key.find("Network ")
+                if index != -1:
+                    topic = location_key[index + 8:]
+                    json_struct = get_monitored_info(topic)
+                    if json_struct:
                         current_node.add_json_struct(json_struct)
+
         elif current_node.is_network_cmd():
             # Execute the network command
             root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
@@ -1593,25 +1592,41 @@ def add_monitored_topics(current_node):
 # -----------------------------------------------------------------------------------
 # Get network info using "get monitored" command
 # -----------------------------------------------------------------------------------
-def get_monitored_info(current_node, location_key):
+def get_monitored_info(topic):
 
-    index = location_key.find("Network ")
-    data = None
-    if index != -1:
-        topic = location_key[index + 8:]
-        al_cmd = "get monitored %s" % topic
-        data, error_msg = exec_al_cmd(al_cmd)
-        if error_msg:
-            flash("AnyLog: Network returned error with command: %s" % al_cmd, category='error')
+    json_struct = None
+    al_cmd = "get monitored %s" % topic
+    monitored_info, error_msg = exec_al_cmd(al_cmd)
+    if error_msg:
+        flash("AnyLog: Network command: '%s' returned error:  %s" % (al_cmd, error_msg), category='error')
+    elif len(monitored_info):
+        try:
+            json_struct = eval(monitored_info)
+        except:
+            flash("AnyLog: Error in monitored data for topic %s" % topic, category='error')
 
-    return data
+
+    return json_struct
 
 # -----------------------------------------------------------------------------------
 # Monitor a topic
 # -----------------------------------------------------------------------------------
-def monitor_topic( topic ):
-    pass
-    
+@app.route('/monitor_topic', methods = ['GET'])
+@app.route('/monitor_topic/<string:topic>', methods = ['GET'])
+def monitor_topic( topic = "" ):
+
+
+    json_struct = get_monitored_info(topic)
+
+
+    select_info = get_select_menu()
+    select_info['title'] = "Monitor"
+
+    select_info["topic"] = topic
+
+    return render_template('output_frame.html', **select_info)
+
+
 # -----------------------------------------------------------------------------------
 # Set the location key on the parent node
 # -----------------------------------------------------------------------------------
