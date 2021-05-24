@@ -25,10 +25,7 @@ tr{
       background-color: rgb(173,205,205);
       color:black;
 }
-tr:first-child{
-    background-color: rgb(0,115,153);
-    color: white;
-}
+
 
 th {
 	background-color: gray;

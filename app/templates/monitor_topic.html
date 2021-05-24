@@ -14,14 +14,14 @@
     {% endif %}
 
     <table>
-        <thead class="monitor-table-header">
+        <thead>
         <tr>    <!-- table header  -->
             {% for col_name in header %}
                 <td>{{col_name}}</td> <!-- table cell  -->
             {% endfor %}
         </tr>
         </thead>
-        <tbody class="monitor-table-rows">
+        <tbody>
         {% for row in rows %}
         <tr>
             {% for col_val in row %}

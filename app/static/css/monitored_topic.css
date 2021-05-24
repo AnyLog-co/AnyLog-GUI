@@ -1,4 +1,5 @@
 
+ /* https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_tables */
 
 table {
   table-layout: fixed;
@@ -7,20 +8,22 @@ table {
   border: 3px solid purple;
 }
 
-thead th:nth-child(1) {
-  width: 30%;
+
+tr:hover {
+    background-color: #908686;
 }
 
-thead th:nth-child(2) {
-  width: 20%;
+thead tr{
+    background-color:black;
+    color: white;
+    text-decoration: underline;
 }
 
-thead th:nth-child(3) {
-  width: 15%;
-}
+tbody tr{
+  background-color: black;
+  color: lawngreen;
 
-thead th:nth-child(4) {
-  width: 35%;
+
 }
 
 th, td {
