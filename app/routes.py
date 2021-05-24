@@ -1622,6 +1622,7 @@ def monitor_topic( topic = "" ):
 
     select_info = get_select_menu()
     select_info['title'] = "Monitored %s" % topic
+    select_info['topic'] = topic
 
     if json_struct:
         # Transform the JSON to a table

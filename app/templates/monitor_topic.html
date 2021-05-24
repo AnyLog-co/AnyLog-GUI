@@ -4,6 +4,9 @@
 
 {% block content %}
 
+    <meta http-equiv="refresh" content="10; {{url_for('monitor_topic')}}/{{ topic }}">
+    <form action="{{url_for('monitor_topic')}}/{{ topic }}">
+
 
      {% if table_title %}
         <h3>{{ topic }}</h3><br>
