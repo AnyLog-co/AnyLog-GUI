@@ -1564,9 +1564,10 @@ def add_monitored_topics(current_node):
         else:
             for topic in topics_list:
                 # Add each topic as a child
-                child_path = "Monitor@" + topic
+                node_name = "Network %s" % topic
+                path = "Monitor@"  + node_name
                 icon = ("fas fa-wifi", 16, "#4b7799" )
-                current_node.add_child(name=topic, path=child_path, icon=icon, monitor=True)
+                current_node.add_child(name=node_name, icon=icon, path = path, monitor=True)
 
 # -----------------------------------------------------------------------------------
 # Set the location key on the parent node
