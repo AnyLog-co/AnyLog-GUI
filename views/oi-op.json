@@ -1,6 +1,6 @@
 {
     "gui" : {
-            "name" : "Ai-OPs",
+            "name" : "AI-OPs",
             "query_node" : "http://10.0.0.78:7849",
             "map"       : "http://127.0.0.1:3000/d/3WSvEorGk/map?viewPanel=2&orgId=1",
             "visualization" : {
@@ -17,31 +17,42 @@
                 ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"]
             ],
             "children" : {
-                "device" :
+                "sensor" :
                 {
-                    "query" : "blockchain get device bring.unique.json [device][name] [device][valuetype] [device][id] separator = ,",
-                    "table_title" : ["ID", "Name", "Value Type"],
-                    "json_keys" : ["id", "name", "valuetype"],
-                    "dbms_name" : "aiops",
-                    "table_name" : "[tag][valuetype]",
-                    "submit" : ["Config", "Select", "Open"],
-                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
+                      "query" : "blockchain get sensor bring.unique.json [sensor][name] [sensor][id] [sensor][valuetype] separator = ,",
+                      "table_title" : ["Name", "ID", "Value Type"],
+                      "json_keys" : ["name", "id", "valuetype"],
+                      "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
+                      "dbms_name" : "aiops",
+                      "table_name" : "[sensor][name]",
+                      "submit" : ["Config", "Select", "Open"]
+
                 },
                 "Manufacturer" :
                 {
                     "query" : "blockchain get manufacture",
-
                     "table_title" : ["ID", "Name", "URL"],
                     "json_keys" : ["id", "name", "url"],
                     "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
                     "children" : {
                             "device" :
                             {
-                                "query" : "blockchain get device bring.unique.json [manufacture][name] [manufacture][id] separator = ,",
+                                "query" : "blockchain get device where manufacture = [device][manufacturer] bring.unique.json [device][name] [device][id] separator = ,",
                                 "table_title" : ["Name", "ID"],
-                                "json_keys" : ["name", "id"]
+                                "json_keys" : ["name", "id"],
+                                "children" : {
+                                    "sensor" :
+                                          {
+                                              "query" : "blockchain get sensor where device = [device][id] bring.unique.json [sensor][name] [sensor][id] [sensor][valuetype] separator = ,",
+                                              "table_title" : ["Name", "ID", "Value Type"],
+                                              "json_keys" : ["name", "id", "valuetype"],
+                                              "dbms_name" : "aiops",
+                                              "table_name" : "[sensor][name]",
+                                              "submit" : ["Config", "Select", "Open"]
 
-                            }
+                                          }
+                                    }
+                              }
                         }
                 },
                 "Reports" :
