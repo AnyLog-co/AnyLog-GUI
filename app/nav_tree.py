@@ -487,8 +487,8 @@ def update_command(current_node, selection, command):
                                 for json_key in keys_list[1:]:
                                     # Craete the value for the command
                                     if json_key[:-1] in parent_policy.keys:
-                                        index = parent_policy.keys.index(json_key[:-1])
-                                        value += parent_policy.values[index]
+                                        index_value = parent_policy.keys.index(json_key[:-1])
+                                        value += parent_policy.values[index_value]
 
                 if value:
                     cmd_words[6 + index] = value  # Replace with value from parent

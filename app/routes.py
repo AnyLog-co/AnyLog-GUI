@@ -1533,9 +1533,9 @@ def metada_navigation(user_name, location_key, form_selections):
                 root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
 
-                if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree) or current_node.is_root():        # User selected a query to the data
-
-                    # Executes a query to select data from the network and set the data as as the children
+                if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree) or (current_node.is_root() and "query" in gui_sub_tree):
+                    # A node that allows a query to the data or a query to the blockchain
+                    # Executes a query to select data from the network (data or metadata/blockchain) and set the data as as the children
                     reply = get_path_info(gui_key, select_info, current_node)
 
                     if reply:

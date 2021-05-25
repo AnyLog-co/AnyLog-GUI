@@ -17,7 +17,7 @@
                 ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"]
             ],
             "children" : {
-                "sensor" :
+                "Sensor" :
                 {
                       "query" : "blockchain get sensor bring.unique.json [sensor][name] [sensor][id] [sensor][valuetype] separator = ,",
                       "table_title" : ["Name", "ID", "Value Type"],
@@ -35,13 +35,13 @@
                     "json_keys" : ["id", "name", "url"],
                     "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
                     "children" : {
-                            "device" :
+                            "Device" :
                             {
                                 "query" : "blockchain get device where manufacture = [manufacture][id] bring.unique.json [device][name] [device][id] separator = ,",
                                 "table_title" : ["Name", "ID"],
                                 "json_keys" : ["name", "id"],
                                 "children" : {
-                                    "sensor" :
+                                    "Sensor" :
                                           {
                                               "query" : "blockchain get sensor where device = [device][id] bring.unique.json [sensor][name] [sensor][id] [sensor][valuetype] separator = ,",
                                               "table_title" : ["Name", "ID", "Value Type"],
