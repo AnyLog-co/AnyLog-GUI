@@ -1640,15 +1640,20 @@ def monitor_topic( topic = "" ):
         # Transform the JSON to a table
         table_data = {}
         table_rows = []
+        column_names_list = []
+        totals = None
+
+        if gui_sub_tree:
+            if 'header' in gui_sub_tree:
+                # User specified (in config file) columns to display
+                column_names_list = gui_sub_tree['header']
+                select_info['header'] = column_names_list
+            if 'totals' in gui_sub_tree:
+                totals = gui_sub_tree['totals']
 
 
-        # Get the columns names
-        if gui_sub_tree and 'header' in gui_sub_tree:
-            # User specified (in config file) columns to display
-            column_names_list = gui_sub_tree['header']
-            select_info['header'] = column_names_list
-        else:
-            column_names_list = []
+        if not len(column_names_list):
+            # Get the columns names from the JSON data
             column_names_list.append("Node")
             # take all columns from the json
             for node_name, node_info in  json_struct.items():
@@ -1660,20 +1665,44 @@ def monitor_topic( topic = "" ):
 
         select_info['header'] = column_names_list
 
+        if totals:
+            totals_row = []
+            # Set an entry for each total
+            for column_name in  column_names_list:
+                if column_name in totals:
+                    totals_row.append(0)        # Accumulates the total
+                else:
+                    totals_row.append("")       # Print empty cell
+
+
         # Get the columns values
         for node_name, node_info in  json_struct.items():
             # Key is the node name and value is the second tier dictionary with the info
             row_info = []
             if column_names_list[0] == "Node":
                 row_info.append(node_name)      # First column is node name
-            for column_name in column_names_list[1:]:
+            for index, column_name in enumerate(column_names_list[1:]):
                 if column_name in node_info:
-                    row_info.append(node_info[column_name])
+                    column_value = node_info[column_name]
+                    row_info.append(column_value)
+
+                    if totals:
+                        if totals_row[index + 1] != "":
+                            try:
+                                if column_value.is_digit():
+                                    totals_row[index + 1] += int(column_value)
+                                else:
+                                    totals_row[index + 1] += float(column_value)
+                            except:
+                                pass
+
                 else:
                     row_info.append("")
 
             table_rows.append(row_info)
 
+        if totals:
+            table_rows.append(totals_row)
         select_info['rows'] = table_rows
 
     return render_template('monitor_topic.html', **select_info)
