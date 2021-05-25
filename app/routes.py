@@ -519,14 +519,18 @@ def define_monitoring():
                 if key[:9] == "selected.":
                     nodes_selected.append(key[9:])
 
-            # Go over the nodes
-            for node in nodes_selected:
-                # For each node execute the commands
-                node_info = node.split('@') # Get node-type, node-name, node-id, node-ip, node-port
-                dest_node = "http://" + node_info[3] + ':' + node_info[4]
+            if not len(nodes_selected):
+                flash('AnyLog: Monitored nodes were not selected', category='error')
+            else:
+                flash('AnyLog: Commands submitted', category='message')
+                # Go over the nodes
+                for node in nodes_selected:
+                    # For each node execute the commands
+                    node_info = node.split('@') # Get node-type, node-name, node-id, node-ip, node-port
+                    dest_node = "http://" + node_info[3] + ':' + node_info[4]
 
-                for command in monitor_cmds[1:]: # The first entry in monitor_cmds is the name on the GUI
-                    data, error_msg = exec_al_cmd(command, dest_node)
+                    for command in monitor_cmds[1:]: # The first entry in monitor_cmds is the name on the GUI
+                        data, error_msg = exec_al_cmd(command, dest_node)
 
 
 
