@@ -1,7 +1,0 @@
-orics anylog-gui-admin: eyJrIjoib0pmQXZ1dDJQR3BoUk9qTzZ3UTJSbXRJV0NvNUkzQ0EiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==
-curl -H "Authorization: Bearer eyJrIjoib0pmQXZ1dDJQR3BoUk9qTzZ3UTJSbXRJV0NvNUkzQ0EiLCJuIjoiYW55bG9nLWd1aS1hZG1pbiIsImlkIjoxfQ==" http://45.79.152.190:3000/api/dashboards/home
-
-demo anylog-gui-admin: eyJrIjoiMmNzM1lHUjh3cXBNWDRXMVZFelp3MmVxb1FQS1BVZmkiLCJuIjoiYW55bG9nLWFkbWluLWd1aSIsImlkIjoxfQ==
-curl -H "Authorization: Bearer eyJrIjoiMmNzM1lHUjh3cXBNWDRXMVZFelp3MmVxb1FQS1BVZmkiLCJuIjoiYW55bG9nLWFkbWluLWd1aSIsImlkIjoxfQ==" http://23.239.12.151:3000/api/dashboards/home
-
-
