@@ -1622,8 +1622,13 @@ def get_monitored_info(topic):
 @app.route('/monitor_topic/<string:topic>', methods = ['GET'])
 def monitor_topic( topic = "" ):
 
-    if not get_user_by_session():
-        return redirect(('/login'))  # start with Login  if not yet provided
+
+    user_name = get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # Redo the login - need a user name
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    gui_sub_tree = gui_view.get_sub_tree(["gui","children","Monitor","Views", topic])
 
     json_struct = get_monitored_info(topic)
 
@@ -1634,17 +1639,24 @@ def monitor_topic( topic = "" ):
     if json_struct:
         # Transform the JSON to a table
         table_data = {}
-        column_names_list = []
         table_rows = []
 
-        column_names_list.append("Node")
+
         # Get the columns names
-        for node_name, node_info in  json_struct.items():
-            # Key is the node name and value is the second tier dictionary with the info
-            for attr_name in node_info:
-                # The keys are the column names
-                if attr_name not in column_names_list:
-                    column_names_list.append(attr_name)
+        if gui_sub_tree and 'header' in gui_sub_tree:
+            # User specified (in config file) columns to display
+            column_names_list = gui_sub_tree['header']
+            select_info['header'] = column_names_list
+        else:
+            column_names_list = []
+            column_names_list.append("Node")
+            # take all columns from the json
+            for node_name, node_info in  json_struct.items():
+                # Key is the node name and value is the second tier dictionary with the info
+                for attr_name in node_info:
+                    # The keys are the column names
+                    if attr_name not in column_names_list:
+                        column_names_list.append(attr_name)
 
         select_info['header'] = column_names_list
 
@@ -1652,7 +1664,8 @@ def monitor_topic( topic = "" ):
         for node_name, node_info in  json_struct.items():
             # Key is the node name and value is the second tier dictionary with the info
             row_info = []
-            row_info.append(node_name)      # First column is node name
+            if column_names_list[0] == "Node":
+                row_info.append(node_name)      # First column is node name
             for column_name in column_names_list[1:]:
                 if column_name in node_info:
                     row_info.append(node_info[column_name])
