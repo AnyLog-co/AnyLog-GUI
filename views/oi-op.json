@@ -1,0 +1,241 @@
+{
+    "gui" : {
+            "name" : "Ai-OPs",
+            "query_node" : "http://10.0.0.78:7849",
+            "map"       : "http://127.0.0.1:3000/d/3WSvEorGk/map?viewPanel=2&orgId=1",
+            "visualization" : {
+                                "Grafana" : { "url" : "http://localhost:3000",
+                                              "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                              "base"  :  ["Base-Report"],
+                                              "default" : true
+                                }
+                            },
+            "url_pages"  : [
+                ["Company", "https://www.ai-op.com/"],
+                ["Map", "http://45.79.152.190:3000/d/iZLDOXyGk/network-summary?orgId=1"],
+                ["Dashboards", "http://45.79.152.190:3000/dashboards"],
+                ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"]
+            ],
+            "children" : {
+                "device" :
+                {
+                    "query" : "blockchain get device bring.unique.json [device][name] [device][valuetype] [device][id] separator = ,",
+                    "table_title" : ["ID", "Name", "Value Type"],
+                    "json_keys" : ["id", "name", "valuetype"],
+                    "dbms_name" : "aiops",
+                    "table_name" : "[tag][valuetype]",
+                    "submit" : ["Config", "Select", "Open"],
+                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
+                },
+                "Manufacturer" :
+                {
+                    "query" : "blockchain get manufacture",
+
+                    "table_title" : ["ID", "Name", "URL"],
+                    "json_keys" : ["id", "name", "url"],
+                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
+                    "children" : {
+                            "device" :
+                            {
+                                "query" : "blockchain get device bring.unique.json [manufacture][name] [manufacture][id] separator = ,",
+                                "table_title" : ["Name", "ID"],
+                                "json_keys" : ["name", "id"]
+
+                            }
+                        }
+                },
+                "Reports" :
+                {
+                    "type" : "reports",
+                    "organization" : "folders",
+                    "visualization" : "Grafana",
+                    "submit" : ["Open"],
+                    "icon"  :   ["fas fa-desktop", 16, "#148F77"]
+                },
+
+                "Monitor"    : {
+                      "icon"  :   ["fas fa-satellite-dish", 16, "#2E86C1"],
+                      "options" : [
+                            ["Monitor status", "schedule name = node_status and time = 15 seconds task node_status = get status format = json",
+                                        "schedule name = monitor_node and time = 15 seconds task run client 10.0.0.78:7848 monitor nodes where info = !node_status"],
+                            ["Monitor Data", "schedule name = get_operator_stat and time = 15 seconds task operator_stat = get operator stat format = json",
+                                        "schedule name = monitor_operator and time = 15 seconds task run client 10.0.0.78:7848 monitor operators where info = !operator_stat"]
+                            ],
+                     "children" : {
+                        "Operators" : {
+                            "type" : "node",
+                            "query" : "blockchain get operator",
+                            "table_title" : ["ID", "Name", "Cluster", "IP", "Port"],
+                            "json_keys" : ["id", "name", "cluster", "ip", "rest_port"],
+                            "submit" : ["Select"],
+                            "children" : {
+                                "Connections" :  { "command" : "get connections" },
+                                "Node Status" :  { "command" : "get status" },
+                                "Load Status" :     { "command" : "get operator format = json"},
+                                "Utilization" :    { "command" : "get node info cpu_percent" }
+                            }
+                        },
+                        "Clusters" : {
+                            "query" : "blockchain get cluster",
+                            "table_title" : ["ID", "Name"],
+                            "json_keys" : ["id", "name"],
+                            "children" : {
+                                "Operators":  {
+                                              "query" : "blockchain get operator where cluster = [cluster][id]",
+                                              "table_title" : ["ID", "Name", "IP", "Port"],
+                                              "json_keys" : ["id", "name", "ip", "rest_port"],
+                                              "type" : "node",
+                                              "children" : {
+
+                                                    "Node Status" :  { "command" : "get status" },
+                                                    "Load Status" :     { "command" : "get operator" },
+                                                    "Utilization" :    { "command" : "get node info cpu_percent" }
+                                                  }
+                                }
+                              }
+                      },
+                     "Sensors" : {
+                          "query" : "blockchain get sensor",
+                          "table_title" : ["ID", "Name", "Cluster"],
+                          "json_keys" : ["id", "name", "cluster"]
+                      }
+                   }
+                }
+            },
+        
+            
+            "policies" : [
+                {
+                    "name" : "Authentication",
+                    "key" : "basic_auth",
+                    "struct" : [
+                                { "name": "User Name",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Password",
+                                  "key" : "password",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true,
+                                  "space"  : 2
+                                }
+                        ]
+                },
+                {
+                    "name" : "Manufacturer",
+                    "key" : "manufacturer",
+                    "struct" : [
+                                { "name": "Manufacturer",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Address",
+                                  "key" : "address",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                                { "name": "URL",
+                                  "key" : "url",
+                                  "type" : "url",
+                                  "size" : 60
+                                }
+
+                    ]
+                        
+                },
+                {
+                    "name" : "Company",
+                    "key" : "Company",
+                    "struct" : [
+                                { "name": "Company",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Manufacturer",
+                                  "key" : "manufacturer",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Address",
+                                  "key" : "address",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                                { "name": "URL",
+                                  "key" : "url",
+                                  "type" : "text",
+                                  "size" : 60
+                              }
+                      ]
+                        
+                },
+
+                {
+                    "name" : "Machine",
+                    "key" : "machine",
+                    "struct" : [
+                                { "name": "Machine",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                              { "name": "Manufacturer",
+                                  "key" : "manufacturer",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : false
+                                },
+                              { "name": "ID",
+                                  "key" : "machine_id",
+                                  "type" : "number",
+                                  "size" : 12
+                              }
+                        ]
+                    },
+
+                  {
+                      "name" : "Sensor",
+                      "key" : "sensor",
+                      "struct" : [
+
+                                { "name": "Sensor",
+                                  "key" : "name",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Machine",
+                                  "key" : "machine",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Serial",
+                                  "key" : "Serial",
+                                  "type" : "number",
+                                  "size" : 30,
+                                  "required" : true
+                                },
+                                { "name": "Description",
+                                  "key" : "Description",
+                                  "type" : "text",
+                                  "size" : 30,
+                                  "required" : true
+                                }
+                      ]
+
+                  }
+            ]
+        }
+}
