@@ -1533,7 +1533,7 @@ def metada_navigation(user_name, location_key, form_selections):
                 root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
 
-                if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
+                if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree) or current_node.is_root():        # User selected a query to the data
 
                     # Executes a query to select data from the network and set the data as as the children
                     reply = get_path_info(gui_key, select_info, current_node)
