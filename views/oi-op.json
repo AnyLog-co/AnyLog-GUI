@@ -37,7 +37,7 @@
                     "children" : {
                             "device" :
                             {
-                                "query" : "blockchain get device where manufacture = [device][manufacturer] bring.unique.json [device][name] [device][id] separator = ,",
+                                "query" : "blockchain get device where manufacture = [manufacture][id] bring.unique.json [device][name] [device][id] separator = ,",
                                 "table_title" : ["Name", "ID"],
                                 "json_keys" : ["name", "id"],
                                 "children" : {

@@ -1,7 +1,7 @@
 {
     "gui" : {
             "name" : "Orics",
-            "query_node" : "http://45.79.152.190:2049",
+            "query_node" : "http://10.0.0.78:2049",
             "map": "http://45.79.152.190:3000/d/1Cdj-hCGz/network-summary?orgId=1&from=1620932482591&to=1620954082595&viewPanel=2",
             "visualization" : { 
                                 "Grafana" : { "url" : "http://45.79.152.190:3000",

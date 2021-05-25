@@ -2135,11 +2135,12 @@ def get_path_info(selection, select_info, current_node):
     # Run the query against the Query Node
 
     data, error_msg = exec_al_cmd( al_command )
-    if not data:
-        flash('AnyLog: Empty data set returned with command: %s' % al_command, category='error')
-        return None
+
     if error_msg:
         flash(error_msg, category='error')
+        return None
+    if not data:
+        flash('AnyLog: Empty data set returned with command: %s' % al_command, category='error')
         return None
 
     data_list = app_view.str_to_list(data)
