@@ -7,10 +7,10 @@
 
 </form>
         <form action="{{url_for('configure')}}" method="POST">
-
+        <hr>
         <p>
             {{ form.conf_file_name.label }}<br>
-            {{ form.conf_file_name(size = 4) }}<br>
+            {{ form.conf_file_name(size = 8) }}<br>
         </p>
 
         <p>
@@ -30,7 +30,7 @@
             {% endfor %}
         </p>
 
-        <br>
+        <hr>
 
         <p>{{ form.submit() }}</p>
 

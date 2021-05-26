@@ -597,7 +597,7 @@ def configure():
             if not load_config_file("configire", user_name, config_file):
                 flash('AnyLog: failed to load config file: \'%s\'' % new_file, category='error')
             else:
-                target_node = gui_view.get_base_info("query_node")
+                target_node = path_stat.get_element(user_name, "target_node")   # get the target node after the load
                 flash('AnyLog: New config file: \'%s\'' % new_file, category='message')
         elif "node_ip" in form_info and "node_port" in form_info:
             # Change target node
