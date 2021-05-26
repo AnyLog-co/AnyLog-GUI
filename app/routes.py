@@ -583,6 +583,11 @@ def configure():
 
     form_info = request.form.to_dict()
 
+    node_ip = ""
+    node_port = 0
+    target_node = path_stat.get_element(user_name, "target_node")
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
     if (len(form_info)):
 
         # Change config file
@@ -590,26 +595,32 @@ def configure():
             new_file = form_info["conf_file_name"] + ".json"
             config_file = Config.CONFIG_FOLDER + new_file         # New config file
             if not load_config_file("configire", user_name, config_file):
-                flash('AnyLog: failed to load config file: %s' % new_file, category='error')
-                return redirect(url_for('configure'))  # Redo the login
+                flash('AnyLog: failed to load config file: \'%s\'' % new_file, category='error')
+            else:
+                target_node = gui_view.get_base_info("query_node")
+                flash('AnyLog: New config file: \'%s\'' % new_file, category='message')
+        elif "node_ip" in form_info and "node_port" in form_info:
+            # Change target node
+            node_ip_str = form_info["node_ip"]
+            node_port_str = form_info["node_port"]
+            target_node = "http://" + node_ip_str + ":" + node_port_str
 
-            flash('AnyLog: New config file: %s' % new_file, category='message')
 
-        # Change target node
-        if "node_ip" in form_info and "node_port" in form_info:
-            node_ip = form_info["node_ip"]
-            node_port = form_info["node_port"]
-            if node_ip and node_port:
-                target_node = node_ip + ":" + node_port
-                path_stat.register_element(user_name, "target_node", target_node)
-                data, error_msg = exec_al_cmd("get status")
-                if error_msg:
-                    flash('AnyLog: No network connection', category='error')
-                    flash(error_msg, category='error')
-                    return redirect(url_for('configure'))  # Redo the login
-            elif node_ip or node_port:
-                flash('AnyLog: IP and port values were not properly provided', category='error')
+    if target_node and len(target_node) > 7:
+        # Set the default IP and port
+        ip_port = target_node[7:].split(':')
+        if len(ip_port) == 2 and ip_port[1].isdigit():
+            node_ip = ip_port[0]
+            node_port = int(ip_port[1])
 
+    if not node_ip or not node_port:
+        flash('AnyLog: IP:Port of query node is not properly provided', category='error')
+    else:
+        path_stat.register_element(user_name, "target_node", target_node)
+        data, error_msg = exec_al_cmd("get status")
+        if error_msg:
+            flash('AnyLog: No network connection', category='error')
+            flash(error_msg, category='error')
 
     form = ConfigForm()
 
@@ -637,8 +648,8 @@ def configure():
     select_info["form"] = form
     select_info["title"] = 'Configure Network Connection'
 
-    gui_view = path_stat.get_element(user_name,"gui_view")
-
+    select_info["target_ip"] = node_ip
+    select_info["target_port"] = node_port
 
     # Test connectors to the Visualization platforms
     platforms = gui_view.get_base_info("visualization")

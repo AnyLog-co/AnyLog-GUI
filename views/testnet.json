@@ -46,10 +46,14 @@
                 "Monitor": {
                         "icon"  :   ["fas fa-satellite-dish", 16, "#2E86C1"],
                         "options" : [
-                            ["Monitor status", "schedule name = node_status and time = 15 seconds task node_status = get status format = json",
+                            ["Monitor status",
+                                                "schedule name = node_status and time = 15 seconds task node_status = get status format = json",
+                                                "task remove where scheduler = 1 and name = monitor_node ",
                                                 "schedule name = monitor_node and time = 15 seconds task run client 23.239.12.151:2048 monitor nodes where info = !node_status"],
+
                             ["Monitor Data", "schedule name = disk_space and time = 15 seconds task disk_space = get disk percentage .",
                                               "schedule name = get_operator_stat and time = 15 seconds task operator_stat = get operator stat format = json",
+                                              "task remove where scheduler = 1 and name = monitor_operators",
                                               "schedule name = monitor_operator and time = 15 seconds task run client 23.239.12.151:2048 monitor operators where info = !operator_stat"]
                         ],
                         "Views" : {
