@@ -530,7 +530,7 @@ def define_monitoring():
                     dest_node = "http://" + node_info[3] + ':' + node_info[4]
 
                     for command in monitor_cmds[1:]: # The first entry in monitor_cmds is the name on the GUI
-                        data, error_msg = exec_al_cmd(command, dest_node)
+                        data, error_msg = exec_al_cmd(command, dest_node, "POST")
 
 
 
@@ -2479,7 +2479,7 @@ def path_selection(parent_menu, policy_id, data):
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
 # -----------------------------------------------------------------------------------
-def exec_al_cmd( al_cmd, dest_node = None):
+def exec_al_cmd( al_cmd, dest_node = None, call_type = "GET"):
     '''
     Run the query against the Query Node
     '''
@@ -2496,7 +2496,10 @@ def exec_al_cmd( al_cmd, dest_node = None):
         'command' : al_cmd
         }
 
-    response, error_msg = rest_api.do_get(target_node, al_headers)
+    if call_type == "POST":
+        response, error_msg = rest_api.do_post(target_node, al_headers)
+    else:
+        response, error_msg = rest_api.do_get(target_node, al_headers)
 
     if response and response.status_code == 200:
         data = response.text
