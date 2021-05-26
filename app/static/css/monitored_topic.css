@@ -14,18 +14,19 @@ tr:hover {
 }
 
 thead tr{
-    background-color:black;
+    background-color:#1c1b1b;
     color: white;
     text-decoration: underline;
 }
 
 tbody tr{
-  background-color: black;
+  background-color: #1c1b1b;
   color: lawngreen;
 }
 .alert {
-    background-color: black;
-    color: #fa0707;
+    background-color: #d53d31;
+    color: white;
+    font-weight: bold;
 }
 
 th, td {
