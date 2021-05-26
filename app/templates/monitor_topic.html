@@ -24,8 +24,12 @@
         <tbody>
         {% for row in rows %}
         <tr>
-            {% for col_val in row %}
-                <td>{{ col_val }}</td>
+            {% for col_info in row %}
+                {% if not col_info[1] %}
+                    <td>{{ col_info[0] }}</td>   <!-- No alerts -->
+                {% else %}
+                     <td class="alert">{{ col_info[0] }}</td>   <!-- No alerts -->
+                {% endif %}
             {% endfor %}
         </tr>
         {% endfor %}

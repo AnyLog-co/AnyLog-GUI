@@ -1671,9 +1671,9 @@ def monitor_topic( topic = "" ):
             # Set an entry for each total
             for column_name in  column_names_list:
                 if column_name in totals:
-                    totals_row.append(0)        # Accumulates the total
+                    totals_row.append((0, False))        # Accumulates the total
                 else:
-                    totals_row.append("")       # Print empty cell
+                    totals_row.append(("", False))       # Print empty cell
 
 
         # Get the columns values
@@ -1681,22 +1681,22 @@ def monitor_topic( topic = "" ):
             # Key is the node name and value is the second tier dictionary with the info
             row_info = []
             if column_names_list[0] == "Node":
-                row_info.append(node_name)      # First column is node name
+                row_info.append((node_name, False))      # First column is node name
             for index, column_name in enumerate(column_names_list[1:]):
                 if column_name in node_info:
                     column_value = node_info[column_name]
-                    row_info.append(column_value)
 
                     if totals:
-                        if totals_row[index + 1] != "":
+                        if totals_row[index + 1][0] != "":
                             try:
                                 if column_value.is_digit():
-                                    totals_row[index + 1] += int(column_value)
+                                    totals_row[index + 1][0] += int(column_value)
                                 else:
-                                    totals_row[index + 1] += float(column_value)
+                                    totals_row[index + 1][0] += float(column_value)
                             except:
                                 pass
 
+                    alert_val = False
                     if alerts:
                         # if column_name in alerts --> process alert to change display color
                         if column_name in alerts:
@@ -1710,13 +1710,16 @@ def monitor_topic( topic = "" ):
                                     # Change color of display
                                     pass
 
+                    row_info.append((column_value, alert_val))
+
                 else:
-                    row_info.append("")
+                    row_info.append("", False)
 
             table_rows.append(row_info)
 
         if totals:
             table_rows.append(totals_row)
+
         select_info['rows'] = table_rows
 
     return render_template('monitor_topic.html', **select_info)

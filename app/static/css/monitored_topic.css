@@ -22,8 +22,10 @@ thead tr{
 tbody tr{
   background-color: black;
   color: lawngreen;
-
-
+}
+.alert {
+    background-color: black;
+    color: #fa0707;
 }
 
 th, td {
