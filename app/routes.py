@@ -1682,9 +1682,9 @@ def monitor_topic( topic = "" ):
             # Set an entry for each total
             for column_name in  column_names_list:
                 if column_name in totals:
-                    totals_row.append((0, False))        # Accumulates the total
+                    totals_row.append([0, False])        # Accumulates the total
                 else:
-                    totals_row.append(("", False))       # Print empty cell
+                    totals_row.append(["", False])       # Print empty cell
 
 
         # Get the columns values
@@ -1700,7 +1700,9 @@ def monitor_topic( topic = "" ):
                     if totals:
                         if totals_row[index + 1][0] != "":
                             try:
-                                if column_value.is_digit():
+                                if isinstance(column_value,int) or isinstance(column_value,float):
+                                    totals_row[index + 1][0] += column_value
+                                elif column_value.is_digit():
                                     totals_row[index + 1][0] += int(column_value)
                                 else:
                                     totals_row[index + 1][0] += float(column_value)
@@ -1724,7 +1726,7 @@ def monitor_topic( topic = "" ):
                     row_info.append((column_value, alert_val))
 
                 else:
-                    row_info.append("", False)
+                    row_info.append(("", False))
 
             table_rows.append(row_info)
 
