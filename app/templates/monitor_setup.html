@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form action="{{url_for('define_monitoring')}}" method="POST">
+
+
+        <h3 style="color: #336699">{{ table.table_name }}</h3>
+       <!-- Show nodes and checkbox for selection -->
+       <table border="1">
+            <tr>    <!-- table row  -->
+                {% for col_name in table.column_names %}
+                    <td>{{col_name}}</td> <!-- table cell  -->
+                {% endfor %}
+                {% for extra_column in table.extr_col %}
+                    <td>{{extra_column[0]}}</td> <!-- extra cell name  -->
+                {% endfor %}
+            </tr>
+            {% for row in table.rows %}
+            <tr>
+                {% for col_val in row %}
+                    <td>{{ col_val }}</td>
+                {% endfor %}
+                {% for extra_column in table.extr_col %}
+                    <!-- The selections: -->
+                    <!-- Send the following info: node-type, node-name, node-id, node-ip, node-port -->
+                    <td><input type={{extra_column[1]}} name="selected.{{row[0]}}@{{row[1]}}@{{row[2]}}@{{row[3]}}@{{row[4]}}"></td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+
+    </table>
+
+    <br>
+    <br>
+    <h3 style="color: #336699">Select type of monitoring</h3>
+    <!-- Select list for monitoring options -->
+
+    <select name="monitor_option" id="monitor_option" size = 6>
+        {% for option in monitor_options %}
+            <option value={{option[1]}}>{{option[0]}}</option>
+        {% endfor %}
+    </select>
+
+    <br>
+    <br>
+
+    <input type="submit" value="Submit" name="Submit">
+
+
+</form>
+    
+{% endblock %}

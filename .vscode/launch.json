@@ -12,7 +12,10 @@
             "module": "flask",
             "env": {
                 "FLASK_APP": "anylog.py",
-                "FLASK_ENV": "development"
+                "FLASK_ENV": "development",
+                "CONFIG_FOLDER": "D:/AnyLog-Code/AnyLog-GUI/views",
+                "CONFIG_FILE": "machines"
+
             },
             "args": [
                 "run",

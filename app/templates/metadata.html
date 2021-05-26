@@ -6,6 +6,26 @@
 
 {% block content %}
 
+<script LANGUAGE="JavaScript">
+<!--
+function confirm_selection()
+{
+    document.getElementById("delete_confirmed").value=confirm("Are you sure you wish to continue?");
+}
+// -->
+<!--
+function get_name()
+{
+    document.getElementById("new_name").value=prompt("New name:");
+}
+
+
+// -->
+</script>
+
+
+
+
 {% if selection %}
 
 <!-- Add the usr path to the form (if provided)  -->
@@ -14,14 +34,32 @@
 <form action="{{url_for('metadata')}}" method="POST">
 {% endif %}
 
+    {% if map_url %}
+        <iframe src="{{ map_url }}" width="850" height="550" frameborder="10" align="right" class="nodes-map"></iframe>
+    {% endif %}
+
+
 <ul class="tree">
+
+    <input type="hidden" name="new_name" id="new_name">
+    <input type="hidden" name="delete_confirmed" id="delete_confirmed">
 
     {% for node in nodes_list %}
 
-        {% if node %}        <!--  The node is not None   -->
+        {% if node.format %}
+            <!--  A format node  -->
+            {% if node.start_list %}
+                <ul>
+                <li>
+            {%  endif %}
+        {% elif node %}        <!--  The node is not None   -->
 
                 {% if node.first_child %}
-                    <ul>        <!--  Start unordered list   -->
+                    {%  if node.json_key %}
+                        <ul  class="monitor-box">        <!--  Start unordered list   -->
+                    {%  else %}
+                        <ul>        <!--  Start unordered list   -->
+                    {%  endif %}
                 {% endif %}
 
                 <!--  List Item starts  -->
@@ -37,40 +75,122 @@
                 {% endif %}
 
                 {% if node.name  %}
-                        <!-- View Policy or Select or Navigate  -->
-                        {% if node.details  %}
+                        {% if node.icon  %}
+                            <i class="{{ node.icon[0]}}" style='font-size:{{ node.icon[1] }}px;color:{{ node.icon[2] }}'></i>
+                        {% endif %}
+                        {% if node.report  %}
+                            <!-- Option to rename update or delete a report -->
+                            <!--  <input type="submit" value="Update" name="dashboard.{{node.path}}" class="button_update">  -->
+                            <input type="submit" value="Rename" name="dashboard.{{node.path}}" class="button_rename" onclick="get_name()">
+                            <input type="submit" value="Delete" name="dashboard.{{node.path}}" class="button_delete" onclick="confirm_selection()">
+                            <i class="far fa-chart-bar" style='font-size:16px;color:#0a8007'></i>
+                        {% elif node.folder %}
+                            <!-- Option to rename or delete a folder -->
+                            <input type="submit" value="Rename" name="folder.{{node.path}}" class="button_rename" onclick="get_name()">
+                            <input type="submit" value="Delete" name="folder.{{node.path}}" class="button_delete" onclick="confirm_selection()">
+                            {% if node.children  %}
+                                <i class="far fa-folder-open" style='font-size:16px;color:#F8D775'></i>
+                            {%  else %}
+                                <i class="far fa-folder" style='font-size:16px;color:#F8D775'></i>
+                            {% endif %}
+                        {% elif node.details  %}
+                            <!-- View Policy or Select or Navigate  -->
                             <!-- View details of a policy - nothing selected - transfer the path to the node with the policy to view -->
-                            <input type="submit" value="View" name={{node.path}} class="button_view">
+                            <input type="submit" value="View" name="{{node.path}}" class="button_view">
                         {% endif %}
                         {% if selection  %}
-                            {% if node.dbms_name  %}
-                                <!-- Flag to select the edge (to Save for a future report or immediate report) -->
-                                <td><input type=checkbox name=selected.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
+                             {% if node.report  %}
+                                 <!-- Flag to select the report (for multiple reports viewed) -->
+                                <td><input type=checkbox name=selected.url.{{node.url}}></td>
                                 <!-- Or go directly to a report -->
-                                <a href="{{url_for('metadata')}}/{{selection}}?report={{node.dbms_name}}@{{node.table_name}}@{{node.id}}?">{{node.name}}</a>
+                                <a href="{{url_for('metadata')}}/{{node.path}}?report={{node.url}}">{{node.name}}</a>
+
+                            {% elif node.dbms_name  %}
+                                <!-- Flag to select the edge (to Save for a future report or immediate report) -->
+                                <td><input type=checkbox name=selected.table.{{node.dbms_name}}@{{node.table_name}}@{{node.id}}></td>
+                                <!-- Or go directly to a report -->
+                                 <i class="fas fa-database" style='font-size:16px;color:#5b5f5b'></i>
+                                <a href="{{url_for('metadata')}}/{{node.path}}?report={{node.dbms_name}}@{{node.table_name}}@{{node.id}}?">{{node.name}}</a>
+
                             {% else %}
                                 <!-- Not Edge -->
+                                {% if node.checkbox  %}
+                                    <input type=checkbox name=selected.node.{{node.name}}.{{node.id}}>
+                                {% endif %}
                                 {% if node.id  %}
                                     <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
                                 {% else %}
                                         {% if node.option  %}
                                             <!-- A node representing navigation selection based on the config file -->
                                             <!-- Moving from metadata (option from config) to data node -->
-                                            <input type="submit" value={{node.option}} name=option.{{node.path}}>
+                                            <input type="submit" value="{{node.option}}" name="option.{{node.path}}">
                                         {% else %}
                                             <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
                                         {% endif %}
                                 {% endif %}
 
                             {% endif %}
+                            {% if node.table_struct %}
+                            <!-- Message received from the network in the format of a table -->
+                            <ul>
+                                 <li>
+                                    <table border="1" class="table-cmd">
+                                    <tr>    <!-- table header  -->
+                                        {% for col_name in node.table_struct["header"] %}
+                                            <td>{{col_name}}</td> <!-- table cell  -->
+                                        {% endfor %}
+                                    </tr>
+                                    {% for row in node.table_struct["rows"] %}
+                                    <tr>
+                                        {% for col_val in row %}
+                                            <td>{{ col_val }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                    </table>
+                                </li>
+                            </ul>
+                            {% elif node.data_struct %}
+                            <!-- Message received from the network -->
+                                <ul>
+                                <li>
+                                <ul class="monitor-box">        <!--  Start unordered list   -->
+
+                                {% for data_line in node.data_struct %}
+                                     <li>
+                                    {% if data_line[2] %}
+                                        <!--  transformed text to attr value pairs separated by colon   -->
+                                        <span style="color: #FFB000">
+                                        {{data_line[1]}}&nbsp : &nbsp
+                                        </span>
+                                        <span style="color: #66FF66">
+                                        {{data_line[2]}}
+                                        </span>
+                                    {% else %}
+                                        <span style="color: #66FF66">
+                                        {{data_line[1]}}
+                                        </span>
+                                    {% endif %}
+                                    </li>
+                                {%  endfor %}
+                                </li>
+                                </ul>
+                                </ul>        <!--  Start unordered list   -->
+                            {% endif %}
                         {% else %}
                             <a href="{{url_for('metadata')}}/{{node.path}}">{{node.name}}</a>
                         {% endif %}
-                {% elif node.policy_key %}
+                        {%  if node.submit_buttons %}
+                            {% for button in node.submit_buttons %}
+                                 <!-- Configure report / Select report / Add report -->
+                                <input type="submit" value="{{ button }}" name="{{ node.name }}.{{ node.path }}" class="button_submit">
+                            {%  endfor %}
+                        {% endif %}
+                {% elif node.json_key %}
                          <!-- View a policy (key and value)  -->
-                        <span id="json" class="key">{{node.policy_key}}</span>
-                        {% if node.policy_value  %}
-                            <span id="json" class="value"> : {{node.policy_value}}</span>
+                        <span id="json" style="color: #FFB000">{{node.json_key}}</span>
+                        {% if node.json_value  %}
+                            <span id="json" style="color:#66FF66"> : {{node.json_value}}</span>
                         {% endif %}
                 {% endif %}
 
@@ -88,12 +208,6 @@
     {% endfor %}
 
     <br>
-    <hr>
-     <!-- If edge nodes that can be selected to a report -->
-        <input type="submit" value="Configure" name="Configure">    <!-- Configure report -->
-        <input type="submit" value="Save" name="Save">    <!-- Save selected edge to report -->
-        <input type="submit" value="Report" name="Report">   <!-- Take selected edge to report -->
-
 </ul>
 
 <!-- Change scroll location from the top of the screen to last node touched-->

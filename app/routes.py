@@ -10,6 +10,7 @@ to be broadly interpreted) you or your such affiliates shall unconditionally ass
 such non-permitted act to AnyLog, Inc.
 '''
 
+import os
 
 from flask import render_template, flash, redirect, request, url_for, session
 from flask_table import  Table, Col, LinkCol
@@ -20,12 +21,19 @@ from app.forms import ConfigForm
 from app.forms import CommandsForm
 from app.forms import InstallForm
 from app.forms import ConfDynamicReport
-
+from app.forms import DashboardConfig       # Base config of a user defined report to include multiple panels
+from app.forms import PanelConfig           # Base config of a user defined panel
+from app.forms import TimeConfig            # Time/date selection for a report a panel
 
 from app.entities import Item
 from app.entities import AnyLogItem
 
 from app.entities import AnyLogTable
+from app.entities import AnyLogDashboard
+from app.entities import get_functions      # Get the list of supported functions
+from app.entities import get_functions_names      # Get the list of supported functions
+
+from app.entities import AnyLogPanel
 
 from config import Config
 
@@ -41,14 +49,9 @@ from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
 
-user_connect_ = False       # Flag indicating connected to the AnyLog Node 
-
-gui_view_ = app_view.gui()            # Load the definition of the user view of the metadata from a JSON file
-gui_view_.set_gui()
-
-query_node_ = None
 
 time_selection_ = [
+    ("Day & Time Selection", ""),
     ("Last 5 minutes", "-5m"),
     ("Last 15 minutes", "-15m"),
     ("Last 30 minutes", "-30m"),
@@ -72,6 +75,43 @@ time_selection_ = [
 # -----------------------------------------------------------------------------------
 # Is user connected
 # -----------------------------------------------------------------------------------
+def get_user_by_session():
+    '''
+    Need to sattisfy 2 conditions:
+    a) Registered in Flask Session
+    b) Registered on oath_stat
+    :return: User Name
+    '''
+    if 'username' in session:       # Session is a Flask object organizing the session and is setg in login
+        user_name = session['username']     # Example in https://pythonbasics.org/flask-sessions/
+        if user_name and not path_stat.is_user_connnected( user_name ):
+            user_name  = None
+    else:
+        user_name = None
+
+    return user_name
+# -----------------------------------------------------------------------------------
+# Get GUI_VIEW - pull the user name from the session and bring the GUI_VIEW struct from path_stat
+# -----------------------------------------------------------------------------------
+def get_gui_view():
+    if 'username' in session:
+        user_name = session['username']
+        gui_view = path_stat.get_element(user_name, "gui_view")
+    else:
+        gui_view = None
+    return gui_view
+# -----------------------------------------------------------------------------------
+# Determine in the config file if selection is for reports
+# -----------------------------------------------------------------------------------
+def is_reports(user_name, selection):
+    ret_val = False
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    if 'children' in gui_view.config_struct['gui']:
+        first_children = gui_view.config_struct['gui']['children']
+        if selection in first_children:
+            if 'type' in first_children[selection] and first_children[selection]['type'] == 'reports':
+                ret_val = True
+    return ret_val
 
 # -----------------------------------------------------------------------------------
 # GUI forms
@@ -82,13 +122,12 @@ time_selection_ = [
 @app.route('/index')
 def index():
 
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
-    select_info = get_select_menu()
-    select_info['title'] = "AnyLog Network"
-    
-    return render_template('main.html', **select_info)
+    return  redirect(url_for('metadata'))
+
 # -----------------------------------------------------------------------------------
 # Login
 # -----------------------------------------------------------------------------------
@@ -99,49 +138,70 @@ def login():
     and move to main page to determine GUI to use
     '''
 
-    select_info = get_select_menu( caller = "login" )
 
     form = LoginForm()
 
     if form.validate_on_submit():
 
         user_name = request.form['username']
-        target_node = get_target_node()
+        session['username'] = user_name
 
-        al_headers = {
-            'command' : 'get status',
-            'User-Agent' : 'AnyLog/1.23'
-            }
+        # Register User
+        path_stat.set_new_user(user_name)
 
-        try:
-            response = requests.get(target_node, headers=al_headers)
-        except:
-            flash('AnyLog: No network connection', category='error')
-            return redirect(('/login'))  # Redo the login
-        else:
-            if response.status_code != 200:
-                flash('AnyLog: Netowk node failed to authenticate {}'.format(form.username.data))
+        dashboard = AnyLogDashboard()  # The default dashboard for this user
+        dashboard.set_default()
+        path_stat.register_element(user_name, "default_dashboard", dashboard)
+
+        # Load the default CONFIG file
+
+        if load_config_file("login", user_name, Config.GUI_VIEW):
+
+            data, error_msg = exec_al_cmd("get status")
+            if error_msg:
+                flash('AnyLog: No network connection', category='error')
+                flash(error_msg, category='error')
                 return redirect(('/login'))  # Redo the login
 
-        path_stat.set_new_user(user_name)
-        session['username'] = user_name
-        path_stat.set_user_connnected(user_name)
+            path_stat.set_user_connnected(user_name)
 
-        return redirect(('/index'))     # Go to main page
+            return redirect(('/index'))     # Go to main page
 
-
-    title_str = 'Sign In'
-
-    if 'username' in session:
-        user_name = session['username']
-        if not path_stat.is_with_user( user_name ):
-            path_stat.set_new_user( user_name )
-
-   
-    select_info['title'] = title_str
+    select_info = get_select_menu( caller = "login" )
+    select_info['title'] = 'Sign In'
     select_info['form'] = form
 
     return render_template('login.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Load config file - register the config file and the target node
+# -----------------------------------------------------------------------------------
+def load_config_file( caller, user_name, config_file):
+
+    if not config_file:
+        flash("AnyLog: Missing or wrong system variables: CONFIG_FOLDER and CONFIG_FILE", category='error')
+        return False  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "config_file", config_file)  # Register the Config file
+
+    gui_view = app_view.gui()  # Load the definition of the user view of the metadata from a JSON file
+    err_msg = gui_view.set_gui(config_file)
+    if err_msg:
+        flash(err_msg, category='error')
+        return False  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "gui_view", gui_view)  # Register the Config file
+
+    # Get query node from the loaded config file
+    target_node = gui_view.get_base_info("query_node")
+    if not target_node:
+        flash("AnyLog: Missing Query Node in config file", category='error')
+        return False  # No config file - reconfigure
+
+    path_stat.register_element(user_name, "target_node", target_node)
+
+    return True     # No redirect
+
 
 # -----------------------------------------------------------------------------------
 # View the report structure being dynamically build by navigation
@@ -155,10 +215,9 @@ def dynamic_report( report_name = "" ):
     View the report being used
     Called from - base.html
     '''
-    if not user_connect_:
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session['username']
 
     select_info = get_select_menu()
     if not report_name:
@@ -166,7 +225,7 @@ def dynamic_report( report_name = "" ):
 
     report_data = path_stat.get_report_info(user_name, report_name)
     if not report_data or not len(report_data["entries"]):
-        flash("AnyLog: Report '%s' has no selections" % report_name)
+        flash("AnyLog: Report '%s' has no selections" % report_name, category='error')
         return redirect(url_for('index')) 
 
     list_columns = ["ID", "DBMS", "Table"]
@@ -200,7 +259,8 @@ def dynamic_report( report_name = "" ):
         select_info['panels_list'] = panels_list  # Add the list of existing panels in this report
     if not platform:
         # select visualization platform
-        visualization = gui_view_.get_base_info("visualization") or ["Grafana"]
+        gui_view = path_stat.get_element(user_name, "gui_view")
+        visualization = gui_view.get_base_info("visualization") or ["Grafana"]
         platforms = []
         default_platform = None
         for entry in visualization:
@@ -210,14 +270,14 @@ def dynamic_report( report_name = "" ):
                 platforms.append(entry)
         if not default_platform:
             if not len(platforms):
-                flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW)
+                flash("AnyLog: Missing visualization platforms in config file: %s" % Config.GUI_VIEW, category='error')
                 return redirect(url_for('index'))
             if len(platforms) == 1:
                 # Only one platform
                 default_platform = platforms[0]
                 platforms = None
             else:
-                flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW)
+                flash("AnyLog: Define default platform in config file: %s" % Config.GUI_VIEW, category='error')
                 return redirect(url_for('index'))
 
         select_info['default_platform'] = default_platform      # Default like: Grafana
@@ -249,7 +309,8 @@ def dynamic_report( report_name = "" ):
 def get_panels_list(user_name, report_name):
 
     platform_name = path_stat.get_platform_name(user_name, report_name)
-    platforms_tree = gui_view_.get_base_info("visualization")
+    gui_view = get_gui_view()
+    platforms_tree = gui_view.get_base_info("visualization")
     panels_list = []
     if not platform_name:
         # Get from all platforms
@@ -288,10 +349,9 @@ def get_panels_list(user_name, report_name):
 @app.route('/deploy_report', methods={'GET','POST'})
 def deploy_report():
 
-    if not user_connect_:
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
-
-    user_name = session['username']
 
     form_info = request.form
 
@@ -328,7 +388,8 @@ def deploy_report():
 
     query_functions = get_query_functions(form_info)  # get min, max, count, avg
 
-    platforms_tree = gui_view_.get_base_info("visualization")
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    platforms_tree = gui_view.get_base_info("visualization")
     
     # The Info from the config file
     platform_info = copy.deepcopy( platforms_tree[platform_name])
@@ -363,7 +424,7 @@ def deploy_report():
     report_url, err_msg = visualize.deploy_report(platform_name, **platform_info)
     if not report_url:
         # Failed to update the report
-        flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg))
+        flash("AnyLog: Failed to deploy report to %s - Error: %s" % (platform_name, err_msg), category='error')
         return redirect(('/dynamic_report'))
 
     return redirect((report_url))       # Goto Grafana
@@ -419,7 +480,7 @@ def get_time_range(form_info):
 # -----------------------------------------------------------------------------------
 @app.route('/reports')
 def reports():
-    if not user_connect_:
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     select_info = get_select_menu()
@@ -427,48 +488,180 @@ def reports():
 
     return render_template('reports.html', **select_info)
 # -----------------------------------------------------------------------------------
-# Alerts
+# Define which of the selected nodes is to be monitored and how
 # -----------------------------------------------------------------------------------
-@app.route('/alerts')
-def alerts():
-    return redirect(('/login'))        # start with Login if not yet provided
+@app.route('/define_monitoring', methods = ['GET', 'POST'])
+def define_monitoring():
+
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    gui_key = app_view.get_gui_key("Monitor")  # Transform selection with data to selection of GUI keys
+    root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+
+    form_info = request.form.to_dict()
+
+    if len(form_info):
+
+        if "monitor_option" not in form_info:
+            flash('AnyLog: Type of monitoring was not selected', category='error')
+        else:
+            # Get the The commands to execute
+            option_id = int(form_info["monitor_option"])
+            monitor_cmds = gui_sub_tree["options"][option_id]       # The list of commands to execute
+
+            # Get the list of nodes
+            nodes_selected = []
+            for key, value in form_info.items():
+                if key[:9] == "selected.":
+                    nodes_selected.append(key[9:])
+
+            if not len(nodes_selected):
+                flash('AnyLog: Monitored nodes were not selected', category='error')
+            else:
+                flash('AnyLog: Commands submitted', category='message')
+                # Go over the nodes
+                for node in nodes_selected:
+                    # For each node execute the commands
+                    node_info = node.split('@') # Get node-type, node-name, node-id, node-ip, node-port
+                    dest_node = "http://" + node_info[3] + ':' + node_info[4]
+
+                    for command in monitor_cmds[1:]: # The first entry in monitor_cmds is the name on the GUI
+                        data, error_msg = exec_al_cmd(command, dest_node)
+
+
+
+    table_rows = []
+
+    selected_nodes = path_stat.get_info_list(user_name, "monitored")
+
+    if selected_nodes:
+        for policy in selected_nodes.values():
+            policy_type = path_stat.get_policy_type(policy)
+            if policy_type:
+                if "name" in policy[policy_type] and "id" in policy[policy_type] and "ip" in policy[policy_type] and "rest_port" in policy[policy_type]:
+                    table_rows.append((policy_type, policy[policy_type]["name"], policy[policy_type]["id"], policy[policy_type]["ip"], policy[policy_type]["rest_port"]))
+    else:
+        table_rows = []
+        flash('AnyLog: Missing selection of nodes for monitoring', category='error')
+
+    extra_columns = [("Select", 'checkbox')]
+    al_table = AnyLogTable("Select participating nodes", ["Type", "Name", "ID", "IP", "Port"], None, table_rows, extra_columns)
+
+
+    monitor_options = []
+    if 'options' in gui_sub_tree:
+        monitored_options = gui_sub_tree['options']
+        for index, option in enumerate(monitored_options):
+            option_name = option[0]
+            monitor_options.append((option_name, index))       # Create a list of options to monitor
+    else:
+        flash('AnyLog: Missing configuration options for monitoring', category='error')
+
+
+    select_info = get_select_menu()
+    select_info["title"] = 'Setup Monitoring'
+    if al_table:
+        select_info["table"] = al_table
+
+    select_info["monitor_options"] = monitor_options
+
+    return render_template('monitor_setup.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Configure
 # -----------------------------------------------------------------------------------
 @app.route('/configure', methods = ['GET', 'POST'])
 def configure():
 
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+
+    form_info = request.form.to_dict()
+
+    node_ip = ""
+    node_port = 0
+    target_node = path_stat.get_element(user_name, "target_node")
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    if (len(form_info)):
+
+        # Change config file
+        if "conf_file_name" in form_info:
+            new_file = form_info["conf_file_name"] + ".json"
+            config_file = Config.CONFIG_FOLDER + new_file         # New config file
+            if not load_config_file("configire", user_name, config_file):
+                flash('AnyLog: failed to load config file: \'%s\'' % new_file, category='error')
+            else:
+                target_node = gui_view.get_base_info("query_node")
+                flash('AnyLog: New config file: \'%s\'' % new_file, category='message')
+        elif "node_ip" in form_info and "node_port" in form_info:
+            # Change target node
+            node_ip_str = form_info["node_ip"]
+            node_port_str = form_info["node_port"]
+            target_node = "http://" + node_ip_str + ":" + node_port_str
+
+
+    if target_node and len(target_node) > 7:
+        # Set the default IP and port
+        ip_port = target_node[7:].split(':')
+        if len(ip_port) == 2 and ip_port[1].isdigit():
+            node_ip = ip_port[0]
+            node_port = int(ip_port[1])
+
+    if not node_ip or not node_port:
+        flash('AnyLog: IP:Port of query node is not properly provided', category='error')
+    else:
+        path_stat.register_element(user_name, "target_node", target_node)
+        data, error_msg = exec_al_cmd("get status")
+        if error_msg:
+            flash('AnyLog: No network connection', category='error')
+            flash(error_msg, category='error')
+
+    form = ConfigForm()
+
+    # Get the list of the config files
+    config_dir = Config.CONFIG_FOLDER
+    try:
+        file_list = os.listdir(config_dir)
+    except:
+        flash('AnyLog: No config files in: %s' % config_dir, category='error')
+        file_list = []
+
+    # Keep the .json files
+    config_files = []
+    for entry in file_list:
+        if len(entry) > 5 and entry[-5:] == ".json":
+            value = entry[:-5]
+            config_files.append(value)
+
+    if len(config_files):
+        form.conf_file_name.choices = config_files  # set list with report names
+    else:
+        flash('AnyLog: No config files in: %s' % config_dir, category='error')
+
     select_info = get_select_menu( caller = "configure")
-    select_info["form"] = ConfigForm()
+    select_info["form"] = form
     select_info["title"] = 'Configure Network Connection'
 
-    if not gui_view_.is_with_config():
-        # Faild to recognize the JSON Config File
-        if gui_view_.is_config_error():
-            flash(gui_view_.get_config_error())
+    select_info["target_ip"] = node_ip
+    select_info["target_port"] = node_port
 
     # Test connectors to the Visualization platforms
-    platforms = gui_view_.get_base_info("visualization")
+    platforms = gui_view.get_base_info("visualization")
     if platforms:
         for entry in platforms:
             if isinstance(platforms[entry], dict) and "url" in platforms[entry] and "token" in platforms[entry]:
                 ret_val, err_msg = visualize.test_connection( entry, platforms[entry]["url"], platforms[entry]["token"] )  # Platform name + connect_string
                 if not ret_val:
-                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry[0], err_msg))
+                    flash("AnyLog: Failed to connect to '%s' Error: '%s'" % (entry, err_msg), category='error')
             else:
-                flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW))
+                flash("AnyLog: Missing setup info for '%s' in config file: %s" % (entry, Config.GUI_VIEW), category='error')
 
-    if request.method == 'POST':
-        # Need to be completed
-        conf = {}
-        conf["node_ip"] = request.form["node_ip"]
-        conf["node_port"] = request.form["node_port"]
-        conf["reports_ip"] = request.form["reports_ip"]
-        conf["reports_port"] = request.form["reports_ip"]
-  
-
-    select_info["title"] = 'Configure Network Connection'
-    select_info["form"] = ConfigForm()         # New Form
 
     return render_template('configure.html', **select_info )
 # -----------------------------------------------------------------------------------
@@ -476,11 +669,12 @@ def configure():
 # -----------------------------------------------------------------------------------
 @app.route('/network')
 def network():
-    if not user_connect_:
+
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-
-    target_node = get_target_node()
+    target_node = path_stat.get_element(user_name,"target_node")
     
     form = CommandsForm()         # New Form
     
@@ -498,7 +692,8 @@ def network():
 @app.route('/al_command', methods = ['GET', 'POST'])
 def al_command():
 
-    if not user_connect_:
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
     al_headers = {
@@ -508,7 +703,7 @@ def al_command():
 
     select_info = get_select_menu()
  
-    target_node = get_target_node()
+    target_node = path_stat.get_element(user_name,"target_node")
 
     command = request.form["command"]
     try:
@@ -516,14 +711,14 @@ def al_command():
         
         response = requests.get(target_node, headers=al_headers)
     except:
-        flash('AnyLog: Network connection failed')
+        flash('AnyLog: Network connection failed', category='error')
         return redirect(('/network'))     # Go to main page
     else:
         reply = response.text
         if response.status_code == 200:
             return print_network_reply(command, reply)
         else:
-            flash("AnyLog Network: Command Reply: '%s'" % (reply))
+            flash("AnyLog Network: Command Reply: '%s'" % (reply), category='error')
 
     
     select_info['title'] = 'Network Status'
@@ -544,89 +739,29 @@ def print_network_reply(command, data):
     select_info['title'] = 'Network Command'
     select_info['command'] = command
 
-    # Print Tree
-
-    policy = None
-    if data[0] == '{' and data[-1] == '}':
-        policy, error_msg = json_api.string_to_json(data)
-
-    elif data[0] == '[' and data[-1] == ']':
-        policy, error_msg = json_api.string_to_list(data)
-
+    policy, table_info, print_info, error_msg = format_message_reply(data)
     if policy:
-        # Print Tree Structure
+        # Reply was a JSON policy
         data_list = []
         json_api.setup_print_tree(policy, data_list)
         select_info['text'] = data_list
         # path_selection(parent_menu, id, data)      # save the path, the key and the data on the report
         return render_template('output_tree.html', **select_info)
 
-    # Make a list of strings to print
-    data = data.replace('\r', '')
-    text_list = data.split('\n')
-
-
-    # Print a Table
-    is_table = False
-    for index, entry in enumerate(text_list):
-        if entry and index:
-            if entry[0] == '-' and entry[-1] == '|':
-                # Identified a table
-                is_table = True
-                columns_list = entry.split('|')
-                columns_size = []
-                for column in columns_list:
-                    if len(column):
-                        columns_size.append(len(column))     # An array with the size of each column
-                header = []
-                offset = 0
-                for column_id, size in enumerate(columns_size):
-                    header.append(text_list[index - 1][offset:offset + size])
-                    offset += (size + 1)                # Add the field size and the separator (|)
-
-                select_info['header'] = header
-                if index > 1 and len(text_list[index -2]):
-                    select_info['table_title'] = text_list[index -2]         # Get the title if available
-                break
-        if index >= 5:
-            break  # not a table
-
-    if is_table:
-        # a Table setup and print
-        table_rows = []
-        for y in range(index + 1, len(text_list)): # Skip the dashed separator to the column titles
-            row = text_list[y]
-
-            columns = []
-            offset = 0
-            for column_id, size in enumerate(columns_size):
-                columns.append(row[offset:offset + size])
-                offset += (size + 1)  # Add the field size and the separator (|)
-
-            table_rows.append(columns)
-
-        select_info['rows'] = table_rows
+    if table_info:
+        # Reply is structured as a table
+        if 'header' in table_info:
+            select_info['header'] = table_info['header']
+        if 'table_title' in table_info:
+            select_info['table_title'] = table_info['table_title']
+        if 'rows' in table_info:
+            select_info['rows'] = table_info['rows']
         return render_template('output_table.html', **select_info)
 
-    # Print Text
-
-    print_info = []     # Every entry holds type of text ("text" or "Url) and the text string
-
-    for entry in text_list:
-        # Setup URL Link
-        if entry[:6] == "Link: ":
-            index = entry.rfind('#')  # try to find name of help section
-            if index != -1:
-                section = entry[index + 1:].replace('-', ' ')
-            else:
-                section = ""
-            print_info.append(("url", entry[6:], section))
-        else:
-            print_info.append(("text", entry))
-
-    select_info['text'] = print_info
+    select_info['text'] = print_info        # Only TEXT
 
     return render_template('output_cmd.html', **select_info)
+
 # -----------------------------------------------------------------------------------
 # Install New Node
 # -----------------------------------------------------------------------------------
@@ -642,8 +777,9 @@ def install():
 
 # -----------------------------------------------------------------------------------
 # Issue a report based on the list of policies IDs and the method to extract the dbms name and database name
+# The status report is 2 panels - a graph and a gauge which are defined in template base_conf_report.html
 # -----------------------------------------------------------------------------------
-def policies_to_status_report( selection, policies_list ):
+def policies_to_status_report( user_name, policies_list ):
     '''
     Each Policy is transformed to a report showing the data status
 
@@ -658,6 +794,8 @@ def policies_to_status_report( selection, policies_list ):
     # Name, Table Name, DBMS name
     projection_list = []
 
+    dashboard = path_stat.get_element(user_name, "default_dashboard")  # An object with panels definitions
+    dashboard.reset_panels()        # Remove previously defined panels
     for entry in policies_list:
         dbms_table_id = entry.split('@')
         if len(dbms_table_id) != 3: # needs to be: BMS + Table + Policy ID
@@ -683,76 +821,456 @@ def policies_to_status_report( selection, policies_list ):
                     if table_name:
                         projection_list.append((policy_name, dbms_name, table_name))
 
+                        # Add the projection list to each of the 2 default panels (Graph and Gauge)
+                        if dashboard.with_selections(policy_name, "graph"):
+                            dashboard.add_projection_list(policy_name + '- Operation', "graph", policy_name, dbms_name, table_name, None, None, None)
+                        if dashboard.with_selections(policy_name, "gauge"):
+                            dashboard.add_projection_list(policy_name + '- Status', "gauge", policy_name, dbms_name, table_name, None, "period", None)
 
-    if not len (projection_list):
+
+    if not dashboard.get_panels_count():
         flash('AnyLog: Missing metadata information in policies', category='error')
         return None
 
-    platforms_tree = gui_view_.get_base_info("visualization")
+
+    gui_view = get_gui_view()
+    platforms_tree = gui_view.get_base_info("visualization")
     if not platforms_tree or not "Grafana" in platforms_tree:
         flash('AnyLog: Missing Grafana definitions in config file', category='error')
         return None
 
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
+
     platform_info = copy.deepcopy(platforms_tree["Grafana"])
     platform_info['base_report'] = "AnyLog_Base"
+    platform_info["folder"] = root_folder
 
-    platform_info["projection_list"] = projection_list
+    platform_info["dashboard"] = dashboard
 
-    platform_info['functions'] = ["min", "max", "avg"]
-
-    platform_info['from_date'] = "-2M"
-    platform_info['to_date'] = "now"
-
-    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+    url_list, err_msg = visualize.new_report("Grafana", **platform_info)
     if err_msg:
         flash(err_msg, category='error')
         return None
 
-    select_info = get_select_menu()
-    select_info['title'] = "Current Status"
-
-    select_info["url_list"] = url_list
-
-    return  render_template('output_frame.html', **select_info)
+    return url_list
 # -----------------------------------------------------------------------------------
 # Configure the Navigation Report - the report created from metadata.html
+# Calls - base_conf_report
 # -----------------------------------------------------------------------------------
 @app.route('/conf_nav_report', methods = ['GET', 'POST'])
 def conf_nav_report():
 
-    if not user_connect_:
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name = session["username"]
+    form_info = request.form
+    if len(form_info):
+        err_msg = get_base_report_config(user_name, form_info)    # update the report configuration (on the user status)
+        if err_msg:
+            flash("AnyLog: %s" % err_msg, category='error')
+            redirect(url_for('conf_nav_report'))        # Redo Form
+        flash("AnyLog: Report configured", category='message')
+
     select_info = get_select_menu()
 
     select_info['title'] = "Configure Report"
 
-    # select output options
-    select_info['graph_default'] = ["Avg", "Min", "Max", ]    # These are flagged as selected
-    select_info['graph_additional'] = ["Range", "Count"]
-    select_info['gauge_default'] = ["Avg"]    # These are flagged as selected
-    select_info['gauge_additional'] = ["Min", "Max", "Range", "Count"]
+    # define config params
 
+    dashboard_conf = DashboardConfig()
+
+    default_dashboard = path_stat.get_element(user_name, 'default_dashboard')
+
+    functions_list = get_functions()
+
+    functions_selected = default_dashboard.get_default_functions("graph")
+    panel_config = PanelConfig( "Graph", "graph", functions_list, functions_selected )
+    dashboard_conf.add_panel(panel_config)
+
+    functions_selected = default_dashboard.get_default_functions("gauge")
+    panel_config = PanelConfig( "Gauge", "gauge", functions_list, functions_selected )
+    dashboard_conf.add_panel(panel_config)
 
     # Organize the report time selections as last selection
-    select_info['time_options'] = time_selection_
-    from_date, to_date = path_stat.get_dates_selection(user_name, "nav_report")      # Get the last selections of dates
-    if not to_date:
-        to_date = 'now'
-        from_date = "now-2M"
-    if to_date:
-        if to_date == 'now':
-            for entry in time_selection_:
-                # go over the entries to find the last selection made and set it as default
-                if entry[1] == from_date[3:]:
-                    select_info['previous_range'] = (entry[0], entry[1])
-        else:
-            select_info['from_date'] = from_date
-            select_info['to_date'] = to_date
 
+    # Get the last selection for time and date and provide the selection as the setup
+
+    start_date_time, end_date_time, range_date_time = default_dashboard.date_time.get_date_time_selections()
+
+    text_selected = None
+    time_selected = None
+    if range_date_time:
+        for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == range_date_time:
+                    text_selected = entry[0]
+                    time_selected = entry[1]
+                    break
+
+
+    time_config = TimeConfig(time_selection_, text_selected, time_selected, start_date_time, end_date_time)
+
+    dashboard_conf.set_time(time_config)  # Apply time selections options to the report
+
+    select_info['dashboard'] = dashboard_conf
 
     return render_template('base_conf_report.html', **select_info)
+
+
+# -----------------------------------------------------------------------------------
+# Get the report config info from the form
+# Set the info on the default_dashboard assigned to the user
+# -----------------------------------------------------------------------------------
+def get_base_report_config(user_name, form_info):
+
+    dashboard = path_stat.get_element(user_name, "default_dashboard")       # An object to include all dashboards declared on the form
+    dashboard.reset()
+
+    for key, value in form_info.items():
+
+        if key[:9] == "checkbox.":
+            checkbox = key.split('.')   # get the panel id and the function (Min, Max etc)
+            if len(checkbox) == 3:
+                panel_id = checkbox[1]
+                function = checkbox[2]
+                dashboard.add_default_function(panel_id, function)  # add function to the dashboard (and create a panel in the dashboard if needed)
+
+        elif key[:5] == "date_":
+            dashboard.set_date_time(key[5:], value) # Set date start, date end, date range
+
+    selection_errors = dashboard.test_selections()
+
+    return selection_errors
+
+# -----------------------------------------------------------------------------------
+# Analyze the form returned info
+# Returns form_selections - showing buttons selected
+# Selected list - showing a list of sensors selected
+# -----------------------------------------------------------------------------------
+def process_tree_form():
+
+    form_selections = {
+        "policy_id" : None,         # AN ID of a JSON policy
+        "location_key": None,       # Replace the user selection with the location key
+        "get_policy": False,        # Show the JSON policy (View button)
+        "report_button": False,     # Show a report of multiple selections (Report button)
+        "select_button": False,     # Add the database and table of an edge node to a list that is used when a new report is defined
+        "url" : None,               # URL to redirect  the process (For example to configure a report)
+        "add_report" : False,       # Define a new report in the report section
+        "add_folder" : False,        # Add a new Grafana Folder
+        "rename_folder": False,
+        "delete_folder" : False,
+        "folder_name" : None,
+        "status_report" : False,    # A report determined dynamically by the navigation
+        "existing_report" : False,   # A predefined report
+        "delete_dashboard" : False,
+        "dashboard_name" : None,
+        "rename_dashboard" : False,
+        "nodes_selected" : False,       # User selection of nodes
+        "monitor"   : None,         # Name of topic to monitor
+    }
+
+    selected_list = []
+
+
+    # Go over report selections
+
+    form_info = request.form
+    if len(form_info):
+        for form_key, form_val in form_info.items():
+            if form_val == "View":
+                #  User selected to View a Policy (using a View BUTTON)
+                #  The user selected view - Bring the node Policy
+                offset = form_key.rfind('+')
+                if offset > 0:
+                    # Get the policy ID of the last layer
+                    form_selections["policy_id"] = form_key[offset + 1:]
+                    form_selections["location_key"] = form_key
+                    form_selections["get_policy"] = True    # Get the policy of the node
+                break
+            if form_val == "Rename":
+                # Rename a folder
+                if "new_name" in form_info and len(form_info["new_name"]):
+                    if form_key[:7] == "folder.":
+                        new_folder_name = form_info["new_name"]
+                        old_folder_name = form_key[7:]
+                        form_selections["rename_folder"] = True
+                        form_selections["new_folder_name"] = new_folder_name
+                        form_selections["old_folder_name"] = old_folder_name
+                        break
+                    if form_key[:10] == "dashboard.":
+                        new_dashboard_name = form_info["new_name"]
+                        old_dashboard_name = form_key[10:]
+                        form_selections["rename_dashboard"] = True
+                        form_selections["new_dashboard_name"] = new_dashboard_name
+                        form_selections["old_dashboard_name"] = old_dashboard_name
+                        break
+            if form_val == "Delete":
+                if "delete_confirmed" in form_info and form_info["delete_confirmed"] == 'true':
+                    # Delete folder
+                    if form_key[:7] == "folder.":
+                        form_selections["delete_folder"] = True
+                        form_selections["folder_name"] = form_key[7:]
+                        break
+                    if form_key[:10] == "dashboard.":
+                        # delete dashboard
+                        form_selections["delete_dashboard"] = True
+                        form_selections["dashboard_name"] = form_key[10:]
+
+            if form_key[:7] == "option.":
+                # User selected an option representing a metadata navigation (the type of the children to retrieve)
+                # Move from metadata to data
+                key = form_key[7:]
+                if len(key) > 11:
+                    if key[-11:] == "@Add_Report":
+                        form_selections["add_report"] = True
+                        key = key[:-11]
+                    elif key[-11:] == "@Add_Folder":
+                        form_selections["add_folder"] = True
+                        key = key[:-11]
+
+                form_selections["location_key"] = key  # Save the location key based on the user button selection
+                break
+            if form_key[:9] == "selected.":
+                # the user selected one or mulitple ege node (in the CHECKBOX)
+                if form_key[9:15] == "table.":
+                    # The path determines the report (Current status report processed in - policies_to_status_report
+                    selected_list.append(form_key[15:])
+                    form_selections["status_report"] = True
+                elif form_key[9:13] == "url.":
+                    # Entries represent existing reports
+                    selected_list.append(form_key[13:])
+                    form_selections["existing_report"] = True
+                elif form_key[9:14] == "node.":
+                    # Entries represent nodes selected
+                    selected_list.append(form_key[14:])
+                    form_selections["nodes_selected"] = True
+            elif form_val == "Open":
+                # The selected list is used for a report
+                form_selections["report_button"] = True
+            elif form_val == "Select":
+                form_selections["select_button"] = True
+                if form_key[:8] == "Network ":
+                    index = form_key.find('.',8)
+                    if index != -1:
+                        topic = form_key[8:index]
+                        form_selections["monitor"] = topic      # The monitoring topic (text after "Network")
+            elif form_val == "Config":
+                # Configure the dynamic report
+                form_selections["url"] = url_for('conf_nav_report')
+                break
+
+    return [form_selections, selected_list]
+
+# -----------------------------------------------------------------------------------
+# Define new report called from new_report.html
+# -----------------------------------------------------------------------------------
+@app.route('/new_report', methods = ['GET', 'POST'])
+@app.route('/new_report/<string:selection>', methods = ['GET', 'POST'])
+def new_report( selection = "" ):
+
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
+
+    form_info = request.form
+
+    if len(form_info):
+        dashboard = AnyLogDashboard()  # Create a new dasboard
+        tables_info = {}
+        panels_names = {}   # organize the name of each panel as f(dbms + table)
+        for entry in form_info:
+
+            # Make a list with the following entries:
+            # dbms name + Table Name + panel name + list of functions
+
+            if entry[:5] == "date_":
+                # Set the date- time selections
+                dashboard.set_date_time(entry[5:], form_info[entry])  # Set date start, date end, date range
+
+            elif entry[:6] == "table.":
+                table_info = entry[6:].split('.')   # List with DBMS name, Table name, function
+                dbms_name = table_info[0]
+                table_name = table_info[1]
+                panel_name = table_info[2]
+                function = table_info[3]
+
+                # Test if entry exists - if so add the function
+                key = dbms_name + '.' + table_name
+                if key in tables_info:
+                    # add the function
+                    if function == "Panel Name":
+                        panel_name = form_info[entry]
+                        if panel_name:
+                            panels_names[key] = panel_name
+                    else:
+                        tables_info[key][3].append(function)
+                else:
+                    # add new entry
+                    tables_info[key] = (dbms_name, table_name, panel_name, [function])
+            elif entry == 'report_name':
+                dashboard.set_name(form_info[entry])
+
+        for entry in tables_info.values():
+            # Add the projection list for each table
+            key =  entry[0] + '.' + entry[1]
+            if key in panels_names:
+                panel_name = panels_names[key]      # User provided a name for the panel
+            else:
+                panel_name = dashboard.get_name()               # Use dashboard name
+            dashboard.add_projection_list(panel_name, "graph", entry[2], entry[0], entry[1], entry[3], "increments", None)
+
+        gui_view = get_gui_view()
+        platforms_tree = gui_view.get_base_info("visualization")
+        if not platforms_tree or not "Grafana" in platforms_tree:
+            flash('AnyLog: Missing Grafana definitions in config file', category='error')
+            return redirect(url_for('new_report', selection=selection))
+
+        platform, url, token, folder = get_report_info(user_name, selection)
+        platform_info = copy.deepcopy(platforms_tree[platform])
+        platform_info['base_report'] = "AnyLog_Base"
+
+        platform_info["dashboard"] = dashboard
+
+        platform_info["folder"] = folder
+
+        ret_val, err_msg = visualize.create_report(platform, **platform_info)
+        if not ret_val:
+            flash(err_msg, category='error')
+            return redirect(url_for('new_report', selection=selection))
+
+    return define_new_report(user_name, selection)
+# -----------------------------------------------------------------------------------
+# Define new report in the requested folder
+# -----------------------------------------------------------------------------------
+def define_new_report(user_name, folder):
+
+    select_info = get_select_menu(selection=folder)
+
+    dashboard_conf = DashboardConfig()
+
+    default_dashboard = path_stat.get_element(user_name, 'default_dashboard')
+
+
+    # Get the Report Type - Graph or Gauge
+    visualize_selected = ["Grapg", "Gauge"]
+    panel_config = PanelConfig( "Select visualization", "visualize", ["Graph", "Gauge"], ["Graph"] )
+    dashboard_conf.add_panel(panel_config)
+
+    # Organize the report time selections as last selection
+
+    # Get the last selection for time and date and provide the selection as the setup
+
+    start_date_time, end_date_time, range_date_time = default_dashboard.date_time.get_date_time_selections()
+
+    text_selected = None
+    time_selected = None
+    if range_date_time:
+        for entry in time_selection_:
+                # go over the entries to find the last selection made and set it as default
+                if entry[1] == range_date_time:
+                    text_selected = entry[0]
+                    time_selected = entry[1]
+                    break
+
+
+    time_config = TimeConfig(time_selection_, text_selected, time_selected, start_date_time, end_date_time)
+
+    dashboard_conf.set_time(time_config)  # Apply time selections options to the report
+
+    table_rows = path_stat.get_table_with_selected_nodes(user_name, ["name", "id"], True, True)
+
+    tables_list = []
+    extra_columns = []
+    options = get_functions_names()
+    for option in options:
+        extra_columns.append( (option,'checkbox' ))
+
+    extra_columns.append( ("Panel Name", 'text'))
+
+    al_table = AnyLogTable("Select report data", ["Name", "ID", "DBMS", "Table"], None, table_rows, extra_columns)
+
+    tables_list.append(al_table)  # Add the children
+
+    select_info['title'] = "New Report"
+    select_info['selection'] = folder
+    select_info['tables_list'] = tables_list
+
+    select_info['dashboard'] = dashboard_conf
+
+
+    return render_template('new_report.html', **select_info)
+
+
+# -----------------------------------------------------------------------------------
+# Add new child folder for reports
+# -----------------------------------------------------------------------------------
+def add_folder(user_name, location_key):
+
+
+    platform, url, token, parent_folder = get_report_info(user_name, location_key)
+
+    err_msg = visualize.create_folder(platform, url, token, parent_folder, "New Folder")
+    if err_msg:
+        flash(err_msg, category='error')
+
+# -----------------------------------------------------------------------------------
+# Add new child folder for reports
+# -----------------------------------------------------------------------------------
+def rename_folder(user_name, location_key, old_folder, new_folder):
+
+    platform, url, token, source_folder = get_report_info(user_name, old_folder)
+
+    index = source_folder.rfind('@')
+    dest_folder = source_folder[:index +1] + new_folder
+
+    err_msg = visualize.rename_folder(platform, url, token, source_folder, dest_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+# -----------------------------------------------------------------------------------
+# Delete a folder
+# -----------------------------------------------------------------------------------
+def delete_folder(user_name, location_key, folder_name):
+
+    platform, url, token, target_folder = get_report_info(user_name, folder_name)
+
+    err_msg = visualize.delete_folder(platform, url, token, target_folder)
+    if err_msg:
+        flash(err_msg, category='error')
+
+# -----------------------------------------------------------------------------------
+# Delete a dashboard
+# -----------------------------------------------------------------------------------
+def delete_dashboard(user_name, location_key, dashboard_name):
+
+    platform, url, token, target_folder = get_report_info(user_name, location_key)
+
+    index = dashboard_name.rfind('@')
+    if index != -1:
+        dashboard = dashboard_name[index + 1:]  # Name without folder
+    else:
+        dashboard = dashboard_name
+    err_msg = visualize.delete_dashboard(platform, url, token, target_folder, dashboard)
+    if err_msg:
+        flash(err_msg, category='error')
+
+# -----------------------------------------------------------------------------------
+# Rename a dashboard
+# -----------------------------------------------------------------------------------
+def rename_dashboard(user_name, location_key, dashboard_name, new_name):
+
+    platform, url, token, target_folder = get_report_info(user_name, location_key)
+
+    index = dashboard_name.rfind('@')
+    if index != -1:
+        dashboard = dashboard_name[index + 1:]  # Name without folder
+    else:
+        dashboard = dashboard_name
+    err_msg = visualize.rename_dashboard(platform, url, token, target_folder, dashboard, new_name)
+    if err_msg:
+        flash(err_msg, category='error')
 
 # -----------------------------------------------------------------------------------
 # Navigate in the metadata
@@ -762,12 +1280,71 @@ def conf_nav_report():
 @app.route('/metadata/<string:selection>', methods = ['GET', 'POST'])
 def metadata( selection = "" ):
 
-    if not user_connect_:
+    user_name =  get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name = session["username"]
-
     location_key = selection
+
+    form_selections, selected_list = process_tree_form()
+
+    if form_selections["url"]:
+        return redirect(form_selections["url"])       # Redirect to a different proocess
+
+    if form_selections["location_key"]:
+        location_key = form_selections["location_key"]  # Form selection changed the location
+
+    if form_selections["add_report"]:
+        return define_new_report(user_name, location_key)
+
+    if form_selections["add_folder"]:
+        # Continue to print tree  with new folder
+        add_folder(user_name, location_key)
+    elif form_selections["rename_folder"]:
+        rename_folder(user_name, location_key, form_selections["old_folder_name"], form_selections["new_folder_name"])
+    elif form_selections["delete_folder"]:
+        delete_folder(user_name, location_key, form_selections["folder_name"])
+    elif form_selections["delete_dashboard"]:
+        delete_dashboard(user_name, location_key, form_selections["dashboard_name"])
+    elif form_selections["rename_dashboard"]:
+        rename_dashboard(user_name, location_key, form_selections["old_dashboard_name"], form_selections["new_dashboard_name"])
+    elif form_selections["report_button"]:    # Report Open Selection
+        if form_selections["status_report"]:
+            # Show the default report with the selected edge nodes
+            url_list = policies_to_status_report(user_name, selected_list)
+        elif form_selections["existing_report"]:
+            urls_compressed = selected_list            # List of selected URLs
+            url_list = []
+            for url_encoded in urls_compressed:
+                url_list += uncompress_urls(url_encoded)    # Uncompress mutiple pannels that are represented as a single string
+        else:
+            url_list = None
+        if not url_list:
+            # Got an error
+            select_info = get_select_menu(selection=location_key)
+            return call_navigation_page(user_name, select_info, location_key, None)
+        select_info = get_select_menu()
+        select_info['title'] = "Selected Reports"
+        select_info["url_list"] = url_list
+
+        return render_template('output_frame.html', **select_info)
+
+    if form_selections["monitor"]:
+        topic = form_selections["monitor"]
+        return monitor_topic(topic)
+
+    if location_key:
+        index = location_key.find('@')
+        if index != -1:
+            key = location_key[:index]
+        else:
+            key = location_key
+
+        if is_reports(user_name, key):
+
+            # Navigate in reports
+            return navigate_in_reports(user_name, location_key, form_selections["add_folder"], form_selections["rename_folder"], form_selections["delete_folder"], form_selections["delete_dashboard"])
+
 
     if request.query_string:
         query_string = request.query_string.decode('ascii')
@@ -776,75 +1353,130 @@ def metadata( selection = "" ):
             # User selected a report on a single edge node
             dbms_table_id = query_string[7:] # DBMS + Table + Policy ID
             # Got the method to determine dbms name and table name
-            html = policies_to_status_report(location_key, [dbms_table_id])
-            if not html:
+            url_list = policies_to_status_report(user_name, [dbms_table_id])
+            if not url_list:
                 # Got an error
                 select_info = get_select_menu(selection=location_key)
                 return call_navigation_page(user_name, select_info, location_key, None)
-            return html
+
+            select_info = get_select_menu()
+            select_info['title'] = "Current Status"
+
+            select_info["url_list"] = url_list
+
+            return render_template('output_frame.html', **select_info)
 
 
-    form_info = request.form
-    get_policy = False
 
-    if len(form_info):
-        # Selection on the navigation form
-
-        selected_list = []
-        configure_button = False
-        save_button = False
-        report_button = False
-        # Go over report selections
-        for form_key, form_val in form_info.items():
-            if form_val == "View":
-                # Option 2 - User selected to View a Policy (using a View BUTTON)
-                # The user selected view - Bring the node Policy
-                offset = form_key.rfind('+')
-                if offset > 0:
-                    # Get the policy ID of the last layer
-                    policy_id = form_key[offset + 1:]
-                    location_key = form_key
-                    get_policy = True       # Get the policy of the node
-                break
-            if form_key[:7] == "option.":
-                # User selected an option representing a metadata navigation (the type of the children to retrieve)
-                # Move from metadata to data
-                location_key = form_key[7:]     # Remove the "option." prefix
-                break
-            if form_key[:9] == "selected.":
-                # Option 3 - the user selected one or multple ege node (in the CHECKBOX)
-                selected_list.append(form_key[9:])
-            elif form_key == "Report":
-                # The selected list is used for a report
-                report_button = True
-            elif form_key == "Save":
-                save_button = True
-            elif form_key == "Configure":
-                # Configure the dynamic report
-                return redirect(url_for('conf_nav_report'))
+    if form_selections["select_button"]:
+        if len(selected_list):
+            if form_selections["nodes_selected"]:
+                # Monitor selected nodes
+                add_selected_to_nodes_list(user_name, location_key, selected_list)
+            else:
+                # Report on data noides - Add the selected (edge) nodes to a list of nodes for a report
+                add_selected_to_report_list(user_name, location_key, selected_list) # Return one selection from the list
+        # Continue to show tree
 
 
-        if report_button:
-            html = policies_to_status_report(location_key, selected_list)
-            if not html:
-                # Got an error
-                select_info = get_select_menu(selection=location_key)
-                return call_navigation_page(user_name, select_info, location_key, None)
-            return html
+    return metada_navigation(user_name, location_key, form_selections)
+
+# -----------------------------------------------------------------------------------
+# Add the selected nodes to a list of nodes that are option for monitoring
+
+# -----------------------------------------------------------------------------------
+def add_selected_to_nodes_list(user_name, location_key, new_selection):
+
+    '''
+    Every entry in new_selection includes:
+    a) Node Name
+    b) Node ID
+    Get the policy using the ID and save in a list called "monitored"
+    '''
+
+    # Add the next selection to existing selection
+    for entry in new_selection:
+        node_segments = entry.split('.')
+        if len(node_segments) == 2:
+            policy_id = node_segments[1]
+
+            if not path_stat.is_in_info_list(user_name, "monitored", policy_id):
+                # Not in the list - add info to the list of selected nodes
+                policy_list = get_json_policy(policy_id)
+                if policy_list and isinstance(policy_list,list) and len(policy_list) == 1:
+                    policy = policy_list[0]
+                    # Add the selected policy to the list of nodes that can be monitored
+                    path_stat.add_to_info_list(user_name, "monitored", policy_id, policy)
 
 
-    if not selection:
+# -----------------------------------------------------------------------------------
+# Add the selected nodes to a list of nodes that are option for a new report.
+# If a new report is selected, the user can select which edge nodes to include.
+# The edge nodes determine the database and table to use.
+# -----------------------------------------------------------------------------------
+def add_selected_to_report_list(user_name, location_key, new_selection):
+
+    '''
+    Every entry in new_selection includes:
+    a) dbms name (or pull instructions for the dbms name)
+    b) table name (or pull instructions for the table name)
+    c) JSON policy ID
+    '''
+
+    # Add the next selection to existing selection
+    for entry in new_selection:
+        node_segments = entry.split('@')
+        if len(node_segments) == 3:
+            policy_id = node_segments[2]
+            if not path_stat.is_node_selected(user_name, policy_id):
+                # Not in the list - add info to the list of selected nodes
+
+                policy_list = get_json_policy(policy_id)
+                policy_id = None  # Missing ID for the policy
+                if policy_list and isinstance(policy_list,list) and len(policy_list) == 1:
+                    policy = policy_list[0]
+                    policy_type = path_stat.get_policy_type(policy)
+                    if policy_type:
+                        if "id" in policy[policy_type]:
+                            policy_id = policy[policy_type]["id"]
+
+                if policy_id:
+                    # Copy the path anf pathe elements to the list of selected items to print
+                    node_info = {}
+                    dbms_name = node_segments[0]
+                    table_name = node_segments[1]
+
+                    db_name = path_stat.get_sql_name(policy, dbms_name)  # Pull the dbms name from the policy
+                    tb_name = path_stat.get_sql_name(policy, table_name)  # Pull the dbms name from the policy
+
+                    node_info["dbms_name"] = db_name
+                    node_info["table_name"] = tb_name
+                    node_info["policy"] = policy
+
+                    path_stat.add_selected_node(user_name, policy_id, node_info)        # Add the node info to the report
+
+# -----------------------------------------------------------------------------------
+# Navigate using the metadata
+# -----------------------------------------------------------------------------------
+def metada_navigation(user_name, location_key, form_selections):
+
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    if not location_key:
 
         params = { 'is_anchor' : True }
         root_nav = nav_tree.TreeNode( **params )
 
-        children = gui_view_.get_gui_root() # Get the list of the children at layer 1 from the config file
+        children = gui_view.get_gui_root() # Get the list of the children at layer 1 from the config file
         for child in children:
             params = {
                 'name' : child,
                 'key'  : child,
                 'path' : child,
             }
+            if "icon" in children[child]:
+                params['icon'] = children[child]['icon']    # Icon shape size and color to show on the nav tree
+
             root_nav.add_child( **params )
 
         path_stat.register_element(user_name, "root_nav", root_nav)     # Anchor the root as f(user)
@@ -862,25 +1494,49 @@ def metadata( selection = "" ):
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
 
         gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+        select_info = get_select_menu(selection=gui_key)
 
-        if get_policy:
-            # User requested ti VIEW the policy of a tree entry
+        if form_selections["get_policy"]:
+            # User requested to VIEW the policy of a tree entry
             # Get the policy by the ID (or remove if the policy was retrieved)
+            add_policy(current_node, form_selections["policy_id"])
 
-            if current_node.is_option_node():
-                # move to the data node
-                policy_node = current_node.get_parent()
+        elif current_node.is_monitoring_node():
+            # This is a node that monitors the network using "get monitored" command
+            if current_node.is_with_json():
+                current_node.reset_json_struct()     # Remove the child JSON struct
             else:
-                policy_node = current_node
-            if policy_node.is_with_policy():
-                policy_node.add_policy(None)
+                index = location_key.find("Network ")
+                if index != -1:
+                    topic = location_key[index + 8:]
+                    json_struct = get_monitored_info(topic)
+                    if json_struct:
+                        current_node.add_json_struct(json_struct)
+
+        elif current_node.is_network_cmd():
+            # Execute the network command
+            root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file/
+            if gui_sub_tree and isinstance(gui_sub_tree, dict) and "command" in gui_sub_tree:
+                if current_node.is_with_json():
+                    current_node.reset_json_struct()     # Remove the child JSON struct
+                elif current_node.is_with_data():
+                    current_node.reset_data_struct()  # Remove the data structure assigned to the node
+                elif current_node.is_with_table():
+                    current_node.reset_table_struct()
+                else:
+                    err_msg = add_command_reply(current_node, gui_sub_tree['command'])
+                    if err_msg:
+                        flash("AnyLog: Network command failed: %s" % err_msg,  category='error')
+                        current_node.parent.reset_children()
+                        location_key = set_location_on_parent(location_key)
+                        return redirect(url_for('metadata', selection=location_key))
             else:
-                retrieved_policy = get_json_policy(policy_id)
-                if retrieved_policy and isinstance(retrieved_policy,list) and len(retrieved_policy) == 1:
-                    policy_node.add_policy(retrieved_policy[0] )
-            select_info = get_select_menu(selection=gui_key)
+                flash("AnyLog: Missing command in Monitor Nodes", category='error')
+                current_node.parent.reset_children()
+                location_key = set_location_on_parent(location_key)
+                return redirect(url_for('metadata', selection=location_key))
+
         else:
-            select_info = get_select_menu(selection=gui_key)
 
             if current_node.is_with_children():
                 current_node.reset_children()  # Delete children from older navigation
@@ -889,31 +1545,516 @@ def metadata( selection = "" ):
 
                 # Get the options from the config file and set the options as children
 
-                gui_sub_tree = gui_view_.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+                root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
 
-                if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree):        # User selected a query to the data
-                    # Executes a query to select data from the network and set the data as as the children
+
+                if current_node.is_option_node() or app_view.is_edge_node(gui_sub_tree) or (current_node.is_root() and "query" in gui_sub_tree):
+                    # A node that allows a query to the data or a query to the blockchain
+                    # Executes a query to select data from the network (data or metadata/blockchain) and set the data as as the children
                     reply = get_path_info(gui_key, select_info, current_node)
+
                     if reply:
                         # Add children to tree
                         gui_sub_tree, tables_list, list_columns, list_keys, table_rows = reply
+
+                        # Manage data
                         if "dbms_name" in gui_sub_tree and "table_name" in gui_sub_tree:
                             # Push The key to pull dbms name and table name from the policy
                             dbms_name = gui_sub_tree["dbms_name"]
                             table_name = gui_sub_tree["table_name"]
+                            add_checkbox = True         # Checkbox to select nodes
+                        elif "submit" in gui_sub_tree:
+                            add_checkbox = True
+                            dbms_name = None
+                            table_name = None
                         else:
+                            add_checkbox = False
                             dbms_name = None
                             table_name = None
 
-                        current_node.add_data_children(location_key, list_columns, list_keys, table_rows, dbms_name, table_name)
+                        current_node.add_data_children(location_key, list_columns, list_keys, table_rows, add_checkbox, dbms_name, table_name)
 
                 else:
 
                     current_node.add_option_children(gui_sub_tree, location_key)
 
+                    if location_key == "Monitor":
+                        add_monitored_topics(current_node)
+
 
     return call_navigation_page(user_name, select_info, location_key, current_node)
 
+# -----------------------------------------------------------------------------------
+# For Topic in the navigation tree, get the list of monitored topics on the connected node.
+# Provide each monitored topic as a child
+# -----------------------------------------------------------------------------------
+def add_monitored_topics(current_node):
+
+    # get the list of monitored topics
+
+    topics_string, error_msg = exec_al_cmd("get monitored")
+    if not error_msg and len(topics_string):
+        try:
+            topics_list = eval(topics_string)
+        except:
+            topics_list = None
+        else:
+            for topic in topics_list:
+                # Add each topic as a child
+                node_name = "Network %s" % topic
+                path = "Monitor@"  + node_name
+                icon = ("fas fa-wifi", 16, "#4b7799" )
+                submit_buttons = ["Select"]
+                current_node.add_child(name=node_name, icon=icon, path = path, monitor=True, submit_buttons = submit_buttons)
+
+# -----------------------------------------------------------------------------------
+# Get network info using "get monitored" command
+# -----------------------------------------------------------------------------------
+def get_monitored_info(topic):
+
+    json_struct = None
+    al_cmd = "get monitored %s" % topic
+    monitored_info, error_msg = exec_al_cmd(al_cmd)
+    if error_msg:
+        flash("AnyLog: Network command: '%s' returned error:  %s" % (al_cmd, error_msg), category='error')
+    elif len(monitored_info):
+        try:
+            json_struct = eval(monitored_info)
+        except:
+            flash("AnyLog: Error in monitored data for topic %s" % topic, category='error')
+
+
+    return json_struct
+
+# -----------------------------------------------------------------------------------
+# Monitor a topic
+# -----------------------------------------------------------------------------------
+@app.route('/monitor_topic', methods = ['GET'])
+@app.route('/monitor_topic/<string:topic>', methods = ['GET'])
+def monitor_topic( topic = "" ):
+
+
+    user_name = get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # Redo the login - need a user name
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    gui_sub_tree = gui_view.get_sub_tree(["gui","children","Monitor","Views", topic])
+
+    json_struct = get_monitored_info(topic)
+
+    select_info = get_select_menu()
+    select_info['title'] = "Monitored %s" % topic
+    select_info['topic'] = topic
+
+    if json_struct:
+        # Transform the JSON to a table
+        table_data = {}
+        table_rows = []
+        column_names_list = []
+        totals = None
+        alerts = None
+        if gui_sub_tree:
+            if 'header' in gui_sub_tree:
+                # User specified (in config file) columns to display
+                column_names_list = gui_sub_tree['header']
+                select_info['header'] = column_names_list
+            if 'totals' in gui_sub_tree:
+                totals = gui_sub_tree['totals']
+            if 'alerts' in gui_sub_tree:
+                alerts = gui_sub_tree['alerts']           # Test values as arrive
+
+        if not len(column_names_list):
+            # Get the columns names from the JSON data
+            column_names_list.append("Node")
+            # take all columns from the json
+            for node_name, node_info in  json_struct.items():
+                # Key is the node name and value is the second tier dictionary with the info
+                for attr_name in node_info:
+                    # The keys are the column names
+                    if attr_name not in column_names_list:
+                        column_names_list.append(attr_name)
+
+        select_info['header'] = column_names_list
+
+        if totals:
+            totals_row = []
+            # Set an entry for each total
+            for column_name in  column_names_list:
+                if column_name in totals:
+                    totals_row.append((0, False))        # Accumulates the total
+                else:
+                    totals_row.append(("", False))       # Print empty cell
+
+
+        # Get the columns values
+        for node_name, node_info in  json_struct.items():
+            # Key is the node name and value is the second tier dictionary with the info
+            row_info = []
+            if column_names_list[0] == "Node":
+                row_info.append((node_name, False))      # First column is node name
+            for index, column_name in enumerate(column_names_list[1:]):
+                if column_name in node_info:
+                    column_value = node_info[column_name]
+
+                    if totals:
+                        if totals_row[index + 1][0] != "":
+                            try:
+                                if column_value.is_digit():
+                                    totals_row[index + 1][0] += int(column_value)
+                                else:
+                                    totals_row[index + 1][0] += float(column_value)
+                            except:
+                                pass
+
+                    alert_val = False
+                    if alerts:
+                        # if column_name in alerts --> process alert to change display color
+                        if column_name in alerts:
+                            alert_code = alerts[column_name].replace("value", str(column_value))
+                            try:
+                                alert_val = eval(alert_code)
+                            except Exception as err_msg:
+                                flash("AnyLog: Error in alerts for topic '%s' evaluating: '%s' with error: %s" % (topic, alert_code, err_msg), category='error')
+                            else:
+                                if alert_val:
+                                    # Change color of display
+                                    pass
+
+                    row_info.append((column_value, alert_val))
+
+                else:
+                    row_info.append("", False)
+
+            table_rows.append(row_info)
+
+        if totals:
+            table_rows.append(totals_row)
+
+        select_info['rows'] = table_rows
+
+    return render_template('monitor_topic.html', **select_info)
+
+# -----------------------------------------------------------------------------------
+# Set the location key on the parent node
+# -----------------------------------------------------------------------------------
+def set_location_on_parent( location_key ):
+
+    index = location_key.rfind('@')
+    if index != -1:
+        new_key = location_key[:index]
+    else:
+        new_key = ""
+    return new_key
+
+# -----------------------------------------------------------------------------------
+# Add reply from executing a command
+# -----------------------------------------------------------------------------------
+def add_command_reply(current_node, al_cmd):
+    # Get from the parent the IP and port and issue the query
+    parent_node = current_node.get_parent()
+    parent_details = parent_node.details
+    error_msg = None
+    if parent_details:
+        if "ip" in parent_details.keys and "rest_port" in parent_details.keys:
+            index = parent_details.keys.index("ip")
+            ip = parent_details.values[index]
+            index = parent_details.keys.index("rest_port")
+            port = parent_details.values[index]
+            target_node = "http://%s:%s" % (ip, str(port))
+
+            data, error_msg = exec_al_cmd( al_cmd, dest_node = target_node)
+            if not error_msg and len(data):
+                json_info, table_info, data_info, error_msg = format_message_reply(data)
+                if not error_msg:
+                    if json_info:
+                        # Add a subtree with the JSON message
+                        current_node.add_json_struct(json_info)
+                    elif table_info:
+                        # Add table
+                        current_node.add_table(table_info)
+                    else:
+                        # Add text
+                        current_node.add_data(data_info)
+        else:
+            error_msg = "IP and Port information for node: '%s' are not available" % parent_node.name
+
+    return error_msg
+
+# -----------------------------------------------------------------------------------
+# Based on the message reply - organize as a table or as an attrubute values list
+# -----------------------------------------------------------------------------------
+def format_message_reply(msg_text):
+    '''
+    Return 4 values depending on the type of message:
+    policy
+    table_info (header, title and rows)
+    Text List (entries are attr - val pairs)
+    '''
+
+    # If the message is a dictionary or a list - return the dictionary or the list
+
+    policy = None
+    error_msg = None
+    if msg_text[0] == '{' and msg_text[-1] == '}':
+        policy, error_msg = json_api.string_to_json(msg_text)
+
+    elif msg_text[0] == '[' and msg_text[-1] == ']':
+        policy, error_msg = json_api.string_to_list(msg_text)
+
+    if policy or error_msg:
+        return [policy, None, None, error_msg]  # return the dictionary or the list
+
+
+    # Make a list of strings to print
+    data = msg_text.replace('\r', '')
+    text_list = data.split('\n')
+
+
+    # Test id the returned message is formatted as a table
+    table_data = {}
+    is_table = False
+    for index, entry in enumerate(text_list):
+        if entry and index:
+            if entry[0] == '-' and entry[-1] == '|':
+                # Identified a table
+                is_table = True
+                columns_list = entry.split('|')
+                columns_size = []
+                for column in columns_list:
+                    if len(column):
+                        columns_size.append(len(column))     # An array with the size of each column
+                header = []
+                offset = 0
+                for column_id, size in enumerate(columns_size):
+                    header.append(text_list[index - 1][offset:offset + size])
+                    offset += (size + 1)                # Add the field size and the separator (|)
+
+                table_data['header'] = header
+                if index > 1 and len(text_list[index -2]):
+                    table_data['table_title'] = text_list[index -2]         # Get the title if available
+                break
+        if index >= 5:
+            break  # not a table
+
+    if is_table:
+        # a Table setup and print
+        table_rows = []
+        for y in range(index + 1, len(text_list)): # Skip the dashed separator to the column titles
+            row = text_list[y]
+
+            columns = []
+            offset = 0
+            for column_id, size in enumerate(columns_size):
+                columns.append(row[offset:offset + size])
+                offset += (size + 1)  # Add the field size and the separator (|)
+
+            table_rows.append(columns)
+
+        table_data['rows'] = table_rows
+        return [None, table_data, None, None]
+
+    # Print Text
+
+    data_list = []     # Every entry holds type of text ("text" or "Url) and the text string
+
+    for entry in text_list:
+        # Setup URL Link (reply to help command + a link to the help page)
+        if entry[:6] == "Link: ":
+            index = entry.rfind('#')  # try to find name of help section
+            if index != -1:
+                section = entry[index + 1:].replace('-', ' ')
+            else:
+                section = ""
+            data_list.append(("url", entry[6:], section))
+        else:
+            # Split text to attribiute value using colon
+            if entry:
+                key_val = entry.split(':', 1)
+                key_val.insert(0, "text")
+
+                data_list.append(key_val)
+
+    return [None, None, data_list, None]
+
+# -----------------------------------------------------------------------------------
+# Add policy to the GUI
+# -----------------------------------------------------------------------------------
+def add_policy(current_node, policy_id):
+    if current_node.is_option_node():
+        # move to the data node
+        policy_node = current_node.get_parent()
+    else:
+        policy_node = current_node
+    if policy_node.is_with_json():
+        # Policy exists with this node
+        policy_node.reset_json_struct()
+    else:
+        # Read and add new policy
+        retrieved_policy = get_json_policy(policy_id)
+        if retrieved_policy and isinstance(retrieved_policy, list) and len(retrieved_policy) == 1:
+            policy_node.add_json_struct(retrieved_policy[0])
+
+
+# -----------------------------------------------------------------------------------
+# Navigate in the reports partitioned by folders
+# -----------------------------------------------------------------------------------
+def navigate_in_reports(user_name, location_key, folder_added, folder_renamed, folder_deleted, dashboard_deleted):
+
+    root_nav = path_stat.get_element(user_name, "root_nav")
+
+    if request.query_string:
+        query_string = request.query_string.decode('ascii')
+        # A Panel was selected - view the panel
+        if query_string[:7] == "report=":
+            select_info = get_select_menu()
+            select_info['title'] = "Current Status"
+
+            compressed_urls = query_string[7:]
+            url_list = uncompress_urls(compressed_urls) # Uncompress the string to the list of panels
+
+            select_info["url_list"] = url_list
+
+            return render_template('output_frame.html', **select_info)
+
+    select_info = get_select_menu(selection=location_key)
+
+    selection_list = location_key.replace('+', '@').split('@')
+
+    # Navigate in the tree to find location of Node
+    current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
+    if folder_added or folder_renamed or folder_deleted or dashboard_deleted:
+        # If adding a folder or renaming - reset children and read again the children folders - with the new folder
+        current_node.reset_children()
+    elif current_node.is_with_children():
+        current_node.reset_children()  # Delete children from older navigation
+        return call_navigation_page(user_name, select_info, location_key, current_node)
+
+    platform, url, token, folder_name = get_report_info(user_name, location_key)
+
+    current_node.add_child(name=location_key + '@' + "Add_Folder", option="New Folder", path=location_key + '@' + "Add_Folder")
+
+    # Get the child folders
+    child_folders, err_msg = visualize.get_child_folders(platform, url, token, folder_name)     # pass location_key after the prefix "Reports"
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(url_for('metadata', selection=location_key))
+
+    for child in child_folders:
+        # Add folders to tree
+        current_node.add_child(name=child, path=location_key + '@' + child, folder=True)
+
+    current_node.add_child(name=location_key + '@' + "Add_Report", option="New Report", path=location_key + '@' + "Add_Report")
+
+    # Get the reports in the folder
+    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, folder_name)
+    if err_msg:
+        flash(err_msg, category='error')
+        return redirect(url_for('metadata', selection=location_key))
+
+    # Update the tree
+    if panels_urls:
+        for name, urls_list in panels_urls.items():
+            key = location_key + '@' + name
+            urls_string = compress_urls(urls_list)    # Make a string representing the list of urls (each url represents a panel)
+            params = {
+                'name': name,
+                'key': key,
+                'path': key,
+                'report' : True,
+                'url' : urls_string,     # Save a compressed strung representing a list of URLS
+            }
+            current_node.add_child( **params )
+
+    return call_navigation_page(user_name, select_info, location_key, current_node)
+# -----------------------------------------------------------------------------------
+# Represent a list of urls as a single string:
+# The process:
+# Sort the given set of N strings.
+# Compare the first and last string in the sorted array of strings.
+# The string with prefix characters matching in the first and last string will be the answer.
+# -----------------------------------------------------------------------------------
+def compress_urls(urls_list):
+
+    counter = len(urls_list)
+
+    if counter == 1:
+        compressed_string = "1." + urls_list[0]     # Only one string
+    else:
+        urls_list.sort()
+        first_url =  urls_list[0]
+        last_url = urls_list[counter -1]
+
+        # get number of bytes to compare
+        max_bytes = len(first_url)
+        if len(last_url) < max_bytes:
+            max_bytes = len(last_url)
+
+        for bytes_eauql in range (max_bytes):
+            if first_url[bytes_eauql] != last_url[bytes_eauql]:
+                break
+
+        compressed_info = "%u.%u." % (counter, bytes_eauql)  # The number of URLS + the size of common prefix
+        compressed_data = first_url[:bytes_eauql]      # The size of the prefix
+
+        for entry in urls_list:
+            len_delta = len(entry) - bytes_eauql    # The difference that is needed to complete the URL
+            compressed_info += "%u." % len_delta    # Add the size to complete the url
+            compressed_data += entry[-len_delta:] # The url delta (suffix)
+
+        compressed_string = compressed_info + compressed_data
+
+    return compressed_string
+# -----------------------------------------------------------------------------------
+# Transformed a compressed string to a list of URLS
+# -----------------------------------------------------------------------------------
+def uncompress_urls(compressed_string):
+    urls_list = []
+    index = compressed_string.find('.')     # Get the number of urls
+    if index > 0:
+        counter = int(compressed_string[:index])         # the number of urls
+        if counter == 1:
+            urls_list.append(compressed_string[index + 1:])
+        else:
+            list_entries = compressed_string[index + 1:].split('.', counter + 1)
+            bytes_eauql = int(list_entries[0])
+            shared_prefix = list_entries[-1][:bytes_eauql]
+            offset = bytes_eauql
+
+            for i in range (counter):
+                suffix_length = int(list_entries[1 + i])
+                url_string = shared_prefix + list_entries[-1][offset:offset+suffix_length]
+                offset += suffix_length
+
+                urls_list.append(url_string)
+
+    return urls_list
+
+# -----------------------------------------------------------------------------------
+# Return the report platform and folder
+# -----------------------------------------------------------------------------------
+def get_report_info(user_name, location_key):
+    gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    root_gui, gui_sub_tree = gui_view.get_subtree(
+        gui_key)  # Get the subtree representing the location on the config file
+
+    platform = root_gui["visualization"]  # Grafana, Power BI etc.
+
+    network_name = gui_view.get_base_info("name")
+    root_folder = "AnyLog_" + network_name
+
+    if location_key == "Reports":
+        folder_name = root_folder
+    else:
+        folder_name = root_folder + location_key[7:]
+
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree[platform]['url']
+    token = platforms_tree[platform]['token']
+
+    return [platform, url, token, folder_name]
 
 # -----------------------------------------------------------------------------------
 # Call the navigation page - metadata.html
@@ -927,15 +2068,37 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
     nav_tree.setup_print_list(root_nav, print_list)
 
     if current_node:
+
+        gui_view = path_stat.get_element(user_name, "gui_view")
+        gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
+        root_gui, gui_sub_tree = gui_view.get_subtree(gui_key)  # Get the subtree representing the location on the config file
+
+        if gui_sub_tree and 'submit' in gui_sub_tree:
+            # add submit buttons
+            if current_node.is_with_children():
+                current_node.add_submit_buttons(gui_sub_tree['submit'])
+            else:
+                current_node.reset_submit_buttons() # No need in submit buttons with no children
+
         # Place a flag to indicate the position n the page  when page is loaded
         # Reset is done in nav_tree.setup_print_list
         current_node.set_scroll_location()
+
+    else:
+        # First page - nothing selected - show the Network Map
+        gui_view = path_stat.get_element(user_name, "gui_view")
+        map_url = gui_view.get_base_info("map")
+        if map_url:
+            select_info['map_url'] = map_url
+
+
 
     select_info['selection'] = location_key
 
     select_info['nodes_list'] = print_list
 
     select_info['title'] = "AnyLog Network"
+
 
     return render_template('metadata.html', **select_info)
 
@@ -949,21 +2112,19 @@ def call_navigation_page(user_name, select_info, location_key, current_node):
 @app.route('/tree')
 @app.route('/tree/<string:selection>')
 def tree( selection = "" ):
-    global query_node_
-    global user_connect_
-    global gui_view_
 
     # Need to login before navigating
-    if not user_connect_:
+    if not get_user_by_session():
         return redirect(('/login'))  # start with Login  if not yet provided
 
     select_info = get_select_menu(selection=selection)
 
     # Make title from the path
     title = ""
-    parent_menu = select_info["parent_gui"]
-    for parent in parent_menu:
-        title += " [%s] " % parent[0]
+    if "parent_gui" in select_info:
+        parent_menu = select_info["parent_gui"]
+        for parent in parent_menu:
+            title += " [%s] " % parent[0]
     select_info['title'] = title
 
     reply = get_path_info(selection, select_info, None)
@@ -1012,16 +2173,16 @@ def get_path_info(selection, select_info, current_node):
             table_rows:         A list with the data rows of the last level
     '''
 
-    global user_connect_
-    global gui_view_
 
     level = selection.count('@') + 1
+    user_name = session["username"]
+    gui_view = path_stat.get_element(user_name, "gui_view")
 
     # Get the location in the Config file to set the user navigation links
-    gui_sub_tree = gui_view_.get_subtree(selection)
+    root_gui, gui_sub_tree = gui_view.get_subtree(selection)
 
     command = app_view.get_tree_entree(gui_sub_tree, "query")  # get the command from the Config file
-    user_name = session["username"]
+
     if current_node:
         # Use tree Navigation
         al_command = nav_tree.update_command(current_node, selection, command)  # Update the command with the parent info
@@ -1030,34 +2191,36 @@ def get_path_info(selection, select_info, current_node):
         al_command = path_stat.update_command(user_name, selection, command)  # Update the command with the parent info
 
     if not al_command:
-        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (str(selection)))
+        flash("AnyLog: Missing AnyLog Command in Config file: '%s' with selection: '%s'" % (str(selection)), category='error')
         return None  # Show all user select options
 
     # Get the columns names of the table to show
     list_columns = app_view.get_tree_entree(gui_sub_tree, "table_title")
     if not list_columns:
-        flash("AnyLog: Missing column names in config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)))
+        flash("AnyLog: Missing column names in config file: '%s' with selection: '%s'" % (Config.GUI_VIEW, str(selection)), category='error')
         return None
 
     # Get the keys to pull data from the JSON reply
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     if not list_keys:
-        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level))
+        flash("AnyLog: Missing 'list_keys' in '%s' Config file at lavel %u" % (Config.GUI_VIEW, level), category='error')
         return None # Show all user select options
-
-    target_node = get_target_node()
 
     # Run the query against the Query Node
 
     data, error_msg = exec_al_cmd( al_command )
+
     if error_msg:
         flash(error_msg, category='error')
+        return None
+    if not data:
+        flash('AnyLog: Empty data set returned with command: %s' % al_command, category='error')
         return None
 
     data_list = app_view.str_to_list(data)
 
     if not data_list:
-        flash('AnyLog: Error in data format returned from node', category='error')
+        flash('AnyLog: Error in data format returned from node with command: %s' % al_command, category='error')
         return None
     if not len(data_list):
         flash('AnyLog: AnyLog node did not return data using command: \'%s\'' % al_command, category='error')
@@ -1071,7 +2234,7 @@ def get_path_info(selection, select_info, current_node):
     else:
         # The table info is pulled from the source JSON policy
         cmd_list = al_command.split(' ', 3)
-        if len(cmd_list) == 4 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
+        if len(cmd_list) >= 3 and cmd_list[0] == "blockchain" and cmd_list[1] == "get":
             policy_type = cmd_list[2]
         else:
             policy_type = None
@@ -1123,11 +2286,8 @@ def selected( selection = "" ):
     '''
     Called from selection_table.html
     '''
-    global query_node_
-    global user_connect_
-    global gui_view_
 
-    if not user_connect_:
+    if not get_user_by_session():
         return redirect(('/login'))        # start with Login  if not yet provided
 
     form_info = request.form
@@ -1234,7 +2394,8 @@ def status_view(selection, form_info,  policies):
         flash('AnyLog: Missing metadata information in policies', category='error')
         return redirect(url_for('tree', selection=selection))
 
-    platforms_tree = gui_view_.get_base_info("visualization")
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    platforms_tree = gui_view.get_base_info("visualization")
     if not platforms_tree or not "Grafana" in platforms_tree:
         flash('AnyLog: Missing Grafana definitions in config file', category='error')
         return redirect(url_for('tree', selection=selection))
@@ -1250,7 +2411,7 @@ def status_view(selection, form_info,  policies):
     platform_info['from_date'] = "-2M"
     platform_info['to_date'] = "now"
 
-    url_list, err_msg = visualize.status_report("Grafana", **platform_info)
+    url_list, err_msg = visualize.new_report("Grafana", **platform_info)
 
     if err_msg:
         return err_msg
@@ -1272,6 +2433,11 @@ def get_json_policy( id ):
         flash('AnyLog: Error in Policy ID', category='error')
         return redirect(('/index'))        # Select a different path
 
+    if id.find(' ') != -1:
+        if id[0] != "\"":
+            id = "\"" + id
+        if id[-1] != "\"":
+            id = id + "\""
     al_cmd = "blockchain get * where id = %s" % id
     data, error_msg = exec_al_cmd( al_cmd )
 
@@ -1298,13 +2464,13 @@ def path_selection(parent_menu, policy_id, data):
     data - the policy JSON data
     '''
 
-    if not 'username' in session:
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # Redo the login - need a user name
 
-    user_name = session["username"]
-
+    gui_view = path_stat.get_element(user_name, "gui_view")
     # pull the keys that are used to print a summary of the data instance
-    gui_sub_tree = gui_view_.get_subtree(parent_menu[-1][1][6:])
+    root_gui, gui_sub_tree = gui_view.get_subtree(parent_menu[-1][1][6:])
     list_keys = app_view.get_tree_entree(gui_sub_tree, "json_keys")
     table_title = app_view.get_tree_entree(gui_sub_tree, "table_title")
 
@@ -1313,13 +2479,17 @@ def path_selection(parent_menu, policy_id, data):
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
 # -----------------------------------------------------------------------------------
-def exec_al_cmd( al_cmd ):
+def exec_al_cmd( al_cmd, dest_node = None):
     '''
     Run the query against the Query Node
     '''
 
-    target_node = get_target_node()
+    user_name = session["username"]
 
+    if dest_node:
+        target_node = dest_node
+    else:
+        target_node = path_stat.get_element(user_name, "target_node")
 
     al_headers = {
         'User-Agent' : 'AnyLog/1.23',
@@ -1331,9 +2501,11 @@ def exec_al_cmd( al_cmd ):
     if response and response.status_code == 200:
         data = response.text
     else:
+        data = None
         if not error_msg:
             # No data reply
-            error_msg = "AnyLog: REST command %s returned error code %u" % response.status_code
+            error_msg = "AnyLog: REST command \"%s\" returned error code %u" % (al_cmd, response.status_code)
+
     return [data, error_msg]
 
 # -----------------------------------------------------------------------------------
@@ -1344,52 +2516,67 @@ def get_select_menu(selection = "", caller = ""):
 
     select_info = {}
 
-    if not gui_view_.is_with_config():
-        # Faild to recognize the JSON Config File
-        flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW)
-        if caller == "configure" or caller == "login":
-            # The config file is not available - ignore get_select_menu
-            return select_info  # return empty dictionary
+    gui_view = get_gui_view()
+    if gui_view:
 
-        form = ConfigForm()
-        return render_template('configure.html', title = 'Configure Network Connection', form = form)
+        if not gui_view.is_with_config():
+            # Faild to recognize the JSON Config File
+            flash('AnyLog: Failed to load Config File or wrong file structure: %s' % Config.GUI_VIEW, category='error')
+            if caller == "configure" or caller == "login":
+                # The config file is not available - ignore get_select_menu
+                return select_info  # return empty dictionary
 
-    company_name = gui_view_.get_base_info("name")                 # The user name
-    user_menu = gui_view_.get_base_info("url_pages")           # These are specific web pages to the user
-    parent_menu, children_menu = gui_view_.get_dynamic_menu(selection)     # web pages based on the navigation
+            form = ConfigForm()
+            return render_template('configure.html', title = 'Configure Network Connection', form = form)
 
-    # get the loggin name a name from the conf file
-    if 'username' in session:
-        user_name = session['username']
-    else:
-        user_name = gui_view_.get_base_info("name") or "AnyLog"
+        company_name = gui_view.get_base_info("name")                 # The user name
+        user_menu = gui_view.get_base_info("url_pages")           # These are specific web pages to the user
+        parent_menu, children_menu = gui_view.get_dynamic_menu(selection)     # web pages based on the navigation
 
-    report_name = path_stat.get_report_selected(user_name)
+        if company_name:
+            select_info['company_name'] = company_name
+        if user_menu and len(user_menu):
+            select_info['user_gui'] = user_menu
+        if parent_menu and len(parent_menu):
+            select_info['parent_gui'] = parent_menu
+        if children_menu and len(children_menu):
+            select_info['children_gui'] = children_menu
 
-    if company_name:
-        select_info['company_name'] =company_name
-    if user_menu and len(user_menu):
-        select_info['user_gui'] = user_menu
-    if parent_menu and len(parent_menu):
-        select_info['parent_gui'] = parent_menu
-    if children_menu and len(children_menu):
-        select_info['children_gui'] = children_menu
-    if report_name:
-        select_info['report_name'] = report_name
-
+        # get the loggin name a name from the conf file
+        if 'username' in session:
+            user_name = session['username']
+        else:
+            user_name = gui_view.get_base_info("name") or "AnyLog"
+        select_info['report_name'] = path_stat.get_report_selected(user_name)
 
     return select_info
-# -----------------------------------------------------------------------------------
-# Get the target node from the Config Form or the Config File
-# -----------------------------------------------------------------------------------
-def get_target_node():
 
-    target_node = query_node_ or gui_view_.get_base_info("query_node")
-    if not target_node:
-        flash("AnyLog: Missing query node connection info")
-        return redirect(('/configure'))     # Get the query node info
-    return target_node
 
+# -----------------------------------------------------------------------------------
+# Manage the reports
+# -----------------------------------------------------------------------------------
+@app.route('/manage_reports/', methods={'GET','POST'})
+def manage_reports():
+
+    user_name = get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))  # start with Login  if not yet provided
+
+    select_info = get_select_menu()
+    select_info['title'] = "Manage Reports"
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    platforms_tree = gui_view.get_base_info("visualization")
+    url = platforms_tree["Grafana"]['url']
+    token = platforms_tree["Grafana"]['token']
+    network_name = gui_view.get_network_name()
+
+    panels_urls, err_msg = visualize.get_reports("Grafana", url, token, "AnyLog_" + network_name)   # Get the list of reports associated with
+
+    if not err_msg:
+        select_info['panels_urls'] = panels_urls
+
+    return render_template('manage_reports.html', **select_info)
 # -----------------------------------------------------------------------------------
 # Configure the dynamic reports
 # -----------------------------------------------------------------------------------
@@ -1398,10 +2585,10 @@ def configure_reports():
     '''
     View the report being used
     '''
-    if not user_connect_:
-        return redirect(('/login'))        # start with Login  if not yet provided
 
-    user_name = session['username']
+    user_name =  get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # start with Login  if not yet provided
 
     form = ConfDynamicReport()
 
@@ -1431,19 +2618,22 @@ def configure_reports():
 def policies(policy_name = ""):
    
 
-    if not user_connect_:
+    user_name = get_user_by_session()
+    if not user_name:
         return redirect(('/login'))        # start with Login  if not yet provided
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
 
     select_info = get_select_menu()
     select_info['title'] = "Network Policies"
-    select_info['policies'] = gui_view_.get_policies_list()  # Collect the names of the policies
+    select_info['policies'] = gui_view.get_policies_list()  # Collect the names of the policies
 
     if policy_name:
         # A policy was selected
-        policy = gui_view_.get_policy_info(policy_name)
+        policy = gui_view.get_policy_info(policy_name)
         if len(request.form):
             # send policy from Form
-            target_node = get_target_node()
+            target_node = path_stat.get_element(user_name,"target_node")
 
             err_msg = anylog_api.deliver_policy(target_node, policy, request.form)
             if err_msg:
@@ -1451,7 +2641,7 @@ def policies(policy_name = ""):
 
         # Goto the same form again to add a new policy
         select_info['policy_name'] = policy_name
-        policy = gui_view_.get_policy_info(policy_name)
+        policy = gui_view.get_policy_info(policy_name)
         if policy:
             select_info['policy_name'] = policy_name
             policy_attr, err_msg = app_view.set_policy_form(policy_name, policy)

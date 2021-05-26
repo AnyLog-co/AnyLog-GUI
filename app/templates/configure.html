@@ -4,48 +4,35 @@
 
 
 {% block content %}
-<form action="{{ url_for('configure') }}" method="post">
 
 </form>
-    <h1>Configure</h1>
-    
+        <form action="{{url_for('configure')}}" method="POST">
+
         <p>
-            {{ form.company.label }}<br>
-            {{ form.company(size = 32) }}<br>
-            {% for error in form.company.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
+            {{ form.conf_file_name.label }}<br>
+            {{ form.conf_file_name(size = 4) }}<br>
         </p>
-       <p>
+
+        <p>
             {{ form.node_ip.label }}<br>
-            {{ form.node_ip(size = 32) }}<br>
+            {{ form.node_ip(size = 32, value= target_ip) }}<br>
+
             {% for error in form.node_ip.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
             {{ form.node_port.label }}<br>
-            {{ form.node_port(size = 4) }}<br>
+            {{ form.node_port(size = 4, value= target_port) }}<br>
+
             {% for error in form.node_port.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
-        <p>
-            {{ form.reports_ip.label }}<br>
-            {{ form.reports_ip(size = 32) }}<br>
-            {% for error in form.reports_ip.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.reports_port.label }}<br>
-            {{ form.reports_port(size = 4) }}<br>
-            {% for error in form.reports_port.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
 
-        <p>{{ form.remember_me() }} {{form.remember_me.label}}</p>
+        <br>
+
         <p>{{ form.submit() }}</p>
-    </form>
+
+</form>
 {% endblock %}

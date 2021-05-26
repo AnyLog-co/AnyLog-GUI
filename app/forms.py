@@ -13,7 +13,7 @@ such non-permitted act to AnyLog, Inc.
 # https://exploreflask.com/en/latest/forms.html
 import getpass
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, IntegerField, PasswordField, BooleanField, SubmitField, SelectField, FileField
 from wtforms.validators import DataRequired, Optional, ValidationError
 
 class LoginForm(FlaskForm):
@@ -23,14 +23,11 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class ConfigForm(FlaskForm):
-    company = StringField('Company', validators=[DataRequired()])
-    node_ip = StringField('Node IP', validators=[DataRequired()])
-    node_port = IntegerField('Node Port', validators=[DataRequired()])
-    reports_ip = StringField('Reports IP', validators=[DataRequired()])
-    reports_port = IntegerField('Reports Port', validators=[DataRequired()])
 
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Save')
+    conf_file_name = SelectField('Select File', default="")
+    node_ip = StringField('Node IP')
+    node_port = IntegerField('Node Port')
+    submit = SubmitField('Apply')
 
 class CommandsForm(FlaskForm):
 
@@ -38,6 +35,45 @@ class CommandsForm(FlaskForm):
     destination = StringField('Destination (IP:Port)', validators=[])
   
     submit = SubmitField('Submit')
+
+
+# Time configuration for a panel or a report
+class TimeConfig():
+    def __init__(self, time_options, text_selected, time_selected, default_from, default_to):
+        '''
+        time_options - the list of predefined time range
+        text_selected - The text selected from the list
+        time_selected - the key of the selected text
+        default_from - start date and time
+        default_to - end date and time
+        '''
+        self.time_options = time_options
+        self.text_selected = text_selected  # Last 2 months
+        self.time_selected = time_selected # i.e. now-2M
+        self.default_from = default_from
+        self.default_to = default_to
+
+# Type of queries for the panel
+class PanelConfig():
+
+    def __init__(self, name, panel_type, options, selected):
+        self.name = name        # The name of the panel on the config page (not the panel name when report is requested)
+        self.panel_type = panel_type      # Graph, Gauge
+        self.chek_box_options = options             # a list - Each entry represents a checkbox option
+        self.chek_box_selected = selected           # a list - Each entry represent a selected option
+        self.time_config = None      # Time selection for the panel (if different than dashboard)
+
+
+class DashboardConfig():
+    def __init__(self):
+        self.panels = []        # List of panels
+        self.time_config = None  # Time selection for the dashboard
+
+    def add_panel(self, new_panel):
+        self.panels.append(new_panel)
+    def set_time(self, time_config):
+        self.time_config = time_config  # Time selection for the dashboard
+
 
 
 class ConfDynamicReport(FlaskForm):

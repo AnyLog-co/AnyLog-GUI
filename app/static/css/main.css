@@ -3,9 +3,14 @@
     float:right;
     margin-left:20px;
     margin-right:20px;
-    height: 60px;
-    width: 60px;
+    height: 40px;
+    width: 40px;
+    cursor: pointer;
 
+}
+
+.nodes-map{
+    margin-right: 40px;
 }
 
 table, th, td {
@@ -20,10 +25,7 @@ tr{
       background-color: rgb(173,205,205);
       color:black;
 }
-tr:first-child{
-    background-color: rgb(0,115,153);
-    color: white;
-}
+
 
 th {
 	background-color: gray;
@@ -59,6 +61,15 @@ h1 {
     color:cornflowerblue;
     padding: 10px;
 
+}
+
+.message-table tr:first-child{
+    background-color:whitesmoke;
+    color:green;
+}
+.message-table tr{
+    background-color:whitesmoke;
+    color:darkslateblue;
 }
 
 .error-table tr:first-child{
@@ -149,6 +160,58 @@ ul.tree li:last-child:before {
     height: 20px;
 }
 
+.button_submit {
+    background-color: rgba(17, 8, 24, 0.49); /* Green */
+    border-color: #3e3737;
+    border-width: 2px;
+    color: whitesmoke;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    width: 50px;
+    height: 20px;
+}
+
+.button_update {
+    background-color: #96ac72;
+    border-color: #3e3737;
+    border-width: 1px;
+    color: whitesmoke;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    width: 50px;
+    height: 20px;
+}
+
+.button_rename {
+    background-color: #6a8993;
+    border-color: #3e3737;
+    border-width: 1px;
+    color: whitesmoke;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    width: 60px;
+    height: 20px;
+}
+
+.button_delete {
+    background-color: #ac728b;
+    border-color: #3e3737;
+    border-width: 1px;
+    color: whitesmoke;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    width: 50px;
+    height: 20px;
+}
+
 
 .boxed_cmd {
     border: 15px solid lightsteelblue;
@@ -158,6 +221,25 @@ ul.tree li:last-child:before {
     margin: 20px;
 }
 
+.boxed_login{
+
+    width: 50%;
+    padding: 20px;
+    background: #f2f2f2;
+    float: left;
+    box-sizing: border-box;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* change the center from the upper left corner to middle of box */
+    transform: translate(-50%, -50%);
+
+}
+
+
+.table-cmd {
+    display: inline-table
+}
 
 .table-cmd tr:first-child{
     background-color:cadetblue;
@@ -166,4 +248,15 @@ ul.tree li:last-child:before {
 .table-cmd tr{
     background-color:lightgray;
     color:black;
+}
+
+
+.monitor-box {
+
+    background-color: #282828;
+    border: 2px solid rgba(238, 233, 229, 0.03);
+    border-radius: .5em;
+    padding: 20px 40px;
+    width: fit-content;
+    font-size: 12px;
 }

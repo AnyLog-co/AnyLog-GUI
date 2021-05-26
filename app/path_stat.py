@@ -48,8 +48,10 @@ def set_new_user(user_name):
     '''
     global active_state_
 
-    active_state_[user_name] = { 
+    active_state_[user_name] = {
+        "lists" : {},           # Dictionaries of nodes maintained as f (user) and a unique name
         "reports" : {
+                        "edge_nodes" : {}         # a dictionary of edge nodes selected in the tree navigation
                     },
         "selected"  :   "My_Report",
         "path" :    [],         # navigation as f(user)
@@ -58,6 +60,46 @@ def set_new_user(user_name):
     }
     set_new_state(user_name, "My_Report", True)
 
+# -----------------------------------------------------------------------------------
+# Test for existance of a policy in a list of nodes selected to be monitored
+# -----------------------------------------------------------------------------------
+def is_in_info_list(user_name, list_name, policy_id):
+    '''
+    Selected policies are maintained as f(user)
+    test if the policy exists in the list of policies
+
+    param: list_name - an ID of the list. i.e. "monitored"
+    '''
+    user_info = active_state_[user_name]["lists"]
+    if not list_name in user_info:
+        return False
+    return policy_id in user_info[list_name]
+
+# -----------------------------------------------------------------------------------
+# Updates a list of nodes selected to be monitored
+# -----------------------------------------------------------------------------------
+def add_to_info_list(user_name, list_name, policy_id, info):
+    '''
+     Selected policies are maintained as f(user)
+     Add a policy to the list
+
+     param: list_name - an ID of the list. i.e. "monitored"
+     '''
+    user_info = active_state_[user_name]["lists"]
+    if not list_name in user_info:
+        user_info[list_name] = {}
+
+    user_info[list_name][policy_id] = info
+# -----------------------------------------------------------------------------------
+# Get a list of nodes selected to be monitored
+# -----------------------------------------------------------------------------------
+def get_info_list(user_name, list_name):
+    user_info = active_state_[user_name]["lists"]
+    if not list_name in user_info:
+        info_list = None
+    else:
+        info_list = user_info[list_name]
+    return info_list
 # -----------------------------------------------------------------------------------
 # is user connected
 # -----------------------------------------------------------------------------------
@@ -90,9 +132,13 @@ def get_element(user_name, element_key):
     '''
     keep info as f(user + key)
     '''
-    user_info = active_state_[user_name]
-    if element_key in user_info:
-        element = user_info[element_key]
+
+    if user_name in active_state_:
+        user_info = active_state_[user_name]
+        if element_key in user_info:
+            element = user_info[element_key]
+        else:
+            element = None
     else:
         element = None
     return element
@@ -206,6 +252,55 @@ def get_path_overview(user_name, level, parent_menu):
                     path_steps.append( (step_name, step_title, step_keys, [columns_val]) )
 
     return path_steps
+
+# -----------------------------------------------------------------------------------
+# Return the list of nodes that are candidate to a report
+# -----------------------------------------------------------------------------------
+def get_selected_nodes(user_name:str):
+    '''
+    Return the nodes that were selected by the user as an option to a report
+    '''
+    return active_state_[user_name]['reports']['edge_nodes']
+
+# -----------------------------------------------------------------------------------
+# Test if the policy is in the selected nodes
+# -----------------------------------------------------------------------------------
+def is_node_selected(user_name:str, policy_id:str):
+    return policy_id in active_state_[user_name]['reports']['edge_nodes']
+
+# -----------------------------------------------------------------------------------
+#
+# Return a structure representing each node
+# Node info includes:
+#                     node_info["dbms_name"] = db_name
+#                     node_info["table_name"] = tb_name
+#                     node_info["policy"] = policy
+#
+# -----------------------------------------------------------------------------------
+def get_table_with_selected_nodes(user_name, policy_keys, add_dbms_name, add_table_name):
+    selected_nodes = get_selected_nodes(user_name)
+    table_info = []
+    for node_info in selected_nodes.values():
+        row_info = []
+        policy = node_info['policy']
+        policy_type = get_policy_type(policy)
+        for key in policy_keys:
+            if key in policy[policy_type]:
+                value = policy[policy_type][key]
+            else:
+                value = None
+            row_info.append(value)         # Add the value from the policy
+        if add_dbms_name:
+            row_info.append(node_info["dbms_name"])
+        if add_table_name:
+            row_info.append(node_info["table_name"])
+        table_info.append(row_info)
+    return table_info
+# -----------------------------------------------------------------------------------
+# Add a node to the selected nodes list.
+# -----------------------------------------------------------------------------------
+def add_selected_node(user_name: str, policy_id: str, node_info:dict):
+    active_state_[user_name]['reports']['edge_nodes'][policy_id] = node_info
 
 # -----------------------------------------------------------------------------------
 # Reset or start a new state
@@ -594,7 +689,7 @@ def add_entry_to_report(user_name, dbms_name, table_name, json_entry):
 
             edge_selected[policy_id]["dbms_name"] = db_name
             edge_selected[policy_id]["table_name"] = tb_name
-            edge_selected[policy_id]["edge"] = json_entry
+            edge_selected[policy_id]["policy"] = json_entry
 
 # -------------------------------------------------------------------------
 # Get a dbms or a table name from the JSON structure

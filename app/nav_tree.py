@@ -21,7 +21,19 @@ class Details():
         self.values = values      # The list of values
 
 # -----------------------------------------------------------------------------------
-# Objects to describe a tree hierarchy used in output_tree.html
+# Object to describe formatting in HTML
+# -----------------------------------------------------------------------------------
+class format_node():
+    def __init__(self):
+        self.format = True
+        self.start_list = False
+
+    def set_new_list(self):
+        self.start_list = True
+
+
+# -----------------------------------------------------------------------------------
+# Object to describe a tree hierarchy used in output_tree.html
 # -----------------------------------------------------------------------------------
 class TreeNode():
 
@@ -38,22 +50,29 @@ class TreeNode():
         self.children = []
         self.with_children = False
         self.details = None
-        self.policy = None
-        self.policy_key = None
-        self.policy_value = None        # shows value if the value is not a list or a dictionary
+        self.data_struct = None         # Maintain data which is a reply from the network
+        self.json_struct = None
+        self.json_key = None
+        self.json_value = None          # shows value if the value is not a list or a dictionary
         self.dbms_name = None           # DBMS name or the key to pull the dbms name from the policy
         self.table_name = None          # Table name or the key to pull the table name from the policy
         self.option = None              # If node maintains a metadata option representing a type of a child
         self.parent = None              # Parent node
         self.path = None                # The complete path representing the node
         self.scroll_location = False    # Set to True to indicate the scroll location on the page
-
+        self.report = False             # True for a report type
+        self.folder = False             # True for a folder type
+        self.url = None                 # URL for a first panel
+        self.command = False            # Is node representing a network command
+        self.submit_buttons = None      # A potential list of submit buttons assigned to a node
+        self.icon = None                # Icon shape size and color to show on the nav tree
+        self.table_struct  = None       # Contains replies from the network formatted as a table structure
+        self.checkbox = False           # An option for a checkbox near content
+        self.monitor = False            # A node that monitors network status using - "get monitored" command
 
         # Setup params
         for key, value in params.items():
             setattr(self, key, value)
-
-
 
     def get_name(self):
         '''
@@ -72,6 +91,26 @@ class TreeNode():
         return True if node has children
         '''
         return self.with_children
+
+
+    def is_network_cmd(self):
+        '''
+        Return True for a network command node (a sibling of Monitor in the tree)
+        '''
+        return self.command
+
+
+    # -----------------------------------------------------------------------------------
+    # Add Submit buttons to a node
+    # These provide additional options when navigating
+    # -----------------------------------------------------------------------------------
+    def add_submit_buttons(self, submit_list):
+        self.submit_buttons = submit_list
+    # -----------------------------------------------------------------------------------
+    # Reset the submot buttons assigned to a node
+    # -----------------------------------------------------------------------------------
+    def reset_submit_buttons(self):
+        self.submit_buttons = None
 
     # -----------------------------------------------------------------------------------
     # Indicate that when a page is loaded - set the scroll location on this node
@@ -96,6 +135,13 @@ class TreeNode():
         '''
         return self.parent.is_anchor
 
+    # -----------------------------------------------------------------------------------
+    # A node that calls the network to monitor a topic using the command: get monitored topic
+    # i.e. get monitored operators
+    # -----------------------------------------------------------------------------------
+    def is_monitoring_node(self):
+
+        return self.monitor
     # -----------------------------------------------------------------------------------
     # An option node is a node representing option on the Config File for navigation
     # -----------------------------------------------------------------------------------
@@ -166,18 +212,24 @@ class TreeNode():
 
         if 'children' in options_tree:
             children = options_tree['children']
+            if "type" in options_tree and options_tree["type"] == "node":
+                network_command = True      # The child is a command to the network
+            else:
+                network_command = False
+
             for entry in children:
-                self.add_child(name=entry, option=entry, path=location_key+'@'+entry)
+                self.add_child(name=entry, option=entry, command=network_command, path=location_key+'@'+entry)
 
     # -----------------------------------------------------------------------------------
     # Add the children resulting from a query to the network
     # -----------------------------------------------------------------------------------
-    def add_data_children(self, location_key, list_columns, list_keys, table_rows, dbms_name, table_name):
+    def add_data_children(self, location_key, list_columns, list_keys, table_rows, add_checkbox, dbms_name, table_name):
         '''
         Create children to the specifird node
         :param list_columns:    The attribute names retrieved from the config file
         :param list_keys:       The keys of the policies
         :param table_rows:      The children
+        :param add_checkbox     Provide checkbox selection
         :return:
         '''
 
@@ -186,6 +238,12 @@ class TreeNode():
             id_offset = list_keys.index('id')
         else:
             id_offset = -1
+
+        if 'ip' in list_keys:
+            ip_offset = list_keys.index('ip')
+        else:
+            ip_offset = -1
+
 
         if 'name' in list_keys:
             name_offset = list_keys.index('name')
@@ -221,12 +279,21 @@ class TreeNode():
                 path += ('+' + entry[id_offset])
 
             if name_offset >= 0:
-                params['name'] = entry[name_offset]
+                if entry[name_offset]:
+                    params['name'] = entry[name_offset]
+                elif ip_offset != -1:
+                    # If no name - use IP as name
+                    params['name'] = entry[ip_offset]
+                elif id_offset != -1:
+                    params['name'] = entry[id_offset]
+
                 if id_offset == -1:
                     # No ID for this entry
                     path += ('+' + entry[name_offset])
 
             params['path'] = path       # ID of the node
+
+            params["checkbox"] = add_checkbox
 
             if dbms_name:
                 # This is an edge node that can pull a report using the dbms and table info
@@ -236,24 +303,62 @@ class TreeNode():
             self.add_child( **params )
 
     # -----------------------------------------------------------------------------------
+    # Add Table structure
+    # Table includes 3 components: Header, columns names, rows (split to columns)
+    # -----------------------------------------------------------------------------------
+    def add_table( self, table_struct ):
+       self.table_struct = table_struct
+
+    # -----------------------------------------------------------------------------------
+    # Test if node with table
+    # -----------------------------------------------------------------------------------
+    def is_with_table( self ):
+        return self.table_struct != None
+    # -----------------------------------------------------------------------------------
+    # reset table struct
+    # -----------------------------------------------------------------------------------
+    def reset_table_struct( self ):
+       self.table_struct = None
+
+    # -----------------------------------------------------------------------------------
+    # Add data resulting from a network reply
+    # -----------------------------------------------------------------------------------
+    def add_data( self, data ):
+       self.data_struct = data
+    # -----------------------------------------------------------------------------------
+    # Test if node with data
+    # -----------------------------------------------------------------------------------
+    def is_with_data( self ):
+       return self.data_struct != None
+    # -----------------------------------------------------------------------------------
+    # Add data resulting from a network reply
+    # -----------------------------------------------------------------------------------
+    def reset_data_struct( self ):
+       self.data_struct = None
+    # -----------------------------------------------------------------------------------
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------
-    def add_policy( self, retrieved_policy ):
-       self.policy = retrieved_policy
+    def add_json_struct( self, json_struct ):
+       self.json_struct = json_struct
     # -----------------------------------------------------------------------------------
     # Add a policy info to a node
     # -----------------------------------------------------------------------------------
-    def is_with_policy( self ):
-       return self.policy != None
+    def is_with_json( self ):
+       return self.json_struct != None
+    # -----------------------------------------------------------------------------------
+    # Reset the JSON structure that is assigned to the node
+    # -----------------------------------------------------------------------------------
+    def reset_json_struct( self ):
+       self.json_struct = None
 
     # -----------------------------------------------------------------------------------
     # Set Policy value
     # -----------------------------------------------------------------------------------
-    def set_policy_value(self, policy_value):
-        if isinstance(policy_value,str):
-            self.policy_value = "\"%s\"" % policy_value
+    def set_json_value(self, json_value):
+        if isinstance(json_value,str):
+            self.json_value = "\"%s\"" % json_value
         else:
-            self.policy_value = str(policy_value)
+            self.json_value = str(json_value)
 
 # -----------------------------------------------------------------------------------
 # Given a node and a list of keys - return the node addressed by the keys
@@ -301,24 +406,32 @@ def setup_print_list( current_node, print_list):
         for child in current_node.children:
             child.scroll_location = False       # Reset the scroll location
             print_list.append(child)
-            if child.is_with_policy():
-                setup_print_policy( child.policy, print_list )
+            if child.is_with_json():
+
+                new_node = format_node()
+                new_node.set_new_list()
+                print_list.append(new_node)     # A node to start a new list
+
+                setup_print_json( child.json_struct, print_list )
+
+                print_list.append(None)         # End the new list
+
             if child.with_children:
                 setup_print_list(child, print_list)
-        print_list.append(None)     # All children onsidered - this is a flag to issue </li> and </ul>
+        print_list.append(None)     # All children considered - this is a flag to issue </li> and </ul>
 
 
 # -----------------------------------------------------------------------------------
 # Setup a policy in the print_list structure
 # -----------------------------------------------------------------------------------
-def setup_print_policy( policy, print_list):
+def setup_print_json( policy, print_list):
 
     if len(policy):
         counter = 0
-        for policy_key, policy_value in policy.items():
+        for json_key, json_value in policy.items():
             counter += 1
             params = {}
-            params['policy_key'] = policy_key
+            params['json_key'] = json_key
             if counter == 1:
                 params['first_child'] = True
             if counter == len(policy):
@@ -327,16 +440,16 @@ def setup_print_policy( policy, print_list):
             new_node = TreeNode(**params)
             print_list.append(new_node)
 
-            if isinstance(policy_value,dict):
-                setup_print_policy(policy_value, print_list)
-            elif isinstance(policy_value, list):
-                for list_entry in policy_value:
+            if isinstance(json_value,dict):
+                setup_print_json(json_value, print_list)
+            elif isinstance(json_value, list):
+                for list_entry in json_value:
                     if isinstance(list_entry,dict) or isinstance(list_entry,list):
-                        setup_print_policy(policy_value, print_list)
+                        setup_print_json(list_entry, print_list)
                     else:
-                        new_node.set_policy_value(policy_value)
+                        new_node.set_json_value(json_value)
             else:
-                new_node.set_policy_value(policy_value)
+                new_node.set_json_value(json_value)
 
         print_list.append(None)  # All children onsidered - this is a flag to issue </li> and </ul>
 
@@ -355,7 +468,7 @@ def update_command(current_node, selection, command):
     '''
     cmd_words = command.split()
     value = None
-    if len(cmd_words) > 7:
+    if len(cmd_words) >= 7:
         if cmd_words[3] == "where" and cmd_words[5] == '=':
             for index, word in enumerate(cmd_words[6:]):
                 if word == 'bring' or word.startswith("bring."):
@@ -371,11 +484,11 @@ def update_command(current_node, selection, command):
                             # info derived from the policy (organized in Details() object)
                             if parent_policy:
                                 value = ""
-                                for policy_key in keys_list[1:]:
+                                for json_key in keys_list[1:]:
                                     # Craete the value for the command
-                                    if policy_key[:-1] in parent_policy.keys:
-                                        index = parent_policy.keys.index(policy_key[:-1])
-                                        value += parent_policy.values[index]
+                                    if json_key[:-1] in parent_policy.keys:
+                                        index_value = parent_policy.keys.index(json_key[:-1])
+                                        value += parent_policy.values[index_value]
 
                 if value:
                     cmd_words[6 + index] = value  # Replace with value from parent

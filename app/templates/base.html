@@ -3,27 +3,31 @@
     
     <!-- process: title (for tab) + company_name + user_gui + parent_gui + children_gui + flush messages (errors) -->
     <head>
-        <!-- Tab Display -->
 
+        <script src="https://kit.fontawesome.com/a194dff383.js" crossorigin="anonymous"></script>
+
+        <!-- Tab Display -->
+        <link rel="shortcut icon" href="{{ url_for('static', filename='css/anylog-logo.ico') }}">
         <title>AnyLog</title>
 
         <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     </head>
     <body>
-        <img src="{{ url_for('static', filename='css/anylog-logo.png') }}" class="floatRight">
+        <img src="{{ url_for('static', filename='css/anylog-logo.png') }}" onclick="window.location.href='https://anylog.co/'"  class="floatRight">
         <div class="header">
             <div>
                 <!-- System Fixed Pages -->
                 <mark class="header-txt">
-                AnyLog Network:&nbsp
+                <a href="https://anylog.co/" style="color: rgb(0,102,153)">AnyLog Network:</a>&nbsp
                 </mark>
-                <a href="{{ url_for('login') }}">Login</a>&nbsp
-                <a href="{{ url_for('alerts') }}">Alerts</a>&nbsp
+                <a href="{{ url_for('index') }}">Home</a>&nbsp
+                <a href="{{ url_for('manage_reports') }}">Reports</a>&nbsp
+                <a href="{{ url_for('define_monitoring') }}">Monitor</a>&nbsp
                 <a href="{{ url_for('configure') }}">Config</a>&nbsp
                 <a href="{{ url_for('network') }}">Network</a>&nbsp
                 <a href="{{ url_for('policies') }}">Policies</a>&nbsp
                 <a href="{{ url_for('logout') }}">Logout</a>&nbsp
-            </div>
+        </div>
             <div>
                 {% if company_name %}
                     <mark class="header-txt">
@@ -39,31 +43,11 @@
                     {% endif %}
                 {% endif %}
             </div>
-            <div>
-                <!-- Name of Report to use -->
-                [&nbsp<a href="{{ url_for('configure_reports') }}">Report</a>:&nbsp
-                {%- if report_name -%}
-                    <a href="{{ url_for('dynamic_report') }}{{report_name}}">{{report_name}}</a>&nbsp]
-                {%- else -%}
-                    <a href="{{ url_for('dynamic_report') }}Default">Default</a>&nbsp]
-                {%- endif -%}
-
-                <!-- Home Page -->
-                <a href="{{ url_for('index') }}">Home</a>
-                <!-- Dynamic Parent Pages - based on the config (JSON) file -->
-                {% if parent_gui %}
-                    {%- for text, url_target in parent_gui -%}
-
-                        <a href="{{ url_target }}">{{text}}</a>&nbsp
-
-                    {%- endfor -%}
-                {% endif %}
-            </div>
         </div>
         <hr>
         <h1 class="title">{{ title }}</h1>
         <!-- ERROR Messages placed in Flush -->
-            {% with messages = get_flashed_messages() %}
+            {% with messages = get_flashed_messages(category_filter=["error"]) %}
                 {% if messages %}
                     <table border="2" class="table error-table">
                         <tr>    <!-- table row  -->
@@ -79,8 +63,26 @@
                     </table>
                     <br>
                 {% endif %}
-
             {% endwith %}
+             <!-- Other Messages placed in Flush -->
+            {% with messages = get_flashed_messages(category_filter=["message"]) %}
+                {% if messages %}
+                    <table border="2" class="table message-table">
+                        <tr>    <!-- table row  -->
+                            <td>
+                            Messages
+                            </td>
+                        </tr>
+                        {% for message in messages %}
+                            <tr>
+                                <td>{{ message }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    <br>
+                {% endif %}
+            {% endwith %}
+
         {% block content %}
         {% endblock %}
     </body>

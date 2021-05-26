@@ -33,6 +33,17 @@ class gui():
         self.config_struct = None 
         self.config_error = None    # Error set if COnfig file with error in structure
         self.policies_table = []     # The list of policies in a 2 domentional list (representing the display of the list)
+
+    # ------------------------------------------------------------------------
+    # The name associated with the network
+    # ------------------------------------------------------------------------
+    def get_network_name(self):
+        if "gui" in self.config_struct and "name" in  self.config_struct["gui"]:
+            network_name = self.config_struct["gui"]["name"]
+        else:
+            network_name = ""
+        return network_name
+
     # ------------------------------------------------------------------------
     # Get Base Info from the config / JSON file
     # ------------------------------------------------------------------------
@@ -47,17 +58,36 @@ class gui():
         else:
             query_node = None
         return query_node
+
+    # ------------------------------------------------------------------------
+    # Get Subtree using the keys provided
+    # ------------------------------------------------------------------------
+    def get_sub_tree(self, keys_list):
+        '''
+        Base Info is in the config file
+        i.e.
+        get_sub_tree(["gui","children","Monitor","Network operators"])
+        '''
+
+        json_struct = self.config_struct
+        for key in keys_list:
+            if key in json_struct:
+                json_struct = json_struct[key]
+            else:
+                json_struct = None
+                break
+
+
+        return json_struct
+
     # ------------------------------------------------------------------------
     # Load the JSON and set main structures
     # ------------------------------------------------------------------------
-    def set_gui(self, file_name = None):
+    def set_gui(self, file_name ):
         '''
         Load the JSON file and adds error if file strcure is not of JSON.
         '''
 
-        if not file_name:
-            file_name = Config.GUI_VIEW    # get from system variable
-        
         self.config_struct, self.config_error = load_json(file_name)
 
         if self.config_struct:
@@ -77,6 +107,7 @@ class gui():
             if len(line_list):
                 self.policies_table.append(line_list)
 
+        return self.config_error
     # ------------------------------------------------------------------------
     # Return The list of policies
     # ------------------------------------------------------------------------
@@ -226,7 +257,9 @@ class gui():
     def get_subtree( self, selection ):
         select_list = selection.split('@')
         json_struct = self.config_struct["gui"]
-        for entry in select_list:
+        root_tree = None
+
+        for index, entry in enumerate(select_list):
             if not "children" in json_struct:
                 json_struct = None
                 break
@@ -235,8 +268,12 @@ class gui():
                 json_struct = None  # Path not found
                 break
             json_struct = json_struct[entry]
+
+            if not index:
+                # First entry in the tree
+                root_tree = json_struct
             
-        return json_struct
+        return [root_tree, json_struct]
 
 # ------------------------------------------------------------------------
 # The process to load a JSON file that maintanins the GUI view of the data/metadata
@@ -251,7 +288,7 @@ def load_json(file_name):
         data = None
         error_msg = "AnyLog: Config File format error - line: {} column: {} message: {}".format(e.lineno, e.colno, e.msg)
     except:
-        error_msg = "AnyLog: Config File format error"
+        error_msg = "AnyLog: Failed to load file: %s" % file_name
         data = None
     else:
         error_msg = None
@@ -262,7 +299,7 @@ def load_json(file_name):
 # ------------------------------------------------------------------------
 def get_tree_entree( json_struct, attr_name):
 
-    if attr_name in json_struct:
+    if json_struct and attr_name in json_struct:
         value = json_struct[attr_name]
     else:
         value = None
@@ -355,4 +392,6 @@ def get_gui_key(selection):
 # The GUI determines an edge if the position on the config file has no children
 # -----------------------------------------------------------------------------------
 def is_edge_node( gui_sub_tree ):
+    if not gui_sub_tree:
+        return False
     return not 'children' in gui_sub_tree
