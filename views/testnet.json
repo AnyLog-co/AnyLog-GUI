@@ -1,6 +1,6 @@
 {
     "gui" : {
-            "name" : "Demo",
+            "name" : "TestNet",
 	        "map": "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?viewPanel=2&orgId=1&refresh=30s",
             "query_node" : "http://23.239.12.151:2049",
             "visualization" : { 
