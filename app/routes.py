@@ -1642,7 +1642,7 @@ def monitor_topic( topic = "" ):
         table_rows = []
         column_names_list = []
         totals = None
-
+        alerts = None
         if gui_sub_tree:
             if 'header' in gui_sub_tree:
                 # User specified (in config file) columns to display
@@ -1650,7 +1650,8 @@ def monitor_topic( topic = "" ):
                 select_info['header'] = column_names_list
             if 'totals' in gui_sub_tree:
                 totals = gui_sub_tree['totals']
-
+            if 'alerts' in gui_sub_tree:
+                alerts = gui_sub_tree['alerts']           # Test values as arrive
 
         if not len(column_names_list):
             # Get the columns names from the JSON data
@@ -1695,6 +1696,19 @@ def monitor_topic( topic = "" ):
                                     totals_row[index + 1] += float(column_value)
                             except:
                                 pass
+
+                    if alerts:
+                        # if column_name in alerts --> process alert to change display color
+                        if column_name in alerts:
+                            alert_code = alerts[column_name].replace("value", str(column_value))
+                            try:
+                                alert_val = eval(alert_code)
+                            except Exception as err_msg:
+                                flash("AnyLog: Error in alerts for topic '%s' evaluating: '%s' with error: %s" % (topic, alert_code, err_msg), category='error')
+                            else:
+                                if alert_val:
+                                    # Change color of display
+                                    pass
 
                 else:
                     row_info.append("")

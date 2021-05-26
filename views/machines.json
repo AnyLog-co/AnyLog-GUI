@@ -99,7 +99,10 @@
                   "Views" : {
                     "operators" : {
                         "header" : ["Node", "Operational time", "Delta time", "Delta events", "Events/sec", "Total events", "Free space %"],
-                        "totals" : ["Events/sec", "Total events"]
+                        "totals" : ["Events/sec", "Total events"],
+                        "alerts" : {
+                                    "Events/sec" : "value == 0"
+                        }
                     }
                   },
                    "children" : {
