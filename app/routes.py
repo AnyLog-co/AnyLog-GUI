@@ -1687,11 +1687,11 @@ def monitor_topic( topic = "" ):
                     totals_row.append(["", False, False])       # Print empty cell
 
         # Get the columns values
-        for node_name, node_info in  json_struct.items():
+        for node_ip, node_info in  json_struct.items():
             # Key is the node name and value is the second tier dictionary with the info
             row_info = []
             if column_names_list[0] == "Node":
-                row_info.append((node_name, False))      # First column is node name
+                row_info.append((node_ip, False))      # First column is node name
             for index, column_name in enumerate(column_names_list[1:]):
                 if column_name in node_info:
                     column_value = node_info[column_name]

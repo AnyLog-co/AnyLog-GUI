@@ -51,18 +51,20 @@
                                                 "task remove where scheduler = 1 and name = monitor_node ",
                                                 "schedule name = monitor_node and time = 15 seconds task run client 23.239.12.151:2048 monitor nodes where info = !node_status"],
 
-                            ["Monitor Data", "schedule name = disk_space and time = 15 seconds task disk_space = get disk percentage .",
+                            ["Monitor Data",  "schedule name = disk_space and time = 15 seconds task disk_space = get disk percentage .",
+                                              "schedule name = cpu_percent and time = 15 seconds task cpu_percent = get node info cpu_percent",
                                               "schedule name = get_operator_stat and time = 15 seconds task operator_stat = get operator stat format = json",
                                               "task remove where scheduler = 1 and name = monitor_operators",
                                               "schedule name = monitor_operator and time = 15 seconds task run client 23.239.12.151:2048 monitor operators where info = !operator_stat"]
                         ],
                         "Views" : {
                           "operators" : {
-                              "header" : ["Node", "Operational time", "Delta time", "Events/sec", "Total events", "Free space %"],
+                              "header" : ["Node", "Node name", "Operational time", "Delta time", "Events/sec", "Total events", "Free space %", "% CPU"],
                               "totals" : ["Events/sec", "Total events"],
                               "alerts" : {
                                           "Events/sec" : "value < 1500",
-                                          "Free space %" : "value > 50"
+                                          "Free space %" : "value > 50",
+                                          "% CPU" : "value > 80"
                               }
                           }
                         },
