@@ -60,6 +60,27 @@ class gui():
         return query_node
 
     # ------------------------------------------------------------------------
+    # Get Subtree using the keys provided
+    # ------------------------------------------------------------------------
+    def get_sub_tree(self, keys_list):
+        '''
+        Base Info is in the config file
+        i.e.
+        get_sub_tree(["gui","children","Monitor","Network operators"])
+        '''
+
+        json_struct = self.config_struct
+        for key in keys_list:
+            if key in json_struct:
+                json_struct = json_struct[key]
+            else:
+                json_struct = None
+                break
+
+
+        return json_struct
+
+    # ------------------------------------------------------------------------
     # Load the JSON and set main structures
     # ------------------------------------------------------------------------
     def set_gui(self, file_name ):

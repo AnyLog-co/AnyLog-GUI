@@ -2,10 +2,11 @@
  /* https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_tables */
 
 table {
-  table-layout: fixed;
-  width: 100%;
+  table-layout: auto;
+  width: auto;
   border-collapse: collapse;
   border: 3px solid purple;
+
 }
 
 
@@ -14,16 +15,19 @@ tr:hover {
 }
 
 thead tr{
-    background-color:black;
+    background-color:#1c1b1b;
     color: white;
     text-decoration: underline;
 }
 
 tbody tr{
-  background-color: black;
+  background-color: #1c1b1b;
   color: lawngreen;
-
-
+}
+.alert {
+    background-color: #d53d31;
+    color: white;
+    font-weight: bold;
 }
 
 th, td {

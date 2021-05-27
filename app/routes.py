@@ -530,7 +530,7 @@ def define_monitoring():
                     dest_node = "http://" + node_info[3] + ':' + node_info[4]
 
                     for command in monitor_cmds[1:]: # The first entry in monitor_cmds is the name on the GUI
-                        data, error_msg = exec_al_cmd(command, dest_node)
+                        data, error_msg = exec_al_cmd(command, dest_node, "POST")
 
 
 
@@ -583,6 +583,11 @@ def configure():
 
     form_info = request.form.to_dict()
 
+    node_ip = ""
+    node_port = 0
+    target_node = path_stat.get_element(user_name, "target_node")
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
     if (len(form_info)):
 
         # Change config file
@@ -590,26 +595,32 @@ def configure():
             new_file = form_info["conf_file_name"] + ".json"
             config_file = Config.CONFIG_FOLDER + new_file         # New config file
             if not load_config_file("configire", user_name, config_file):
-                flash('AnyLog: failed to load config file: %s' % new_file, category='error')
-                return redirect(url_for('configure'))  # Redo the login
+                flash('AnyLog: failed to load config file: \'%s\'' % new_file, category='error')
+            else:
+                target_node = path_stat.get_element(user_name, "target_node")   # get the target node after the load
+                flash('AnyLog: New config file: \'%s\'' % new_file, category='message')
+        elif "node_ip" in form_info and "node_port" in form_info:
+            # Change target node
+            node_ip_str = form_info["node_ip"]
+            node_port_str = form_info["node_port"]
+            target_node = "http://" + node_ip_str + ":" + node_port_str
 
-            flash('AnyLog: New config file: %s' % new_file, category='message')
 
-        # Change target node
-        if "node_ip" in form_info and "node_port" in form_info:
-            node_ip = form_info["node_ip"]
-            node_port = form_info["node_port"]
-            if node_ip and node_port:
-                target_node = node_ip + ":" + node_port
-                path_stat.register_element(user_name, "target_node", target_node)
-                data, error_msg = exec_al_cmd("get status")
-                if error_msg:
-                    flash('AnyLog: No network connection', category='error')
-                    flash(error_msg, category='error')
-                    return redirect(url_for('configure'))  # Redo the login
-            elif node_ip or node_port:
-                flash('AnyLog: IP and port values were not properly provided', category='error')
+    if target_node and len(target_node) > 7:
+        # Set the default IP and port
+        ip_port = target_node[7:].split(':')
+        if len(ip_port) == 2 and ip_port[1].isdigit():
+            node_ip = ip_port[0]
+            node_port = int(ip_port[1])
 
+    if not node_ip or not node_port:
+        flash('AnyLog: IP:Port of query node is not properly provided', category='error')
+    else:
+        path_stat.register_element(user_name, "target_node", target_node)
+        data, error_msg = exec_al_cmd("get status")
+        if error_msg:
+            flash('AnyLog: No network connection', category='error')
+            flash(error_msg, category='error')
 
     form = ConfigForm()
 
@@ -637,8 +648,8 @@ def configure():
     select_info["form"] = form
     select_info["title"] = 'Configure Network Connection'
 
-    gui_view = path_stat.get_element(user_name,"gui_view")
-
+    select_info["target_ip"] = node_ip
+    select_info["target_port"] = node_port
 
     # Test connectors to the Visualization platforms
     platforms = gui_view.get_base_info("visualization")
@@ -1622,8 +1633,13 @@ def get_monitored_info(topic):
 @app.route('/monitor_topic/<string:topic>', methods = ['GET'])
 def monitor_topic( topic = "" ):
 
-    if not get_user_by_session():
-        return redirect(('/login'))  # start with Login  if not yet provided
+
+    user_name = get_user_by_session()
+    if not user_name:
+        return redirect(('/login'))        # Redo the login - need a user name
+
+    gui_view = path_stat.get_element(user_name, "gui_view")
+    gui_sub_tree = gui_view.get_sub_tree(["gui","children","Monitor","Views", topic])
 
     json_struct = get_monitored_info(topic)
 
@@ -1634,32 +1650,106 @@ def monitor_topic( topic = "" ):
     if json_struct:
         # Transform the JSON to a table
         table_data = {}
-        column_names_list = []
         table_rows = []
+        column_names_list = []
+        totals = None
+        alerts = None
+        if gui_sub_tree:
+            if 'header' in gui_sub_tree:
+                # User specified (in config file) columns to display
+                column_names_list = gui_sub_tree['header']
+                select_info['header'] = column_names_list
+            if 'totals' in gui_sub_tree:
+                totals = gui_sub_tree['totals']
+            if 'alerts' in gui_sub_tree:
+                alerts = gui_sub_tree['alerts']           # Test values as arrive
 
-        column_names_list.append("Node")
-        # Get the columns names
-        for node_name, node_info in  json_struct.items():
-            # Key is the node name and value is the second tier dictionary with the info
-            for attr_name in node_info:
-                # The keys are the column names
-                if attr_name not in column_names_list:
-                    column_names_list.append(attr_name)
+        if not len(column_names_list):
+            # Get the columns names from the JSON data
+            column_names_list.append("Node")
+            # take all columns from the json
+            for node_name, node_info in  json_struct.items():
+                # Key is the node name and value is the second tier dictionary with the info
+                for attr_name in node_info:
+                    # The keys are the column names
+                    if attr_name not in column_names_list:
+                        column_names_list.append(attr_name)
 
         select_info['header'] = column_names_list
+
+        if totals:
+            totals_row = []
+            # Set an entry for each total
+            for column_name in  column_names_list:
+                if column_name in totals:
+                    totals_row.append([0, False, True])        # Values: Accumulates the total, Alert is false and shift_right is True
+                else:
+                    totals_row.append(["", False, False])       # Print empty cell
 
         # Get the columns values
         for node_name, node_info in  json_struct.items():
             # Key is the node name and value is the second tier dictionary with the info
             row_info = []
-            row_info.append(node_name)      # First column is node name
-            for column_name in column_names_list[1:]:
+            if column_names_list[0] == "Node":
+                row_info.append((node_name, False))      # First column is node name
+            for index, column_name in enumerate(column_names_list[1:]):
                 if column_name in node_info:
-                    row_info.append(node_info[column_name])
+                    column_value = node_info[column_name]
+
+                    if isinstance(column_value, int):
+                        data_type = "int"
+                        shift_right = True  # Shift right in the table cell
+                        formated_val = "{:,}".format(column_value)
+                    elif isinstance(column_value, float):
+                        data_type = "float"
+                        shift_right = True      # Shift right in the table cell
+                        formated_val = "{0:,.2f}".format(column_value)
+                    else:
+                        data_type = "str"
+                        shift_right = False  # Shift left in the table cell
+                        formated_val = str(column_value)
+
+                    if totals:
+                        if totals_row[index + 1][0] != "":
+                            try:
+                                if data_type != "str":
+                                    totals_row[index + 1][0] += column_value
+                                elif column_value.is_digit():
+                                    totals_row[index + 1][0] += int(column_value)
+                                else:
+                                    totals_row[index + 1][0] += float(column_value)
+                            except:
+                                pass
+
+                    alert_val = False
+                    if alerts:
+                        # if column_name in alerts --> process alert to change display color
+                        if column_name in alerts:
+                            alert_code = alerts[column_name].replace("value", str(column_value))
+                            try:
+                                alert_val = eval(alert_code)
+                            except Exception as err_msg:
+                                flash("AnyLog: Error in alerts for topic '%s' evaluating: '%s' with error: %s" % (topic, alert_code, err_msg), category='error')
+                            else:
+                                if alert_val:
+                                    # Change color of display
+                                    pass
+
+                    row_info.append((formated_val, alert_val, shift_right))
+
                 else:
-                    row_info.append("")
+                    row_info.append(("", False))
 
             table_rows.append(row_info)
+
+        if totals:
+            for entry in totals_row:
+                if isinstance(entry[0], int):
+                    entry[0] = "{:,}".format(entry[0])
+                elif isinstance(entry[0], float):
+                    entry[0] = "{0:,.2f}".format(entry[0])
+
+            table_rows.append(totals_row)
 
         select_info['rows'] = table_rows
 
@@ -2409,7 +2499,7 @@ def path_selection(parent_menu, policy_id, data):
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
 # -----------------------------------------------------------------------------------
-def exec_al_cmd( al_cmd, dest_node = None):
+def exec_al_cmd( al_cmd, dest_node = None, call_type = "GET"):
     '''
     Run the query against the Query Node
     '''
@@ -2426,7 +2516,10 @@ def exec_al_cmd( al_cmd, dest_node = None):
         'command' : al_cmd
         }
 
-    response, error_msg = rest_api.do_get(target_node, al_headers)
+    if call_type == "POST":
+        response, error_msg = rest_api.do_post(target_node, al_headers)
+    else:
+        response, error_msg = rest_api.do_get(target_node, al_headers)
 
     if response and response.status_code == 200:
         data = response.text
