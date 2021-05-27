@@ -1682,10 +1682,9 @@ def monitor_topic( topic = "" ):
             # Set an entry for each total
             for column_name in  column_names_list:
                 if column_name in totals:
-                    totals_row.append([0, False])        # Accumulates the total
+                    totals_row.append([0, False, True])        # Values: Accumulates the total, Alert is false and shift_right is True
                 else:
-                    totals_row.append(["", False])       # Print empty cell
-
+                    totals_row.append(["", False, False])       # Print empty cell
 
         # Get the columns values
         for node_name, node_info in  json_struct.items():
@@ -1697,10 +1696,23 @@ def monitor_topic( topic = "" ):
                 if column_name in node_info:
                     column_value = node_info[column_name]
 
+                    if isinstance(column_value, int):
+                        data_type = "int"
+                        shift_right = True  # Shift right in the table cell
+                        formated_val = "{:,}".format(column_value)
+                    elif isinstance(column_value, float):
+                        data_type = "float"
+                        shift_right = True      # Shift right in the table cell
+                        formated_val = "{0:,.2f}".format(column_value)
+                    else:
+                        data_type = "str"
+                        shift_right = False  # Shift left in the table cell
+                        formated_val = str(column_value)
+
                     if totals:
                         if totals_row[index + 1][0] != "":
                             try:
-                                if isinstance(column_value,int) or isinstance(column_value,float):
+                                if data_type != "str":
                                     totals_row[index + 1][0] += column_value
                                 elif column_value.is_digit():
                                     totals_row[index + 1][0] += int(column_value)
@@ -1723,7 +1735,7 @@ def monitor_topic( topic = "" ):
                                     # Change color of display
                                     pass
 
-                    row_info.append((column_value, alert_val))
+                    row_info.append((formated_val, alert_val, shift_right))
 
                 else:
                     row_info.append(("", False))
@@ -1731,6 +1743,12 @@ def monitor_topic( topic = "" ):
             table_rows.append(row_info)
 
         if totals:
+            for entry in totals_row:
+                if isinstance(entry[0], int):
+                    entry[0] = "{:,}".format(entry[0])
+                elif isinstance(entry[0], float):
+                    entry[0] = "{0:,.2f}".format(entry[0])
+
             table_rows.append(totals_row)
 
         select_info['rows'] = table_rows
