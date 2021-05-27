@@ -1,20 +1,19 @@
 {
     "gui" : {
             "name" : "AI-OPs",
-            "query_node" : "http://10.0.0.78:7849",
-            "map"       : "http://127.0.0.1:3000/d/3WSvEorGk/map?viewPanel=2&orgId=1",
+            "query_node" : "http://192.168.50.26:2349",
+            "map"       : "http://192.168.50.26:3000/d/RGCQhhiRk/network-summary?orgId=1&from=1622135354827&to=1622135654827&viewPanel=4",
             "visualization" : {
-                                "Grafana" : { "url" : "http://localhost:3000",
-                                              "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                "Grafana" : { "url" : "http://192.168.50.26:3000",
+                                              "token" : "eyJrIjoiekhLVk5OZ2NEc0RYZmtJNEJCSHRpNFJPWHFnMnYyNVIiLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 }
                             },
             "url_pages"  : [
                 ["Company", "https://www.ai-op.com/"],
-                ["Map", "http://45.79.152.190:3000/d/iZLDOXyGk/network-summary?orgId=1"],
-                ["Dashboards", "http://45.79.152.190:3000/dashboards"],
-                ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"]
+                ["Map", "http://192.168.50.26:3000/d/RGCQhhiRk/network-summary?orgId=1&from=1622135354827&to=1622135654827&viewPanel=4"],
+                ["Dashboards", "http://192.168.50.26:3000/dashboards"]
             ],
             "children" : {
                 "Sensor" :
