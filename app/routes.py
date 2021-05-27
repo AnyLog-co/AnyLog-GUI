@@ -1629,8 +1629,8 @@ def get_monitored_info(topic):
 # -----------------------------------------------------------------------------------
 # Monitor a topic
 # -----------------------------------------------------------------------------------
-@app.route('/monitor_topic', methods = ['GET'])
-@app.route('/monitor_topic/<string:topic>', methods = ['GET'])
+@app.route('/monitor_topic', methods = {'GET','POST'})
+@app.route('/monitor_topic/<string:topic>', methods = {'GET','POST'})
 def monitor_topic( topic = "" ):
 
 
