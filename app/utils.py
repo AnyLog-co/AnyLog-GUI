@@ -12,6 +12,17 @@ such non-permitted act to AnyLog, Inc.
 import base64
 # ---------------------------------------------------------------------------------
 # Encrypt random string using base64
+#
+#
+'''
+Example: Setting basic authentication on the AnyLog Node:
+
+set local password = 123456
+set user authentication on
+id add user where name = ori and password = 123 
+
+id remove user where name = ori
+'''
 # ---------------------------------------------------------------------------------
 def encrypt_string(data_string):
     '''
