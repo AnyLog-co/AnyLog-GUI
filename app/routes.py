@@ -937,6 +937,7 @@ def get_base_report_config(user_name, form_info):
 
     dashboard = path_stat.get_element(user_name, "default_dashboard")       # An object to include all dashboards declared on the form
     dashboard.reset()
+    dashboard.set_default_name()    # The default name is "Current Status"
 
     for key, value in form_info.items():
 
