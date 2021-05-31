@@ -48,7 +48,7 @@ from app import anylog_api      # Connector to the network
 from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
-
+from app import utils           # Generic utils
 
 time_selection_ = [
     ("Day & Time Selection", ""),
@@ -146,8 +146,19 @@ def login():
         user_name = request.form['username']
         session['username'] = user_name
 
+        password =  request.form['password']
+
+        encrypted_user_password = utils.encrypt_string(user_name + ':' + password)
+        if not encrypted_user_password:
+            flash('AnyLog: Error with user name and password', category='error')
+            return redirect(('/login'))  # Redo the login
+
+
         # Register User
         path_stat.set_new_user(user_name)
+        # Register user name + password for basic authentication
+        path_stat.register_element(user_name, "basic auth", encrypted_user_password)
+
 
         dashboard = AnyLogDashboard()  # The default dashboard for this user
         dashboard.set_default()
@@ -159,7 +170,6 @@ def login():
 
             data, error_msg = exec_al_cmd("get status")
             if error_msg:
-                flash('AnyLog: No network connection', category='error')
                 flash(error_msg, category='error')
                 return redirect(('/login'))  # Redo the login
 
@@ -927,6 +937,7 @@ def get_base_report_config(user_name, form_info):
 
     dashboard = path_stat.get_element(user_name, "default_dashboard")       # An object to include all dashboards declared on the form
     dashboard.reset()
+    dashboard.set_default_name()    # The default name is "Current Status"
 
     for key, value in form_info.items():
 
@@ -1629,8 +1640,8 @@ def get_monitored_info(topic):
 # -----------------------------------------------------------------------------------
 # Monitor a topic
 # -----------------------------------------------------------------------------------
-@app.route('/monitor_topic', methods = ['GET'])
-@app.route('/monitor_topic/<string:topic>', methods = ['GET'])
+@app.route('/monitor_topic', methods = {'GET','POST'})
+@app.route('/monitor_topic/<string:topic>', methods = {'GET','POST'})
 def monitor_topic( topic = "" ):
 
 
@@ -1687,11 +1698,11 @@ def monitor_topic( topic = "" ):
                     totals_row.append(["", False, False])       # Print empty cell
 
         # Get the columns values
-        for node_name, node_info in  json_struct.items():
+        for node_ip, node_info in  json_struct.items():
             # Key is the node name and value is the second tier dictionary with the info
             row_info = []
             if column_names_list[0] == "Node":
-                row_info.append((node_name, False))      # First column is node name
+                row_info.append((node_ip, False))      # First column is node name
             for index, column_name in enumerate(column_names_list[1:]):
                 if column_name in node_info:
                     column_value = node_info[column_name]
@@ -2516,16 +2527,22 @@ def exec_al_cmd( al_cmd, dest_node = None, call_type = "GET"):
         'command' : al_cmd
         }
 
+    basic_auth = path_stat.get_element(user_name, 'basic auth')
+    if basic_auth:
+        al_headers['Authorization'] = basic_auth
+
     if call_type == "POST":
         response, error_msg = rest_api.do_post(target_node, al_headers)
     else:
         response, error_msg = rest_api.do_get(target_node, al_headers)
 
-    if response and response.status_code == 200:
+    if response != None and response.status_code == 200:
         data = response.text
     else:
         data = None
-        if not error_msg:
+        if response != None and response.reason != "":
+            error_msg = "AnyLog: REST command error \"%s\"" %  response.reason
+        elif not error_msg:
             # No data reply
             error_msg = "AnyLog: REST command \"%s\" returned error code %u" % (al_cmd, response.status_code)
 

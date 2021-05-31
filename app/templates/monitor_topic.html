@@ -4,10 +4,32 @@
 
 {% block content %}
 
+<script>
+// function saves scroll position
+function fScroll(val)
+{
+        var hidScroll = document.getElementById('hidScroll');
+        hidScroll.value = val.scrollTop;
+
+         document.getElementById("scroll_position").value=val.scrollTop;
+}
+
+// function moves scroll position to saved value
+function fScrollMove(what)
+{
+        var hidScroll = document.getElementById('hidScroll');
+        document.getElementById(what).scrollTop = hidScroll.value;
+}
+</script>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/monitored_topic.css') }}">
     <meta http-equiv="refresh" content="10; {{url_for('monitor_topic')}}/{{ topic }}">
-    <form action="{{url_for('monitor_topic')}}/{{ topic }}">
+    <form action="{{url_for('monitor_topic')}}/{{ topic }}" method="POST">
 
+    <input type="hidden" name="scroll_position" id="scroll_position">
+    <input type="hidden" name="hidScroll" id="hidScroll">
+
+    <div id="div_scroll"  onwheel="fScroll(this)"  onload="fScrollMove('div_scroll')">
 
      {% if table_title %}
         <h3>{{ topic }}</h3><br>
@@ -41,6 +63,10 @@
             {% endfor %}
         </tr>
         {% endfor %}
+
         </tbody>
 
+    </table>
+
+    </div>
 {% endblock %}
