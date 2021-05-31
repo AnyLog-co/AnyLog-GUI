@@ -1,19 +1,19 @@
 {
     "gui" : {
             "name" : "AI-OPs",
-            "query_node" : "http://192.168.50.26:2349",
-            "map"       : "http://192.168.50.26:3000/d/RGCQhhiRk/network-summary?orgId=1&from=1622135354827&to=1622135654827&viewPanel=4",
+            "query_node" : "http://20.97.12.66:2049",
+	    "map": "http://20.97.12.66:3000/d/-HTzYMeGk/network-summary?orgId=1&from=1622466080831&to=1622487680831&viewPanel=4", 
             "visualization" : {
-                                "Grafana" : { "url" : "http://192.168.50.26:3000",
-                                              "token" : "eyJrIjoiekhLVk5OZ2NEc0RYZmtJNEJCSHRpNFJPWHFnMnYyNVIiLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
+                                "Grafana" : { "url" : "http://20.97.12.66:3000",
+					      "token": "eyJrIjoiYVRMQ2Q1bUREOW5WMGlodDB3NVFqMU5Cd0RjcG94NFUiLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 }
                             },
             "url_pages"  : [
                 ["Company", "https://www.ai-op.com/"],
-                ["Map", "http://192.168.50.26:3000/d/RGCQhhiRk/network-summary?orgId=1&from=1622135354827&to=1622135654827&viewPanel=4"],
-                ["Dashboards", "http://192.168.50.26:3000/dashboards"]
+		["Map", "http://20.97.12.66:3000/d/-HTzYMeGk/network-summary?orgId=1&from=1622466080831&to=1622487680831&viewPanel=4"],
+                ["Dashboards", "http://20.97.12.66:3000/dashboards"]
             ],
             "children" : {
                 "Sensor" :
