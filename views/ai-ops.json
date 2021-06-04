@@ -2,28 +2,28 @@
     "gui" : {
             "name" : "AI-OPs",
             "query_node" : "http://20.97.12.66:2049",
-	    "map": "http://20.97.12.66:3000/d/-HTzYMeGk/network-summary?orgId=1&from=1622466080831&to=1622487680831&viewPanel=4", 
+	    "map": "http://20.97.12.66:3000/d/Umzt2OeMk/network-info?orgId=1&from=1622758169981&to=1622779769982&viewPanel=2", 
             "visualization" : {
                                 "Grafana" : { "url" : "http://20.97.12.66:3000",
-					      "token": "eyJrIjoiYVRMQ2Q1bUREOW5WMGlodDB3NVFqMU5Cd0RjcG94NFUiLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
+					      "token": "eyJrIjoiN1RtaVNMSDRLMWNqc2x5RVFxS2dJbDR3T2JLbUxza3EiLCJuIjoiQW55TG9nLUdVSSIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 }
                             },
             "url_pages"  : [
                 ["Company", "https://www.ai-op.com/"],
-		["Map", "http://20.97.12.66:3000/d/-HTzYMeGk/network-summary?orgId=1&from=1622466080831&to=1622487680831&viewPanel=4"],
+	        ["Map", "http://20.97.12.66:3000/d/Umzt2OeMk/network-info?orgId=1&from=1622758169981&to=1622779769982&viewPanel=2"], 
                 ["Dashboards", "http://20.97.12.66:3000/dashboards"]
             ],
             "children" : {
                 "Sensor" :
                 {
-                      "query" : "blockchain get sensor bring.unique.json [sensor][name] [sensor][id] [sensor][valuetype] separator = ,",
-                      "table_title" : ["Name", "ID", "Value Type"],
-                      "json_keys" : ["name", "id", "valuetype"],
+                      "query" : "blockchain get tag bring.unique.json [tag][name] [tag][id] separator = ,",
+                      "table_title" : ["Name", "ID"],
+                      "json_keys" : ["name", "id"],
                       "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
                       "dbms_name" : "aiops",
-                      "table_name" : "[sensor][name]",
+                      "table_name" : "[tag][name]",
                       "submit" : ["Config", "Select", "Open"]
 
                 },
@@ -42,11 +42,11 @@
                                 "children" : {
                                     "Sensor" :
                                           {
-                                              "query" : "blockchain get sensor where device = [device][id] bring.unique.json [sensor][name] [sensor][id] [sensor][valuetype] separator = ,",
-                                              "table_title" : ["Name", "ID", "Value Type"],
-                                              "json_keys" : ["name", "id", "valuetype"],
+                                              "query" : "blockchain get tag where device = [device][id] bring.unique.json [tag][name] [tag][id] separator = ,",
+                                              "table_title" : ["Name", "ID"],
+                                              "json_keys" : ["name", "id"],
                                               "dbms_name" : "aiops",
-                                              "table_name" : "[sensor][name]",
+                                              "table_name" : "[tag][name]",
                                               "submit" : ["Config", "Select", "Open"]
 
                                           }

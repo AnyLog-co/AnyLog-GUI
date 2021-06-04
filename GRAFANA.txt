@@ -1,0 +1,3 @@
+
+curl -H "Authorization: Bearer eyJrIjoiN1RtaVNMSDRLMWNqc2x5RVFxS2dJbDR3T2JLbUxza3EiLCJuIjoiQW55TG9nLUdVSSIsImlkIjoxfQ==" http://20.97.12.66:3000/api/dashboards/home
+

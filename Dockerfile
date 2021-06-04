@@ -23,7 +23,7 @@ RUN pip3 install uwsgi
 # move to WORKDIR + COPY codebsae 
 WORKDIR $ANYLOG_ROOT_DIR
 COPY . AnyLog-GUI
-VOLUME al-gui-volume:$ANYLOG_ROOT_DIR/AnyLog-GUI/views:rw
+#VOLUME al-gui-volume:$ANYLOG_ROOT_DIR/AnyLog-GUI/views:rw
 
 WORKDIR AnyLog-GUI
 
