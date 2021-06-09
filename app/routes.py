@@ -1503,6 +1503,10 @@ def metada_navigation(user_name, location_key, form_selections):
 
         # Navigate in the tree to find location of Node
         current_node = nav_tree.get_current_node(root_nav, selection_list, 0)
+        if not current_node:
+            flash("AnyLog: Navigation failed", category='error')
+            location_key = set_location_on_parent(location_key)
+            return redirect(url_for('metadata', selection=location_key))
 
         gui_key = app_view.get_gui_key(location_key)  # Transform selection with data to selection of GUI keys
         select_info = get_select_menu(selection=gui_key)
