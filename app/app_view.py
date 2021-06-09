@@ -12,6 +12,7 @@ such non-permitted act to AnyLog, Inc.
 from flask import url_for
 
 import json
+import sys
 from json.decoder import JSONDecodeError
 
 
@@ -288,7 +289,8 @@ def load_json(file_name):
         data = None
         error_msg = "AnyLog: Config File format error - line: {} column: {} message: {}".format(e.lineno, e.colno, e.msg)
     except:
-        error_msg = "AnyLog: Failed to load file: %s" % file_name
+        errno, value = sys.exc_info()[:2]
+        error_msg = "AnyLog: Failed to load file: '%s' with error: %s" % (file_name, str(value))
         data = None
     else:
         error_msg = None

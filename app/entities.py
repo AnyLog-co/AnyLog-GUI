@@ -225,11 +225,17 @@ class AnyLogDashboard():
     # -----------------------------------------------------------------------------------
     def set_default(self):
 
-        self.name = "Current Status"
+        self. set_default_name()        # "Current Status"
         self.default_functions["graph" ] = ["min","max","avg"]
         self.default_functions["gauge"] = ["min","max","avg"]
 
         self.set_date_time("range", "-2M")      # Last 2 Months
+
+    # -----------------------------------------------------------------------------------
+    # The default name is Current Status
+    # -----------------------------------------------------------------------------------
+    def set_default_name(self):
+        self.name = "Current Status"
 
     # -----------------------------------------------------------------------------------
     # Get the default setup for the type of graph

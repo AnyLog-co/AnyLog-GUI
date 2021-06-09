@@ -48,7 +48,7 @@ from app import anylog_api      # Connector to the network
 from app import rest_api        # REST API
 from app import json_api        # JSON data mapper
 from app import nav_tree        # Navigation Tree
-
+from app import utils           # Generic utils
 
 time_selection_ = [
     ("Day & Time Selection", ""),
@@ -146,8 +146,19 @@ def login():
         user_name = request.form['username']
         session['username'] = user_name
 
+        password =  request.form['password']
+
+        encrypted_user_password = utils.encrypt_string(user_name + ':' + password)
+        if not encrypted_user_password:
+            flash('AnyLog: Error with user name and password', category='error')
+            return redirect(('/login'))  # Redo the login
+
+
         # Register User
         path_stat.set_new_user(user_name)
+        # Register user name + password for basic authentication
+        path_stat.register_element(user_name, "basic auth", encrypted_user_password)
+
 
         dashboard = AnyLogDashboard()  # The default dashboard for this user
         dashboard.set_default()
@@ -159,7 +170,6 @@ def login():
 
             data, error_msg = exec_al_cmd("get status")
             if error_msg:
-                flash('AnyLog: No network connection', category='error')
                 flash(error_msg, category='error')
                 return redirect(('/login'))  # Redo the login
 
@@ -530,7 +540,7 @@ def define_monitoring():
                     dest_node = "http://" + node_info[3] + ':' + node_info[4]
 
                     for command in monitor_cmds[1:]: # The first entry in monitor_cmds is the name on the GUI
-                        data, error_msg = exec_al_cmd(command, dest_node)
+                        data, error_msg = exec_al_cmd(command, dest_node, "POST")
 
 
 
@@ -597,7 +607,7 @@ def configure():
             if not load_config_file("configire", user_name, config_file):
                 flash('AnyLog: failed to load config file: \'%s\'' % new_file, category='error')
             else:
-                target_node = gui_view.get_base_info("query_node")
+                target_node = path_stat.get_element(user_name, "target_node")   # get the target node after the load
                 flash('AnyLog: New config file: \'%s\'' % new_file, category='message')
         elif "node_ip" in form_info and "node_port" in form_info:
             # Change target node
@@ -927,6 +937,7 @@ def get_base_report_config(user_name, form_info):
 
     dashboard = path_stat.get_element(user_name, "default_dashboard")       # An object to include all dashboards declared on the form
     dashboard.reset()
+    dashboard.set_default_name()    # The default name is "Current Status"
 
     for key, value in form_info.items():
 
@@ -1629,8 +1640,8 @@ def get_monitored_info(topic):
 # -----------------------------------------------------------------------------------
 # Monitor a topic
 # -----------------------------------------------------------------------------------
-@app.route('/monitor_topic', methods = ['GET'])
-@app.route('/monitor_topic/<string:topic>', methods = ['GET'])
+@app.route('/monitor_topic', methods = {'GET','POST'})
+@app.route('/monitor_topic/<string:topic>', methods = {'GET','POST'})
 def monitor_topic( topic = "" ):
 
 
@@ -1682,25 +1693,39 @@ def monitor_topic( topic = "" ):
             # Set an entry for each total
             for column_name in  column_names_list:
                 if column_name in totals:
-                    totals_row.append((0, False))        # Accumulates the total
+                    totals_row.append([0, False, True])        # Values: Accumulates the total, Alert is false and shift_right is True
                 else:
-                    totals_row.append(("", False))       # Print empty cell
-
+                    totals_row.append(["", False, False])       # Print empty cell
 
         # Get the columns values
-        for node_name, node_info in  json_struct.items():
+        for node_ip, node_info in  json_struct.items():
             # Key is the node name and value is the second tier dictionary with the info
             row_info = []
             if column_names_list[0] == "Node":
-                row_info.append((node_name, False))      # First column is node name
+                row_info.append((node_ip, False))      # First column is node name
             for index, column_name in enumerate(column_names_list[1:]):
                 if column_name in node_info:
                     column_value = node_info[column_name]
 
+                    if isinstance(column_value, int):
+                        data_type = "int"
+                        shift_right = True  # Shift right in the table cell
+                        formated_val = "{:,}".format(column_value)
+                    elif isinstance(column_value, float):
+                        data_type = "float"
+                        shift_right = True      # Shift right in the table cell
+                        formated_val = "{0:,.2f}".format(column_value)
+                    else:
+                        data_type = "str"
+                        shift_right = False  # Shift left in the table cell
+                        formated_val = str(column_value)
+
                     if totals:
                         if totals_row[index + 1][0] != "":
                             try:
-                                if column_value.is_digit():
+                                if data_type != "str":
+                                    totals_row[index + 1][0] += column_value
+                                elif column_value.is_digit():
                                     totals_row[index + 1][0] += int(column_value)
                                 else:
                                     totals_row[index + 1][0] += float(column_value)
@@ -1721,14 +1746,20 @@ def monitor_topic( topic = "" ):
                                     # Change color of display
                                     pass
 
-                    row_info.append((column_value, alert_val))
+                    row_info.append((formated_val, alert_val, shift_right))
 
                 else:
-                    row_info.append("", False)
+                    row_info.append(("", False))
 
             table_rows.append(row_info)
 
         if totals:
+            for entry in totals_row:
+                if isinstance(entry[0], int):
+                    entry[0] = "{:,}".format(entry[0])
+                elif isinstance(entry[0], float):
+                    entry[0] = "{0:,.2f}".format(entry[0])
+
             table_rows.append(totals_row)
 
         select_info['rows'] = table_rows
@@ -2479,7 +2510,7 @@ def path_selection(parent_menu, policy_id, data):
 # -----------------------------------------------------------------------------------
 # Execute a command against the AnyLog Query Node
 # -----------------------------------------------------------------------------------
-def exec_al_cmd( al_cmd, dest_node = None):
+def exec_al_cmd( al_cmd, dest_node = None, call_type = "GET"):
     '''
     Run the query against the Query Node
     '''
@@ -2496,13 +2527,22 @@ def exec_al_cmd( al_cmd, dest_node = None):
         'command' : al_cmd
         }
 
-    response, error_msg = rest_api.do_get(target_node, al_headers)
+    basic_auth = path_stat.get_element(user_name, 'basic auth')
+    if basic_auth:
+        al_headers['Authorization'] = basic_auth
 
-    if response and response.status_code == 200:
+    if call_type == "POST":
+        response, error_msg = rest_api.do_post(target_node, al_headers)
+    else:
+        response, error_msg = rest_api.do_get(target_node, al_headers)
+
+    if response != None and response.status_code == 200:
         data = response.text
     else:
         data = None
-        if not error_msg:
+        if response != None and response.reason != "":
+            error_msg = "AnyLog: REST command error \"%s\"" %  response.reason
+        elif not error_msg:
             # No data reply
             error_msg = "AnyLog: REST command \"%s\" returned error code %u" % (al_cmd, response.status_code)
 
