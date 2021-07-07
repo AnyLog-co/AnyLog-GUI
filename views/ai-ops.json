@@ -1,11 +1,26 @@
 {
     "gui" : {
+
             "name" : "AI-OPs",
-            "query_node" : "http://20.97.12.66:2049",
-	    "map": "http://20.97.12.66:3000/d/Umzt2OeMk/network-info?orgId=1&from=1622758169981&to=1622779769982&viewPanel=2", 
+
+
+            "query_node" : "http://10.0.0.78:7849",
+            "map"       : "http://127.0.0.1:3000/d/3WSvEorGk/map?viewPanel=2&orgId=1",
+
             "visualization" : {
+                                "Grafana" : { "url" : "http://localhost:3000",
+                                              "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
+                                              "base"  :  ["Base-Report"],
+                                              "default" : true
+                                }
+                            },
+
+
+            "query_node-deploy" : "http://20.97.12.66:2049",
+	        "map-deploy": "http://20.97.12.66:3000/d/Umzt2OeMk/network-info?orgId=1&from=1622758169981&to=1622779769982&viewPanel=2",
+            "visualization-deploy" : {
                                 "Grafana" : { "url" : "http://20.97.12.66:3000",
-					      "token": "eyJrIjoiN1RtaVNMSDRLMWNqc2x5RVFxS2dJbDR3T2JLbUxza3EiLCJuIjoiQW55TG9nLUdVSSIsImlkIjoxfQ==",
+					            "token": "eyJrIjoiN1RtaVNMSDRLMWNqc2x5RVFxS2dJbDR3T2JLbUxza3EiLCJuIjoiQW55TG9nLUdVSSIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 }
@@ -71,6 +86,16 @@
                             ["Monitor Data", "schedule name = get_operator_stat and time = 15 seconds task operator_stat = get operator stat format = json",
                                         "schedule name = monitor_operator and time = 15 seconds task run client 10.0.0.78:7848 monitor operators where info = !operator_stat"]
                             ],
+                  "Views" : {
+                    "operators" : {
+                        "header" : ["Node", "Node name", "Status", "Operational time", "Delta time", "Delta events", "Events/sec", "Total events", "Free space %", "CPU %"],
+                        "totals" : ["Events/sec", "Total events"],
+                        "alerts" : {
+                                    "Events/sec" : "value == 0"
+                        }
+                    }
+                  },
+
                      "children" : {
                         "Operators" : {
                             "type" : "node",

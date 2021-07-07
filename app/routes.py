@@ -1710,6 +1710,8 @@ def monitor_topic( topic = "" ):
             for index, column_name in enumerate(column_names_list[1:]):
                 if column_name in node_info:
                     column_value = node_info[column_name]
+                    if column_value == None:
+                        continue
 
                     if isinstance(column_value, int):
                         data_type = "int"
@@ -1723,6 +1725,9 @@ def monitor_topic( topic = "" ):
                         data_type = "str"
                         shift_right = False  # Shift left in the table cell
                         formated_val = str(column_value)
+                        if not formated_val:
+                            row_info.append(("N/A", True, False))
+                            continue        # Empty string
 
                     if totals:
                         if totals_row[index + 1][0] != "":
