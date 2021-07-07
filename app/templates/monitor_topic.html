@@ -57,7 +57,11 @@ function fScrollMove(what)
                     {% if col_info[2] %}         <!-- Align Right -->
                         <td class="alert " style="text-align: right">{{ col_info[0] }}</td>
                     {% else %}
-                        <td class="alert" style="text-align: left">{{ col_info[0] }}</td>
+                        {% if col_info[3] %}     <!-- True means alert -->
+                            <td class="alert" style="text-align: left">{{ col_info[0] }}</td>
+                        {% else %}               <!-- False means warning - impact the color -->
+                            <td class="warning" style="text-align: left">{{ col_info[0] }}</td>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
             {% endfor %}

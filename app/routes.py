@@ -1726,7 +1726,7 @@ def monitor_topic( topic = "" ):
                         shift_right = False  # Shift left in the table cell
                         formated_val = str(column_value)
                         if not formated_val:
-                            row_info.append(("N/A", True, False))
+                            row_info.append(("N/A", True, False, False))          # "N/A" - The value to print, is alert, shift, the last False means warning (True means alert - impacts the color)
                             continue        # Empty string
 
                     if totals:
@@ -1755,7 +1755,7 @@ def monitor_topic( topic = "" ):
                                     # Change color of display
                                     pass
 
-                    row_info.append((formated_val, alert_val, shift_right))
+                    row_info.append((formated_val, alert_val, shift_right, True))      # The value to print, is alert, shift, the last True means Alert (False means warning - impacts the color)
 
                 else:
                     row_info.append(("", False))

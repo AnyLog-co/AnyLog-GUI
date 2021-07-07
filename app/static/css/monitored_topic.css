@@ -30,6 +30,13 @@ tbody tr{
     font-weight: bold;
 }
 
+.warning {
+    background-color: #fa8505;
+    color: white;
+    font-weight: bold;
+}
+
+
 th, td {
   padding: 20px;
 }
