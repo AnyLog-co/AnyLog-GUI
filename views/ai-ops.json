@@ -1,74 +1,67 @@
 {
-    "gui" : {
+  "gui": {
+    "name": "AI-OPs",
+    "query_node": "http://10.2.0.5:2149",
+    "map": "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2",
+    "visualization": {
+      "Grafana": {
+        "url": "http://13.67.180.124:3000/",
+        "token": "eyJrIjoiVm9tNExaQ05KTDBUNlNSdFdXaVRmOEdicGdVMzJ4clciLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
+        "base":  ["Base-Report"],
+        "default" : true
+      }
+    },
+    "query_node-deploy": "http://10.2.0.5:2149",
+    "map-deploy": "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2",
+    "visualization-deploy" : {
+      "Grafana" : {
+        "url" : "http://20.97.12.66:3000",
+        "token": "eyJrIjoiVm9tNExaQ05KTDBUNlNSdFdXaVRmOEdicGdVMzJ4clciLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
+        "base":  ["Base-Report"],
+        "default" : true
+      }
+    },
+    "url_pages": [
+      ["Company", "https://www.ai-op.com/"],
+      ["Map", "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2"],
+      ["Dashboards", "http://13.67.180.124:3000/dashboards"]
+    ],
+    "children": {
+      "Table": {
+        "query": "blockchain get table bring.unique.json [table][name] [table][id] separator=,",
+        "table_title": ["Name", "ID"],
+        "json_keys": ["name", "id"],
+        "icon":   ["fas fa-database", 16, "#5b5f5b"],
+        "dbms_name": "aiops",
+        "table_name": "[table][name]",
+        "submit": ["Config", "Select", "Open"]
+      },
+      "Manufacturer":{
+        "query": "blockchain get manufacturer bring.unique.json [manufacturer][id] [manufacturer][name] [manufacturer][url] separator=,",
+        "table_title" : ["ID", "Name", "URL"],
+        "json_keys" : ["id", "name", "url"],
+        "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
+        "children": {
+          "Device": {
+            "query": "blockchain get device where manufacturer = [manufacturer][id] bring.unique.json [device][name] [device][id] separator = ,",
+            "table_title" : ["ID", "Name"],
+            "json_keys" : ["id", "name", "url"],
+            "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
+            "children": {
+              "Sensor": {
+                "query": "blockchain get sensor where device = [device][id] bring.unique.json [sensor][name] [sensor][id] separator=,",
+                "table_title" : ["ID", "Name"],
+                "json_keys": ["name", "id"],
+                "icon":   ["fas fa-database", 16, "#5b5f5b"],
+                "dbms_name": "aiops",
+                "table_name": "[table][name]",
+                "submit": ["Config", "Select", "Open"]
+              }
+            }
+          }
+        }
+      },
 
-            "name" : "AI-OPs",
-
-
-            "query_node" : "http://10.0.0.78:7849",
-            "map"       : "http://127.0.0.1:3000/d/3WSvEorGk/map?viewPanel=2&orgId=1",
-
-            "visualization" : {
-                                "Grafana" : { "url" : "http://localhost:3000",
-                                              "token" : "eyJrIjoiaFYzeHZvbWU0RFFkbmVvS0hyVU1taEY5UmhtVmNONWciLCJuIjoiYW55bG9nIiwiaWQiOjF9",
-                                              "base"  :  ["Base-Report"],
-                                              "default" : true
-                                }
-                            },
-
-
-            "query_node-deploy" : "http://20.97.12.66:2049",
-	        "map-deploy": "http://20.97.12.66:3000/d/Umzt2OeMk/network-info?orgId=1&from=1622758169981&to=1622779769982&viewPanel=2",
-            "visualization-deploy" : {
-                                "Grafana" : { "url" : "http://20.97.12.66:3000",
-					            "token": "eyJrIjoiN1RtaVNMSDRLMWNqc2x5RVFxS2dJbDR3T2JLbUxza3EiLCJuIjoiQW55TG9nLUdVSSIsImlkIjoxfQ==",
-                                              "base"  :  ["Base-Report"],
-                                              "default" : true
-                                }
-                            },
-            "url_pages"  : [
-                ["Company", "https://www.ai-op.com/"],
-	        ["Map", "http://20.97.12.66:3000/d/Umzt2OeMk/network-info?orgId=1&from=1622758169981&to=1622779769982&viewPanel=2"], 
-                ["Dashboards", "http://20.97.12.66:3000/dashboards"]
-            ],
-            "children" : {
-                "Sensor" :
-                {
-                      "query" : "blockchain get tag bring.unique.json [tag][name] [tag][id] separator = ,",
-                      "table_title" : ["Name", "ID"],
-                      "json_keys" : ["name", "id"],
-                      "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
-                      "dbms_name" : "aiops",
-                      "table_name" : "[tag][name]",
-                      "submit" : ["Config", "Select", "Open"]
-
-                },
-                "Manufacturer" :
-                {
-                    "query" : "blockchain get manufacture",
-                    "table_title" : ["ID", "Name", "URL"],
-                    "json_keys" : ["id", "name", "url"],
-                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"],
-                    "children" : {
-                            "Device" :
-                            {
-                                "query" : "blockchain get device where manufacture = [manufacture][id] bring.unique.json [device][name] [device][id] separator = ,",
-                                "table_title" : ["Name", "ID"],
-                                "json_keys" : ["name", "id"],
-                                "children" : {
-                                    "Sensor" :
-                                          {
-                                              "query" : "blockchain get tag where device = [device][id] bring.unique.json [tag][name] [tag][id] separator = ,",
-                                              "table_title" : ["Name", "ID"],
-                                              "json_keys" : ["name", "id"],
-                                              "dbms_name" : "aiops",
-                                              "table_name" : "[tag][name]",
-                                              "submit" : ["Config", "Select", "Open"]
-
-                                          }
-                                    }
-                              }
-                        }
-                },
                 "Reports" :
                 {
                     "type" : "reports",
