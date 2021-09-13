@@ -15,7 +15,7 @@
     "map-deploy": "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2",
     "visualization-deploy" : {
       "Grafana" : {
-        "url" : "http://20.97.12.66:3000",
+        "url" : "http://13.67.180.124::3000",
         "token": "eyJrIjoiVm9tNExaQ05KTDBUNlNSdFdXaVRmOEdicGdVMzJ4clciLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
         "base":  ["Base-Report"],
         "default" : true
