@@ -18,14 +18,14 @@
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
-		        "Lit San Leandro": {
-                      "query": "blockchain get table where dbms = litsanleandro bring.unique.json [table][id] [table][name] separator= ,",
-                              "table_title" : ["ID", "Name"],
-                              "json_keys" : ["id", "name"],
-                      "dbms_name": "litsanleandro",
-                      "table_name": "[table][name]",
-                      "submit" : ["Config", "Select", "Open"],
-                      "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
+                "Lit San Leandro": {
+                    "query": "blockchain get table where dbms = litsanleandro bring.unique.json [table][id] [table][name] separator= ,",
+                    "table_title" : ["ID", "Name"],
+                    "json_keys" : ["id", "name"],
+                    "dbms_name": "litsanleandro",
+                    "table_name": "[table][name]",
+                    "submit" : ["Config", "Select", "Open"],
+                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
                 },
                 "IOTech": {
                     "query" : "blockchain get table where dbms=edgex bring.unique.json [table][id] [table][name] separator = ,",
@@ -36,6 +36,16 @@
                     "submit" : ["Config", "Select", "Open"],
                     "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
                 },
+                "DMC-i": {
+                    "query": "blockchain get table where dbms = dmci bring.unique.json [table][id] [table][name] separator= ,",
+                    "table_title" : ["ID", "Name"],
+                    "json_keys" : ["id", "name"],
+                    "dbms_name": "dmci",
+                    "table_name": "[table][name]",
+                    "submit" : ["Config", "Select", "Open"],
+                    "icon"  :  ["fas fa-database", 16, "#5b5f5b"]
+                },
+
                 "Reports" : {
                     "type" : "reports",
                     "organization" : "folders",
@@ -62,7 +72,7 @@
                               "header" : ["Node", "Node name", "Operational time", "Delta time", "Events/sec", "Total events", "Free space %", "CPU %"],
                               "totals" : ["Events/sec", "Total events"],
                               "alerts" : {
-                                          "Events/sec" : "value < 1500",
+                                          "Events/sec" : "value < 25",
                                           "Free space %" : "value > 50",
                                           "CPU %" : "value > 80"
                               }
