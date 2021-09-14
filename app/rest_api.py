@@ -28,7 +28,7 @@ def do_get(url, headers_data):
         error_msg = "REST GET Error: %s" % str(err)
         response = None
     else:
-        error_msg = None
+        error_msg = get_reply_error(response, url)
 
     return [response, error_msg]
 
@@ -48,7 +48,7 @@ def do_post(url, headers_data, data_str = None, data_json = None):
         error_msg = "REST POST Error: %s" % str(err)
         response = None
     else:
-        error_msg = None
+        error_msg = get_reply_error(response, url)
 
     return [response, error_msg]
 
@@ -67,7 +67,7 @@ def do_put(url, headers_data, data_str = None, data_json = None):
         error_msg = "REST PUT Error: %s" % str(err)
         response = None
     else:
-        error_msg = None
+        error_msg = get_reply_error(response, url)
 
     return [response, error_msg]
 
@@ -85,6 +85,17 @@ def do_delete(url, headers_data):
         error_msg = "REST DELETE Error: %s" % str(err)
         response = None
     else:
-        error_msg = None
+        error_msg = get_reply_error(response, url)
 
     return [response, error_msg]
+
+# -----------------------------------------------------------------------------------
+# If response.status_code is not 200 -> return tne message
+# -----------------------------------------------------------------------------------
+def get_reply_error(response, url):
+
+    if response.status_code != 200:
+        err_msg = "REST %s returned error: %u from %s" % (response.request.method, response.status_code, url)
+    else:
+        err_msg = None
+    return err_msg

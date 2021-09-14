@@ -1,30 +1,30 @@
 {
   "gui": {
     "name": "AI-OPs",
-    "query_node": "http://10.2.0.5:2149",
-    "map": "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2",
+    "query_node": "http://10.0.0.78:7849",
+    "map": "http://127.0.0.1:3000/d/3WSvEorGk/map?orgId=1&from=1631553676184&to=1631575276184&viewPanel=2",
     "visualization": {
-      "Grafana": {
-        "url": "http://13.67.180.124:3000/",
-        "token": "eyJrIjoiVm9tNExaQ05KTDBUNlNSdFdXaVRmOEdicGdVMzJ4clciLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
-        "base":  ["Base-Report"],
+      "Grafana" : {
+        "url" : "http://localhost:3000",
+        "token" : "eyJrIjoib3ZCS29Sczl5Z2RyejNFNGlWalJnZVk2TUx3SWNrMXoiLCJuIjoiYWlvcHMiLCJpZCI6MX0=",
+        "base"  :  ["Base-Report"],
         "default" : true
       }
     },
-    "query_node-deploy": "http://10.2.0.5:2149",
-    "map-deploy": "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2",
+    "query_node": "http://10.0.0.78:7849",
+    "map": "http://127.0.0.1:3000/d/3WSvEorGk/map?orgId=1&from=1631553676184&to=1631575276184&viewPanel=2",
     "visualization-deploy" : {
       "Grafana" : {
-        "url" : "http://20.97.12.66:3000",
-        "token": "eyJrIjoiVm9tNExaQ05KTDBUNlNSdFdXaVRmOEdicGdVMzJ4clciLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
-        "base":  ["Base-Report"],
+        "url" : "http://localhost:3000",
+        "token" : "eyJrIjoib3ZCS29Sczl5Z2RyejNFNGlWalJnZVk2TUx3SWNrMXoiLCJuIjoiYWlvcHMiLCJpZCI6MX0=",
+        "base"  :  ["Base-Report"],
         "default" : true
       }
     },
     "url_pages": [
       ["Company", "https://www.ai-op.com/"],
       ["Map", "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2"],
-      ["Dashboards", "http://13.67.180.124:3000/dashboards"]
+      ["Dashboards", "http://127.0.0.1:3000/dashboards"]
     ],
     "children": {
       "Table": {

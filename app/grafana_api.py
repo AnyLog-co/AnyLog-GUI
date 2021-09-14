@@ -28,6 +28,7 @@ from datetime import datetime
 
 # -----------------------------------------------------------------------------------
 # Connect to Grafana Home dashboard
+# https://grafana.com/docs/grafana/latest/administration/preferences/change-home-dashboard/
 # -----------------------------------------------------------------------------------
 def test_connection( grafana_url:str, token:str ):
     '''
@@ -214,8 +215,9 @@ def rename_dashboard( grafana_url, token, folder_name, dashboard_name, new_name)
 
             dashboard['title'] = new_name
 
-            if not update_dashboard(grafana_url, token, folder_id, dashboard, dashboard_id, dashboard_uid, dashboard_version):
-                err_msg = "Grafana API: Failed to update dashboard name from '%s' to '%s'" % (dashboard_name, new_name)
+            err_msg = update_dashboard(grafana_url, token, folder_id, dashboard, dashboard_id, dashboard_uid, dashboard_version)
+            if err_msg:
+                err_msg = "Grafana API: Failed to update dashboard name from '%s' to '%s' " % (dashboard_name, new_name) + err_msg
 
     return err_msg
 
@@ -553,10 +555,10 @@ def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_na
 
         if is_modified:
             # push update to Grafana
-            if not update_dashboard(grafana_url, token, folder_id, dashboard_info["dashboard"], dashboard_id, dashboard_uid,
-                                    dashboard_version):
+            err_msg = update_dashboard(grafana_url, token, folder_id, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dashboard_version)
+            if err_msg:
                 # Failed to upfate a report
-                return "Grafana API: Failed to update dashboard %s" % dashboard_name
+                return "Grafana API: Failed to update dashboard %s" % dashboard_name + err_msg
 
     return None
 # -----------------------------------------------------------------------------------
@@ -885,15 +887,9 @@ def update_dashboard(grafana_url, token, folder_id, dashboard_data, report_id, r
     if dashboard_data:
         response, err_msg = rest_api.do_post(url=url, headers_data=headers, data_str=dashboard_data)
 
-    if err_msg or response.status_code != 200:
-        ret_val = False
-    else:
-        ret_val = True
-
     #reply = requests.post(url=url, headers=headers, data=json.dumps(updated_dashboard_data), verify=False)
 
-    return ret_val
-
+    return err_msg
 
 # -----------------------------------------------------------------------------------
 # Make a dashboard based on a source dashboard and params set in platform_info
