@@ -43,9 +43,17 @@
                 "table_title" : ["ID", "Name"],
                 "json_keys": ["name", "id"],
                 "icon":   ["fas fa-database", 16, "#5b5f5b"],
-                "dbms_name": "aiops",
-                "table_name": "[table][name]",
-                "submit": ["Config", "Select", "Open"]
+                "children": {
+                  "Table": {
+                    "query": "blockchain get table where name = [device][name] bring.unique.json [table][name] [table][id] separator=,",
+                    "table_title" : ["ID", "Name"],
+                    "json_keys": ["name", "id"],
+                    "icon":   ["fas fa-database", 16, "#5b5f5b"],
+                    "dbms_name": "aiops",
+                    "table_name": "[table][name]",
+                    "submit": ["Config", "Select", "Open"]
+              }
+            }
               }
             }
           }
