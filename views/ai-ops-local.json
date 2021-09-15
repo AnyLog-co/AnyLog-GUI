@@ -6,17 +6,7 @@
     "visualization": {
       "Grafana" : {
         "url" : "http://localhost:3000",
-        "token" : "eyJrIjoib3ZCS29Sczl5Z2RyejNFNGlWalJnZVk2TUx3SWNrMXoiLCJuIjoiYWlvcHMiLCJpZCI6MX0=",
-        "base"  :  ["Base-Report"],
-        "default" : true
-      }
-    },
-    "query_node": "http://10.0.0.78:7849",
-    "map": "http://127.0.0.1:3000/d/3WSvEorGk/map?orgId=1&from=1631553676184&to=1631575276184&viewPanel=2",
-    "visualization-deploy" : {
-      "Grafana" : {
-        "url" : "http://localhost:3000",
-        "token" : "eyJrIjoib3ZCS29Sczl5Z2RyejNFNGlWalJnZVk2TUx3SWNrMXoiLCJuIjoiYWlvcHMiLCJpZCI6MX0=",
+        "token" : "eyJrIjoiYTd5Ym55YTJRM1hYc0RsQTNVanQwOHhwNlVRd0dWemoiLCJuIjoiR1VJIFVzZXIiLCJpZCI6MX0=",
         "base"  :  ["Base-Report"],
         "default" : true
       }

@@ -558,7 +558,7 @@ def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_na
             err_msg = update_dashboard(grafana_url, token, folder_id, dashboard_info["dashboard"], dashboard_id, dashboard_uid, dashboard_version)
             if err_msg:
                 # Failed to upfate a report
-                return "Grafana API: Failed to update dashboard %s" % dashboard_name + err_msg
+                return "Grafana API: Failed to update dashboard %s [%s]" % (dashboard_name, err_msg)
 
     return None
 # -----------------------------------------------------------------------------------
