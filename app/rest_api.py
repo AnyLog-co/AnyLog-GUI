@@ -14,6 +14,8 @@ such non-permitted act to AnyLog, Inc.
 import requests
 from requests.exceptions import HTTPError
 
+from app.json_api import string_to_json
+
 # -----------------------------------------------------------------------------------
 # GET request
 # -----------------------------------------------------------------------------------
@@ -28,7 +30,7 @@ def do_get(url, headers_data):
         error_msg = "REST GET Error: %s" % str(err)
         response = None
     else:
-        error_msg = None
+        error_msg = get_reply_error(response, url)
 
     return [response, error_msg]
 
@@ -48,7 +50,7 @@ def do_post(url, headers_data, data_str = None, data_json = None):
         error_msg = "REST POST Error: %s" % str(err)
         response = None
     else:
-        error_msg = None
+        error_msg = get_reply_error(response, url)
 
     return [response, error_msg]
 
@@ -67,7 +69,7 @@ def do_put(url, headers_data, data_str = None, data_json = None):
         error_msg = "REST PUT Error: %s" % str(err)
         response = None
     else:
-        error_msg = None
+        error_msg = get_reply_error(response, url)
 
     return [response, error_msg]
 
@@ -85,6 +87,20 @@ def do_delete(url, headers_data):
         error_msg = "REST DELETE Error: %s" % str(err)
         response = None
     else:
-        error_msg = None
+        error_msg = get_reply_error(response, url)
 
     return [response, error_msg]
+
+# -----------------------------------------------------------------------------------
+# If response.status_code is not 200 -> return tne message
+# -----------------------------------------------------------------------------------
+def get_reply_error(response, url):
+
+    if response.status_code != 200:
+        err_msg = "REST %s returned error: %u from %s" % (response.request.method, response.status_code, url)
+        err_dict, err_code = string_to_json(response.text)
+        if err_dict and "message" in err_dict:
+            err_msg += " Message: %s" % err_dict["message"]
+    else:
+        err_msg = None
+    return err_msg
