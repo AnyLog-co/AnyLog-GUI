@@ -54,7 +54,7 @@
                 "json_keys": ["name", "id"],
                 "icon":   ["fas fa-database", 16, "#5b5f5b"],
                 "dbms_name": "aiops",
-                "table_name": "[table][name]",
+                "table_name": "[sensor][name]",
                 "submit": ["Config", "Select", "Open"]
               }
             }
