@@ -34,9 +34,13 @@ def test_connection( grafana_url:str, token:str ):
     '''
     Test connection to Grafana - return True or False
     '''
+    '''
+    # The below is the way to validate but does not work on all setups
     server = "%s/grafana" % grafana_url
     
     url = server + "/api/dashboards/home"
+    '''
+    url = grafana_url
 
     headers = {}
     if token:
@@ -163,33 +167,35 @@ def rename_folder( grafana_url, token, old_folder, new_folder):
 # -----------------------------------------------------------------------------------
 def delete_folder( grafana_url, token, folder_name):
 
-    folder_uid = get_folder_value(grafana_url, token, folder_name, "uid")
+    folder_uid, err_msg = get_folder_value(grafana_url, token, folder_name, "uid")
 
-    if not folder_uid:
-        # Parent folder is not available
-        err_msg = "Grafana API: Folder '%s' was not found" % folder_name
-    else:
+    if not err_msg:
 
-        headers_data = {
-            "Authorization": "Bearer %s" % token,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
+        if not folder_uid:
+            # Parent folder is not available
+            err_msg = "Grafana API: Folder '%s' was not found" % folder_name
+        else:
 
-        url = "%s/api/folders/%s" % (grafana_url, folder_uid)
+            headers_data = {
+                "Authorization": "Bearer %s" % token,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
 
-        response, err_msg = rest_api.do_delete(url=url, headers_data=headers_data)
+            url = "%s/api/folders/%s" % (grafana_url, folder_uid)
 
-        if response:
-            if response.status_code != 200:
-                if response.status_code == 401:
-                    err_msg = "Grafana API: Failed to delete folder '%s': Unauthorized" % folder_name
-                elif response.status_code == 403:
-                    err_msg = "Grafana API: Failed to delete folder '%s'': Access Denied" % folder_name
-                elif response.status_code == 404:
-                    err_msg = "Grafana API: Failed to delete folder '%s': folder not found" % folder_name
-                else:
-                    err_msg = "Grafana API: Failed to delete folder '%s': with error code: %u" % (folder_name, response.status_code)
+            response, err_msg = rest_api.do_delete(url=url, headers_data=headers_data)
+
+            if response:
+                if response.status_code != 200:
+                    if response.status_code == 401:
+                        err_msg = "Grafana API: Failed to delete folder '%s': Unauthorized" % folder_name
+                    elif response.status_code == 403:
+                        err_msg = "Grafana API: Failed to delete folder '%s'': Access Denied" % folder_name
+                    elif response.status_code == 404:
+                        err_msg = "Grafana API: Failed to delete folder '%s': folder not found" % folder_name
+                    else:
+                        err_msg = "Grafana API: Failed to delete folder '%s': with error code: %u" % (folder_name, response.status_code)
 
     return err_msg
 
@@ -265,20 +271,21 @@ def delete_dashboard( grafana_url, token, folder_name, dashboard_name):
 def get_dashboard_from_folder(grafana_url, token, folder_name, dashboard_name):
 
     dashboard = None
-    folder_id = get_folder_value(grafana_url, token, folder_name, "id")
+    folder_id, err_msg = get_folder_value(grafana_url, token, folder_name, "id")
+    if not err_msg:
 
-    if not folder_id:
-        # Parent folder is not available
-        err_msg = "Grafana API: Folder '%s' was not found" % folder_name
-    else:
+        if not folder_id:
+            # Parent folder is not available
+            err_msg = "Grafana API: Folder '%s' was not found" % folder_name
+        else:
 
-        dashboards_list, err_msg = get_dashboards(grafana_url, folder_id, token)
+            dashboards_list, err_msg = get_dashboards(grafana_url, folder_id, token)
 
-        if not err_msg:
-            for entry in dashboards_list:
-                if entry['title'] == dashboard_name:
-                    dashboard = entry
-                    break
+            if not err_msg:
+                for entry in dashboards_list:
+                    if entry['title'] == dashboard_name:
+                        dashboard = entry
+                        break
 
     return [dashboard, folder_id, err_msg]
 
@@ -532,7 +539,10 @@ def add_update_dashboard(new_dashboard, is_modified, platform_info, dashboard_na
     new_dashboard = platform_info["new_dashboard"]
     folder_name =  platform_info["folder"]
 
-    folder_id = get_folder_value(grafana_url, token, folder_name, "id")
+    folder_id, err_msg = get_folder_value(grafana_url, token, folder_name, "id")
+    if err_msg:
+        return err_msg
+
     if not folder_id:
         return "Grafana API: Failed to find folder %s" % folder_name
 
@@ -573,11 +583,16 @@ def get_init_dashboard(platform_info, dashboard_name):
     token = platform_info['token']
 
     folder_name = platform_info['folder']
-    folder_id = get_folder_value(grafana_url, token, folder_name, "id")
+    folder_id, err_msg = get_folder_value(grafana_url, token, folder_name, "id")
+    if err_msg:
+        return err_msg
     if not folder_id:
         return "Grafana API: Failed to retrieve reports from folder '%s'" % (folder_name)
 
     reply, err_msg = get_dashboards(grafana_url, folder_id, token)
+    if err_msg:
+        return err_msg
+
     if err_msg:
         return "Grafana API: Failed to provide the list of dashboards: %s" % err_msg
 
@@ -594,7 +609,10 @@ def get_init_dashboard(platform_info, dashboard_name):
         if index != -1:
             # Creating a report in a directory which is not the root - get the report from the root
             root_dir = folder_name[:index]
-            folder_id = get_folder_value(grafana_url, token, root_dir, "id")
+            folder_id, err_msg = get_folder_value(grafana_url, token, root_dir, "id")
+            if err_msg:
+                return err_msg
+
             if not folder_id:
                 return "Grafana API: Failed to retrieve base report from folder '%s'" % (root_dir)
             reply, err_msg = get_dashboards(grafana_url, folder_id, token)
@@ -790,7 +808,7 @@ def get_folder_value(grafana_url, token, folder_name, key):
             if folder_name == title:
                 folder_value = folder[key]
                 break
-    return folder_value
+    return [folder_value, err_msg]
 # -----------------------------------------------------------------------------------
 # Get dashboards IDs
 # There is no method to list dashboards, - do an empty search request and get dashboards from the results.
