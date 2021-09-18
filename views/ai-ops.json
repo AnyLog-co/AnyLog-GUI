@@ -4,19 +4,9 @@
     "query_node": "http://10.2.0.5:2149",
     "map": "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2",
     "visualization": {
-      "Grafana": {
-        "url": "http://13.67.180.124:3000/",
-        "token": "eyJrIjoiVm9tNExaQ05KTDBUNlNSdFdXaVRmOEdicGdVMzJ4clciLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
-        "base":  ["Base-Report"],
-        "default" : true
-      }
-    },
-    "query_node-deploy": "http://10.2.0.5:2149",
-    "map-deploy": "http://13.67.180.124:3000/d/mzZNthSnz/network-summary?orgId=1&from=1631446278861&to=1631467878861&viewPanel=2",
-    "visualization-deploy" : {
       "Grafana" : {
-        "url" : "http://13.67.180.124::3000",
-        "token": "eyJrIjoiVm9tNExaQ05KTDBUNlNSdFdXaVRmOEdicGdVMzJ4clciLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
+        "url" : "http://13.67.180.124:3000",
+        "token": "eyJrIjoiRnJRdXBsV3lSRXYxaEFyZVdLcDY5WkVURWYwNDhHNWkiLCJuIjoiYW55bG8tZ3VpIiwiaWQiOjF9",
         "base":  ["Base-Report"],
         "default" : true
       }
@@ -28,11 +18,11 @@
     ],
     "children": {
       "Table": {
-        "query": "blockchain get table bring.unique.json [table][name] [table][id] separator=,",
+        "query": "blockchain get table bring.unique.json [table][name] [table][dbms] [table][id] separator=,",
         "table_title": ["Name", "ID"],
         "json_keys": ["name", "id"],
         "icon":   ["fas fa-database", 16, "#5b5f5b"],
-        "dbms_name": "aiops",
+        "dbms_name": "[table][dbms]",
         "table_name": "[table][name]",
         "submit": ["Config", "Select", "Open"]
       },
@@ -61,209 +51,211 @@
           }
         }
       },
-
-                "Reports" :
-                {
-                    "type" : "reports",
-                    "organization" : "folders",
-                    "visualization" : "Grafana",
-                    "submit" : ["Open"],
-                    "icon"  :   ["fas fa-desktop", 16, "#148F77"]
-                },
-
-                "Monitor"    : {
-                      "icon"  :   ["fas fa-satellite-dish", 16, "#2E86C1"],
-                      "options" : [
-                            ["Monitor status", "schedule name = node_status and time = 15 seconds task node_status = get status format = json",
-                                        "schedule name = monitor_node and time = 15 seconds task run client 10.0.0.78:7848 monitor nodes where info = !node_status"],
-                            ["Monitor Data", "schedule name = get_operator_stat and time = 15 seconds task operator_stat = get operator stat format = json",
-                                        "schedule name = monitor_operator and time = 15 seconds task run client 10.0.0.78:7848 monitor operators where info = !operator_stat"]
-                            ],
-                  "Views" : {
-                    "operators" : {
-                        "header" : ["Node", "Node name", "Status", "Operational time", "Delta time", "Delta events", "Events/sec", "Total events", "Free space %", "CPU %"],
-                        "totals" : ["Events/sec", "Total events"],
-                        "alerts" : {
-                                    "Events/sec" : "value == 0"
-                        }
-                    }
-                  },
-
-                     "children" : {
-                        "Operators" : {
-                            "type" : "node",
-                            "query" : "blockchain get operator",
-                            "table_title" : ["ID", "Name", "Cluster", "IP", "Port"],
-                            "json_keys" : ["id", "name", "cluster", "ip", "rest_port"],
-                            "submit" : ["Select"],
-                            "children" : {
-                                "Connections" :  { "command" : "get connections" },
-                                "Node Status" :  { "command" : "get status" },
-                                "Load Status" :     { "command" : "get operator format = json"},
-                                "Utilization" :    { "command" : "get node info cpu_percent" }
-                            }
-                        },
-                        "Clusters" : {
-                            "query" : "blockchain get cluster",
-                            "table_title" : ["ID", "Name"],
-                            "json_keys" : ["id", "name"],
-                            "children" : {
-                                "Operators":  {
-                                              "query" : "blockchain get operator where cluster = [cluster][id]",
-                                              "table_title" : ["ID", "Name", "IP", "Port"],
-                                              "json_keys" : ["id", "name", "ip", "rest_port"],
-                                              "type" : "node",
-                                              "children" : {
-
-                                                    "Node Status" :  { "command" : "get status" },
-                                                    "Load Status" :     { "command" : "get operator" },
-                                                    "Utilization" :    { "command" : "get node info cpu_percent" }
-                                                  }
-                                }
-                              }
-                      },
-                     "Sensors" : {
-                          "query" : "blockchain get sensor",
-                          "table_title" : ["ID", "Name", "Cluster"],
-                          "json_keys" : ["id", "name", "cluster"]
-                      }
-                   }
+      "Reports": {
+        "type" : "reports",
+        "organization" : "folders",
+        "visualization" : "Grafana",
+        "submit" : ["Open"],
+        "icon"  :   ["fas fa-desktop", 16, "#148F77"]
+      },
+      "Monitor": {
+        "icon":   ["fas fa-satellite-dish", 16, "#2E86C1"],
+        "options": [
+          ["Monitor status", "schedule name = node_status and time = 15 seconds task node_status = get status format = json",
+            "schedule name = monitor_node and time = 15 seconds task run client 76.214.179.41:2050 monitor nodes where info = !node_status"
+          ],
+          ["Monitor Data", "schedule name = get_operator_stat and time = 15 seconds task operator_stat = get operator stat format = json",
+            "schedule name = monitor_operator and time = 15 seconds task run client 76.214.179.41:2050 monitor operators where info = !operator_stat"
+          ]
+        ],
+        "Views" : {
+          "operators" : {
+            "header" : ["Node", "Node name", "Status", "Operational time", "Delta time", "Delta events", "Events/sec", "Total events", "Free space %", "CPU %"],
+            "totals" : ["Events/sec", "Total events"],
+            "alerts" : {"Events/sec" : "value == 0"}
+          }
+        },
+        "children" : {
+          "Operators" : {
+            "type" : "node",
+            "query" : "blockchain get operator",
+            "table_title" : ["ID", "Name", "Cluster", "IP", "Port"],
+            "json_keys" : ["id", "name", "cluster", "ip", "rest_port"],
+            "submit" : ["Select"],
+            "children" : {
+              "Connections":  { "command" : "get connections" },
+              "Node Status":  { "command" : "get status" },
+              "Load Status":  { "command" : "get operator format = json"},
+              "Utilization":  { "command" : "get node info cpu_percent" }
+            }
+          },
+          "Clusters" : {
+            "query" : "blockchain get cluster",
+            "table_title" : ["ID", "Name"],
+            "json_keys" : ["id", "name"],
+            "children" : {
+              "Operators":  {
+                "query" : "blockchain get operator where cluster = [cluster][id]",
+                "table_title" : ["ID", "Name", "IP", "Port"],
+                "json_keys" : ["id", "name", "ip", "rest_port"],
+                "type" : "node",
+                "children" : {
+                  "Node Status" :  { "command" : "get status" },
+                  "Load Status" :  { "command" : "get operator" },
+                  "Utilization" :  { "command" : "get node info cpu_percent" }
                 }
-            },
-        
-            
-            "policies" : [
-                {
-                    "name" : "Authentication",
-                    "key" : "basic_auth",
-                    "struct" : [
-                                { "name": "User Name",
-                                  "key" : "name",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true
-                                },
-                                { "name": "Password",
-                                  "key" : "password",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true,
-                                  "space"  : 2
-                                }
-                        ]
-                },
-                {
-                    "name" : "Manufacturer",
-                    "key" : "manufacturer",
-                    "struct" : [
-                                { "name": "Manufacturer",
-                                  "key" : "name",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true
-                                },
-                                { "name": "Address",
-                                  "key" : "address",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : false
-                                },
-                                { "name": "URL",
-                                  "key" : "url",
-                                  "type" : "url",
-                                  "size" : 60
-                                }
-
-                    ]
-                        
-                },
-                {
-                    "name" : "Company",
-                    "key" : "Company",
-                    "struct" : [
-                                { "name": "Company",
-                                  "key" : "name",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true
-                                },
-                                { "name": "Manufacturer",
-                                  "key" : "manufacturer",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true
-                                },
-                                { "name": "Address",
-                                  "key" : "address",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : false
-                                },
-                                { "name": "URL",
-                                  "key" : "url",
-                                  "type" : "text",
-                                  "size" : 60
-                              }
-                      ]
-                        
-                },
-
-                {
-                    "name" : "Machine",
-                    "key" : "machine",
-                    "struct" : [
-                                { "name": "Machine",
-                                  "key" : "name",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true
-                                },
-                              { "name": "Manufacturer",
-                                  "key" : "manufacturer",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : false
-                                },
-                              { "name": "ID",
-                                  "key" : "machine_id",
-                                  "type" : "number",
-                                  "size" : 12
-                              }
-                        ]
-                    },
-
-                  {
-                      "name" : "Sensor",
-                      "key" : "sensor",
-                      "struct" : [
-
-                                { "name": "Sensor",
-                                  "key" : "name",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true
-                                },
-                                { "name": "Machine",
-                                  "key" : "machine",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true
-                                },
-                                { "name": "Serial",
-                                  "key" : "Serial",
-                                  "type" : "number",
-                                  "size" : 30,
-                                  "required" : true
-                                },
-                                { "name": "Description",
-                                  "key" : "Description",
-                                  "type" : "text",
-                                  "size" : 30,
-                                  "required" : true
-                                }
-                      ]
-
-                  }
-            ]
+              }
+            }
+          },
+          "Sensors" : {
+            "query" : "blockchain get sensor",
+            "table_title" : ["ID", "Name", "Cluster"],
+            "json_keys" : ["id", "name", "cluster"]
+          }
         }
+      }
+    },
+    "policies" : [
+      {
+        "name" : "Authentication",
+        "key" : "basic_auth",
+        "struct" : [
+          {
+            "name": "User Name",
+            "key" : "name",
+            "type" : "text",
+            "size" : 30,
+            "required" : true
+          },
+          {
+            "name": "Password",
+            "key" : "password",
+            "type" : "text",
+            "size" : 30,
+            "required" : true,
+            "space"  : 2
+          }
+        ]
+      },
+      {
+        "name" : "Manufacturer",
+        "key" : "manufacturer",
+        "struct" : [
+          {
+            "name": "Manufacturer",
+            "key" : "name",
+            "type" : "text",
+            "size" : 30,
+            "required" : true
+          },
+          {
+            "name": "Address",
+            "key" : "address",
+            "type" : "text",
+            "size" : 30,
+            "required" : false
+          },
+          {
+            "name": "URL",
+            "key" : "url",
+            "type" : "url",
+            "size" : 60
+          }
+        ]
+      },
+      {
+        "name" : "Company",
+        "key" : "Company",
+        "struct" : [
+          {
+            "name": "Company",
+            "key" : "name",
+            "type" : "text",
+            "size" : 30,
+            "required" : true
+          },
+          {
+            "name": "Manufacturer",
+            "key" : "manufacturer",
+            "type" : "text",
+            "size" : 30,
+            "required" : true
+          },
+          {
+            "name": "Address",
+            "key" : "address",
+            "type" : "text",
+            "size" : 30,
+            "required" : false
+          },
+          {
+            "name": "URL",
+            "key" : "url",
+            "type" : "text",
+            "size" : 60
+          }
+        ]
+      },
+      {
+        "name" : "Machine",
+        "key" : "machine",
+        "struct" : [
+          {
+            "name": "Machine",
+            "key" : "name",
+            "type" : "text",
+            "size" : 30,
+            "required" : true
+          },
+          {
+            "name": "Manufacturer",
+            "key" : "manufacturer",
+            "type" : "text",
+            "size" : 30,
+            "required" : false
+          },
+          {
+            "name": "ID",
+            "key" : "machine_id",
+            "type" : "number",
+            "size" : 12
+          }
+        ]
+      },
+      {
+        "name" : "Sensor",
+        "key" : "sensor",
+        "struct": [
+          {
+            "name": "Sensor",
+            "key" : "name",
+            "type" : "text",
+            "size" : 30,
+            "required" : true
+          },
+          {
+            "name": "Machine",
+            "key" : "machine",
+            "type" : "text",
+            "size" : 30,
+            "required" : true
+          },
+          {
+            "name": "Serial",
+            "key" : "Serial",
+            "type" : "number",
+            "size" : 30,
+            "required" : true
+          },
+          {
+            "name": "Description",
+            "key" : "Description",
+            "type" : "text",
+            "size" : 30,
+            "required" : true
+          }
+        ]
+      }
+    ]
+  }
 }
