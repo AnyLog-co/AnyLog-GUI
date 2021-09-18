@@ -1,5 +1,12 @@
-#!/bin/bash 
-if [[ $# -eq 1 ]] 
+#!/bin/bash
+<<COMMENT
+  The following deploys' AnyLog GUI as a Docker instance.
+  As such it requires the following installed on the machine:
+    * Docker
+    * Grafana or other BI tool
+COMMENT
+
+if [[ $# -eq 1 ]]
 then 
     CONFIG_FILE=$1 
 else 
