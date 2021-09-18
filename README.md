@@ -23,7 +23,7 @@ The API token will be added into the JSON object that the AnyLog GUI reads.
 curl -X POST -H "Content-Type: application/json" -d '{"name":"apikeycurl", "role": "Admin"}' http://admin:admin@localhost:3000/api/auth/keys
 ```
 3. Create a new JSON data source connected to your Query Node. 
-4. Create a new JSON object in [views](views/)
+4. In AnyLog-GUI, create a new JSON object in [views](views/)
    1. Copy one of the existing JSON files in [views](views/) to your a new file in [views](views/)
    2. Update the following: 
       * Company Name ("name" in JSON object)
