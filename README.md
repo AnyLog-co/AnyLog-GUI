@@ -49,6 +49,6 @@ bash $HOME/AnyLo-GUI/local_deployment.sh $HOME/AnyLog-GUI tstnet.json
 ```
 bash $HOME/AnyLo-GUI/docker_deployment.sh ${JSON_FILE_NAME}
 
-Example
+# Example
 bash $HOME/AnyLo-GUI/docker_deployment.sh testnet.json 
 ```
