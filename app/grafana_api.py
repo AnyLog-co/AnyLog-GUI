@@ -34,9 +34,13 @@ def test_connection( grafana_url:str, token:str ):
     '''
     Test connection to Grafana - return True or False
     '''
+    '''
+    # The below is the way to validate but does not work on all setups
     server = "%s/grafana" % grafana_url
     
     url = server + "/api/dashboards/home"
+    '''
+    url = grafana_url
 
     headers = {}
     if token:
