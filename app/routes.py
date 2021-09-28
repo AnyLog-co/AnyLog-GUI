@@ -2549,11 +2549,12 @@ def exec_al_cmd( al_cmd, dest_node = None, call_type = "GET"):
         data = response.text
     else:
         data = None
-        if response != None and response.reason != "":
-            error_msg = "AnyLog: REST command error \"%s\"" %  response.reason
-        elif not error_msg:
-            # No data reply
-            error_msg = "AnyLog: REST command \"%s\" returned error code %u" % (al_cmd, response.status_code)
+        if not error_msg:
+            if response != None and response.reason != "":
+                error_msg = "AnyLog: REST command error \"%s\"" %  response.reason
+            else:
+                # No data reply
+                error_msg = "AnyLog: REST command \"%s\" returned error code %u" % (al_cmd, response.status_code)
 
     return [data, error_msg]
 

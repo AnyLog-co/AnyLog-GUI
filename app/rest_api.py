@@ -14,6 +14,8 @@ such non-permitted act to AnyLog, Inc.
 import requests
 from requests.exceptions import HTTPError
 
+from app.json_api import string_to_json
+
 # -----------------------------------------------------------------------------------
 # GET request
 # -----------------------------------------------------------------------------------
@@ -96,6 +98,14 @@ def get_reply_error(response, url):
 
     if response.status_code != 200:
         err_msg = "REST %s returned error: %u from %s" % (response.request.method, response.status_code, url)
+        if hasattr(response, 'reason'):
+            if len(response.reason):
+                err_msg += " Reason: %s" % response.reason
+        err_dict, err_code = string_to_json(response.text)
+        if err_dict and "message" in err_dict:
+            err_msg += " Message: %s" % err_dict["message"]
+        if hasattr(response, 'text'):
+            err_msg += ' [' + str(response.text) + ']'
     else:
         err_msg = None
     return err_msg
