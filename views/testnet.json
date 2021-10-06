@@ -18,21 +18,22 @@
                 ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
             ],
             "children" : {
+                "AFG": {
+                    "query": "blockchain get table where dbms = afg bring.unique.json [table][id] [table][name] separator= ,",
+                    "table_title" : ["ID", "Name"],
+                    "json_keys" : ["id", "name"],
+                    "dbms_name": "afg",
+                    "table_name": "[table][name]",
+                    "submit" : ["Config", "Select", "Open"],
+                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
+                },
+ 
                 "Lit San Leandro": {
                     "query": "blockchain get table where dbms = litsanleandro bring.unique.json [table][id] [table][name] separator= ,",
                     "table_title" : ["ID", "Name"],
                     "json_keys" : ["id", "name"],
                     "dbms_name": "litsanleandro",
                     "table_name": "[table][name]",
-                    "submit" : ["Config", "Select", "Open"],
-                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
-                },
-                "IOTech": {
-                    "query" : "blockchain get table where dbms=edgex bring.unique.json [table][id] [table][name] separator = ,",
-                    "table_title" : ["ID", "Name"],
-                    "json_keys" : ["id", "name"],
-                    "dbms_name" : "edgex",
-                    "table_name" : "[table][name]",
                     "submit" : ["Config", "Select", "Open"],
                     "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
                 },
@@ -45,7 +46,24 @@
                     "submit" : ["Config", "Select", "Open"],
                     "icon"  :  ["fas fa-database", 16, "#5b5f5b"]
                 },
-
+                "IOTech": {
+                    "query" : "blockchain get table where dbms=edgex bring.unique.json [table][id] [table][name] separator = ,",
+                    "table_title" : ["ID", "Name"],
+                    "json_keys" : ["id", "name"],
+                    "dbms_name" : "edgex",
+                    "table_name" : "[table][name]",
+                    "submit" : ["Config", "Select", "Open"],
+                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
+                },
+                "FogLAMP": {
+                    "query" : "blockchain get table where dbms=foglamp bring.unique.json [table][id] [table][name] separator = ,",
+                    "table_title" : ["ID", "Name"],
+                    "json_keys" : ["id", "name"],
+                    "dbms_name" : "foglamp",
+                    "table_name" : "[table][name]",
+                    "submit" : ["Config", "Select", "Open"],
+                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
+                },
                 "Reports" : {
                     "type" : "reports",
                     "organization" : "folders",

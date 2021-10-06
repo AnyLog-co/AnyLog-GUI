@@ -18,4 +18,4 @@ fi
 
 docker volume create al-gui-volume 
 docker build . -t anylog-gui:latest 
-docker run -e GUI_VIEW=views/${CONFIG_FILE} -v al-gui-volume:/app/AnyLog-GUI/views:rw -d -p 5000:5000 --name anylog-gui --network host --rm anylog-gui:latest
+docker run  -e CONFIG_FOLDER=views -e CONFIG_FILE=${CONFIG_FILE} -v al-gui-volume:/app/AnyLog-GUI/views:rw -d -p 5000:5000 --name anylog-gui --network host --rm anylog-gui:latest
