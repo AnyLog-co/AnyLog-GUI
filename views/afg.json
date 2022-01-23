@@ -1,7 +1,6 @@
 {
     "gui" : {
-            "name" : "AFG",
-
+            "name" : "Agile Fractal Grid (AFG)",
 	    "map": "http://45.79.33.188:3000/d/m_o-jFD7k/network-summary?orgId=1&refresh=1m&from=1633474416284&to=1633478016284&viewPanel=9",
             "query_node" : "http://45.79.33.188:2049",
             "visualization" : { 
@@ -12,7 +11,7 @@
                                 }
                             },
             "url_pages"  : [
-                ["Company", "https://afgholdings.com/"],
+                ["Company", "https://theagilefractalgrid.com/"],
 	        ["map", "http://45.79.33.188:3000/d/m_o-jFD7k/network-summary?orgId=1&refresh=1m&from=1633474416284&to=1633478016284&viewPanel=9"],
                 ["Dashboards", "http://45.79.33.188:3000/dashboards"]
             ],
@@ -34,7 +33,7 @@
 		    "dbms_name": "afg_tier1",
                     "submit" : ["Config", "Select", "Open"],
                     "icon":   ["fas fa-database", 16, "#5b5f5b"]
-		},,
+		},
                 "Reports" : {
                     "type" : "reports",
                     "organization" : "folders",
@@ -62,7 +61,7 @@
                               "totals" : ["Events/sec", "Total events"],
                               "alerts" : {
                                           "Events/sec" : "value < 1500",
-                                          "Free space %" : "value > 50",
+                                          "Free space %" : "value < 50",
                                           "CPU %" : "value > 80"
                               }
                           }
