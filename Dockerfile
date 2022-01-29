@@ -1,6 +1,7 @@
-FROM ubuntu:18.04 
+FROM ubuntu:20.04 
 
-ARG ANYLOG_ROOT_DIR=/
+ARG ANYLOG_ROOT_DIR=/app
+ENV DEBIAN_FRONTEND=noninteractivet
 ENV FLASK_APP=anylog.py
 ENV FLASK_ENV=develop 
 ENV CONFIG_FOLDER=/AnyLog-GUI/views
@@ -11,19 +12,20 @@ RUN apt-get -y update
 RUN apt-get -y upgrade 
 RUN apt-get -y update 
 
-RUN apt-get -y install python3 python3-pip 
+RUN apt-get -y install python3.9 python3-pip
+RUN apt-get -y install libpq-dev python3.9-dev
+RUN python3.9 -m pip install --upgrade pip
 RUN apt-get -y install python3-flask 
 RUN apt-get -y install nginx 
 
-RUN pip3 install --upgrade setuptools pip
-RUN pip3 install flask flask_nav flask_table flask_wtf
-RUN pip3 install requests
-RUN pip3 install uwsgi
+RUN python3.9 -m pip install --upgrade setuptools pip || true
+RUN python3.9 -m pip install flask flask_nav flask_table flask_wtf || true 
+RUN python3.9 -m pip install requests || true 
+RUN python3.9 -m pip install uwsgi || true 
  
 # move to WORKDIR + COPY codebsae 
 WORKDIR $ANYLOG_ROOT_DIR
 COPY . AnyLog-GUI
-#VOLUME al-gui-volume:$ANYLOG_ROOT_DIR/AnyLog-GUI/views:rw
 
 WORKDIR AnyLog-GUI
 
