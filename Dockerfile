@@ -27,4 +27,4 @@ COPY . AnyLog-GUI
 
 WORKDIR AnyLog-GUI
 
-ENTRYPOINT uwsgi --socket 0.0.0.0:5000 --protocol=http -w wsgi:app
+ENTRYPOINT uwsgi --socket ${CONN_IP}:${CONN_PORT} --protocol=http -w wsgi:app
