@@ -6,11 +6,13 @@
     * Grafana or other BI tool
 COMMENT
 
-if [[ $# -eq 1 ]]
-then 
-    CONFIG_FILE=$1 
+if [[ $# -eq 3 ]]
+then
+    CONN_IP=$1
+    CONN_PORT=$2
+    CONFIG_FILE=$3
 else 
-   echo "Missing views file" 
+   echo "Missing connection IP and Port as well as configuration file"
    exit 1
 fi
 
@@ -25,4 +27,10 @@ fi
 
 docker volume create al-gui-volume 
 docker build . -t anylog-gui:latest 
-docker run  -e CONFIG_FOLDER=views -e CONFIG_FILE=${CONFIG_FILE} -v al-gui-volume:/app/AnyLog-GUI/views:rw -d -p 5000:5000 --name anylog-gui --network host --rm anylog-gui:latest
+docker run  --name anylog-gui \
+  -e CONFIG_FOLDER=views \
+  -e CONN_IP=${CONN_IP} \
+  -e CONN_PORT=${CONN_PORT} \
+  -e CONFIG_FILE=${CONFIG_FILE} \
+  -v al-gui-volume:/app/AnyLog-GUI/views:rw \
+  -d -it --detach-keys="ctrl-d" -p ${CONN_PORT}:${CONN_PORT} --rm anylog-gui:latest
