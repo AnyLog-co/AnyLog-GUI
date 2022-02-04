@@ -1,69 +1,39 @@
 {
     "gui" : {
-            "name" : "TestNet",
-	        "map": "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?viewPanel=2&orgId=1&refresh=30s",
-            "query_node" : "http://23.239.12.151:2049",
+            "name" : "Agile Fractal Grid (AFG)",
+	    "map": "http://45.79.33.188:3000/d/m_o-jFD7k/network-summary?orgId=1&refresh=1m&from=1633474416284&to=1633478016284&viewPanel=9",
+            "query_node" : "http://45.79.33.188:2049",
             "visualization" : { 
-                                "Grafana" : { "url" : "http://23.239.12.151:3000",
-                                              "token" : "eyJrIjoiMmNzM1lHUjh3cXBNWDRXMVZFelp3MmVxb1FQS1BVZmkiLCJuIjoiYW55bG9nLWFkbWluLWd1aSIsImlkIjoxfQ==",
+                                "Grafana" : { "url" : "http://45.79.33.188:3000",
+                                              "token" : "eyJrIjoibmlieXliWjczTmh1TjRFaHZ1MmN4dG4ybDQ3QkdhUloiLCJuIjoiYW55bG9nLWd1aSIsImlkIjoxfQ==",
                                               "base"  :  ["Base-Report"],
                                               "default" : true
                                 }
                             },
             "url_pages"  : [
-                ["Company", "https://anylog.co/"],
-                ["Map", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s&from=1620869946843&to=1620956346843&viewPanel=2"],
-                ["Dashboards", "http://23.239.12.151:3000/dashboards"],
-                ["TestNet", "http://23.239.12.151:3000/d/LeWHzMfMz/anylog-network?orgId=1&refresh=30s"],
-                ["Demo", "https://anylog.atlassian.net/wiki/spaces/ND/pages/1105756161/Example+Ethereum"]
+                ["Company", "https://theagilefractalgrid.com/"],
+	        ["map", "http://45.79.33.188:3000/d/m_o-jFD7k/network-summary?orgId=1&refresh=1m&from=1633474416284&to=1633478016284&viewPanel=9"],
+                ["Dashboards", "http://45.79.33.188:3000/dashboards"]
             ],
             "children" : {
-                "AFG": {
-                    "query": "blockchain get table where dbms = afg bring.unique.json [table][id] [table][name] separator= ,",
-                    "table_title" : ["ID", "Name"],
+                "Cloud Tier": {
+		    "query": "blockchain get table where dbms=afg bring.unique.json [table][id] [table][name] separator= ,",
+ 		    "table_title" : ["ID", "Name"],
                     "json_keys" : ["id", "name"],
-                    "dbms_name": "afg",
                     "table_name": "[table][name]",
+		    "dbms_name": "afg",
                     "submit" : ["Config", "Select", "Open"],
-                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
-                },
- 
-                "Lit San Leandro": {
-                    "query": "blockchain get table where dbms = litsanleandro bring.unique.json [table][id] [table][name] separator= ,",
-                    "table_title" : ["ID", "Name"],
+                    "icon":   ["fas fa-database", 16, "#5b5f5b"]
+		},
+		"Edge Tier": {
+		    "query": "blockchain get table where dbms=afg_tier1 bring.unique.json [table][id] [table][name] separator= ,",
+ 		    "table_title" : ["ID", "Name"],
                     "json_keys" : ["id", "name"],
-                    "dbms_name": "litsanleandro",
                     "table_name": "[table][name]",
+		    "dbms_name": "afg_tier1",
                     "submit" : ["Config", "Select", "Open"],
-                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
-                },
-                "DMC-i": {
-                    "query": "blockchain get table where dbms = dmci bring.unique.json [table][id] [table][name] separator= ,",
-                    "table_title" : ["ID", "Name"],
-                    "json_keys" : ["id", "name"],
-                    "dbms_name": "dmci",
-                    "table_name": "[table][name]",
-                    "submit" : ["Config", "Select", "Open"],
-                    "icon"  :  ["fas fa-database", 16, "#5b5f5b"]
-                },
-                "IOTech": {
-                    "query" : "blockchain get table where dbms=edgex bring.unique.json [table][id] [table][name] separator = ,",
-                    "table_title" : ["ID", "Name"],
-                    "json_keys" : ["id", "name"],
-                    "dbms_name" : "edgex",
-                    "table_name" : "[table][name]",
-                    "submit" : ["Config", "Select", "Open"],
-                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
-                },
-                "FogLAMP": {
-                    "query" : "blockchain get table where dbms=foglamp bring.unique.json [table][id] [table][name] separator = ,",
-                    "table_title" : ["ID", "Name"],
-                    "json_keys" : ["id", "name"],
-                    "dbms_name" : "foglamp",
-                    "table_name" : "[table][name]",
-                    "submit" : ["Config", "Select", "Open"],
-                    "icon"  :   ["fas fa-database", 16, "#5b5f5b"]
-                },
+                    "icon":   ["fas fa-database", 16, "#5b5f5b"]
+		},
                 "Reports" : {
                     "type" : "reports",
                     "organization" : "folders",
@@ -77,21 +47,21 @@
                             ["Monitor status",
                                                 "schedule name = node_status and time = 15 seconds task node_status = get status format = json",
                                                 "task remove where scheduler = 1 and name = monitor_node ",
-                                                "schedule name = monitor_node and time = 15 seconds task run client 23.239.12.151:2048 monitor nodes where info = !node_status"],
+                                                "schedule name = monitor_node and time = 15 seconds task run client 45.79.33.188:2048 monitor nodes where info = !node_status"],
 
                             ["Monitor Data",  "schedule name = disk_space and time = 15 seconds task disk_space = get disk percentage .",
                                               "schedule name = cpu_percent and time = 15 seconds task cpu_percent = get node info cpu_percent",
                                               "schedule name = get_operator_stat and time = 15 seconds task operator_stat = get operator stat format = json",
                                               "task remove where scheduler = 1 and name = monitor_operators",
-                                              "schedule name = monitor_operator and time = 15 seconds task run client 23.239.12.151:2048 monitor operators where info = !operator_stat"]
+                                              "schedule name = monitor_operator and time = 15 seconds task run client 45.79.33.188:2048 monitor operators where info = !operator_stat"]
                         ],
                         "Views" : {
                           "operators" : {
                               "header" : ["Node", "Node name", "Operational time", "Delta time", "Events/sec", "Total events", "Free space %", "CPU %"],
                               "totals" : ["Events/sec", "Total events"],
                               "alerts" : {
-                                          "Events/sec" : "value < 25",
-                                          "Free space %" : "value > 50",
+                                          "Events/sec" : "value < 1500",
+                                          "Free space %" : "value < 50",
                                           "CPU %" : "value > 80"
                               }
                           }
